@@ -3,20 +3,32 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "format": "prettier --write \"{*,**/*}.{ts,tsx,js,jsx,json,yml,yaml,md}\"",
+    "lint": "next lint",
+    "typecheck": "tsc"
   },
   "dependencies": {
+    "@raidguild/design-system": "^0.4.47",
     "@types/node": "20.5.4",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
-    "eslint": "8.47.0",
-    "eslint-config-next": "13.4.19",
     "next": "13.4.19",
     "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.5.0",
+    "eslint": "8.47.0",
+    "eslint-config-next": "13.4.19",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-jsx-a11y": "^6.7.1",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "next-transpile-modules": "^10.0.1",
+    "prettier": "^3.0.2",
     "typescript": "5.2.2"
   }
 }
