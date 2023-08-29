@@ -1,6 +1,8 @@
-import { RGThemeProvider } from '@raidguild/design-system';
+import { ChakraProvider } from '@raidguild/design-system';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
+
+import { Layout } from '@/components/Layout';
 
 export default function App({
   Component,
@@ -20,9 +22,11 @@ export default function App({
         <meta content="width=device-width, initial-scale=1" name="viewport" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <RGThemeProvider>
-        <Component {...pageProps} />
-      </RGThemeProvider>
+      <ChakraProvider resetCSS>
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
+      </ChakraProvider>
     </>
   );
 }
