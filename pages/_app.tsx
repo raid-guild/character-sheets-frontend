@@ -1,3 +1,4 @@
+import { RGThemeProvider } from '@raidguild/design-system';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 
@@ -19,7 +20,9 @@ export default function App({
         <meta content="width=device-width, initial-scale=1" name="viewport" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Component {...pageProps} />
+      <RGThemeProvider>
+        <Component {...pageProps} />
+      </RGThemeProvider>
     </>
   );
 }
