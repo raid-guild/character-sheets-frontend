@@ -10,7 +10,7 @@ export const ActiveLink: React.FC<LinkProps> = ({ href, ...props }) => {
     <Link
       as={NextLink}
       href={href ?? ''}
-      borderBottom={isActive ? '2px solid black' : 'none'}
+      borderBottom={isActive ? '2px solid black' : '2px solid transparent'}
       textDecor="none"
       _hover={{ borderBottom: '2px solid black' }}
       {...props}
