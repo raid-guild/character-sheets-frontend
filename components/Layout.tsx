@@ -1,13 +1,17 @@
-import { Box, Flex, Link, Text } from '@raidguild/design-system';
+import { Box, Flex, Link, Text } from '@chakra-ui/react';
 import NextLink from 'next/link';
+
+import { ActiveLink } from '@/components/ActiveLink';
 
 export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
   return (
     <>
       <Box
         as="header"
-        background="black"
+        background="white"
+        borderBottom="5px solid black"
         h={20}
+        pb={1}
         position="fixed"
         top={0}
         w="100%"
@@ -15,7 +19,7 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
       >
         <Flex align="center" h="100%" justify="center" px={10} w="100%">
           <Flex as="nav" justify="space-between" position="relative" w="100%">
-            <Link as={NextLink} href="/">
+            <Link as={NextLink} fontSize="sm" href="/" variant="heading">
               CS
             </Link>
             <Flex
@@ -23,18 +27,21 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
               position="absolute"
               left="50%"
               transform="translateX(-50%)"
-              w={200}
+              w={300}
             >
-              <Link as={NextLink} href="/my-games">
+              <ActiveLink fontSize="sm" href="/my-games" variant="heading">
                 My Games
-              </Link>
-              <Link as={NextLink} href="/all-games">
+              </ActiveLink>
+              <ActiveLink fontSize="sm" href="/all-games" variant="heading">
                 All Games
-              </Link>
+              </ActiveLink>
             </Flex>
-            <Text>Connect Wallet</Text>
+            <Text fontSize="xs" variant="heading">
+              Connect Wallet
+            </Text>
           </Flex>
         </Flex>
+        <Box background="white" borderTop="2px solid black" height={1} />
       </Box>
       <Box mt={20}>{children}</Box>
     </>
