@@ -1,4 +1,4 @@
-import { Box, Flex, Link } from '@chakra-ui/react';
+import { Box, Flex, Image, Link, Text } from '@chakra-ui/react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import NextLink from 'next/link';
 
@@ -43,7 +43,93 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
                 All Games
               </ActiveLink>
             </Flex>
-            <ConnectButton />
+            <ConnectButton.Custom>
+              {({
+                account,
+                chain,
+                openAccountModal,
+                openChainModal,
+                openConnectModal,
+                mounted,
+              }) => {
+                const connected = mounted && account && chain;
+
+                return (
+                  <Flex
+                    align="center"
+                    cursor="pointer"
+                    gap={3}
+                    _hover={{
+                      p: {
+                        borderBottom: '2px solid black',
+                      },
+                    }}
+                    {...(!mounted && {
+                      'aria-hidden': true,
+                      style: {
+                        opacity: 0,
+                        pointerEvents: 'none',
+                        userSelect: 'none',
+                      },
+                    })}
+                  >
+                    {(() => {
+                      if (!connected) {
+                        return (
+                          <button onClick={openConnectModal} type="button">
+                            <Text
+                              borderBottom="2px solid transparent"
+                              fontSize="xs"
+                              transition="all 0.2s ease-in-out"
+                              variant="heading"
+                            >
+                              Connect Wallet
+                            </Text>
+                          </button>
+                        );
+                      }
+
+                      if (chain.unsupported) {
+                        return (
+                          <button onClick={openChainModal} type="button">
+                            <Text
+                              borderBottom="2px solid transparent"
+                              fontSize="xs"
+                              transition="all 0.2s ease-in-out"
+                              variant="heading"
+                            >
+                              Wrong network
+                            </Text>
+                          </button>
+                        );
+                      }
+
+                      return (
+                        <div style={{ display: 'flex', gap: 12 }}>
+                          <button onClick={openAccountModal} type="button">
+                            <Text
+                              borderBottom="2px solid transparent"
+                              fontSize="xs"
+                              transition="all 0.2s ease-in-out"
+                              variant="heading"
+                            >
+                              {account.displayName}
+                            </Text>
+                          </button>
+                        </div>
+                      );
+                    })()}
+                    <Image
+                      alt="down arrow"
+                      height={4}
+                      pb={1}
+                      src="/arrow-down.svg"
+                      width={4}
+                    />
+                  </Flex>
+                );
+              }}
+            </ConnectButton.Custom>
           </Flex>
         </Flex>
         <Box background="white" borderTop="2px solid black" height={1} />
