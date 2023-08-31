@@ -3,6 +3,7 @@ import '@rainbow-me/rainbowkit/styles.css';
 import { ChakraProvider } from '@chakra-ui/react';
 import { Global } from '@emotion/react';
 import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { Analytics } from '@vercel/analytics/react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { WagmiConfig } from 'wagmi';
@@ -33,6 +34,7 @@ export default function App({
         <Global styles={globalStyles} />
         <WagmiConfig config={wagmiConfig}>
           <RainbowKitProvider chains={chains} theme={darkTheme()}>
+            <Analytics />
             <Layout>
               <Component {...pageProps} />
             </Layout>
