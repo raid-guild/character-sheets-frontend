@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const withTM = require('next-transpile-modules')(['@raidguild/design-system']);
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
@@ -8,4 +5,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withTM(nextConfig);
+module.exports = nextConfig;
