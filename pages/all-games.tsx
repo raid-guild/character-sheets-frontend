@@ -4,7 +4,7 @@ export default function AllGames(): JSX.Element {
   return (
     <main>
       <Text align="center" pt={20}>
-        All games.
+        All games!
       </Text>
     </main>
   );

@@ -28,6 +28,14 @@ const Link = {
   defaultProps: {
     variant: 'paragraph',
   },
+  baseStyle: {
+    py: 1,
+    px: 2,
+    _hover: {
+      boxShadow: '0 0 1px 1px rgba(0, 0, 0, 0.1)',
+      textDecoration: 'none',
+    },
+  },
   variants: {
     paragraph: {
       fontFamily: `'Orbitron', sans-serif`,
