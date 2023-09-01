@@ -42,6 +42,9 @@ const Button = {
       _hover: {
         bgColor: 'gray.100',
       },
+      _active: {
+        transform: 'scale(0.98)',
+      },
     },
   },
 };
