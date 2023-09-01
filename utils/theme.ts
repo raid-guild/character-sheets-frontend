@@ -10,20 +10,6 @@ export const globalStyles = css`
   }
 `;
 
-const Text = {
-  defaultProps: {
-    variant: 'paragraph',
-  },
-  variants: {
-    paragraph: {
-      fontFamily: `'Orbitron', sans-serif`,
-    },
-    heading: {
-      fontFamily: `'Press Start 2P', cursive`,
-    },
-  },
-};
-
 const Button = {
   defaultProps: {
     variant: 'outline',
@@ -40,10 +26,44 @@ const Button = {
       h: '50px',
       w: '180px',
       _hover: {
-        bgColor: 'gray.100',
+        background: 'gray.100',
       },
       _active: {
         transform: 'scale(0.98)',
+      },
+    },
+  },
+};
+
+const FormLabel = {
+  baseStyle: {
+    fontWeight: 300,
+  },
+};
+
+const Input = {
+  variants: {
+    outline: {
+      field: {
+        border: '2px solid',
+        borderColor: 'black',
+        borderRadius: 0,
+        background: 'white',
+        fontSize: '12px',
+
+        _hover: {
+          background: 'gray.100',
+          borderColor: 'black',
+        },
+      },
+    },
+    file: {
+      field: {
+        cursor: 'pointer',
+        p: 0,
+      },
+      addon: {
+        cursor: 'pointer',
       },
     },
   },
@@ -71,11 +91,67 @@ const Link = {
   },
 };
 
+const Modal = {
+  defaultProps: {
+    scrollBehavior: 'inside',
+  },
+  baseStyle: {
+    dialogContainer: {
+      overflow: 'hidden',
+    },
+    dialog: {
+      background: 'white',
+      border: '3px solid black',
+      borderRadius: 0,
+      maxH: { base: '100%', md: 'calc(100% - 7.5rem)' },
+      minW: { base: '100%', md: '800px' },
+      maxW: { base: '100%', md: '800px' },
+    },
+    header: {
+      borderBottom: '3px solid black',
+      textAlign: 'center',
+    },
+    body: {
+      px: 20,
+      py: 6,
+      overflow: 'auto',
+    },
+  },
+};
+
+const Text = {
+  defaultProps: {
+    variant: 'paragraph',
+  },
+  variants: {
+    paragraph: {
+      fontFamily: `'Orbitron', sans-serif`,
+    },
+    heading: {
+      fontFamily: `'Press Start 2P', cursive`,
+    },
+  },
+};
+
+const Tooltip = {
+  baseStyle: {
+    background: 'black',
+    borderRadius: 0,
+    color: 'white',
+    fontWeight: 300,
+    p: 4,
+  },
+};
+
 export const theme = extendTheme({
   config: { initialColorMode: 'light', useSystemColorMode: false },
   components: {
     Button,
+    FormLabel,
+    Input,
     Link,
+    Modal,
     Text,
+    Tooltip,
   },
 });
