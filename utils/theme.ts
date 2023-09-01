@@ -24,6 +24,28 @@ const Text = {
   },
 };
 
+const Button = {
+  defaultProps: {
+    variant: 'outline',
+  },
+  variants: {
+    outline: {
+      color: 'black',
+      borderBottom: '5px solid black',
+      borderLeft: '3px solid black',
+      borderRadius: '0',
+      borderRight: '5px solid black',
+      borderTop: '3px solid black',
+      borderColor: 'white',
+      h: '50px',
+      w: '180px',
+      _hover: {
+        bgColor: 'gray.100',
+      },
+    },
+  },
+};
+
 const Link = {
   defaultProps: {
     variant: 'paragraph',
@@ -49,6 +71,7 @@ const Link = {
 export const theme = extendTheme({
   config: { initialColorMode: 'light', useSystemColorMode: false },
   components: {
+    Button,
     Link,
     Text,
   },

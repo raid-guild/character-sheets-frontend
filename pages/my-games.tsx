@@ -1,4 +1,4 @@
-import { Text } from '@chakra-ui/react';
+import { Button, Flex, Text } from '@chakra-ui/react';
 import { useAccount } from 'wagmi';
 
 export default function MyGames(): JSX.Element {
@@ -7,9 +7,9 @@ export default function MyGames(): JSX.Element {
   return (
     <main>
       {isConnected ? (
-        <Text align="center" pt={20}>
-          Your games!
-        </Text>
+        <Flex justify="center" pt={10}>
+          <Button>Create a Game</Button>
+        </Flex>
       ) : (
         <Text align="center" pt={20}>
           Connect wallet to view your games.

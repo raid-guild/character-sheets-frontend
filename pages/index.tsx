@@ -1,10 +1,13 @@
-import { Flex, Link, Text } from '@chakra-ui/react';
+import { Flex, Link, Text, VStack } from '@chakra-ui/react';
 import NextLink from 'next/link';
 
 export default function Home(): JSX.Element {
   return (
-    <main>
-      <Text align="center" pt={20}>
+    <VStack as="main" pt={20}>
+      <Text fontSize="2xl" variant="heading">
+        CharacterSheets
+      </Text>
+      <Text pt={4}>
         Build a character through your work as a web3 mercenary. Slay moloch,
         earn XP.
       </Text>
@@ -16,6 +19,6 @@ export default function Home(): JSX.Element {
           All Games
         </Link>
       </Flex>
-    </main>
+    </VStack>
   );
 }
