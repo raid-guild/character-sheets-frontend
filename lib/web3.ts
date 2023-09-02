@@ -15,7 +15,6 @@ if (!process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID) {
 export const { chains, publicClient, webSocketPublicClient } = configureChains(
   [sepolia],
   [
-    publicProvider(),
     infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY ?? '' }),
     alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY ?? '' }),
     jsonRpcProvider({
@@ -23,6 +22,7 @@ export const { chains, publicClient, webSocketPublicClient } = configureChains(
         http: localChain.rpcUrls.default.http[0],
       }),
     }),
+    publicProvider(),
   ],
 );
 
