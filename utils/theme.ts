@@ -144,6 +144,23 @@ const Text = {
   },
 };
 
+const Textarea = {
+  variants: {
+    outline: {
+      border: '2px solid',
+      borderColor: 'black',
+      borderRadius: 0,
+      background: 'white',
+      fontSize: '12px',
+
+      _hover: {
+        background: 'gray.100',
+        borderColor: 'black',
+      },
+    },
+  },
+};
+
 const Tooltip = {
   baseStyle: {
     background: 'black',
@@ -163,6 +180,7 @@ export const theme = extendTheme({
     Link,
     Modal,
     Text,
+    Textarea,
     Tooltip,
   },
 });

@@ -14,6 +14,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
+  Textarea,
   Tooltip,
   useToast,
   VStack,
@@ -80,10 +81,16 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
   } = useUploadFile();
 
   const [gameName, setGameName] = useState<string>('');
+  const [gameDescription, setGameDescription] = useState<string>('');
   const [gameMasters, setGameMasters] = useState<string>('');
   const [daoAddress, setDaoAddress] = useState<string>('');
 
   const [showError, setShowError] = useState<boolean>(false);
+  const [isCreating, setIsCreating] = useState<boolean>(false);
+
+  const invalidGameDescription = useMemo(() => {
+    return gameDescription.length > 200 && !!gameDescription;
+  }, [gameDescription]);
 
   const invalidGameMasterAddress = useMemo(() => {
     const addresses = gameMasters.split(',');
@@ -99,17 +106,21 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
 
   const hasError = useMemo(() => {
     return (
-      invalidGameMasterAddress ||
-      invalidDaoAddress ||
-      !gameName ||
+      !gameDescription ||
       !gameEmblem ||
-      !gameMasters
+      !gameMasters ||
+      !gameName ||
+      invalidDaoAddress ||
+      invalidGameDescription ||
+      invalidGameMasterAddress
     );
   }, [
+    gameDescription,
     gameEmblem,
     gameMasters,
     gameName,
     invalidDaoAddress,
+    invalidGameDescription,
     invalidGameMasterAddress,
   ]);
 
@@ -119,6 +130,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
 
   const resetData = useCallback(() => {
     setGameName('');
+    setGameDescription('');
     setGameEmblem(null);
     setGameMasters(address ?? '');
     setDaoAddress(NEXT_PUBLIC_DEFAULT_DAO_ADDRESS ?? '');
@@ -171,6 +183,39 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
         return;
       }
 
+      const gameMetadata = {
+        name: gameName,
+        description: gameDescription,
+        emblem: url,
+      };
+
+      setIsCreating(true);
+
+      const res = await fetch('/api/uploadMetadata?name=gameMetadata.json', {
+        method: 'POST',
+        body: JSON.stringify(gameMetadata),
+      });
+
+      if (!res.ok) {
+        toast({
+          description: 'Something went wrong uploading your game metadata.',
+          position: 'top',
+          status: 'error',
+        });
+        return;
+      }
+
+      const { url: gameMetadataUri } = await res.json();
+
+      if (!gameMetadataUri) {
+        toast({
+          description: 'Something went wrong uploading your game metadata.',
+          position: 'top',
+          status: 'error',
+        });
+        return;
+      }
+
       const encodedGameCreationData = encodeAbiParameters(
         [
           {
@@ -187,11 +232,13 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
           },
         ],
         [
-          'https://ipfs.io/ipfs/bafybeiewjp7fbvohjtnn5bahiny66obdlh37l4bdln3xmnguoyfshyi5lq/characterSheetsBaseUri.json',
+          gameMetadataUri,
           'https://ipfs.io/ipfs/bafybeigyaix6wunsrqzna66y62i4egqhj327dnejb4esyrk7gce5txfcna/experienceBaseUri.json',
           'https://ipfs.io/ipfs/bafybeian3cmjldnwaok7iw72ttfuniesptu3dsuepptwmq3u2y35rqh4bu/classesBaseUri.json',
         ],
       );
+
+      setIsCreating(false);
 
       write({
         args: [
@@ -201,10 +248,19 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
         ],
       });
     },
-    [daoAddress, gameMasters, hasError, onUpload, toast, write],
+    [
+      daoAddress,
+      gameDescription,
+      gameMasters,
+      gameName,
+      hasError,
+      onUpload,
+      toast,
+      write,
+    ],
   );
 
-  const isLoading = isContractWriteLoading || isWaitForTxLoading;
+  const isLoading = isCreating || isContractWriteLoading || isWaitForTxLoading;
   const isDisabled = isLoading || isUploading;
 
   return (
@@ -249,6 +305,23 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
                 {showError && !gameName && (
                   <FormHelperText color="red">
                     A game name is required
+                  </FormHelperText>
+                )}
+              </FormControl>
+              <FormControl isInvalid={showError && !gameDescription}>
+                <FormLabel>Game Description (200 character limit)</FormLabel>
+                <Textarea
+                  onChange={e => setGameDescription(e.target.value)}
+                  value={gameDescription}
+                />
+                {showError && !gameDescription && (
+                  <FormHelperText color="red">
+                    A game description is required
+                  </FormHelperText>
+                )}
+                {showError && invalidGameDescription && (
+                  <FormHelperText color="red">
+                    Game description must be less than 200 characters
                   </FormHelperText>
                 )}
               </FormControl>
