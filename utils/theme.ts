@@ -111,9 +111,17 @@ const Modal = {
       borderBottom: '3px solid black',
       textAlign: 'center',
     },
+    closeButton: {
+      mt: 1,
+      size: 'xl',
+      _hover: {
+        borderRadius: 0,
+        boxShadow: '0 0 1px 1px rgba(0, 0, 0, 0.1)',
+      },
+    },
     body: {
-      px: 20,
-      py: 6,
+      px: 24,
+      py: 10,
       overflow: 'auto',
     },
   },

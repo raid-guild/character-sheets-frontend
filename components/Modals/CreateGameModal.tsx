@@ -9,6 +9,7 @@ import {
   Link,
   Modal,
   ModalBody,
+  ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
@@ -67,11 +68,10 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
   } = useWaitForTransaction({
     hash: data?.hash,
   });
-
+  const [gameName, setGameName] = useState<string>('');
+  const [gameEmblem, setGameEmblem] = useState<File | null>(null);
   const [gameMasters, setGameMasters] = useState<string>('');
   const [daoAddress, setDaoAddress] = useState<string>('');
-  // const [defaultCharacterImage, setDefaultCharacterImage] =
-  //   useState<File | null>(null);
 
   const [showError, setShowError] = useState<boolean>(false);
 
@@ -88,17 +88,30 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
   }, [daoAddress]);
 
   const hasError = useMemo(() => {
-    return invalidGameMasterAddress || invalidDaoAddress || !gameMasters;
-  }, [gameMasters, invalidGameMasterAddress, invalidDaoAddress]);
+    return (
+      invalidGameMasterAddress ||
+      invalidDaoAddress ||
+      !gameName ||
+      !gameEmblem ||
+      !gameMasters
+    );
+  }, [
+    gameEmblem,
+    gameMasters,
+    gameName,
+    invalidDaoAddress,
+    invalidGameMasterAddress,
+  ]);
 
   useEffect(() => {
     setShowError(false);
   }, [daoAddress, gameMasters]);
 
   const resetData = useCallback(() => {
+    setGameName('');
+    setGameEmblem(null);
     setGameMasters(address ?? '');
     setDaoAddress(NEXT_PUBLIC_DEFAULT_DAO_ADDRESS ?? '');
-    // setDefaultCharacterImage(null);
     setShowError(false);
   }, [address]);
 
@@ -183,6 +196,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
       <ModalContent>
         <ModalHeader>
           <Text>Create a Game</Text>
+          <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>
           {isLoading && data && isContractWriteSuccess ? (
@@ -202,7 +216,29 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
               </VStack>
             )
           ) : (
-            <VStack as="form" mt={10} onSubmit={onCreateGame} spacing={8}>
+            <VStack as="form" onSubmit={onCreateGame} spacing={8}>
+              <FormControl isInvalid={showError && !gameName}>
+                <FormLabel>Game Name</FormLabel>
+                <Input
+                  onChange={e => setGameName(e.target.value)}
+                  type="text"
+                  value={gameName}
+                />
+                {showError && !gameName && (
+                  <FormHelperText color="red">
+                    A game name is required
+                  </FormHelperText>
+                )}
+              </FormControl>
+              <FormControl isInvalid={showError && !gameEmblem}>
+                <FormLabel>Game Emblem</FormLabel>
+                <Input type="file" variant="file" />
+                {showError && !gameEmblem && (
+                  <FormHelperText color="red">
+                    A game emblem is required
+                  </FormHelperText>
+                )}
+              </FormControl>
               <FormControl
                 isInvalid={
                   showError && (invalidGameMasterAddress || !gameMasters)
@@ -262,21 +298,6 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
                   </FormHelperText>
                 )}
               </FormControl>
-              {/* <FormControl>
-              <Flex align="center">
-                <FormLabel>Default Character Avatar (optional)</FormLabel>
-                <Tooltip label="The default character avatar is the image that will render for a character who does not have a class. If you do not provide a default character avatar, we will provide one for you.">
-                  <Image
-                    alt="down arrow"
-                    height="14px"
-                    mb={2}
-                    src="/question-mark.svg"
-                    width="14px"
-                  />
-                </Tooltip>
-              </Flex>
-              <Input type="file" variant="file" />
-            </FormControl> */}
               <Button
                 alignSelf="flex-end"
                 isDisabled={isLoading}
