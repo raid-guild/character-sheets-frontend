@@ -30,6 +30,9 @@ const Button = {
       },
       _active: {
         transform: 'scale(0.98)',
+        _disabled: {
+          transform: 'scale(1)',
+        },
       },
     },
   },

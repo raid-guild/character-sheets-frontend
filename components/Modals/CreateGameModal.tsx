@@ -28,6 +28,7 @@ import {
   useWaitForTransaction,
 } from 'wagmi';
 
+import { useUploadFile } from '@/hooks/useUploadFile';
 import { EXPLORER_URLS } from '@/utils/constants';
 
 const NEXT_PUBLIC_FACTORY_ADDRESS = process.env
@@ -68,8 +69,17 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
   } = useWaitForTransaction({
     hash: data?.hash,
   });
+
+  const {
+    file: gameEmblem,
+    setFile: setGameEmblem,
+    onRemove,
+    onUpload,
+    isUploading,
+    isUploaded,
+  } = useUploadFile();
+
   const [gameName, setGameName] = useState<string>('');
-  const [gameEmblem, setGameEmblem] = useState<File | null>(null);
   const [gameMasters, setGameMasters] = useState<string>('');
   const [daoAddress, setDaoAddress] = useState<string>('');
 
@@ -113,7 +123,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
     setGameMasters(address ?? '');
     setDaoAddress(NEXT_PUBLIC_DEFAULT_DAO_ADDRESS ?? '');
     setShowError(false);
-  }, [address]);
+  }, [address, setGameEmblem]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -150,6 +160,17 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
       const trimmedDaoAddress =
         (daoAddress.trim() as Address) || NEXT_PUBLIC_DEFAULT_DAO_ADDRESS;
 
+      const url = await onUpload();
+
+      if (!url) {
+        toast({
+          description: 'Something went wrong uploading your game emblem.',
+          position: 'top',
+          status: 'error',
+        });
+        return;
+      }
+
       const encodedGameCreationData = encodeAbiParameters(
         [
           {
@@ -180,7 +201,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
         ],
       });
     },
-    [daoAddress, gameMasters, hasError, toast, write],
+    [daoAddress, gameMasters, hasError, onUpload, toast, write],
   );
 
   const isLoading = isContractWriteLoading || isWaitForTxLoading;
@@ -232,7 +253,36 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
               </FormControl>
               <FormControl isInvalid={showError && !gameEmblem}>
                 <FormLabel>Game Emblem</FormLabel>
-                <Input type="file" variant="file" />
+                {!gameEmblem && (
+                  <Input
+                    accept=".png, .jpg, .jpeg, .svg"
+                    disabled={isUploading}
+                    onChange={e => setGameEmblem(e.target.files?.[0] ?? null)}
+                    type="file"
+                    variant="file"
+                  />
+                )}
+                {gameEmblem && (
+                  <Flex align="center" gap={10} mt={4}>
+                    <Image
+                      alt="game emblem"
+                      objectFit="contain"
+                      src={URL.createObjectURL(gameEmblem)}
+                      w="300px"
+                    />
+                    <Button
+                      isDisabled={isUploading || isUploaded}
+                      isLoading={isUploading}
+                      loadingText="Uploading..."
+                      mt={4}
+                      onClick={!isUploaded ? onRemove : undefined}
+                      type="button"
+                      variant="outline"
+                    >
+                      {isUploaded ? 'Uploaded' : 'Remove'}
+                    </Button>
+                  </Flex>
+                )}
                 {showError && !gameEmblem && (
                   <FormHelperText color="red">
                     A game emblem is required
