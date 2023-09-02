@@ -1,0 +1,5 @@
+query GetGames($limit: Int, $skip: Int) {
+  games(first: $limit, skip: $skip) {
+    ...GameInfo
+  }
+}

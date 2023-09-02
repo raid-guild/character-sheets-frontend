@@ -51,6 +51,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
     isLoading: isContractWriteLoading,
     isSuccess: isContractWriteSuccess,
     write,
+    reset,
   } = useContractWrite({
     address: NEXT_PUBLIC_FACTORY_ADDRESS ?? '0x',
     abi: parseAbi([
@@ -104,8 +105,9 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
   useEffect(() => {
     if (!isOpen) {
       resetData();
+      reset();
     }
-  }, [resetData, isOpen]);
+  }, [reset, resetData, isOpen]);
 
   const onCreateGame = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {

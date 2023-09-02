@@ -1,0 +1,14 @@
+overwrite: true
+schema: 'https://api.studio.thegraph.com/proxy/3024/character-sheets-sepolia/version/latest'
+generates:
+  ./graphql/autogen/types.ts:
+    documents:
+      - ./graphql/**/(!(*.d)).gql
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-urql
+      - add:
+          content:
+            - '/* eslint-disable */'
+            - '// @ts-nocheck'
