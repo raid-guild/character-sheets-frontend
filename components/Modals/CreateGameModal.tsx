@@ -205,6 +205,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
   );
 
   const isLoading = isContractWriteLoading || isWaitForTxLoading;
+  const isDisabled = isLoading || isUploading;
 
   return (
     <Modal
@@ -350,7 +351,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
               </FormControl>
               <Button
                 alignSelf="flex-end"
-                isDisabled={isLoading}
+                isDisabled={isDisabled}
                 isLoading={isLoading}
                 loadingText="Creating..."
                 type="submit"

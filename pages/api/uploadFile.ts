@@ -1,6 +1,9 @@
 import formidable from 'formidable';
 import type { NextApiRequest, NextApiResponse, PageConfig } from 'next';
 import { Writable } from 'stream';
+import { File } from 'web3.storage';
+
+import { uploadToWeb3Storage } from '@/lib/fileStorage';
 
 export const config: PageConfig = {
   api: {
@@ -45,7 +48,8 @@ const fileConsumer = <T = unknown>(acc: T[]) => {
 };
 
 type ResponseData = {
-  url: string;
+  url?: string;
+  error?: string;
 };
 
 export default async function uploadFile(
@@ -54,15 +58,22 @@ export default async function uploadFile(
 ) {
   const chunks: never[] = [];
 
-  const { files } = await formidablePromise(req, {
-    ...formidableConfig,
-    // consume this, otherwise formidable tries to save the file to disk
-    fileWriteStreamHandler: () => fileConsumer(chunks),
-  });
+  try {
+    const { files } = await formidablePromise(req, {
+      ...formidableConfig,
+      // consume this, otherwise formidable tries to save the file to disk
+      fileWriteStreamHandler: () => fileConsumer(chunks),
+    });
 
-  const fileName = Object.keys(files)[0];
+    const fileName = Object.keys(files)[0];
+    const fileContents = Buffer.concat(chunks);
+    const file = new File([fileContents], fileName);
 
-  // TODO: upload to web3.storage
+    const cid = await uploadToWeb3Storage(file);
 
-  res.status(200).json({ url: `https://ipfs.io/ipfs/CID/${fileName}` });
+    res.status(200).json({ url: `https://ipfs.io/ipfs/${cid}/${fileName}` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
 }
