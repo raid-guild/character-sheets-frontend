@@ -49,7 +49,6 @@
     "next-transpile-modules": "^10.0.1",
     "prettier": "^3.0.2",
     "strip-ansi": "6.0.1",
-    "strip-ansi-cjs": "6.0.1",
     "typescript": "5.2.2"
   }
 }
