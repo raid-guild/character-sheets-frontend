@@ -1,0 +1,11 @@
+query GetGames($limit: Int, $skip: Int) {
+  games(first: $limit, skip: $skip) {
+    ...GameInfo
+  }
+}
+
+query GetGamesByOwner($owner: Bytes!, $limit: Int, $skip: Int) {
+  games(where: { owners: [$owner] }, first: $limit, skip: $skip) {
+    ...GameInfo
+  }
+}

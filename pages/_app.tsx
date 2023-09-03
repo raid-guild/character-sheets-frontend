@@ -6,9 +6,11 @@ import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { Analytics } from '@vercel/analytics/react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
+import { Provider } from 'urql';
 import { WagmiConfig } from 'wagmi';
 
 import { Layout } from '@/components/Layout';
+import { client } from '@/graphql/client';
 import { chains, wagmiConfig } from '@/lib/web3';
 import { globalStyles, theme } from '@/utils/theme';
 
@@ -32,14 +34,16 @@ export default function App({
       </Head>
       <ChakraProvider resetCSS theme={theme}>
         <Global styles={globalStyles} />
-        <WagmiConfig config={wagmiConfig}>
-          <RainbowKitProvider chains={chains} theme={darkTheme()}>
-            <Analytics />
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
-          </RainbowKitProvider>
-        </WagmiConfig>
+        <Provider value={client}>
+          <WagmiConfig config={wagmiConfig}>
+            <RainbowKitProvider chains={chains} theme={darkTheme()}>
+              <Analytics />
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+            </RainbowKitProvider>
+          </WagmiConfig>
+        </Provider>
       </ChakraProvider>
     </>
   );

@@ -1,0 +1,3 @@
+fragment GameInfo on Game {
+  id
+}
