@@ -78,7 +78,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
     onUpload,
     isUploading,
     isUploaded,
-  } = useUploadFile();
+  } = useUploadFile({ fileName: 'gameEmblem' });
 
   const [gameName, setGameName] = useState<string>('');
   const [gameDescription, setGameDescription] = useState<string>('');
@@ -172,9 +172,10 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
       const trimmedDaoAddress =
         (daoAddress.trim() as Address) || NEXT_PUBLIC_DEFAULT_DAO_ADDRESS;
 
-      const url = await onUpload();
+      const cid = await onUpload();
+      const gameEmblemExtension = gameEmblem?.name.split('.').pop();
 
-      if (!url) {
+      if (!(cid && gameEmblemExtension)) {
         toast({
           description: 'Something went wrong uploading your game emblem.',
           position: 'top',
@@ -186,7 +187,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
       const gameMetadata = {
         name: gameName,
         description: gameDescription,
-        emblem: url,
+        image: `ipfs:${cid}/gameEmblem.${gameEmblemExtension}`,
       };
 
       setIsCreating(true);
@@ -205,9 +206,9 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
         return;
       }
 
-      const { url: gameMetadataUri } = await res.json();
+      const { cid: gameMetadataCid } = await res.json();
 
-      if (!gameMetadataUri) {
+      if (!gameMetadataCid) {
         toast({
           description: 'Something went wrong uploading your game metadata.',
           position: 'top',
@@ -218,6 +219,10 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
 
       const encodedGameCreationData = encodeAbiParameters(
         [
+          {
+            name: 'characterSheetsMetadataUri',
+            type: 'string',
+          },
           {
             name: 'characterSheetsBaseUri',
             type: 'string',
@@ -231,11 +236,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
             type: 'string',
           },
         ],
-        [
-          gameMetadataUri,
-          'https://ipfs.io/ipfs/bafybeigyaix6wunsrqzna66y62i4egqhj327dnejb4esyrk7gce5txfcna/experienceBaseUri.json',
-          'https://ipfs.io/ipfs/bafybeian3cmjldnwaok7iw72ttfuniesptu3dsuepptwmq3u2y35rqh4bu/classesBaseUri.json',
-        ],
+        [`ipfs:${gameMetadataCid}`, 'ipfs:', 'ipfs:', 'ipfs:'],
       );
 
       setIsCreating(false);
@@ -251,6 +252,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
     [
       daoAddress,
       gameDescription,
+      gameEmblem,
       gameMasters,
       gameName,
       hasError,
