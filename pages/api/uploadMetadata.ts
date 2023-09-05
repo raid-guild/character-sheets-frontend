@@ -4,7 +4,7 @@ import { File } from 'web3.storage';
 import { uploadToWeb3Storage } from '@/lib/fileStorage';
 
 type ResponseData = {
-  url?: string;
+  cid?: string;
   error?: string;
 };
 
@@ -21,7 +21,7 @@ export default async function uploadMetadata(
 
     const cid = await uploadToWeb3Storage(file);
 
-    res.status(200).json({ url: `https://ipfs.io/ipfs/${cid}/${fileName}` });
+    res.status(200).json({ cid });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Something went wrong' });

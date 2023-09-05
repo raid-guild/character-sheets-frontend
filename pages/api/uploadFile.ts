@@ -48,7 +48,7 @@ const fileConsumer = <T = unknown>(acc: T[]) => {
 };
 
 type ResponseData = {
-  url?: string;
+  cid?: string;
   error?: string;
 };
 
@@ -56,6 +56,7 @@ export default async function uploadFile(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>,
 ) {
+  const fileName = req.query.name as string;
   const chunks: never[] = [];
 
   try {
@@ -65,13 +66,13 @@ export default async function uploadFile(
       fileWriteStreamHandler: () => fileConsumer(chunks),
     });
 
-    const fileName = Object.keys(files)[0];
+    const fileExtension = Object.keys(files)[0].split('.').pop();
     const fileContents = Buffer.concat(chunks);
-    const file = new File([fileContents], fileName);
+    const file = new File([fileContents], `${fileName}.${fileExtension}`);
 
     const cid = await uploadToWeb3Storage(file);
 
-    res.status(200).json({ url: `https://ipfs.io/ipfs/${cid}/${fileName}` });
+    res.status(200).json({ cid });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Something went wrong' });

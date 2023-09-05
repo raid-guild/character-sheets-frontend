@@ -1,6 +1,10 @@
 import { useCallback, useState } from 'react';
 
-export const useUploadFile = (): {
+export const useUploadFile = ({
+  fileName,
+}: {
+  fileName: string;
+}): {
   file: File | null;
   setFile: (file: File | null) => void;
   onRemove: () => void;
@@ -29,21 +33,21 @@ export const useUploadFile = (): {
       const formData = new FormData();
       formData.set(file.name, file);
 
-      const response = await fetch('/api/uploadFile', {
+      const response = await fetch(`/api/uploadFile?name=${fileName}`, {
         method: 'POST',
         body: formData,
       });
-      const { url } = await response.json();
+      const { cid } = await response.json();
 
       setIsUploaded(true);
-      return url;
+      return cid;
     } catch (error) {
       console.error(error);
       return '';
     } finally {
       setIsUploading(false);
     }
-  }, [file]);
+  }, [file, fileName]);
 
   return {
     file,
