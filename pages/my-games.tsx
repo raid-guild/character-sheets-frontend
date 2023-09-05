@@ -20,6 +20,14 @@ export default function MyGames(): JSX.Element {
     }
   }, [isConnected]);
 
+  if (!isConnectedAndMount) {
+    return (
+      <VStack as="main" pt={20}>
+        <Text align="center">Connect wallet to view your games.</Text>
+      </VStack>
+    );
+  }
+
   if (loading) {
     return (
       <VStack as="main" pt={20}>
@@ -28,29 +36,19 @@ export default function MyGames(): JSX.Element {
     );
   }
 
-  if (!games || games.length === 0) {
-    return (
-      <VStack as="main" pt={20}>
-        <Text>No games found.</Text>
-      </VStack>
-    );
-  }
-
   return (
-    <main>
-      {isConnectedAndMount ? (
-        <VStack as="main" pt={10} spacing={10}>
-          <Button onClick={createGameModal.onOpen}>Create a Game</Button>
-          {games.map(game => (
-            <Text key={game.id}>{game.id}</Text>
-          ))}
-        </VStack>
-      ) : (
-        <Text align="center" pt={20}>
-          Connect wallet to view your games.
-        </Text>
-      )}
+    <>
+      <VStack as="main" pt={10} spacing={10}>
+        <Button onClick={createGameModal.onOpen}>Create a Game</Button>
+        {!games || games.length === 0 ? (
+          <VStack as="main" pt={10}>
+            <Text>No games found.</Text>
+          </VStack>
+        ) : (
+          games.map(game => <Text key={game.id}>{game.id}</Text>)
+        )}
+      </VStack>
       <CreateGameModal {...createGameModal} />
-    </main>
+    </>
   );
 }
