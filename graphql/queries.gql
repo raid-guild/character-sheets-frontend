@@ -1,3 +1,9 @@
+query GetGlobal($id: ID!) {
+  global(id: $id) {
+    ...GlobalInfo
+  }
+}
+
 query GetGames($limit: Int, $skip: Int) {
   games(first: $limit, skip: $skip) {
     ...GameInfo

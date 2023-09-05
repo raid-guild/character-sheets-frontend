@@ -29,11 +29,10 @@ import {
   useWaitForTransaction,
 } from 'wagmi';
 
+import { useGlobal } from '@/hooks/useGlobal';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { EXPLORER_URLS } from '@/utils/constants';
 
-const NEXT_PUBLIC_FACTORY_ADDRESS = process.env
-  .NEXT_PUBLIC_FACTORY_ADDRESS as Address;
 const NEXT_PUBLIC_DEFAULT_DAO_ADDRESS = process.env
   .NEXT_PUBLIC_DEFAULT_DAO_ADDRESS as Address;
 
@@ -47,6 +46,8 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
   onClose,
 }) => {
   const { address } = useAccount();
+  const { chain } = useNetwork();
+  const { gameFactory } = useGlobal(chain?.name?.toLowerCase() ?? '');
   const toast = useToast();
 
   const {
@@ -56,7 +57,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
     write,
     reset,
   } = useContractWrite({
-    address: NEXT_PUBLIC_FACTORY_ADDRESS ?? '0x',
+    address: (gameFactory as Address) ?? '0x',
     abi: parseAbi([
       'function create(address[], address, bytes calldata) external returns (address, address, address)',
     ]),
@@ -153,14 +154,26 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
         return;
       }
 
-      if (!(NEXT_PUBLIC_DEFAULT_DAO_ADDRESS && NEXT_PUBLIC_FACTORY_ADDRESS)) {
+      if (!NEXT_PUBLIC_DEFAULT_DAO_ADDRESS) {
         toast({
-          description: 'App is missing required environment variables.',
+          description: 'App is missing a required environment variable.',
           position: 'top',
           status: 'error',
         });
         console.error(
-          `Invalid/Missing environment variables: "NEXT_PUBLIC_DEFAULT_DAO_ADDRESS" or "NEXT_PUBLIC_FACTORY_ADDRESS"`,
+          `Invalid/Missing environment variable: "NEXT_PUBLIC_DEFAULT_DAO_ADDRESS"`,
+        );
+        return;
+      }
+
+      if (!gameFactory) {
+        toast({
+          description: `Could not find a game factory for the ${chain?.name} network.`,
+          position: 'top',
+          status: 'error',
+        });
+        console.error(
+          `Missing game factory address for the ${chain?.name} network"`,
         );
         return;
       }
@@ -250,9 +263,11 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
       });
     },
     [
+      chain,
       daoAddress,
       gameDescription,
       gameEmblem,
+      gameFactory,
       gameMasters,
       gameName,
       hasError,
