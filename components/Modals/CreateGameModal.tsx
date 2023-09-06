@@ -469,12 +469,12 @@ const TransactionPending: React.FC<TransactionPendingProps> = ({ data }) => {
   return (
     <VStack py={10} spacing={4}>
       <Text>Your game is being created...</Text>
-      {EXPLORER_URLS[chain?.id ?? 0] && (
+      {EXPLORER_URLS[chain?.id ?? 11155111] && (
         <Text>
           Click{' '}
           <Link
             borderBottom="2px solid black"
-            href={`${EXPLORER_URLS[chain?.id ?? 0]}/tx/${hash}`}
+            href={`${EXPLORER_URLS[chain?.id ?? 11155111]}/tx/${hash}`}
             isExternal
           >
             here

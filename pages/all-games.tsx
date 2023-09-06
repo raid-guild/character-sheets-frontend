@@ -1,9 +1,12 @@
-import { Text, VStack } from '@chakra-ui/react';
+import { Flex, Text, VStack } from '@chakra-ui/react';
+import { useNetwork } from 'wagmi';
 
+import { GameCard } from '@/components/GameCard';
 import { useGames } from '@/hooks/useGames';
 
 export default function AllGames(): JSX.Element {
   const { games, loading } = useGames();
+  const { chain } = useNetwork();
 
   if (loading) {
     return (
@@ -23,9 +26,11 @@ export default function AllGames(): JSX.Element {
 
   return (
     <VStack as="main" pt={20}>
-      {games.map(game => (
-        <Text key={game.id}>{game.id}</Text>
-      ))}
+      <Flex gap={10} justify="center" w="1200px" wrap="wrap">
+        {games.map(game => (
+          <GameCard key={game.id} chainId={chain?.id ?? 11155111} {...game} />
+        ))}
+      </Flex>
     </VStack>
   );
 }
