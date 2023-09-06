@@ -10,7 +10,7 @@ import { uriToHttp } from '@/utils/helpers';
 import { Game, Metadata } from '@/utils/types';
 
 const fetchMetadata = async (uri: string): Promise<Metadata> => {
-  const res = await fetch(`${uri}/gameMetadata.json`);
+  const res = await fetch(`${uri}`);
   return await res.json();
 };
 
