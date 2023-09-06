@@ -1,14 +1,16 @@
-import { Button, Text, useDisclosure, VStack } from '@chakra-ui/react';
+import { Button, Flex, Text, useDisclosure, VStack } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useNetwork } from 'wagmi';
 
+import { GameCard } from '@/components/GameCard';
 import { CreateGameModal } from '@/components/Modals/CreateGameModal';
-import { useGamesByOwner } from '@/hooks/useGames';
+import { useGamesByMaster } from '@/hooks/useGames';
 
 export default function MyGames(): JSX.Element {
   const { address, isConnected } = useAccount();
   const createGameModal = useDisclosure();
-  const { games, loading } = useGamesByOwner(address || '');
+  const { games, loading } = useGamesByMaster(address || '');
+  const { chain } = useNetwork();
 
   const [isConnectedAndMount, setIsConnectedAndMounted] = useState(false);
 
@@ -45,7 +47,15 @@ export default function MyGames(): JSX.Element {
             <Text>No games found.</Text>
           </VStack>
         ) : (
-          games.map(game => <Text key={game.id}>{game.id}</Text>)
+          <Flex gap={10} justify="center" w="1200px" wrap="wrap">
+            {games.map(game => (
+              <GameCard
+                key={game.id}
+                chainId={chain?.id ?? 11155111}
+                {...game}
+              />
+            ))}
+          </Flex>
         )}
       </VStack>
       <CreateGameModal {...createGameModal} />

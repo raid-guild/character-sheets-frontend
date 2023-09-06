@@ -5,4 +5,14 @@ fragment GlobalInfo on Global {
 
 fragment GameInfo on Game {
   id
+  uri
+  characters {
+    id
+  }
+  classes {
+    id
+  }
+  items {
+    id
+  }
 }
