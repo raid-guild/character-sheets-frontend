@@ -15,3 +15,9 @@ query GetGamesByOwner($owner: Bytes!, $limit: Int, $skip: Int) {
     ...GameInfo
   }
 }
+
+query GetGamesByMaster($master: Bytes!, $limit: Int, $skip: Int) {
+  games(where: { masters: [$master] }, first: $limit, skip: $skip) {
+    ...GameInfo
+  }
+}
