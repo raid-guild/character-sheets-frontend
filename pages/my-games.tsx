@@ -1,15 +1,22 @@
-import { Button, Flex, Text, useDisclosure, VStack } from '@chakra-ui/react';
+import {
+  Button,
+  Flex,
+  Spinner,
+  Text,
+  useDisclosure,
+  VStack,
+} from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useAccount, useNetwork } from 'wagmi';
 
 import { GameCard } from '@/components/GameCard';
 import { CreateGameModal } from '@/components/Modals/CreateGameModal';
-import { useGamesByMaster } from '@/hooks/useGames';
+import { useGamesContext } from '@/contexts/GamesContext';
 
 export default function MyGames(): JSX.Element {
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const createGameModal = useDisclosure();
-  const { games, loading } = useGamesByMaster(address || '');
+  const { allGames, loading, reload } = useGamesContext();
   const { chain } = useNetwork();
 
   const [isConnectedAndMount, setIsConnectedAndMounted] = useState(false);
@@ -22,33 +29,33 @@ export default function MyGames(): JSX.Element {
     }
   }, [isConnected]);
 
-  if (!isConnectedAndMount) {
-    return (
-      <VStack as="main" pt={20}>
-        <Text align="center">Connect wallet to view your games.</Text>
-      </VStack>
-    );
-  }
+  const content = () => {
+    if (!isConnectedAndMount) {
+      return (
+        <VStack as="main" pt={20}>
+          <Text align="center">Connect wallet to view your games.</Text>
+        </VStack>
+      );
+    }
 
-  if (loading) {
-    return (
-      <VStack as="main" pt={20}>
-        <Text>Loading...</Text>
-      </VStack>
-    );
-  }
+    if (loading) {
+      return (
+        <VStack as="main" pt={20}>
+          <Spinner size="lg" />
+        </VStack>
+      );
+    }
 
-  return (
-    <>
-      <VStack as="main" pt={10} spacing={10}>
+    return (
+      <VStack as="main" pt={10} pb={20} spacing={10}>
         <Button onClick={createGameModal.onOpen}>Create a Game</Button>
-        {!games || games.length === 0 ? (
+        {!allGames || allGames.length === 0 ? (
           <VStack as="main" pt={10}>
             <Text>No games found.</Text>
           </VStack>
         ) : (
           <Flex gap={10} justify="center" w="1200px" wrap="wrap">
-            {games.map(game => (
+            {allGames.map(game => (
               <GameCard
                 key={game.id}
                 chainId={chain?.id ?? 11155111}
@@ -58,7 +65,13 @@ export default function MyGames(): JSX.Element {
           </Flex>
         )}
       </VStack>
-      <CreateGameModal {...createGameModal} />
+    );
+  };
+
+  return (
+    <>
+      {content()}
+      <CreateGameModal reloadGames={reload} {...createGameModal} />
     </>
   );
 }

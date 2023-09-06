@@ -52,3 +52,7 @@ export const shortenText = (text: string, length: number): string => {
 
   return `${text.slice(0, length)}...`;
 };
+
+export const timeout = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
