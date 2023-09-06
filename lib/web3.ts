@@ -1,6 +1,6 @@
 import { getDefaultWallets } from '@rainbow-me/rainbowkit';
 import { Chain, configureChains, createConfig } from 'wagmi';
-import { goerli } from 'wagmi/chains';
+import { goerli, sepolia } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { infuraProvider } from 'wagmi/providers/infura';
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
@@ -12,8 +12,18 @@ if (!process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID) {
   );
 }
 
+export const DEFAULT_CHAIN = (() => {
+  switch (process.env.NEXT_PUBLIC_DEFAULT_CHAIN) {
+    case 'sepolia':
+      return sepolia;
+    case 'goerli':
+    default:
+      return goerli;
+  }
+})();
+
 export const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [goerli],
+  [DEFAULT_CHAIN],
   [
     infuraProvider({ apiKey: process.env.NEXT_PUBLIC_INFURA_KEY ?? '' }),
     alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY ?? '' }),

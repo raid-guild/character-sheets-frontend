@@ -31,15 +31,15 @@ import {
 
 import { useGlobal } from '@/hooks/useGlobal';
 import { useUploadFile } from '@/hooks/useUploadFile';
-import { EXPLORER_URLS } from '@/utils/constants';
-
-const NEXT_PUBLIC_DEFAULT_DAO_ADDRESS = process.env
-  .NEXT_PUBLIC_DEFAULT_DAO_ADDRESS as Address;
+import { DEFAULT_CHAIN } from '@/lib/web3';
+import { DEFAULT_DAO_ADDRESSES, EXPLORER_URLS } from '@/utils/constants';
 
 type CreateGameModalProps = {
   isOpen: boolean;
   onClose: () => void;
 };
+
+const DEFAULT_DAO_ADDRESS = DEFAULT_DAO_ADDRESSES[DEFAULT_CHAIN.id];
 
 export const CreateGameModal: React.FC<CreateGameModalProps> = ({
   isOpen,
@@ -134,7 +134,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
     setGameDescription('');
     setGameEmblem(null);
     setGameMasters(address ?? '');
-    setDaoAddress(NEXT_PUBLIC_DEFAULT_DAO_ADDRESS ?? '');
+    setDaoAddress(DEFAULT_DAO_ADDRESS ?? '');
     setShowError(false);
   }, [address, setGameEmblem]);
 
@@ -154,14 +154,14 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
         return;
       }
 
-      if (!NEXT_PUBLIC_DEFAULT_DAO_ADDRESS) {
+      if (!DEFAULT_DAO_ADDRESS) {
         toast({
-          description: 'App is missing a required environment variable.',
+          description: `DEFAULT_DAO_ADDRESS not configured for the chain ${chain?.network}`,
           position: 'top',
           status: 'error',
         });
         console.error(
-          `Invalid/Missing environment variable: "NEXT_PUBLIC_DEFAULT_DAO_ADDRESS"`,
+          `DEFAULT_DAO_ADDRESS not configured for the chain ${chain?.network}`,
         );
         return;
       }
@@ -183,7 +183,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
         .map(address => address.trim()) as Address[];
 
       const trimmedDaoAddress =
-        (daoAddress.trim() as Address) || NEXT_PUBLIC_DEFAULT_DAO_ADDRESS;
+        (daoAddress.trim() as Address) || DEFAULT_DAO_ADDRESS;
 
       const cid = await onUpload();
       const gameEmblemExtension = gameEmblem?.name.split('.').pop();
@@ -469,17 +469,16 @@ type TransactionPendingProps = {
 
 const TransactionPending: React.FC<TransactionPendingProps> = ({ data }) => {
   const { hash } = data;
-  const { chain } = useNetwork();
 
   return (
     <VStack py={10} spacing={4}>
       <Text>Your game is being created...</Text>
-      {EXPLORER_URLS[chain?.id ?? 11155111] && (
+      {EXPLORER_URLS[DEFAULT_CHAIN.id] && (
         <Text>
           Click{' '}
           <Link
             borderBottom="2px solid black"
-            href={`${EXPLORER_URLS[chain?.id ?? 11155111]}/tx/${hash}`}
+            href={`${EXPLORER_URLS[DEFAULT_CHAIN.id]}/tx/${hash}`}
             isExternal
           >
             here
