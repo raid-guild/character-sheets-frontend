@@ -82,7 +82,7 @@ export const useGamesByOwner = (
 
   const [{ data, fetching, error }, reload] = useGetGamesByOwnerQuery({
     variables: {
-      owner,
+      owner: owner.toLowerCase(),
       limit: 100,
       skip: 0,
     },
@@ -124,7 +124,7 @@ export const useGamesByMaster = (
 
   const [{ data, fetching, error }, reload] = useGetGamesByMasterQuery({
     variables: {
-      master,
+      master: master.toLowerCase(),
       limit: 100,
       skip: 0,
     },

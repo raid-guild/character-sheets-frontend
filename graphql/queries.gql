@@ -11,13 +11,13 @@ query GetGames($limit: Int, $skip: Int) {
 }
 
 query GetGamesByOwner($owner: Bytes!, $limit: Int, $skip: Int) {
-  games(where: { owners: [$owner] }, first: $limit, skip: $skip) {
+  games(where: { owners_contains: [$owner] }, first: $limit, skip: $skip) {
     ...GameInfo
   }
 }
 
 query GetGamesByMaster($master: Bytes!, $limit: Int, $skip: Int) {
-  games(where: { masters: [$master] }, first: $limit, skip: $skip) {
+  games(where: { masters_contains: [$master] }, first: $limit, skip: $skip) {
     ...GameInfo
   }
 }
