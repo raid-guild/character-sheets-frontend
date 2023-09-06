@@ -4,12 +4,12 @@ import { useAccount, useNetwork } from 'wagmi';
 
 import { GameCard } from '@/components/GameCard';
 import { CreateGameModal } from '@/components/Modals/CreateGameModal';
-import { useGamesByOwner } from '@/hooks/useGames';
+import { useGamesByMaster } from '@/hooks/useGames';
 
 export default function MyGames(): JSX.Element {
   const { address, isConnected } = useAccount();
   const createGameModal = useDisclosure();
-  const { games, loading } = useGamesByOwner(address || '');
+  const { games, loading } = useGamesByMaster(address || '');
   const { chain } = useNetwork();
 
   const [isConnectedAndMount, setIsConnectedAndMounted] = useState(false);

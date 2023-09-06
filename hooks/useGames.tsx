@@ -3,6 +3,7 @@ import { CombinedError } from 'urql';
 
 import {
   GameInfoFragment,
+  useGetGamesByMasterQuery,
   useGetGamesByOwnerQuery,
   useGetGamesQuery,
 } from '@/graphql/autogen/types';
@@ -10,7 +11,7 @@ import { uriToHttp } from '@/utils/helpers';
 import { Game, Metadata } from '@/utils/types';
 
 const fetchMetadata = async (uri: string): Promise<Metadata> => {
-  const res = await fetch(`${uri}/gameMetadata.json`);
+  const res = await fetch(`${uri}`);
   return await res.json();
 };
 
@@ -81,7 +82,49 @@ export const useGamesByOwner = (
 
   const [{ data, fetching, error }, reload] = useGetGamesByOwnerQuery({
     variables: {
-      owner,
+      owner: owner.toLowerCase(),
+      limit: 100,
+      skip: 0,
+    },
+  });
+
+  const formatGames = useCallback(async () => {
+    const formattedGames = await Promise.all(
+      data?.games.map(g => formatGame(g)) ?? [],
+    );
+    setGames(formattedGames);
+  }, [data]);
+
+  useEffect(() => {
+    if (data?.games) {
+      formatGames();
+    }
+  }, [data, formatGames]);
+
+  if (!data?.games) {
+    return { games: null, loading: fetching, error, reload };
+  }
+
+  return {
+    games,
+    loading: fetching,
+    error,
+    reload,
+  };
+};
+export const useGamesByMaster = (
+  master: string,
+): {
+  games: Game[] | null;
+  loading: boolean;
+  error: CombinedError | undefined;
+  reload: () => void;
+} => {
+  const [games, setGames] = useState<Game[] | null>(null);
+
+  const [{ data, fetching, error }, reload] = useGetGamesByMasterQuery({
+    variables: {
+      master: master.toLowerCase(),
       limit: 100,
       skip: 0,
     },
