@@ -156,12 +156,12 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
 
       if (!DEFAULT_DAO_ADDRESS) {
         toast({
-          description: `DEFAULT_DAO_ADDRESS not configured for the chain ${chain?.network}`,
+          description: `DEFAULT_DAO_ADDRESS not configured for the chain ${chain?.name}`,
           position: 'top',
           status: 'error',
         });
         console.error(
-          `DEFAULT_DAO_ADDRESS not configured for the chain ${chain?.network}`,
+          `DEFAULT_DAO_ADDRESS not configured for the chain ${chain?.name}`,
         );
         return;
       }
