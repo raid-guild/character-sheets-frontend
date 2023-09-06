@@ -4,12 +4,12 @@ import { useAccount, useNetwork } from 'wagmi';
 
 import { GameCard } from '@/components/GameCard';
 import { CreateGameModal } from '@/components/Modals/CreateGameModal';
-import { useGamesByMaster } from '@/hooks/useGames';
+import { useGamesContext } from '@/contexts/GamesContext';
 
 export default function MyGames(): JSX.Element {
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const createGameModal = useDisclosure();
-  const { games, loading } = useGamesByMaster(address || '');
+  const { allGames, loading } = useGamesContext();
   const { chain } = useNetwork();
 
   const [isConnectedAndMount, setIsConnectedAndMounted] = useState(false);
@@ -42,13 +42,13 @@ export default function MyGames(): JSX.Element {
     <>
       <VStack as="main" pt={10} spacing={10}>
         <Button onClick={createGameModal.onOpen}>Create a Game</Button>
-        {!games || games.length === 0 ? (
+        {!allGames || allGames.length === 0 ? (
           <VStack as="main" pt={10}>
             <Text>No games found.</Text>
           </VStack>
         ) : (
           <Flex gap={10} justify="center" w="1200px" wrap="wrap">
-            {games.map(game => (
+            {allGames.map(game => (
               <GameCard
                 key={game.id}
                 chainId={chain?.id ?? 11155111}

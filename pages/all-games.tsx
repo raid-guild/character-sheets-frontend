@@ -2,10 +2,10 @@ import { Flex, Text, VStack } from '@chakra-ui/react';
 import { useNetwork } from 'wagmi';
 
 import { GameCard } from '@/components/GameCard';
-import { useGames } from '@/hooks/useGames';
+import { useGamesContext } from '@/contexts/GamesContext';
 
 export default function AllGames(): JSX.Element {
-  const { games, loading } = useGames();
+  const { allGames, loading } = useGamesContext();
   const { chain } = useNetwork();
 
   if (loading) {
@@ -16,7 +16,7 @@ export default function AllGames(): JSX.Element {
     );
   }
 
-  if (!games || games.length === 0) {
+  if (!allGames || allGames.length === 0) {
     return (
       <VStack as="main" pt={20}>
         <Text>No games found.</Text>
@@ -27,7 +27,7 @@ export default function AllGames(): JSX.Element {
   return (
     <VStack as="main" pt={20}>
       <Flex gap={10} justify="center" w="1200px" wrap="wrap">
-        {games.map(game => (
+        {allGames.map(game => (
           <GameCard key={game.id} chainId={chain?.id ?? 11155111} {...game} />
         ))}
       </Flex>

@@ -6,6 +6,8 @@ fragment GlobalInfo on Global {
 fragment GameInfo on Game {
   id
   uri
+  owners
+  masters
   characters {
     id
   }

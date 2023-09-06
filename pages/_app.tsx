@@ -10,6 +10,7 @@ import { Provider } from 'urql';
 import { WagmiConfig } from 'wagmi';
 
 import { Layout } from '@/components/Layout';
+import { GamesProvider } from '@/contexts/GamesContext';
 import { client } from '@/graphql/client';
 import { chains, wagmiConfig } from '@/lib/web3';
 import { globalStyles, theme } from '@/utils/theme';
@@ -38,9 +39,11 @@ export default function App({
           <WagmiConfig config={wagmiConfig}>
             <RainbowKitProvider chains={chains} theme={darkTheme()}>
               <Analytics />
-              <Layout>
-                <Component {...pageProps} />
-              </Layout>
+              <GamesProvider>
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+              </GamesProvider>
             </RainbowKitProvider>
           </WagmiConfig>
         </Provider>
