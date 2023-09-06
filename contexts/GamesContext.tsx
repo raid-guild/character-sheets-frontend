@@ -59,8 +59,10 @@ export const GamesProvider: React.FC<{
   const [allGames, setAllGames] = useState<Game[] | null>(null);
   const [myGames, setMyGames] = useState<Game[] | null>(null);
   const [isFormatting, setIsFormatting] = useState(false);
+  const [isRefetching, setIsRefetching] = useState(false);
 
   const [{ data, fetching, error }, reload] = useGetGamesQuery({
+    requestPolicy: 'cache-and-network',
     variables: {
       limit: 100,
       skip: 0,
@@ -80,7 +82,13 @@ export const GamesProvider: React.FC<{
     }
     setAllGames(formattedGames);
     setIsFormatting(false);
+    setIsRefetching(false);
   }, [address, data]);
+
+  const refetch = useCallback(async () => {
+    setIsRefetching(true);
+    reload();
+  }, [reload]);
 
   useEffect(() => {
     if (data?.games) {
@@ -93,9 +101,9 @@ export const GamesProvider: React.FC<{
       value={{
         allGames,
         myGames,
-        loading: fetching || isFormatting,
+        loading: fetching || isFormatting || isRefetching,
         error,
-        reload,
+        reload: refetch,
       }}
     >
       {children}
