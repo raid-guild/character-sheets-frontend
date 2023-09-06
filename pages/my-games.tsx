@@ -1,4 +1,11 @@
-import { Button, Flex, Text, useDisclosure, VStack } from '@chakra-ui/react';
+import {
+  Button,
+  Flex,
+  Spinner,
+  Text,
+  useDisclosure,
+  VStack,
+} from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useAccount, useNetwork } from 'wagmi';
 
@@ -9,7 +16,7 @@ import { useGamesContext } from '@/contexts/GamesContext';
 export default function MyGames(): JSX.Element {
   const { isConnected } = useAccount();
   const createGameModal = useDisclosure();
-  const { allGames, loading } = useGamesContext();
+  const { allGames, loading, reload } = useGamesContext();
   const { chain } = useNetwork();
 
   const [isConnectedAndMount, setIsConnectedAndMounted] = useState(false);
@@ -22,25 +29,25 @@ export default function MyGames(): JSX.Element {
     }
   }, [isConnected]);
 
-  if (!isConnectedAndMount) {
-    return (
-      <VStack as="main" pt={20}>
-        <Text align="center">Connect wallet to view your games.</Text>
-      </VStack>
-    );
-  }
+  const content = () => {
+    if (!isConnectedAndMount) {
+      return (
+        <VStack as="main" pt={20}>
+          <Text align="center">Connect wallet to view your games.</Text>
+        </VStack>
+      );
+    }
 
-  if (loading) {
-    return (
-      <VStack as="main" pt={20}>
-        <Text>Loading...</Text>
-      </VStack>
-    );
-  }
+    if (loading) {
+      return (
+        <VStack as="main" pt={20}>
+          <Spinner size="lg" />
+        </VStack>
+      );
+    }
 
-  return (
-    <>
-      <VStack as="main" pt={10} spacing={10}>
+    return (
+      <VStack as="main" pt={10} pb={20} spacing={10}>
         <Button onClick={createGameModal.onOpen}>Create a Game</Button>
         {!allGames || allGames.length === 0 ? (
           <VStack as="main" pt={10}>
@@ -58,7 +65,13 @@ export default function MyGames(): JSX.Element {
           </Flex>
         )}
       </VStack>
-      <CreateGameModal {...createGameModal} />
+    );
+  };
+
+  return (
+    <>
+      {content()}
+      <CreateGameModal reloadGames={reload} {...createGameModal} />
     </>
   );
 }
