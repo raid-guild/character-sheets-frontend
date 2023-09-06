@@ -200,7 +200,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
       const gameMetadata = {
         name: gameName,
         description: gameDescription,
-        image: `ipfs://${cid}/gameEmblem.${gameEmblemExtension}`,
+        image: `ipfs://${cid}`,
       };
 
       setIsCreating(true);
@@ -249,12 +249,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
             type: 'string',
           },
         ],
-        [
-          `ipfs://${gameMetadataCid}/gameMetadata.json`,
-          'ipfs://',
-          'ipfs://',
-          'ipfs://',
-        ],
+        [`ipfs://${gameMetadataCid}`, 'ipfs://', 'ipfs://', 'ipfs://'],
       );
 
       setIsCreating(false);

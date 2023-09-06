@@ -13,5 +13,6 @@ export const uploadToWeb3Storage = async (file: File): Promise<string> => {
 
   return await client.put([file], {
     maxRetries: 3,
+    wrapWithDirectory: false,
   });
 };
