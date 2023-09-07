@@ -5,7 +5,7 @@ query GetGlobal($id: ID!) {
 }
 
 query GetGames($limit: Int, $skip: Int) {
-  games(first: $limit, skip: $skip) {
+  games(first: $limit, skip: $skip, orderBy: createdAt, orderDirection: desc) {
     ...GameInfo
   }
 }

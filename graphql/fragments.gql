@@ -10,11 +10,19 @@ fragment GameInfo on Game {
   masters
   characters {
     id
+    characterId
+    account
+    player
+    name
   }
   classes {
     id
+    classId
+    name
   }
   items {
     id
+    itemId
+    name
   }
 }

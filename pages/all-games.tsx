@@ -25,7 +25,7 @@ export default function AllGames(): JSX.Element {
   }
 
   return (
-    <VStack as="main" pt={20}>
+    <VStack as="main" pt={10} pb={20} spacing={10}>
       <Flex gap={10} justify="center" w="1200px" wrap="wrap">
         {allGames.map(game => (
           <GameCard key={game.id} chainId={chain?.id ?? 11155111} {...game} />

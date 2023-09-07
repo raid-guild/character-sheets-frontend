@@ -16,12 +16,20 @@ export type Game = Metadata & {
 
 export type Character = {
   id: string;
+  characterId: string;
+  name: string;
+  account: string;
+  player: string;
 };
 
 export type Class = {
   id: string;
+  classId: string;
+  name: string;
 };
 
 export type Item = {
   id: string;
+  itemId: string;
+  name: string;
 };
