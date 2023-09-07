@@ -1,4 +1,12 @@
-import { Box, HStack, Image, Link, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  HStack,
+  Image,
+  Link,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
 
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
@@ -16,48 +24,64 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
   image,
 }) => {
   return (
-    <Box
+    <HStack
       border="3px solid black"
       borderBottom="5px solid black"
       borderRight="5px solid black"
+      h="300px"
       transition="background 0.3s ease"
-      w="100%"
       p={4}
+      w="100%"
     >
-      <HStack>
+      <VStack w="30%">
         <Image
           alt="character avatar"
-          background="gray.400"
           h="140px"
           objectFit="cover"
           src={image}
-          w="140px"
+          w="100px"
         />
-        <Text fontSize="lg">{name}</Text>
-      </HStack>
-      <Text>
-        Description:{' '}
-        <Text as="span" fontSize="xs">
-          {shortenText(description, 130)}
+        <Button size="sm">View</Button>
+        <Button size="sm">Actions</Button>
+      </VStack>
+      <VStack align="flex-start">
+        <Text fontSize="lg" fontWeight="bold">
+          {name}
         </Text>
-      </Text>
-      <Link
-        alignItems="center"
-        color="blue"
-        display="flex"
-        fontSize="sm"
-        gap={2}
-        href={`${EXPLORER_URLS[chainId]}/address/${account}`}
-        isExternal
-      >
-        {shortenAddress(account)}
-        <Image
-          alt="link to new tab"
-          height="14px"
-          src="/new-tab.svg"
-          width="14px"
-        />
-      </Link>
-    </Box>
+        <Text>
+          Description:{' '}
+          <Text as="span" fontSize="xs">
+            {shortenText(description, 130)}
+          </Text>
+        </Text>
+        <Link
+          alignItems="center"
+          color="blue"
+          display="flex"
+          fontSize="sm"
+          gap={2}
+          href={`${EXPLORER_URLS[chainId]}/address/${account}`}
+          isExternal
+          p={0}
+        >
+          {shortenAddress(account)}
+          <Image
+            alt="link to new tab"
+            height="14px"
+            src="/new-tab.svg"
+            width="14px"
+          />
+        </Link>
+        <Box background="black" h="3px" my={4} w={20} />
+        <Text>
+          Classes:{' '}
+          <Text as="span" fontSize="xs">
+            {shortenText('Villager', 70)}
+          </Text>
+        </Text>
+        <Text>XP: 0</Text>
+        <Text>Items: 0</Text>
+      </VStack>
+    </HStack>
   );
 };

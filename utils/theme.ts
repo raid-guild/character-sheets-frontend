@@ -14,6 +14,17 @@ const Button = {
   defaultProps: {
     variant: 'outline',
   },
+  sizes: {
+    sm: {
+      fontSize: '12px',
+      w: '100px',
+    },
+    md: {
+      fontSize: '16px',
+      h: '50px',
+      w: '180px',
+    },
+  },
   variants: {
     outline: {
       color: 'black',
@@ -23,8 +34,6 @@ const Button = {
       borderRight: '5px solid black',
       borderTop: '3px solid black',
       borderColor: 'white',
-      h: '50px',
-      w: '180px',
       _hover: {
         background: 'gray.100',
       },
