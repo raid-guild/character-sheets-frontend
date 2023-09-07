@@ -8,35 +8,13 @@ import {
 import { CombinedError } from 'urql';
 import { useAccount } from 'wagmi';
 
-import { GameInfoFragment, useGetGamesQuery } from '@/graphql/autogen/types';
-import { uriToHttp } from '@/utils/helpers';
-import { Game, Metadata } from '@/utils/types';
-
-const fetchMetadata = async (uri: string): Promise<Metadata> => {
-  const res = await fetch(`${uri}`);
-  return await res.json();
-};
-
-export const formatGame = async (game: GameInfoFragment): Promise<Game> => {
-  const metadata = await fetchMetadata(uriToHttp(game.uri)[0]);
-
-  return {
-    id: game.id,
-    uri: game.uri,
-    owners: game.owners,
-    masters: game.masters,
-    name: metadata.name,
-    description: metadata.description,
-    image: metadata.image,
-    characters: game.characters,
-    classes: game.classes,
-    items: game.items,
-  };
-};
+import { useGetGamesQuery } from '@/graphql/autogen/types';
+import { GameMeta } from '@/utils/types';
+import { formatGameMeta } from '@/utils/helpers';
 
 type GamesContextType = {
-  allGames: Game[] | null;
-  myGames: Game[] | null;
+  allGames: GameMeta[] | null;
+  myGames: GameMeta[] | null;
   loading: boolean;
   error: CombinedError | undefined;
   reload: () => void;
@@ -56,8 +34,8 @@ export const GamesProvider: React.FC<{
   children: JSX.Element;
 }> = ({ children }) => {
   const { address } = useAccount();
-  const [allGames, setAllGames] = useState<Game[] | null>(null);
-  const [myGames, setMyGames] = useState<Game[] | null>(null);
+  const [allGames, setAllGames] = useState<GameMeta[] | null>(null);
+  const [myGames, setMyGames] = useState<GameMeta[] | null>(null);
   const [isFormatting, setIsFormatting] = useState(false);
   const [isRefetching, setIsRefetching] = useState(false);
 
@@ -72,7 +50,7 @@ export const GamesProvider: React.FC<{
   const formatGames = useCallback(async () => {
     setIsFormatting(true);
     const formattedGames = await Promise.all(
-      data?.games.map(g => formatGame(g)) ?? [],
+      data?.games.map(g => formatGameMeta(g)) ?? [],
     );
     if (address) {
       const gamesByMaster = formattedGames.filter(g =>

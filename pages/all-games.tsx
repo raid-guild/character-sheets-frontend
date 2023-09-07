@@ -3,6 +3,7 @@ import { useNetwork } from 'wagmi';
 
 import { GameCard } from '@/components/GameCard';
 import { useGamesContext } from '@/contexts/GamesContext';
+import { DEFAULT_CHAIN } from '@/lib/web3';
 
 export default function AllGames(): JSX.Element {
   const { allGames, loading } = useGamesContext();
@@ -28,7 +29,11 @@ export default function AllGames(): JSX.Element {
     <VStack as="main" pt={10} pb={20} spacing={10}>
       <Flex gap={10} justify="center" w="1200px" wrap="wrap">
         {allGames.map(game => (
-          <GameCard key={game.id} chainId={chain?.id ?? 11155111} {...game} />
+          <GameCard
+            key={game.id}
+            chainId={chain?.id ?? DEFAULT_CHAIN.id}
+            {...game}
+          />
         ))}
       </Flex>
     </VStack>
