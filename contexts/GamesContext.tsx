@@ -9,8 +9,8 @@ import { CombinedError } from 'urql';
 import { useAccount } from 'wagmi';
 
 import { useGetGamesQuery } from '@/graphql/autogen/types';
-import { GameMeta } from '@/utils/types';
 import { formatGameMeta } from '@/utils/helpers';
+import { GameMeta } from '@/utils/types';
 
 type GamesContextType = {
   allGames: GameMeta[] | null;

@@ -181,9 +181,8 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
         (daoAddress.trim() as Address) || DEFAULT_DAO_ADDRESS;
 
       const cid = await onUpload();
-      const gameEmblemExtension = gameEmblem?.name.split('.').pop();
 
-      if (!(cid && gameEmblemExtension)) {
+      if (!cid) {
         toast({
           description: 'Something went wrong uploading your game emblem.',
           position: 'top',
@@ -297,7 +296,6 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
     [
       daoAddress,
       gameDescription,
-      gameEmblem?.name,
       gameFactory,
       gameMasters,
       gameName,

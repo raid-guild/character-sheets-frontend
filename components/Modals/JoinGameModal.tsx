@@ -136,9 +136,8 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
       }
 
       const cid = await onUpload();
-      const characterAvatarExtension = characterAvatar?.name.split('.').pop();
 
-      if (!(cid && characterAvatarExtension)) {
+      if (!cid) {
         toast({
           description: 'Something went wrong uploading your character avatar.',
           position: 'top',
@@ -247,7 +246,6 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
     },
     [
       characterDescription,
-      characterAvatar?.name,
       characterName,
       hasError,
       onUpload,

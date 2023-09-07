@@ -1,9 +1,10 @@
-import { Character, Game, GameMeta, Metadata } from './types';
 import {
   CharacterInfoFragment,
   FullGameInfoFragment,
   GameMetaInfoFragment,
 } from '@/graphql/autogen/types';
+
+import { Character, Game, GameMeta, Metadata } from './types';
 
 /**
  * Given a URI that may be ipfs, ipns, http, https, ar, or data protocol, return the fetch-able http(s) URLs for the same content
@@ -107,9 +108,7 @@ export const formatGameMeta = async (
   };
 };
 
-export const formatGame = async (
-  game: FullGameInfoFragment,
-): Promise<Game> => {
+export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
   const metadata = await fetchMetadata(uriToHttp(game.uri)[0]);
 
   return {

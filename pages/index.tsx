@@ -12,10 +12,10 @@ export default function Home(): JSX.Element {
         earn XP.
       </Text>
       <Flex margin="60px auto 0" justify="space-between" width="280px" gap="4">
-        <Button as={NextLink} borderBottom="2px solid black" href="/my-games">
+        <Button as={NextLink} href="/my-games">
           My Games
         </Button>
-        <Button as={NextLink} borderBottom="2px solid black" href="/all-games">
+        <Button as={NextLink} href="/all-games">
           All Games
         </Button>
       </Flex>

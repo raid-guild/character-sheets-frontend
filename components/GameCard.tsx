@@ -29,27 +29,30 @@ export const GameCard: React.FC<GameCardProps> = ({
       w="360px"
     >
       <NextLink href={`/games/[gameId]`} as={`/games/${id}`}>
-        <Image
-          alt="game emblem"
-          background="gray.400"
-          h="140px"
-          objectFit="cover"
-          src={image}
-          w="100%"
-        />
-        <Flex
-          align="center"
-          borderBottom="3px solid black"
-          borderTop="3px solid black"
-          justify="center"
-          h="50px"
+        <Box
           _hover={{
             background: 'gray.100',
             cursor: 'pointer',
           }}
         >
-          <Text fontSize="lg">{name}</Text>
-        </Flex>
+          <Image
+            alt="game emblem"
+            background="gray.400"
+            h="140px"
+            objectFit="cover"
+            src={image}
+            w="100%"
+          />
+          <Flex
+            align="center"
+            borderBottom="3px solid black"
+            borderTop="3px solid black"
+            justify="center"
+            h="50px"
+          >
+            <Text fontSize="lg">{name}</Text>
+          </Flex>
+        </Box>
       </NextLink>
       <Box p={4}>
         <Text h="100px">

@@ -6,8 +6,8 @@ import {
   useGetGamesByOwnerQuery,
   useGetGamesQuery,
 } from '@/graphql/autogen/types';
+import { formatGameMeta } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
-import { formatGameMeta } from '@/utils/helpers'
 
 export const useGames = (): {
   games: GameMeta[] | null;

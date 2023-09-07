@@ -3,15 +3,15 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useState,
   useMemo,
+  useState,
 } from 'react';
 import { CombinedError } from 'urql';
+import { useAccount } from 'wagmi';
 
 import { useGetGameQuery } from '@/graphql/autogen/types';
-import { Character, Game } from '@/utils/types';
 import { formatGame } from '@/utils/helpers';
-import { useAccount } from 'wagmi';
+import { Character, Game } from '@/utils/types';
 
 type GameContextType = {
   game: Game | null;
