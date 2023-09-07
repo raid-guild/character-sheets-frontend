@@ -14,12 +14,13 @@ import { useEffect, useState } from 'react';
 import { isAddress } from 'viem';
 import { useAccount, useNetwork } from 'wagmi';
 
-import { CharacterCard } from '@/components/CharacterCard';
+import { CharacterCard, SmallCharacterCard } from '@/components/CharacterCard';
 import { JoinGameModal } from '@/components/Modals/JoinGameModal';
 import { GameProvider, useGame } from '@/contexts/GameContext';
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
+import { Character } from '@/utils/types';
 
 export default function GamePageOuter(): JSX.Element {
   const {
@@ -47,6 +48,9 @@ function GamePage(): JSX.Element {
   const { chain } = useNetwork();
 
   const [isConnectedAndMount, setIsConnectedAndMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState<
+    'characters' | 'xp' | 'classes' | 'items'
+  >('characters');
 
   useEffect(() => {
     if (isConnected) {
@@ -136,19 +140,49 @@ function GamePage(): JSX.Element {
           <Button onClick={joinGameModal.onOpen}>Join this Game</Button>
         )}
         <SimpleGrid columns={2} spacing={4} w="100%">
-          <VStack border="3px solid black" spacing={4} p={4}>
+          <Button
+            border="3px solid black"
+            onClick={() => setActiveTab('characters')}
+            p={4}
+            variant={activeTab === 'characters' ? 'solid' : 'outline'}
+            w="100%"
+          >
             <Text>{characters.length} Characters</Text>
-          </VStack>
-          <VStack border="3px solid black" spacing={4} p={4}>
+          </Button>
+          <Button
+            border="3px solid black"
+            onClick={() => setActiveTab('xp')}
+            p={4}
+            variant={activeTab === 'xp' ? 'solid' : 'outline'}
+            w="100%"
+          >
             <Text>{experience} XP</Text>
-          </VStack>
-          <VStack border="3px solid black" spacing={4} p={4}>
+          </Button>
+          <Button
+            border="3px solid black"
+            onClick={() => setActiveTab('classes')}
+            p={4}
+            variant={activeTab === 'classes' ? 'solid' : 'outline'}
+            w="100%"
+          >
             <Text>{classes.length} Classes</Text>
-          </VStack>
-          <VStack border="3px solid black" spacing={4} p={4}>
+          </Button>
+          <Button
+            border="3px solid black"
+            onClick={() => setActiveTab('items')}
+            p={4}
+            variant={activeTab === 'items' ? 'solid' : 'outline'}
+            w="100%"
+          >
             <Text>{items.length} Items</Text>
-          </VStack>
+          </Button>
         </SimpleGrid>
+        {activeTab === 'characters' && (
+          <CharactersPanel chainId={chainId} characters={characters} />
+        )}
+        {activeTab === 'xp' && <XPPanel />}
+        {activeTab === 'classes' && <ClassesPanel />}
+        {activeTab === 'items' && <ItemsPanel />}
       </VStack>
     );
   };
@@ -160,3 +194,47 @@ function GamePage(): JSX.Element {
     </>
   );
 }
+
+const CharactersPanel: React.FC<{
+  chainId: number;
+  characters: Character[];
+}> = ({ chainId, characters }) => {
+  if (characters.length > 0) {
+    return (
+      <SimpleGrid columns={2} spacing={4} w="100%">
+        {characters.map(c => (
+          <SmallCharacterCard key={c.id} {...c} chainId={chainId} />
+        ))}
+      </SimpleGrid>
+    );
+  }
+  return (
+    <VStack as="main" pt={20}>
+      <Text align="center">No characters found.</Text>
+    </VStack>
+  );
+};
+
+const XPPanel: React.FC = () => {
+  return (
+    <VStack as="main" pt={20}>
+      <Text align="center">XP Panel</Text>
+    </VStack>
+  );
+};
+
+const ClassesPanel: React.FC = () => {
+  return (
+    <VStack as="main" pt={20}>
+      <Text align="center">Classes Panel</Text>
+    </VStack>
+  );
+};
+
+const ItemsPanel: React.FC = () => {
+  return (
+    <VStack as="main" pt={20}>
+      <Text align="center">Items Panel</Text>
+    </VStack>
+  );
+};

@@ -44,6 +44,25 @@ const Button = {
         },
       },
     },
+    solid: {
+      color: 'white',
+      background: 'black',
+      borderBottom: '5px solid black',
+      borderLeft: '3px solid black',
+      borderRadius: '0',
+      borderRight: '5px solid black',
+      borderTop: '3px solid black',
+      _hover: {
+        background: 'gray.700',
+      },
+      _active: {
+        background: 'gray.700',
+        transform: 'scale(0.98)',
+        _disabled: {
+          transform: 'scale(1)',
+        },
+      },
+    },
   },
 };
 
