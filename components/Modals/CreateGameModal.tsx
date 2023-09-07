@@ -6,14 +6,12 @@ import {
   FormLabel,
   Image,
   Input,
-  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Spinner,
   Text,
   Textarea,
   Tooltip,
@@ -24,11 +22,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { encodeAbiParameters, isAddress, parseAbi } from 'viem';
 import { Address, useAccount, usePublicClient, useWalletClient } from 'wagmi';
 
+import { TransactionPending } from '@/components/TransactionPending';
 import { useGlobal } from '@/hooks/useGlobal';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { DEFAULT_CHAIN } from '@/lib/web3';
-import { DEFAULT_DAO_ADDRESSES, EXPLORER_URLS } from '@/utils/constants';
+import { DEFAULT_DAO_ADDRESSES } from '@/utils/constants';
 
 type CreateGameModalProps = {
   reloadGames: () => void;
@@ -181,9 +180,8 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
         (daoAddress.trim() as Address) || DEFAULT_DAO_ADDRESS;
 
       const cid = await onUpload();
-      const gameEmblemExtension = gameEmblem?.name.split('.').pop();
 
-      if (!(cid && gameEmblemExtension)) {
+      if (!cid) {
         toast({
           description: 'Something went wrong uploading your game emblem.',
           position: 'top',
@@ -297,7 +295,6 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
     [
       daoAddress,
       gameDescription,
-      gameEmblem?.name,
       gameFactory,
       gameMasters,
       gameName,
@@ -326,7 +323,13 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
     }
 
     if (txHash) {
-      return <TransactionPending isSyncing={isSyncing} txHash={txHash} />;
+      return (
+        <TransactionPending
+          isSyncing={isSyncing}
+          text="Your game is being created."
+          txHash={txHash}
+        />
+      );
     }
 
     return (
@@ -479,38 +482,5 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
         <ModalBody>{content()}</ModalBody>
       </ModalContent>
     </Modal>
-  );
-};
-
-type TransactionPendingProps = {
-  isSyncing: boolean;
-  txHash: string;
-};
-
-const TransactionPending: React.FC<TransactionPendingProps> = ({
-  isSyncing,
-  txHash,
-}) => {
-  return (
-    <VStack spacing={10}>
-      <Text>Your game is being created.</Text>
-      {EXPLORER_URLS[DEFAULT_CHAIN.id] && (
-        <Text>
-          Click{' '}
-          <Link
-            borderBottom="2px solid black"
-            href={`${EXPLORER_URLS[DEFAULT_CHAIN.id]}/tx/${txHash}`}
-            isExternal
-          >
-            here
-          </Link>{' '}
-          to view your transaction.
-        </Text>
-      )}
-      <Spinner size="xl" />
-      <Text>
-        {isSyncing ? `Subgraph is syncing...` : `Transaction is pending...`}
-      </Text>
-    </VStack>
   );
 };

@@ -1,5 +1,5 @@
 overwrite: true
-schema: 'https://api.studio.thegraph.com/proxy/3024/character-sheets-sepolia/version/latest'
+schema: 'https://api.thegraph.com/subgraphs/name/dan13ram/character-sheets-goerli'
 generates:
   ./graphql/autogen/types.ts:
     documents:

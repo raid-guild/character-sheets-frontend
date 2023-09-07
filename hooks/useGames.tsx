@@ -1,21 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
 import { CombinedError } from 'urql';
 
-import { formatGame } from '@/contexts/GamesContext';
 import {
   useGetGamesByMasterQuery,
   useGetGamesByOwnerQuery,
   useGetGamesQuery,
 } from '@/graphql/autogen/types';
-import { Game } from '@/utils/types';
+import { formatGameMeta } from '@/utils/helpers';
+import { GameMeta } from '@/utils/types';
 
 export const useGames = (): {
-  games: Game[] | null;
+  games: GameMeta[] | null;
   loading: boolean;
   error: CombinedError | undefined;
   reload: () => void;
 } => {
-  const [games, setGames] = useState<Game[] | null>(null);
+  const [games, setGames] = useState<GameMeta[] | null>(null);
   const [isFormatting, setIsFormatting] = useState(false);
 
   const [{ data, fetching, error }, reload] = useGetGamesQuery({
@@ -28,7 +28,7 @@ export const useGames = (): {
   const formatGames = useCallback(async () => {
     setIsFormatting(true);
     const formattedGames = await Promise.all(
-      data?.games.map(g => formatGame(g)) ?? [],
+      data?.games.map(g => formatGameMeta(g)) ?? [],
     );
     setGames(formattedGames);
     setIsFormatting(false);
@@ -55,12 +55,12 @@ export const useGames = (): {
 export const useGamesByOwner = (
   owner: string,
 ): {
-  games: Game[] | null;
+  games: GameMeta[] | null;
   loading: boolean;
   error: CombinedError | undefined;
   reload: () => void;
 } => {
-  const [games, setGames] = useState<Game[] | null>(null);
+  const [games, setGames] = useState<GameMeta[] | null>(null);
   const [isFormatting, setIsFormatting] = useState(false);
 
   const [{ data, fetching, error }, reload] = useGetGamesByOwnerQuery({
@@ -74,7 +74,7 @@ export const useGamesByOwner = (
   const formatGames = useCallback(async () => {
     setIsFormatting(true);
     const formattedGames = await Promise.all(
-      data?.games.map(g => formatGame(g)) ?? [],
+      data?.games.map(g => formatGameMeta(g)) ?? [],
     );
     setGames(formattedGames);
     setIsFormatting(false);
@@ -101,12 +101,12 @@ export const useGamesByOwner = (
 export const useGamesByMaster = (
   master: string,
 ): {
-  games: Game[] | null;
+  games: GameMeta[] | null;
   loading: boolean;
   error: CombinedError | undefined;
   reload: () => void;
 } => {
-  const [games, setGames] = useState<Game[] | null>(null);
+  const [games, setGames] = useState<GameMeta[] | null>(null);
   const [isFormatting, setIsFormatting] = useState(false);
 
   const [{ data, fetching, error }, reload] = useGetGamesByMasterQuery({
@@ -120,7 +120,7 @@ export const useGamesByMaster = (
   const formatGames = useCallback(async () => {
     setIsFormatting(true);
     const formattedGames = await Promise.all(
-      data?.games.map(g => formatGame(g)) ?? [],
+      data?.games.map(g => formatGameMeta(g)) ?? [],
     );
     setGames(formattedGames);
     setIsFormatting(false);

@@ -3,11 +3,22 @@ fragment GlobalInfo on Global {
   gameFactory
 }
 
-fragment GameInfo on Game {
+fragment CharacterInfo on Character {
+  id
+  characterId
+  account
+  player
+  name
+  experience
+  uri
+}
+
+fragment GameMetaInfo on Game {
   id
   uri
   owners
   masters
+  experience
   characters {
     id
   }
@@ -16,5 +27,26 @@ fragment GameInfo on Game {
   }
   items {
     id
+  }
+}
+
+fragment FullGameInfo on Game {
+  id
+  uri
+  owners
+  masters
+  experience
+  characters {
+    ...CharacterInfo
+  }
+  classes {
+    id
+    classId
+    name
+  }
+  items {
+    id
+    itemId
+    name
   }
 }

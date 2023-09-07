@@ -1,10 +1,11 @@
 import { Box, Flex, Image, Link, Text } from '@chakra-ui/react';
+import NextLink from 'next/link';
 
 import { EXPLORER_URLS } from '@/utils/constants';
-import { shortenAddress, shortenText, uriToHttp } from '@/utils/helpers';
-import { Game } from '@/utils/types';
+import { shortenAddress, shortenText } from '@/utils/helpers';
+import { GameMeta } from '@/utils/types';
 
-type GameCardProps = Game & {
+type GameCardProps = GameMeta & {
   chainId: number;
 };
 
@@ -26,28 +27,33 @@ export const GameCard: React.FC<GameCardProps> = ({
       h="475px"
       transition="background 0.3s ease"
       w="360px"
-      _hover={{
-        background: 'gray.100',
-        cursor: 'pointer',
-      }}
     >
-      <Image
-        alt="game emblem"
-        background="gray.400"
-        h="140px"
-        objectFit="cover"
-        src={uriToHttp(image)[0]}
-        w="100%"
-      />
-      <Flex
-        align="center"
-        borderBottom="3px solid black"
-        borderTop="3px solid black"
-        justify="center"
-        h="50px"
-      >
-        <Text fontSize="lg">{name}</Text>
-      </Flex>
+      <NextLink href={`/games/[gameId]`} as={`/games/${id}`}>
+        <Box
+          _hover={{
+            background: 'gray.100',
+            cursor: 'pointer',
+          }}
+        >
+          <Image
+            alt="game emblem"
+            background="gray.400"
+            h="140px"
+            objectFit="cover"
+            src={image}
+            w="100%"
+          />
+          <Flex
+            align="center"
+            borderBottom="3px solid black"
+            borderTop="3px solid black"
+            justify="center"
+            h="50px"
+          >
+            <Text fontSize="lg">{name}</Text>
+          </Flex>
+        </Box>
+      </NextLink>
       <Box p={4}>
         <Text h="100px">
           Description:{' '}
