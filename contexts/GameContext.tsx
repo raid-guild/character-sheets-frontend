@@ -16,6 +16,7 @@ import { Character, Game } from '@/utils/types';
 type GameContextType = {
   game: Game | null;
   character: Character | null;
+  isMaster: boolean;
   loading: boolean;
   error: CombinedError | undefined;
   reload: () => void;
@@ -24,6 +25,7 @@ type GameContextType = {
 const GameContext = createContext<GameContextType>({
   game: null,
   character: null,
+  isMaster: false,
   loading: false,
   error: undefined,
   reload: () => {},
@@ -81,11 +83,17 @@ export const GameProvider: React.FC<{
     }
   }, [data, formatGameData]);
 
+  const isMaster = useMemo(
+    () => game?.masters.includes(address?.toLowerCase() ?? '') ?? false,
+    [game, address],
+  );
+
   return (
     <GameContext.Provider
       value={{
         game,
         character,
+        isMaster,
         loading: fetching || isFormatting || isRefetching,
         error,
         reload: refetch,

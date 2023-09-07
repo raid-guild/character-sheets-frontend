@@ -122,6 +122,31 @@ const Link = {
   },
 };
 
+const Menu = {
+  baseStyle: {
+    list: {
+      background: 'white',
+      border: '3px solid black',
+      borderRadius: 0,
+    },
+    item: {
+      background: 'white',
+      _hover: {
+        background: 'black',
+        color: 'white',
+      },
+      _active: {
+        background: 'black',
+        color: 'white',
+      },
+      _focus: {
+        background: 'black',
+        color: 'white',
+      },
+    },
+  },
+};
+
 const Modal = {
   defaultProps: {
     scrollBehavior: 'inside',
@@ -206,6 +231,7 @@ export const theme = extendTheme({
     FormLabel,
     Input,
     Link,
+    Menu,
     Modal,
     Text,
     Textarea,
