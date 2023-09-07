@@ -6,14 +6,12 @@ import {
   FormLabel,
   Image,
   Input,
-  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Spinner,
   Text,
   Textarea,
   useToast,
@@ -23,11 +21,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { encodeAbiParameters, parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
+import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useUploadFile } from '@/hooks/useUploadFile';
-import { DEFAULT_CHAIN } from '@/lib/web3';
-import { EXPLORER_URLS } from '@/utils/constants';
 
 type JoinGameModalProps = {
   isOpen: boolean;
@@ -274,7 +271,13 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
     }
 
     if (txHash) {
-      return <TransactionPending isSyncing={isSyncing} txHash={txHash} />;
+      return (
+        <TransactionPending
+          isSyncing={isSyncing}
+          text="Your character is being created."
+          txHash={txHash}
+        />
+      );
     }
 
     return (
@@ -377,38 +380,5 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
         <ModalBody>{content()}</ModalBody>
       </ModalContent>
     </Modal>
-  );
-};
-
-type TransactionPendingProps = {
-  isSyncing: boolean;
-  txHash: string;
-};
-
-const TransactionPending: React.FC<TransactionPendingProps> = ({
-  isSyncing,
-  txHash,
-}) => {
-  return (
-    <VStack spacing={10}>
-      <Text>Your character is being created.</Text>
-      {EXPLORER_URLS[DEFAULT_CHAIN.id] && (
-        <Text>
-          Click{' '}
-          <Link
-            borderBottom="2px solid black"
-            href={`${EXPLORER_URLS[DEFAULT_CHAIN.id]}/tx/${txHash}`}
-            isExternal
-          >
-            here
-          </Link>{' '}
-          to view your transaction.
-        </Text>
-      )}
-      <Spinner size="xl" />
-      <Text>
-        {isSyncing ? `Subgraph is syncing...` : `Transaction is pending...`}
-      </Text>
-    </VStack>
   );
 };
