@@ -4,6 +4,10 @@ import {
   HStack,
   Image,
   Link,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Text,
   VStack,
 } from '@chakra-ui/react';
@@ -14,6 +18,7 @@ import { Character } from '@/utils/types';
 
 type CharacterCardProps = Character & {
   chainId: number;
+  isMaster: boolean;
 };
 
 export const CharacterCard: React.FC<CharacterCardProps> = ({
@@ -22,6 +27,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
   name,
   description,
   image,
+  isMaster,
 }) => {
   return (
     <HStack
@@ -42,7 +48,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
           w="100px"
         />
         <Button size="sm">View</Button>
-        <Button size="sm">Actions</Button>
+        <ActionMenu isMaster={isMaster} />
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="lg" fontWeight="bold">
@@ -92,6 +98,7 @@ export const SmallCharacterCard: React.FC<CharacterCardProps> = ({
   name,
   description,
   image,
+  isMaster,
 }) => {
   return (
     <HStack
@@ -106,7 +113,7 @@ export const SmallCharacterCard: React.FC<CharacterCardProps> = ({
       <VStack align="center" h="100%" w="35%">
         <Image alt="character avatar" h="60%" objectFit="cover" src={image} />
         <Button size="sm">View</Button>
-        <Button size="sm">Actions</Button>
+        <ActionMenu isMaster={isMaster} />
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="md" fontWeight="bold">
@@ -137,5 +144,46 @@ export const SmallCharacterCard: React.FC<CharacterCardProps> = ({
         <Text fontSize="xs">Items: 0</Text>
       </VStack>
     </HStack>
+  );
+};
+
+type ActionMenuProps = {
+  isMaster: boolean;
+};
+
+const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
+  return (
+    <Menu>
+      <MenuButton as={Button} size="sm">
+        Actions
+      </MenuButton>
+      <MenuList>
+        <Text
+          borderBottom="1px solid black"
+          fontSize="12px"
+          p={3}
+          textAlign="center"
+          variant="heading"
+        >
+          Player Actions
+        </Text>
+        <MenuItem>Edit</MenuItem>
+        {isMaster && (
+          <>
+            <Text
+              borderBottom="1px solid black"
+              borderTop="3px solid black"
+              fontSize="12px"
+              p={3}
+              textAlign="center"
+              variant="heading"
+            >
+              GameMaster Actions
+            </Text>
+            <MenuItem>Give XP</MenuItem>
+          </>
+        )}
+      </MenuList>
+    </Menu>
   );
 };

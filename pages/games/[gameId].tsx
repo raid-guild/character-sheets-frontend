@@ -42,7 +42,7 @@ export default function GamePageOuter(): JSX.Element {
 }
 
 function GamePage(): JSX.Element {
-  const { game, character, loading } = useGame();
+  const { game, character, isMaster, loading } = useGame();
   const { isConnected } = useAccount();
   const joinGameModal = useDisclosure();
   const { chain } = useNetwork();
@@ -135,7 +135,7 @@ function GamePage(): JSX.Element {
         </HStack>
 
         {character ? (
-          <CharacterCard {...character} chainId={chainId} />
+          <CharacterCard {...character} chainId={chainId} isMaster={isMaster} />
         ) : (
           <Button onClick={joinGameModal.onOpen}>Join this Game</Button>
         )}
@@ -178,7 +178,11 @@ function GamePage(): JSX.Element {
           </Button>
         </SimpleGrid>
         {activeTab === 'characters' && (
-          <CharactersPanel chainId={chainId} characters={characters} />
+          <CharactersPanel
+            chainId={chainId}
+            characters={characters}
+            isMaster={isMaster}
+          />
         )}
         {activeTab === 'xp' && <XPPanel />}
         {activeTab === 'classes' && <ClassesPanel />}
@@ -198,12 +202,18 @@ function GamePage(): JSX.Element {
 const CharactersPanel: React.FC<{
   chainId: number;
   characters: Character[];
-}> = ({ chainId, characters }) => {
+  isMaster: boolean;
+}> = ({ chainId, characters, isMaster }) => {
   if (characters.length > 0) {
     return (
       <SimpleGrid columns={2} spacing={4} w="100%">
         {characters.map(c => (
-          <SmallCharacterCard key={c.id} {...c} chainId={chainId} />
+          <SmallCharacterCard
+            key={c.id}
+            {...c}
+            chainId={chainId}
+            isMaster={isMaster}
+          />
         ))}
       </SimpleGrid>
     );

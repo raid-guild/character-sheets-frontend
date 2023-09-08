@@ -16,6 +16,7 @@ import { Character, Game } from '@/utils/types';
 type GameContextType = {
   game: Game | null;
   character: Character | null;
+  isMaster: boolean;
   loading: boolean;
   error: CombinedError | undefined;
   reload: () => void;
@@ -24,6 +25,7 @@ type GameContextType = {
 const GameContext = createContext<GameContextType>({
   game: null,
   character: null,
+  isMaster: false,
   loading: false,
   error: undefined,
   reload: () => {},
@@ -37,7 +39,6 @@ export const GameProvider: React.FC<{
 }> = ({ children, gameId }) => {
   const { address } = useAccount();
   const [game, setGame] = useState<Game | null>(null);
-  const [character, setCharacter] = useState<Character | null>(null);
   const [isFormatting, setIsFormatting] = useState(false);
   const [isRefetching, setIsRefetching] = useState(false);
 
@@ -56,15 +57,10 @@ export const GameProvider: React.FC<{
   const formatGameData = useCallback(async () => {
     setIsFormatting(true);
     if (data?.game) {
-      const formattedGame = await formatGame(data?.game);
+      const formattedGame = await formatGame(data.game);
       setGame(formattedGame);
-      const c = formattedGame?.characters.find(
-        c => c.player.toLowerCase() === address?.toLowerCase(),
-      );
-      setCharacter(c ?? null);
     } else {
       setGame(null);
-      setCharacter(null);
     }
     setIsFormatting(false);
     setIsRefetching(false);
@@ -81,11 +77,24 @@ export const GameProvider: React.FC<{
     }
   }, [data, formatGameData]);
 
+  const character = useMemo(() => {
+    if (!game || !address) return null;
+    return (
+      game.characters.find(c => c.player.toLowerCase() === address) ?? null
+    );
+  }, [game, address]);
+
+  const isMaster = useMemo(
+    () => game?.masters.includes(address?.toLowerCase() ?? '') ?? false,
+    [game, address],
+  );
+
   return (
     <GameContext.Provider
       value={{
         game,
         character,
+        isMaster,
         loading: fetching || isFormatting || isRefetching,
         error,
         reload: refetch,

@@ -16,7 +16,7 @@ import { useGamesContext } from '@/contexts/GamesContext';
 export default function MyGames(): JSX.Element {
   const { isConnected } = useAccount();
   const createGameModal = useDisclosure();
-  const { allGames, loading, reload } = useGamesContext();
+  const { myGames, loading, reload } = useGamesContext();
   const { chain } = useNetwork();
 
   const [isConnectedAndMount, setIsConnectedAndMounted] = useState(false);
@@ -49,13 +49,13 @@ export default function MyGames(): JSX.Element {
     return (
       <VStack as="main" pt={10} pb={20} spacing={10}>
         <Button onClick={createGameModal.onOpen}>Create a Game</Button>
-        {!allGames || allGames.length === 0 ? (
+        {!myGames || myGames.length === 0 ? (
           <VStack as="main" pt={10}>
             <Text>No games found.</Text>
           </VStack>
         ) : (
           <Flex gap={10} justify="center" w="1200px" wrap="wrap">
-            {allGames.map(game => (
+            {myGames.map(game => (
               <GameCard
                 key={game.id}
                 chainId={chain?.id ?? 11155111}
