@@ -9,12 +9,16 @@ import {
   MenuItem,
   MenuList,
   Text,
+  useDisclosure,
   VStack,
 } from '@chakra-ui/react';
+import { Address } from 'viem';
 
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character } from '@/utils/types';
+
+import { DropExperienceModal } from './Modals/DropExperienceModal';
 
 type CharacterCardProps = Character & {
   chainId: number;
@@ -22,6 +26,7 @@ type CharacterCardProps = Character & {
 };
 
 export const CharacterCard: React.FC<CharacterCardProps> = ({
+  experience,
   chainId,
   account,
   name,
@@ -48,7 +53,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
           w="100px"
         />
         <Button size="sm">View</Button>
-        <ActionMenu isMaster={isMaster} />
+        <ActionMenu account={account} isMaster={isMaster} name={name} />
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="lg" fontWeight="bold">
@@ -85,7 +90,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
             {shortenText('Villager', 70)}
           </Text>
         </Text>
-        <Text>XP: 0</Text>
+        <Text>XP: {experience}</Text>
         <Text>Items: 0</Text>
       </VStack>
     </HStack>
@@ -93,6 +98,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
 };
 
 export const SmallCharacterCard: React.FC<CharacterCardProps> = ({
+  experience,
   chainId,
   account,
   name,
@@ -113,7 +119,7 @@ export const SmallCharacterCard: React.FC<CharacterCardProps> = ({
       <VStack align="center" h="100%" w="35%">
         <Image alt="character avatar" h="60%" objectFit="cover" src={image} />
         <Button size="sm">View</Button>
-        <ActionMenu isMaster={isMaster} />
+        <ActionMenu account={account} isMaster={isMaster} name={name} />
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="md" fontWeight="bold">
@@ -140,7 +146,7 @@ export const SmallCharacterCard: React.FC<CharacterCardProps> = ({
         </Link>
         <Box background="black" h="3px" my={4} w={20} />
         <Text fontSize="xs">Classes: {shortenText('Villager', 32)}</Text>
-        <Text fontSize="xs">XP: 0</Text>
+        <Text fontSize="xs">XP: {experience}</Text>
         <Text fontSize="xs">Items: 0</Text>
       </VStack>
     </HStack>
@@ -148,42 +154,55 @@ export const SmallCharacterCard: React.FC<CharacterCardProps> = ({
 };
 
 type ActionMenuProps = {
+  account: string;
   isMaster: boolean;
+  name: string;
 };
 
-const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
+const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster, account, name }) => {
+  const giveExpModal = useDisclosure();
   return (
-    <Menu>
-      <MenuButton as={Button} size="sm">
-        Actions
-      </MenuButton>
-      <MenuList>
-        <Text
-          borderBottom="1px solid black"
-          fontSize="12px"
-          p={3}
-          textAlign="center"
-          variant="heading"
-        >
-          Player Actions
-        </Text>
-        <MenuItem>Edit</MenuItem>
-        {isMaster && (
-          <>
-            <Text
-              borderBottom="1px solid black"
-              borderTop="3px solid black"
-              fontSize="12px"
-              p={3}
-              textAlign="center"
-              variant="heading"
-            >
-              GameMaster Actions
-            </Text>
-            <MenuItem>Give XP</MenuItem>
-          </>
-        )}
-      </MenuList>
-    </Menu>
+    <>
+      <Menu>
+        <MenuButton as={Button} size="sm">
+          Actions
+        </MenuButton>
+        <MenuList>
+          <Text
+            borderBottom="1px solid black"
+            fontSize="12px"
+            p={3}
+            textAlign="center"
+            variant="heading"
+          >
+            Player Actions
+          </Text>
+          <MenuItem>Edit</MenuItem>
+          {isMaster && (
+            <>
+              <Text
+                borderBottom="1px solid black"
+                borderTop="3px solid black"
+                fontSize="12px"
+                p={3}
+                textAlign="center"
+                variant="heading"
+              >
+                GameMaster Actions
+              </Text>
+              <MenuItem onClick={giveExpModal.onOpen}>Give XP</MenuItem>
+            </>
+          )}
+        </MenuList>
+      </Menu>
+      {isMaster && (
+        <DropExperienceModal
+          characterAccount={account as Address}
+          characterName={name}
+          isOpen={giveExpModal.isOpen}
+          onClose={giveExpModal.onClose}
+        />
+      )}
+    </>
   );
 };

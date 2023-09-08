@@ -64,7 +64,7 @@ export const GameProvider: React.FC<{
     }
     setIsFormatting(false);
     setIsRefetching(false);
-  }, [data, address]);
+  }, [data]);
 
   const refetch = useCallback(async () => {
     setIsRefetching(true);

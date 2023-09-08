@@ -14,25 +14,32 @@ import { useEffect, useState } from 'react';
 import { isAddress } from 'viem';
 import { useAccount, useNetwork } from 'wagmi';
 
-import { CharacterCard, SmallCharacterCard } from '@/components/CharacterCard';
+import { CharacterCard } from '@/components/CharacterCard';
+import { CharactersPanel } from '@/components/CharactersPanel';
+import { ClassesPanel } from '@/components/ClassesPanel';
+import { ItemsPanel } from '@/components/ItemsPanel';
 import { JoinGameModal } from '@/components/Modals/JoinGameModal';
+import { XPPanel } from '@/components/XPPanel';
 import { GameProvider, useGame } from '@/contexts/GameContext';
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
-import { Character } from '@/utils/types';
 
 export default function GamePageOuter(): JSX.Element {
   const {
     query: { gameId },
     push,
+    isReady,
   } = useRouter();
 
   useEffect(() => {
-    if (!gameId || typeof gameId !== 'string' || !isAddress(gameId)) {
+    if (
+      isReady &&
+      (!gameId || typeof gameId !== 'string' || !isAddress(gameId))
+    ) {
       push('/');
     }
-  }, [gameId, push]);
+  }, [gameId, isReady, push]);
 
   return (
     <GameProvider gameId={gameId}>
@@ -198,53 +205,3 @@ function GamePage(): JSX.Element {
     </>
   );
 }
-
-const CharactersPanel: React.FC<{
-  chainId: number;
-  characters: Character[];
-  isMaster: boolean;
-}> = ({ chainId, characters, isMaster }) => {
-  if (characters.length > 0) {
-    return (
-      <SimpleGrid columns={2} spacing={4} w="100%">
-        {characters.map(c => (
-          <SmallCharacterCard
-            key={c.id}
-            {...c}
-            chainId={chainId}
-            isMaster={isMaster}
-          />
-        ))}
-      </SimpleGrid>
-    );
-  }
-  return (
-    <VStack as="main" pt={20}>
-      <Text align="center">No characters found.</Text>
-    </VStack>
-  );
-};
-
-const XPPanel: React.FC = () => {
-  return (
-    <VStack as="main" pt={20}>
-      <Text align="center">XP Panel</Text>
-    </VStack>
-  );
-};
-
-const ClassesPanel: React.FC = () => {
-  return (
-    <VStack as="main" pt={20}>
-      <Text align="center">Classes Panel</Text>
-    </VStack>
-  );
-};
-
-const ItemsPanel: React.FC = () => {
-  return (
-    <VStack as="main" pt={20}>
-      <Text align="center">Items Panel</Text>
-    </VStack>
-  );
-};
