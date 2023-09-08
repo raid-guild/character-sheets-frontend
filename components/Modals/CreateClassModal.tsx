@@ -69,10 +69,6 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
     );
   }, [classDescription, classEmblem, className, invalidClassDescription]);
 
-  useEffect(() => {
-    setShowError(false);
-  }, []);
-
   const resetData = useCallback(() => {
     setClassName('');
     setClassDescription('');
@@ -210,6 +206,11 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
           });
           return;
         }
+        toast({
+          description: `Your class was successfully created!`,
+          position: 'top',
+          status: 'success',
+        });
         setIsSynced(true);
         reloadGame();
       } catch (e) {
@@ -241,6 +242,8 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   const isDisabled = isLoading || isUploading;
 
   const content = () => {
+    // TODO: This isSynced check is unnecessary since the modal unmounts when the data is reloaded
+    // We should move all action modals to a higher level component to avoid this
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>

@@ -41,7 +41,7 @@ export const ItemsPanel: React.FC = () => {
     );
   }
   return (
-    <VStack as="main" pt={10} pb={20} spacing={10}>
+    <VStack as="main" pt={10} pb={20} spacing={10} w="100%">
       {isMaster && (
         <Button onClick={createItemModal.onOpen}>Create an Item</Button>
       )}

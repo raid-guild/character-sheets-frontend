@@ -105,9 +105,7 @@ export const formatClass = async (
   };
 };
 
-export const formatItem = async (
-  item: ItemInfoFragment,
-): Promise<Item> => {
+export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
   const metadata = await fetchMetadata(uriToHttp(item.uri)[0]);
 
   return {
@@ -120,7 +118,6 @@ export const formatItem = async (
     supply: item.supply,
   };
 };
-
 
 export const formatGameMeta = async (
   game: GameMetaInfoFragment,
