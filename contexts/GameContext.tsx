@@ -80,7 +80,7 @@ export const GameProvider: React.FC<{
   const character = useMemo(() => {
     if (!game || !address) return null;
     return (
-      game.characters.find(c => c.player.toLowerCase() === address) ?? null
+      game.characters.find(c => c.player === address.toLowerCase()) ?? null
     );
   }, [game, address]);
 
