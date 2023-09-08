@@ -13,6 +13,21 @@ fragment CharacterInfo on Character {
   uri
 }
 
+fragment ClassInfo on Class {
+  id
+  classId
+  name
+  uri
+}
+
+fragment ItemInfo on Item {
+  id
+  itemId
+  name
+  uri
+  supply
+}
+
 fragment GameMetaInfo on Game {
   id
   uri
@@ -42,13 +57,9 @@ fragment FullGameInfo on Game {
     ...CharacterInfo
   }
   classes {
-    id
-    classId
-    name
+    ...ClassInfo
   }
   items {
-    id
-    itemId
-    name
+    ...ItemInfo
   }
 }

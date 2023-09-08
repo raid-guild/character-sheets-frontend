@@ -38,9 +38,10 @@ export type Character = Metadata & {
   uri: string;
 };
 
-export type Class = {
+export type Class = Metadata & {
   id: string;
   classId: string;
+  uri: string;
   name: string;
 };
 
