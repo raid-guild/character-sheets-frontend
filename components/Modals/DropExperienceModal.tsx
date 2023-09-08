@@ -24,6 +24,7 @@ import { waitUntilBlock } from '@/hooks/useGraphHealth';
 
 type DropExperienceModalProps = {
   characterAccount: Address;
+  characterName: string;
   isOpen: boolean;
   onClose: () => void;
 };
@@ -32,6 +33,7 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
   isOpen,
   onClose,
   characterAccount,
+  characterName,
 }) => {
   const { game, reload: reloadGame, isMaster } = useGame();
   const { data: walletClient } = useWalletClient();
@@ -90,7 +92,7 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
         return;
       }
 
-      if (!game) {
+      if (!game?.itemsAddress) {
         toast({
           description: `Could not find the game.`,
           position: 'top',
@@ -145,12 +147,16 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
           });
           return;
         }
+        toast({
+          description: `You gave ${amount} XP to ${characterName}!`,
+          position: 'top',
+          status: 'success',
+        });
         setIsSynced(true);
         reloadGame();
       } catch (e) {
         toast({
-          description:
-            'Something went wrong dropping experience to this character.',
+          description: `Something went wrong giving XP to ${characterName}.`,
           position: 'top',
           status: 'error',
         });
@@ -167,6 +173,7 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
       publicClient,
       game,
       characterAccount,
+      characterName,
       reloadGame,
       toast,
       walletClient,
@@ -177,10 +184,12 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
   const isDisabled = isLoading;
 
   const content = () => {
+    // TODO: This isSynced check is unnecessary since the modal unmounts when the data is reloaded
+    // We should move all action modals to a higher level component to avoid this
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>
-          <Text>Experienced successfully dropped!</Text>
+          <Text>XP successfully given!</Text>
           <Button onClick={onClose} variant="outline">
             Close
           </Button>
@@ -192,7 +201,7 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text="Dropping experience to this character."
+          text={`Giving ${amount} XP to ${characterName}...`}
           txHash={txHash}
         />
       );
@@ -217,10 +226,10 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
           alignSelf="flex-end"
           isDisabled={isDisabled}
           isLoading={isLoading}
-          loadingText="Dropping..."
+          loadingText="Giving..."
           type="submit"
         >
-          Drop
+          Give
         </Button>
       </VStack>
     );
@@ -236,7 +245,7 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Drop Experience</Text>
+          <Text>Give XP</Text>
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>

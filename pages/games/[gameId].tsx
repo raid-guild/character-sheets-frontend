@@ -29,13 +29,17 @@ export default function GamePageOuter(): JSX.Element {
   const {
     query: { gameId },
     push,
+    isReady,
   } = useRouter();
 
   useEffect(() => {
-    if (!gameId || typeof gameId !== 'string' || !isAddress(gameId)) {
+    if (
+      isReady &&
+      (!gameId || typeof gameId !== 'string' || !isAddress(gameId))
+    ) {
       push('/');
     }
-  }, [gameId, push]);
+  }, [gameId, isReady, push]);
 
   return (
     <GameProvider gameId={gameId}>

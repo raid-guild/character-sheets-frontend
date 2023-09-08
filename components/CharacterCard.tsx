@@ -53,7 +53,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
           w="100px"
         />
         <Button size="sm">View</Button>
-        <ActionMenu isMaster={isMaster} account={account} />
+        <ActionMenu account={account} isMaster={isMaster} name={name} />
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="lg" fontWeight="bold">
@@ -119,7 +119,7 @@ export const SmallCharacterCard: React.FC<CharacterCardProps> = ({
       <VStack align="center" h="100%" w="35%">
         <Image alt="character avatar" h="60%" objectFit="cover" src={image} />
         <Button size="sm">View</Button>
-        <ActionMenu isMaster={isMaster} account={account} />
+        <ActionMenu account={account} isMaster={isMaster} name={name} />
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="md" fontWeight="bold">
@@ -154,11 +154,12 @@ export const SmallCharacterCard: React.FC<CharacterCardProps> = ({
 };
 
 type ActionMenuProps = {
-  isMaster: boolean;
   account: string;
+  isMaster: boolean;
+  name: string;
 };
 
-const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster, account }) => {
+const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster, account, name }) => {
   const giveExpModal = useDisclosure();
   return (
     <>
@@ -189,7 +190,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster, account }) => {
               >
                 GameMaster Actions
               </Text>
-              <MenuItem onClick={giveExpModal.onOpen}>Drop XP</MenuItem>
+              <MenuItem onClick={giveExpModal.onOpen}>Give XP</MenuItem>
             </>
           )}
         </MenuList>
@@ -197,6 +198,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster, account }) => {
       {isMaster && (
         <DropExperienceModal
           characterAccount={account as Address}
+          characterName={name}
           isOpen={giveExpModal.isOpen}
           onClose={giveExpModal.onClose}
         />
