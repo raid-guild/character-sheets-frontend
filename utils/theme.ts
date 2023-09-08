@@ -14,6 +14,17 @@ const Button = {
   defaultProps: {
     variant: 'outline',
   },
+  sizes: {
+    sm: {
+      fontSize: '12px',
+      w: '100px',
+    },
+    md: {
+      fontSize: '16px',
+      h: '50px',
+      w: '180px',
+    },
+  },
   variants: {
     outline: {
       color: 'black',
@@ -23,12 +34,29 @@ const Button = {
       borderRight: '5px solid black',
       borderTop: '3px solid black',
       borderColor: 'white',
-      h: '50px',
-      w: '180px',
       _hover: {
         background: 'gray.100',
       },
       _active: {
+        transform: 'scale(0.98)',
+        _disabled: {
+          transform: 'scale(1)',
+        },
+      },
+    },
+    solid: {
+      color: 'white',
+      background: 'black',
+      borderBottom: '5px solid black',
+      borderLeft: '3px solid black',
+      borderRadius: '0',
+      borderRight: '5px solid black',
+      borderTop: '3px solid black',
+      _hover: {
+        background: 'gray.700',
+      },
+      _active: {
+        background: 'gray.700',
         transform: 'scale(0.98)',
         _disabled: {
           transform: 'scale(1)',
