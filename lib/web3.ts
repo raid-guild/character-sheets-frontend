@@ -1,7 +1,6 @@
 import { getDefaultWallets } from '@rainbow-me/rainbowkit';
 import { Chain, configureChains, createConfig } from 'wagmi';
 import { goerli, sepolia } from 'wagmi/chains';
-import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { infuraProvider } from 'wagmi/providers/infura';
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
 import { publicProvider } from 'wagmi/providers/public';
