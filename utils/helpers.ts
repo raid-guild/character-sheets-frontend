@@ -1,10 +1,12 @@
 import {
   CharacterInfoFragment,
+  ClassInfoFragment,
   FullGameInfoFragment,
   GameMetaInfoFragment,
+  ItemInfoFragment,
 } from '@/graphql/autogen/types';
 
-import { Character, Game, GameMeta, Metadata } from './types';
+import { Character, Class, Game, GameMeta, Item, Metadata } from './types';
 
 /**
  * Given a URI that may be ipfs, ipns, http, https, ar, or data protocol, return the fetch-able http(s) URLs for the same content
@@ -88,6 +90,35 @@ export const formatCharacter = async (
   };
 };
 
+export const formatClass = async (
+  classEntity: ClassInfoFragment,
+): Promise<Class> => {
+  const metadata = await fetchMetadata(uriToHttp(classEntity.uri)[0]);
+
+  return {
+    id: classEntity.id,
+    uri: classEntity.uri,
+    name: classEntity.name ?? metadata.name,
+    description: metadata.description,
+    image: uriToHttp(metadata.image)[0],
+    classId: classEntity.classId,
+  };
+};
+
+export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
+  const metadata = await fetchMetadata(uriToHttp(item.uri)[0]);
+
+  return {
+    id: item.id,
+    uri: item.uri,
+    name: item.name ?? metadata.name,
+    description: metadata.description,
+    image: uriToHttp(metadata.image)[0],
+    itemId: item.itemId,
+    supply: item.supply,
+  };
+};
+
 export const formatGameMeta = async (
   game: GameMetaInfoFragment,
 ): Promise<GameMeta> => {
@@ -122,8 +153,8 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
     characters: await Promise.all(game.characters.map(formatCharacter)),
-    classes: game.classes,
-    items: game.items,
+    classes: await Promise.all(game.classes.map(formatClass)),
+    items: await Promise.all(game.items.map(formatItem)),
     experience: game.experience,
   };
 };

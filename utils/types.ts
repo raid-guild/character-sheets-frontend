@@ -38,14 +38,17 @@ export type Character = Metadata & {
   uri: string;
 };
 
-export type Class = {
+export type Class = Metadata & {
   id: string;
   classId: string;
+  uri: string;
   name: string;
 };
 
-export type Item = {
+export type Item = Metadata & {
   id: string;
   itemId: string;
   name: string;
+  uri: string;
+  supply: string;
 };
