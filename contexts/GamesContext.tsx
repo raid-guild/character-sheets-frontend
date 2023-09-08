@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import { CombinedError } from 'urql';
@@ -35,7 +36,6 @@ export const GamesProvider: React.FC<{
 }> = ({ children }) => {
   const { address } = useAccount();
   const [allGames, setAllGames] = useState<GameMeta[] | null>(null);
-  const [myGames, setMyGames] = useState<GameMeta[] | null>(null);
   const [isFormatting, setIsFormatting] = useState(false);
   const [isRefetching, setIsRefetching] = useState(false);
 
@@ -52,16 +52,10 @@ export const GamesProvider: React.FC<{
     const formattedGames = await Promise.all(
       data?.games.map(g => formatGameMeta(g)) ?? [],
     );
-    if (address) {
-      const gamesByMaster = formattedGames.filter(g =>
-        g.masters.includes(address),
-      );
-      setMyGames(gamesByMaster);
-    }
     setAllGames(formattedGames);
     setIsFormatting(false);
     setIsRefetching(false);
-  }, [address, data]);
+  }, [data]);
 
   const refetch = useCallback(async () => {
     setIsRefetching(true);
@@ -73,6 +67,11 @@ export const GamesProvider: React.FC<{
       formatGames();
     }
   }, [data, formatGames]);
+
+  const myGames = useMemo(() => {
+    if (!allGames || !address) return null;
+    return allGames.filter(g => g.masters.includes(address.toLowerCase()));
+  }, [allGames, address]);
 
   return (
     <GamesContext.Provider
