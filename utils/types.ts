@@ -45,8 +45,10 @@ export type Class = Metadata & {
   name: string;
 };
 
-export type Item = {
+export type Item = Metadata & {
   id: string;
   itemId: string;
   name: string;
+  uri: string;
+  supply: string;
 };
