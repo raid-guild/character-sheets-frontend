@@ -17,6 +17,8 @@ export type GameMeta = Metadata & {
 
 export type Game = Metadata & {
   id: string;
+  itemsAddress: string;
+  classesAddress: string;
   uri: string;
   owners: string[];
   masters: string[];

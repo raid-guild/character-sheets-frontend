@@ -113,6 +113,8 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
 
   return {
     id: game.id,
+    classesAddress: game.classesAddress,
+    itemsAddress: game.itemsAddress,
     uri: game.uri,
     owners: game.owners,
     masters: game.masters,

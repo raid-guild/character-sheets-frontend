@@ -32,6 +32,8 @@ fragment GameMetaInfo on Game {
 
 fragment FullGameInfo on Game {
   id
+  classesAddress
+  itemsAddress
   uri
   owners
   masters
