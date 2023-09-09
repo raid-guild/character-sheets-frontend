@@ -1,4 +1,9 @@
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Button,
   HStack,
   Image,
@@ -101,6 +106,7 @@ function GamePage(): JSX.Element {
       characters,
       classes,
       items,
+      masters,
     } = game;
     const chainId = chain?.id ?? DEFAULT_CHAIN.id;
 
@@ -140,6 +146,43 @@ function GamePage(): JSX.Element {
             src={image}
           />
         </HStack>
+        <Accordion allowToggle w="100%">
+          <AccordionItem>
+            <AccordionButton>
+              <HStack justify="space-between" w="100%">
+                <div />
+                <Text>GameMasters</Text>
+                <AccordionIcon />
+              </HStack>
+            </AccordionButton>
+            <AccordionPanel>
+              <VStack align="stretch" spacing={4}>
+                {masters.map(master => (
+                  <Link
+                    alignItems="center"
+                    color="blue"
+                    display="flex"
+                    fontSize="sm"
+                    justifyContent="center"
+                    href={`${EXPLORER_URLS[chainId]}/address/${master}`}
+                    key={`gm-${master}`}
+                    gap={2}
+                    isExternal
+                    p={0}
+                  >
+                    {master}
+                    <Image
+                      alt="link to new tab"
+                      height="14px"
+                      src="/new-tab.svg"
+                      width="14px"
+                    />
+                  </Link>
+                ))}
+              </VStack>
+            </AccordionPanel>
+          </AccordionItem>
+        </Accordion>
 
         {character ? (
           <CharacterCard {...character} chainId={chainId} isMaster={isMaster} />
