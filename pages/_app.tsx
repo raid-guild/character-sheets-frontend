@@ -10,7 +10,6 @@ import { Provider } from 'urql';
 import { WagmiConfig } from 'wagmi';
 
 import { Layout } from '@/components/Layout';
-import { ActionsProvider } from '@/contexts/ActionsContext';
 import { GamesProvider } from '@/contexts/GamesContext';
 import { client } from '@/graphql/client';
 import { useGraphHealth } from '@/hooks/useGraphHealth';
@@ -44,11 +43,9 @@ export default function App({
             <RainbowKitProvider chains={chains} theme={darkTheme()}>
               <Analytics />
               <GamesProvider>
-                <ActionsProvider>
-                  <Layout>
-                    <Component {...pageProps} />
-                  </Layout>
-                </ActionsProvider>
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
               </GamesProvider>
             </RainbowKitProvider>
           </WagmiConfig>
