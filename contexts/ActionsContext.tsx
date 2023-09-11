@@ -22,10 +22,8 @@ type ActionsContextType = {
   selectCharacter: (character: Character) => void;
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
-
-  editNameModal: ReturnType<typeof useDisclosure> | undefined;
-
   assignClassModal: ReturnType<typeof useDisclosure> | undefined;
+  editNameModal: ReturnType<typeof useDisclosure> | undefined;
   giveExpModal: ReturnType<typeof useDisclosure> | undefined;
 };
 
@@ -37,10 +35,8 @@ const ActionsContext = createContext<ActionsContextType>({
   selectCharacter: () => {},
 
   openActionModal: () => {},
-
-  editNameModal: undefined,
-
   assignClassModal: undefined,
+  editNameModal: undefined,
   giveExpModal: undefined,
 });
 
@@ -50,11 +46,10 @@ export const ActionsProvider: React.FC<{
   children: JSX.Element;
 }> = ({ children }) => {
   const { address } = useAccount();
-  const { isMaster } = useGame();
-
-  const editNameModal = useDisclosure();
+  const { game, isMaster } = useGame();
 
   const assignClassModal = useDisclosure();
+  const editNameModal = useDisclosure();
   const giveExpModal = useDisclosure();
 
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
@@ -72,15 +67,24 @@ export const ActionsProvider: React.FC<{
 
   const gmActions = useMemo(() => {
     if (isMaster) {
+      if (game?.classes.length === 0) {
+        return Object.keys(GameMasterActions)
+          .map(key => GameMasterActions[key as keyof typeof GameMasterActions])
+          .filter(action => action !== GameMasterActions.ASSIGN_CLASS);
+      }
+
       return Object.keys(GameMasterActions).map(
         key => GameMasterActions[key as keyof typeof GameMasterActions],
       );
     }
     return [];
-  }, [isMaster]);
+  }, [game, isMaster]);
 
   const openActionModal = (action: PlayerActions | GameMasterActions) => {
     switch (action) {
+      case GameMasterActions.ASSIGN_CLASS:
+        assignClassModal.onOpen();
+        break;
       case PlayerActions.EDIT_NAME:
         editNameModal.onOpen();
         break;
@@ -103,10 +107,8 @@ export const ActionsProvider: React.FC<{
           setSelectedCharacter(character),
 
         openActionModal,
-
-        editNameModal,
-
         assignClassModal,
+        editNameModal,
         giveExpModal,
       }}
     >
