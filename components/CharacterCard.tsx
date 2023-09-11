@@ -21,7 +21,8 @@ export const CharacterCard: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
-  const { experience, account, name, description, image } = character;
+  const { account, classes, description, experience, image, name } = character;
+  const readableClasses = classes.map(c => c.name).join(', ');
 
   return (
     <HStack
@@ -76,7 +77,9 @@ export const CharacterCard: React.FC<{
         <Text>
           Classes:{' '}
           <Text as="span" fontSize="xs">
-            {shortenText('Villager', 70)}
+            {classes.length === 0
+              ? 'Villager'
+              : shortenText(readableClasses, 32)}
           </Text>
         </Text>
         <Text>XP: {experience}</Text>
@@ -90,7 +93,8 @@ export const SmallCharacterCard: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
-  const { experience, account, name, description, image } = character;
+  const { account, classes, description, experience, image, name } = character;
+  const readableClasses = classes.map(c => c.name).join(', ');
 
   return (
     <HStack
@@ -131,7 +135,10 @@ export const SmallCharacterCard: React.FC<{
           />
         </Link>
         <Box background="black" h="3px" my={4} w={20} />
-        <Text fontSize="xs">Classes: {shortenText('Villager', 32)}</Text>
+        <Text fontSize="xs">
+          Classes:{' '}
+          {classes.length === 0 ? 'Villager' : shortenText(readableClasses, 32)}
+        </Text>
         <Text fontSize="xs">XP: {experience}</Text>
         <Text fontSize="xs">Items: 0</Text>
       </VStack>
