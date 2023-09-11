@@ -13,7 +13,7 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
@@ -38,8 +38,14 @@ export const AssignClassModal: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
+  const invalidClass = useMemo(() => {
+    const selectedCharacterClasses =
+      selectedCharacter?.classes.map(c => c.classId) ?? [];
+    return selectedCharacterClasses.includes(classId);
+  }, [classId, selectedCharacter]);
+
   const options = game?.classes.map(c => c.classId) ?? [];
-  const { getRootProps, getRadioProps } = useRadioGroup({
+  const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
     defaultValue: '1',
     onChange: setClassId,
@@ -47,11 +53,13 @@ export const AssignClassModal: React.FC = () => {
   const group = getRootProps();
 
   const resetData = useCallback(() => {
+    setValue('1');
+    setClassId('1');
     setIsAssigning(false);
     setTxHash(null);
     setIsSyncing(false);
     setIsSynced(false);
-  }, []);
+  }, [setValue]);
 
   useEffect(() => {
     if (!assignClassModal?.isOpen) {
@@ -62,6 +70,10 @@ export const AssignClassModal: React.FC = () => {
   const onAssignClass = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
+
+      if (invalidClass) {
+        return;
+      }
 
       if (!walletClient) {
         toast({
@@ -162,6 +174,7 @@ export const AssignClassModal: React.FC = () => {
     [
       classId,
       isMaster,
+      invalidClass,
       publicClient,
       game,
       reloadGame,
@@ -172,7 +185,7 @@ export const AssignClassModal: React.FC = () => {
   );
 
   const isLoading = isAssigning;
-  const isDisabled = isLoading;
+  const isDisabled = isLoading || invalidClass;
 
   const content = () => {
     if (isSynced) {
@@ -220,8 +233,10 @@ export const AssignClassModal: React.FC = () => {
             );
           })}
         </Flex>
+        {invalidClass && (
+          <Text color="red.500">This class is already assigned.</Text>
+        )}
         <Button
-          alignSelf="flex-end"
           isDisabled={isDisabled}
           isLoading={isLoading}
           loadingText="Assigning..."
