@@ -9,31 +9,20 @@ import {
   MenuItem,
   MenuList,
   Text,
-  useDisclosure,
   VStack,
 } from '@chakra-ui/react';
-import { Address } from 'viem';
 
+import { useActions } from '@/contexts/ActionsContext';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character } from '@/utils/types';
 
-import { DropExperienceModal } from './Modals/DropExperienceModal';
-
-type CharacterCardProps = Character & {
+export const CharacterCard: React.FC<{
   chainId: number;
-  isMaster: boolean;
-};
+  character: Character;
+}> = ({ chainId, character }) => {
+  const { experience, account, name, description, image } = character;
 
-export const CharacterCard: React.FC<CharacterCardProps> = ({
-  experience,
-  chainId,
-  account,
-  name,
-  description,
-  image,
-  isMaster,
-}) => {
   return (
     <HStack
       border="3px solid black"
@@ -53,7 +42,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
           w="100px"
         />
         <Button size="sm">View</Button>
-        <ActionMenu account={account} isMaster={isMaster} name={name} />
+        <ActionMenu character={character} />
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="lg" fontWeight="bold">
@@ -97,15 +86,12 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
   );
 };
 
-export const SmallCharacterCard: React.FC<CharacterCardProps> = ({
-  experience,
-  chainId,
-  account,
-  name,
-  description,
-  image,
-  isMaster,
-}) => {
+export const SmallCharacterCard: React.FC<{
+  chainId: number;
+  character: Character;
+}> = ({ chainId, character }) => {
+  const { experience, account, name, description, image } = character;
+
   return (
     <HStack
       border="3px solid black"
@@ -119,7 +105,7 @@ export const SmallCharacterCard: React.FC<CharacterCardProps> = ({
       <VStack align="center" h="100%" w="35%">
         <Image alt="character avatar" h="60%" objectFit="cover" src={image} />
         <Button size="sm">View</Button>
-        <ActionMenu account={account} isMaster={isMaster} name={name} />
+        <ActionMenu character={character} />
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="md" fontWeight="bold">
@@ -154,16 +140,16 @@ export const SmallCharacterCard: React.FC<CharacterCardProps> = ({
 };
 
 type ActionMenuProps = {
-  account: string;
-  isMaster: boolean;
-  name: string;
+  character: Character;
 };
 
-const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster, account, name }) => {
-  const giveExpModal = useDisclosure();
+const ActionMenu: React.FC<ActionMenuProps> = ({ character }) => {
+  const { setCharacter, playerActions, gmActions, openActionModal } =
+    useActions();
+
   return (
     <>
-      <Menu>
+      <Menu onOpen={() => setCharacter(character)}>
         <MenuButton as={Button} size="sm">
           Actions
         </MenuButton>
@@ -177,8 +163,10 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster, account, name }) => {
           >
             Player Actions
           </Text>
-          <MenuItem>Edit</MenuItem>
-          {isMaster && (
+          {playerActions.map(action => (
+            <MenuItem key={action}>{action}</MenuItem>
+          ))}
+          {gmActions.length > 0 && (
             <>
               <Text
                 borderBottom="1px solid black"
@@ -190,19 +178,15 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster, account, name }) => {
               >
                 GameMaster Actions
               </Text>
-              <MenuItem onClick={giveExpModal.onOpen}>Give XP</MenuItem>
+              {gmActions.map(action => (
+                <MenuItem key={action} onClick={() => openActionModal(action)}>
+                  {action}
+                </MenuItem>
+              ))}
             </>
           )}
         </MenuList>
       </Menu>
-      {isMaster && (
-        <DropExperienceModal
-          characterAccount={account as Address}
-          characterName={name}
-          isOpen={giveExpModal.isOpen}
-          onClose={giveExpModal.onClose}
-        />
-      )}
     </>
   );
 };

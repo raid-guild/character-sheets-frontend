@@ -23,8 +23,10 @@ import { CharacterCard } from '@/components/CharacterCard';
 import { CharactersPanel } from '@/components/CharactersPanel';
 import { ClassesPanel } from '@/components/ClassesPanel';
 import { ItemsPanel } from '@/components/ItemsPanel';
+import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { JoinGameModal } from '@/components/Modals/JoinGameModal';
 import { XPPanel } from '@/components/XPPanel';
+import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
 import { GameProvider, useGame } from '@/contexts/GameContext';
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { EXPLORER_URLS } from '@/utils/constants';
@@ -48,13 +50,16 @@ export default function GamePageOuter(): JSX.Element {
 
   return (
     <GameProvider gameId={gameId}>
-      <GamePage />
+      <ActionsProvider>
+        <GamePage />
+      </ActionsProvider>
     </GameProvider>
   );
 }
 
 function GamePage(): JSX.Element {
-  const { game, character, isMaster, loading } = useGame();
+  const { game, character, loading } = useGame();
+  const { giveExpModal } = useActions();
   const { isConnected } = useAccount();
   const joinGameModal = useDisclosure();
   const { chain } = useNetwork();
@@ -185,7 +190,7 @@ function GamePage(): JSX.Element {
         </Accordion>
 
         {character ? (
-          <CharacterCard {...character} chainId={chainId} isMaster={isMaster} />
+          <CharacterCard chainId={chainId} character={character} />
         ) : (
           <Button onClick={joinGameModal.onOpen}>Join this Game</Button>
         )}
@@ -227,13 +232,7 @@ function GamePage(): JSX.Element {
             <Text>{items.length} Items</Text>
           </Button>
         </SimpleGrid>
-        {activeTab === 'characters' && (
-          <CharactersPanel
-            chainId={chainId}
-            characters={characters}
-            isMaster={isMaster}
-          />
-        )}
+        {activeTab === 'characters' && <CharactersPanel />}
         {activeTab === 'xp' && <XPPanel />}
         {activeTab === 'classes' && <ClassesPanel />}
         {activeTab === 'items' && <ItemsPanel />}
@@ -245,6 +244,7 @@ function GamePage(): JSX.Element {
     <>
       {content()}
       <JoinGameModal {...joinGameModal} />
+      {giveExpModal && <DropExperienceModal />}
     </>
   );
 }

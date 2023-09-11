@@ -19,23 +19,14 @@ import { maxUint256, parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
+import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 
-type DropExperienceModalProps = {
-  characterAccount: Address;
-  characterName: string;
-  isOpen: boolean;
-  onClose: () => void;
-};
-
-export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
-  isOpen,
-  onClose,
-  characterAccount,
-  characterName,
-}) => {
+export const DropExperienceModal: React.FC = () => {
   const { game, reload: reloadGame, isMaster } = useGame();
+  const { character, giveExpModal } = useActions();
+
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const toast = useToast();
@@ -68,10 +59,10 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
   }, []);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!giveExpModal?.isOpen) {
       resetData();
     }
-  }, [resetData, isOpen]);
+  }, [resetData, giveExpModal?.isOpen]);
 
   const onJoinCharacter = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
@@ -89,6 +80,16 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
           status: 'error',
         });
         console.error('Could not find a wallet client.');
+        return;
+      }
+
+      if (!character) {
+        toast({
+          description: 'Character address not found.',
+          position: 'top',
+          status: 'error',
+        });
+        console.error('Character address not found.');
         return;
       }
 
@@ -114,7 +115,7 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
 
       setIsDropping(true);
 
-      const characters = [characterAccount];
+      const characters = [character.account as Address];
       const itemIds = [[BigInt(0)]];
       const amounts = [[BigInt(amount)]];
 
@@ -147,16 +148,11 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
           });
           return;
         }
-        toast({
-          description: `You gave ${amount} XP to ${characterName}!`,
-          position: 'top',
-          status: 'success',
-        });
         setIsSynced(true);
         reloadGame();
       } catch (e) {
         toast({
-          description: `Something went wrong giving XP to ${characterName}.`,
+          description: `Something went wrong giving XP to ${character.name}.`,
           position: 'top',
           status: 'error',
         });
@@ -168,12 +164,11 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
     },
     [
       amount,
+      character,
       isMaster,
       hasError,
       publicClient,
       game,
-      characterAccount,
-      characterName,
       reloadGame,
       toast,
       walletClient,
@@ -184,24 +179,22 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
   const isDisabled = isLoading;
 
   const content = () => {
-    // TODO: This isSynced check is unnecessary since the modal unmounts when the data is reloaded
-    // We should move all action modals to a higher level component to avoid this
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>
           <Text>XP successfully given!</Text>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={giveExpModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
       );
     }
 
-    if (txHash) {
+    if (txHash && character) {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Giving ${amount} XP to ${characterName}...`}
+          text={`Giving ${amount} XP to ${character.name}...`}
           txHash={txHash}
         />
       );
@@ -239,8 +232,8 @@ export const DropExperienceModal: React.FC<DropExperienceModalProps> = ({
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={isOpen}
-      onClose={onClose}
+      isOpen={giveExpModal?.isOpen ?? false}
+      onClose={giveExpModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>

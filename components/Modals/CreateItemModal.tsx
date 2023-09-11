@@ -256,11 +256,6 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           });
           return;
         }
-        toast({
-          description: `Your item was successfully created!`,
-          position: 'top',
-          status: 'success',
-        });
         setIsSynced(true);
         reloadGame();
       } catch (e) {
@@ -293,8 +288,6 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   const isDisabled = isLoading || isUploading;
 
   const content = () => {
-    // TODO: This isSynced check is unnecessary since the modal unmounts when the data is reloaded
-    // We should move all action modals to a higher level component to avoid this
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>
