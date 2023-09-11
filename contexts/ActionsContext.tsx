@@ -10,6 +10,7 @@ enum PlayerActions {
 }
 
 enum GameMasterActions {
+  ASSIGN_CLASS = 'Assign class',
   GIVE_XP = 'Give XP',
 }
 
@@ -21,7 +22,10 @@ type ActionsContextType = {
   selectCharacter: (character: Character) => void;
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
+
   editNameModal: ReturnType<typeof useDisclosure> | undefined;
+
+  assignClassModal: ReturnType<typeof useDisclosure> | undefined;
   giveExpModal: ReturnType<typeof useDisclosure> | undefined;
 };
 
@@ -33,7 +37,10 @@ const ActionsContext = createContext<ActionsContextType>({
   selectCharacter: () => {},
 
   openActionModal: () => {},
+
   editNameModal: undefined,
+
+  assignClassModal: undefined,
   giveExpModal: undefined,
 });
 
@@ -47,6 +54,7 @@ export const ActionsProvider: React.FC<{
 
   const editNameModal = useDisclosure();
 
+  const assignClassModal = useDisclosure();
   const giveExpModal = useDisclosure();
 
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
@@ -95,7 +103,10 @@ export const ActionsProvider: React.FC<{
           setSelectedCharacter(character),
 
         openActionModal,
+
         editNameModal,
+
+        assignClassModal,
         giveExpModal,
       }}
     >
