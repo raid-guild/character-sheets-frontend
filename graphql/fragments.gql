@@ -11,6 +11,11 @@ fragment CharacterInfo on Character {
   name
   experience
   uri
+  heldClasses {
+    classEntity {
+      ...ClassInfo
+    }
+  }
 }
 
 fragment ClassInfo on Class {
