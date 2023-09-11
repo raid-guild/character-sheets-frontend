@@ -15,7 +15,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { maxUint256, parseAbi } from 'viem';
+import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
@@ -23,48 +23,54 @@ import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 
-export const DropExperienceModal: React.FC = () => {
-  const { game, reload: reloadGame, isMaster } = useGame();
-  const { selectedCharacter, giveExpModal } = useActions();
+export const UpdateCharacterNameModal: React.FC = () => {
+  const { game, reload: reloadGame } = useGame();
+  const { selectedCharacter, editNameModal } = useActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const toast = useToast();
 
-  const [amount, setAmount] = useState<string>('');
+  const [newName, setNewName] = useState<string>('');
 
   const [showError, setShowError] = useState<boolean>(false);
-  const [isDropping, setIsDropping] = useState<boolean>(false);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
-  const hasError = useMemo(
-    () =>
-      !amount ||
-      BigInt(amount).toString() === 'NaN' ||
-      BigInt(amount) <= BigInt(0) ||
-      BigInt(amount) > maxUint256,
-    [amount],
+  const invalidName = useMemo(
+    () => newName === selectedCharacter?.name && !!newName,
+    [newName, selectedCharacter?.name],
   );
 
+  const hasError = useMemo(
+    () => !newName || invalidName,
+    [invalidName, newName],
+  );
+
+  // Removes error message when user starts typing
+  useEffect(() => {
+    setShowError(false);
+  }, [newName]);
+
   const resetData = useCallback(() => {
-    setAmount('');
+    setNewName('');
     setShowError(false);
 
-    setIsDropping(false);
+    setIsUpdating(false);
     setTxHash(null);
     setIsSyncing(false);
     setIsSynced(false);
   }, []);
 
   useEffect(() => {
-    if (!giveExpModal?.isOpen) {
+    if (!editNameModal?.isOpen) {
       resetData();
     }
-  }, [resetData, giveExpModal?.isOpen]);
+  }, [resetData, editNameModal?.isOpen]);
 
-  const onDropExp = useCallback(
+  const onUpdateName = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
@@ -83,17 +89,7 @@ export const DropExperienceModal: React.FC = () => {
         return;
       }
 
-      if (!selectedCharacter) {
-        toast({
-          description: 'Character address not found.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Character address not found.');
-        return;
-      }
-
-      if (!game?.itemsAddress) {
+      if (!game) {
         toast({
           description: `Could not find the game.`,
           position: 'top',
@@ -103,32 +99,28 @@ export const DropExperienceModal: React.FC = () => {
         return;
       }
 
-      if (!isMaster) {
+      if (!selectedCharacter) {
         toast({
-          description: `Not the game master.`,
+          description: 'Character not found.',
           position: 'top',
           status: 'error',
         });
-        console.error(`Not the game master.`);
+        console.error('Character not found.');
         return;
       }
 
-      setIsDropping(true);
-
-      const characters = [selectedCharacter.account as Address];
-      const itemIds = [[BigInt(0)]];
-      const amounts = [[BigInt(amount)]];
+      setIsUpdating(true);
 
       try {
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
-          address: game.itemsAddress as Address,
+          address: game.id as Address,
           abi: parseAbi([
-            'function dropLoot(address[] calldata nftAddress, uint256[][] calldata itemIds, uint256[][] calldata amounts) external',
+            'function updateCharacterName(string calldata newName) public',
           ]),
-          functionName: 'dropLoot',
-          args: [characters, itemIds, amounts],
+          functionName: 'updateCharacterName',
+          args: [newName],
         });
         setTxHash(transactionhash);
 
@@ -152,22 +144,21 @@ export const DropExperienceModal: React.FC = () => {
         reloadGame();
       } catch (e) {
         toast({
-          description: `Something went wrong giving XP to ${selectedCharacter.name}.`,
+          description: `Something went wrong updating ${selectedCharacter.name}'s name.`,
           position: 'top',
           status: 'error',
         });
         console.error(e);
       } finally {
         setIsSyncing(false);
-        setIsDropping(false);
+        setIsUpdating(false);
       }
     },
     [
-      amount,
-      isMaster,
-      hasError,
-      publicClient,
       game,
+      hasError,
+      newName,
+      publicClient,
       reloadGame,
       selectedCharacter,
       toast,
@@ -175,15 +166,17 @@ export const DropExperienceModal: React.FC = () => {
     ],
   );
 
-  const isLoading = isDropping;
+  const isLoading = isUpdating;
   const isDisabled = isLoading;
 
   const content = () => {
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>
-          <Text>XP successfully given!</Text>
-          <Button onClick={giveExpModal?.onClose} variant="outline">
+          <Text>
+            Your character{`'`}s has been updated to {newName}!
+          </Text>
+          <Button onClick={editNameModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -194,24 +187,25 @@ export const DropExperienceModal: React.FC = () => {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Giving ${amount} XP to ${selectedCharacter.name}...`}
+          text={`Updating the name ${selectedCharacter.name} to ${newName}...`}
           txHash={txHash}
         />
       );
     }
 
     return (
-      <VStack as="form" onSubmit={onDropExp} spacing={8}>
+      <VStack as="form" onSubmit={onUpdateName} spacing={8}>
         <FormControl isInvalid={showError}>
-          <FormLabel>Amount</FormLabel>
-          <Input
-            onChange={e => setAmount(e.target.value)}
-            type="number"
-            value={amount}
-          />
-          {showError && (
+          <FormLabel>New Character Name</FormLabel>
+          <Input onChange={e => setNewName(e.target.value)} value={newName} />
+          {showError && !newName && (
             <FormHelperText color="red">
-              Please enter a valid amount
+              New character name is required
+            </FormHelperText>
+          )}
+          {showError && invalidName && (
+            <FormHelperText color="red">
+              New name must be different from the old name
             </FormHelperText>
           )}
         </FormControl>
@@ -219,10 +213,10 @@ export const DropExperienceModal: React.FC = () => {
           alignSelf="flex-end"
           isDisabled={isDisabled}
           isLoading={isLoading}
-          loadingText="Giving..."
+          loadingText="Updating..."
           type="submit"
         >
-          Give
+          Update
         </Button>
       </VStack>
     );
@@ -232,13 +226,13 @@ export const DropExperienceModal: React.FC = () => {
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={giveExpModal?.isOpen ?? false}
-      onClose={giveExpModal?.onClose ?? (() => {})}
+      isOpen={editNameModal?.isOpen ?? false}
+      onClose={editNameModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Give XP</Text>
+          <Text>Update Character Name</Text>
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>

@@ -144,33 +144,41 @@ type ActionMenuProps = {
 };
 
 const ActionMenu: React.FC<ActionMenuProps> = ({ character }) => {
-  const { setCharacter, playerActions, gmActions, openActionModal } =
+  const { selectCharacter, playerActions, gmActions, openActionModal } =
     useActions();
 
   return (
     <>
-      <Menu onOpen={() => setCharacter(character)}>
+      <Menu onOpen={() => selectCharacter(character)}>
         <MenuButton as={Button} size="sm">
           Actions
         </MenuButton>
         <MenuList>
-          <Text
-            borderBottom="1px solid black"
-            fontSize="12px"
-            p={3}
-            textAlign="center"
-            variant="heading"
-          >
-            Player Actions
-          </Text>
-          {playerActions.map(action => (
-            <MenuItem key={action}>{action}</MenuItem>
-          ))}
+          {playerActions.length > 0 && (
+            <>
+              <Text
+                borderBottom="1px solid black"
+                fontSize="12px"
+                p={3}
+                textAlign="center"
+                variant="heading"
+              >
+                Player Actions
+              </Text>
+              {playerActions.map(action => (
+                <MenuItem key={action} onClick={() => openActionModal(action)}>
+                  {action}
+                </MenuItem>
+              ))}
+            </>
+          )}
           {gmActions.length > 0 && (
             <>
               <Text
                 borderBottom="1px solid black"
-                borderTop="3px solid black"
+                borderTop={
+                  playerActions.length > 0 ? '3px solid black' : 'none'
+                }
                 fontSize="12px"
                 p={3}
                 textAlign="center"
