@@ -19,8 +19,7 @@ import { globalStyles, theme } from '@/utils/theme';
 const TITLE = 'CharacterSheets';
 const DESCRIPTION =
   'Build a character through your work as a web3 mercenary. Slay moloch, earn XP.';
-const BASE_URL =
-  process.env.NEXT_PUBLIC_DEPLOYED_URL ?? 'https://character-sheets.vercel.app';
+const BASE_URL = 'https://character-sheets.vercel.app';
 
 export default function App({
   Component,
