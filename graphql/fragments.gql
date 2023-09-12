@@ -16,6 +16,12 @@ fragment CharacterInfo on Character {
       ...ClassInfo
     }
   }
+  heldItems {
+    amount
+    item {
+      ...ItemInfo
+    }
+  }
 }
 
 fragment ClassInfo on Class {
@@ -23,6 +29,12 @@ fragment ClassInfo on Class {
   classId
   name
   uri
+  holders {
+    id
+  }
+  equippers {
+    id
+  }
 }
 
 fragment ItemInfo on Item {
@@ -31,6 +43,13 @@ fragment ItemInfo on Item {
   name
   uri
   supply
+  totalSupply
+  holders {
+    id
+  }
+  equippers {
+    id
+  }
 }
 
 fragment GameMetaInfo on Game {
