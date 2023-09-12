@@ -109,12 +109,7 @@ export const ActionsProvider: React.FC<{
           break;
       }
     },
-    [
-      giveExpModal.onOpen,
-      giveItemsModal.onOpen,
-      assignClassModal.onOpen,
-      editCharacterModal.onOpen,
-    ],
+    [giveExpModal, giveItemsModal, assignClassModal, editCharacterModal],
   );
 
   const selectCharacter = useCallback((character: Character) => {
