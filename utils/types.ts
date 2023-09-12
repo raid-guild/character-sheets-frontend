@@ -36,6 +36,7 @@ export type Character = Metadata & {
   player: string;
   experience: string;
   uri: string;
+  classes: Class[];
 };
 
 export type Class = Metadata & {
