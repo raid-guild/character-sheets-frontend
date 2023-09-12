@@ -8,6 +8,7 @@ import {
   MenuItem,
   MenuList,
   Text,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
 
@@ -23,6 +24,8 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   isMaster,
   ...classEntity
 }) => {
+  const toast = useToast();
+
   const { classId, name, description, image, holders, equippers } = classEntity;
   return (
     <HStack
@@ -42,7 +45,18 @@ export const ClassCard: React.FC<ClassCardProps> = ({
           src={image}
           w="100px"
         />
-        <Button size="sm">View</Button>
+        <Button
+          onClick={() => {
+            toast({
+              title: 'Coming soon!',
+              position: 'top',
+              status: 'warning',
+            });
+          }}
+          size="sm"
+        >
+          View
+        </Button>
         <ActionMenu isMaster={isMaster} />
       </VStack>
       <VStack align="flex-start">
@@ -74,6 +88,8 @@ export const SmallClassCard: React.FC<ClassCardProps> = ({
   isMaster,
   ...classEntity
 }) => {
+  const toast = useToast();
+
   const { classId, name, description, image, holders, equippers } = classEntity;
   return (
     <HStack
@@ -87,7 +103,18 @@ export const SmallClassCard: React.FC<ClassCardProps> = ({
     >
       <VStack align="center" h="100%" w="35%">
         <Image alt="class emblem" h="60%" objectFit="cover" src={image} />
-        <Button size="sm">View</Button>
+        <Button
+          onClick={() => {
+            toast({
+              title: 'Coming soon!',
+              position: 'top',
+              status: 'warning',
+            });
+          }}
+          size="sm"
+        >
+          View
+        </Button>
         <ActionMenu isMaster={isMaster} />
       </VStack>
       <VStack align="flex-start">
@@ -115,6 +142,8 @@ type ActionMenuProps = {
 };
 
 const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
+  const toast = useToast();
+
   return (
     <Menu>
       <MenuButton as={Button} size="sm">
@@ -131,7 +160,17 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
           Player Actions
         </Text>
         {/* TODO: Check if held by character */}
-        <MenuItem>Equip</MenuItem>
+        <MenuItem
+          onClick={() => {
+            toast({
+              title: 'Coming soon!',
+              position: 'top',
+              status: 'warning',
+            });
+          }}
+        >
+          Equip
+        </MenuItem>
         {isMaster && (
           <>
             <Text
@@ -144,8 +183,28 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
             >
               GameMaster Actions
             </Text>
-            <MenuItem>Edit Class</MenuItem>
-            <MenuItem>Assign Class</MenuItem>
+            <MenuItem
+              onClick={() => {
+                toast({
+                  title: 'Coming soon!',
+                  position: 'top',
+                  status: 'warning',
+                });
+              }}
+            >
+              Edit Class
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                toast({
+                  title: 'Coming soon!',
+                  position: 'top',
+                  status: 'warning',
+                });
+              }}
+            >
+              Assign Class
+            </MenuItem>
           </>
         )}
       </MenuList>
