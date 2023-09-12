@@ -29,6 +29,12 @@ fragment ClassInfo on Class {
   classId
   name
   uri
+  holders {
+    id
+  }
+  equippers {
+    id
+  }
 }
 
 fragment ItemInfo on Item {
@@ -38,6 +44,12 @@ fragment ItemInfo on Item {
   uri
   supply
   totalSupply
+  holders {
+    id
+  }
+  equippers {
+    id
+  }
 }
 
 fragment GameMetaInfo on Game {

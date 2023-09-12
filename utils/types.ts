@@ -45,6 +45,8 @@ export type Class = Metadata & {
   classId: string;
   uri: string;
   name: string;
+  holders: { id: string }[];
+  equippers: { id: string }[];
 };
 
 export type Item = Metadata & {
@@ -55,4 +57,6 @@ export type Item = Metadata & {
   supply: string;
   totalSupply: string;
   amount: string;
+  holders: { id: string }[];
+  equippers: { id: string }[];
 };

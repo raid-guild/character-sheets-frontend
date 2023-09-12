@@ -20,7 +20,16 @@ type ItemCardProps = Item & {
 };
 
 export const ItemCard: React.FC<ItemCardProps> = ({ isMaster, ...item }) => {
-  const { itemId, name, description, image, supply, totalSupply } = item;
+  const {
+    itemId,
+    name,
+    description,
+    image,
+    supply,
+    totalSupply,
+    holders,
+    equippers,
+  } = item;
   return (
     <HStack
       border="3px solid black"
@@ -63,8 +72,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({ isMaster, ...item }) => {
         <Text>
           Supply: {supply} / {totalSupply}
         </Text>
-        <Text>Held By: 0</Text>
-        <Text>Equipped By: 0</Text>
+        <Text>Held By: {holders.length}</Text>
+        <Text>Equipped By: {equippers.length}</Text>
       </VStack>
     </HStack>
   );
@@ -74,7 +83,16 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({
   isMaster,
   ...item
 }) => {
-  const { itemId, name, description, image, supply, totalSupply } = item;
+  const {
+    itemId,
+    name,
+    description,
+    image,
+    supply,
+    totalSupply,
+    holders,
+    equippers,
+  } = item;
   return (
     <HStack
       border="3px solid black"
@@ -106,8 +124,8 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({
         <Text fontSize="xs">
           Supply: {supply} / {totalSupply}
         </Text>
-        <Text fontSize="xs">Held By: 0</Text>
-        <Text fontSize="xs">Equipped By: 0</Text>
+        <Text fontSize="xs">Held By: {holders.length}</Text>
+        <Text fontSize="xs">Equipped By: {equippers.length}</Text>
       </VStack>
     </HStack>
   );

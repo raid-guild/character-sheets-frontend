@@ -121,6 +121,8 @@ export const formatClass = async (
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
     classId: classEntity.classId,
+    holders: classEntity.holders,
+    equippers: classEntity.equippers,
   };
 };
 
@@ -137,6 +139,8 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     supply: item.supply,
     totalSupply: item.totalSupply,
     amount: '0',
+    holders: item.holders,
+    equippers: item.equippers,
   };
 };
 
