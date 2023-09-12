@@ -16,6 +16,11 @@ import { useGraphHealth } from '@/hooks/useGraphHealth';
 import { chains, wagmiConfig } from '@/lib/web3';
 import { globalStyles, theme } from '@/utils/theme';
 
+const TITLE = 'CharacterSheets';
+const DESCRIPTION =
+  'Build a character through your work as a web3 mercenary. Slay moloch, earn XP.';
+const BASE_URL = 'https://character-sheets.vercel.app';
+
 export default function App({
   Component,
   pageProps,
@@ -28,11 +33,24 @@ export default function App({
   return (
     <>
       <Head>
-        <title>CharacterSheets</title>
+        <title>{TITLE}</title>
+        <meta name="description" content={DESCRIPTION} />
         <meta
-          name="description"
-          content="A gamified and on-chain representation of RaidGuild raiders."
+          name="keywords"
+          content="character, sheets, charactersheets, raidguild, raids, guild, dnd, dungeons, dragons, dungeons and dragons, rpg, roleplaying"
         />
+        <link rel="canonical" href={BASE_URL} />
+        <meta property="og:site_name" content={TITLE} />
+        <meta property="og:url" content={BASE_URL} />
+        <meta property="og:title" content={TITLE} />
+        <meta property="og:description" content={DESCRIPTION} />
+        <meta property="og:image" content={`${BASE_URL}/logo.png`} />
+        <meta property="og:type" content="app" />
+        <meta name="twitter:url" content={BASE_URL} />
+        <meta name="twitter:title" content={TITLE} />
+        <meta name="twitter:description" content={DESCRIPTION} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:image" content={`${BASE_URL}/logo.png`} />
         <meta content="width=device-width, initial-scale=1" name="viewport" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
