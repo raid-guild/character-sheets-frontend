@@ -50,7 +50,7 @@ export default function App({
         <meta name="twitter:title" content={TITLE} />
         <meta name="twitter:description" content={DESCRIPTION} />
         <meta name="twitter:card" content="summary" />
-        <meta name="twitter:image" content={`${BASE_URL}/logo.png`} />
+        <meta name="twitter:image" content={`${BASE_URL}/logo_square.png`} />
         <meta content="width=device-width, initial-scale=1" name="viewport" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
