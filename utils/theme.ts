@@ -26,6 +26,28 @@ const Button = {
     },
   },
   variants: {
+    ghost: {
+      color: 'black',
+      background: 'white',
+      borderBottom: '5px solid',
+      borderLeft: '3px solid',
+      borderRadius: '0',
+      borderRight: '5px solid',
+      borderTop: '3px solid',
+      borderColor: 'white',
+      _hover: {
+        background: 'gray.300',
+        borderColor: 'gray.300',
+      },
+      _active: {
+        background: 'gray.300',
+        borderColor: 'gray.300',
+        transform: 'scale(0.98)',
+        _disabled: {
+          transform: 'scale(1)',
+        },
+      },
+    },
     outline: {
       color: 'black',
       borderBottom: '5px solid black',

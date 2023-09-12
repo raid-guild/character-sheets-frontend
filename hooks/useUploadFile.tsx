@@ -18,10 +18,12 @@ export const useUploadFile = ({
 
   const onSetFile = useCallback((file: File | null): void => {
     setFile(file);
+    setIsUploaded(false);
   }, []);
 
   const onRemove = useCallback((): void => {
     setFile(null);
+    setIsUploaded(false);
   }, []);
 
   const onUpload = useCallback(async (): Promise<string> => {
