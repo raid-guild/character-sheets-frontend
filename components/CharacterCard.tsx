@@ -9,6 +9,7 @@ import {
   MenuItem,
   MenuList,
   Text,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
 
@@ -21,7 +22,10 @@ export const CharacterCard: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
-  const { experience, account, name, description, image } = character;
+  const toast = useToast();
+
+  const { account, classes, description, experience, image, name } = character;
+  const readableClasses = classes.map(c => c.name).join(', ');
 
   return (
     <HStack
@@ -41,7 +45,18 @@ export const CharacterCard: React.FC<{
           src={image}
           w="100px"
         />
-        <Button size="sm">View</Button>
+        <Button
+          onClick={() => {
+            toast({
+              title: 'Coming soon!',
+              position: 'top',
+              status: 'warning',
+            });
+          }}
+          size="sm"
+        >
+          View
+        </Button>
         <ActionMenu character={character} />
       </VStack>
       <VStack align="flex-start">
@@ -76,7 +91,9 @@ export const CharacterCard: React.FC<{
         <Text>
           Classes:{' '}
           <Text as="span" fontSize="xs">
-            {shortenText('Villager', 70)}
+            {classes.length === 0
+              ? 'Villager'
+              : shortenText(readableClasses, 32)}
           </Text>
         </Text>
         <Text>XP: {experience}</Text>
@@ -90,7 +107,10 @@ export const SmallCharacterCard: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
-  const { experience, account, name, description, image } = character;
+  const toast = useToast();
+
+  const { account, classes, description, experience, image, name } = character;
+  const readableClasses = classes.map(c => c.name).join(', ');
 
   return (
     <HStack
@@ -104,7 +124,18 @@ export const SmallCharacterCard: React.FC<{
     >
       <VStack align="center" h="100%" w="35%">
         <Image alt="character avatar" h="60%" objectFit="cover" src={image} />
-        <Button size="sm">View</Button>
+        <Button
+          onClick={() => {
+            toast({
+              title: 'Coming soon!',
+              position: 'top',
+              status: 'warning',
+            });
+          }}
+          size="sm"
+        >
+          View
+        </Button>
         <ActionMenu character={character} />
       </VStack>
       <VStack align="flex-start">
@@ -131,7 +162,10 @@ export const SmallCharacterCard: React.FC<{
           />
         </Link>
         <Box background="black" h="3px" my={4} w={20} />
-        <Text fontSize="xs">Classes: {shortenText('Villager', 32)}</Text>
+        <Text fontSize="xs">
+          Classes:{' '}
+          {classes.length === 0 ? 'Villager' : shortenText(readableClasses, 32)}
+        </Text>
         <Text fontSize="xs">XP: {experience}</Text>
         <Text fontSize="xs">Items: 0</Text>
       </VStack>
@@ -144,33 +178,41 @@ type ActionMenuProps = {
 };
 
 const ActionMenu: React.FC<ActionMenuProps> = ({ character }) => {
-  const { setCharacter, playerActions, gmActions, openActionModal } =
+  const { selectCharacter, playerActions, gmActions, openActionModal } =
     useActions();
 
   return (
     <>
-      <Menu onOpen={() => setCharacter(character)}>
+      <Menu onOpen={() => selectCharacter(character)}>
         <MenuButton as={Button} size="sm">
           Actions
         </MenuButton>
         <MenuList>
-          <Text
-            borderBottom="1px solid black"
-            fontSize="12px"
-            p={3}
-            textAlign="center"
-            variant="heading"
-          >
-            Player Actions
-          </Text>
-          {playerActions.map(action => (
-            <MenuItem key={action}>{action}</MenuItem>
-          ))}
+          {playerActions.length > 0 && (
+            <>
+              <Text
+                borderBottom="1px solid black"
+                fontSize="12px"
+                p={3}
+                textAlign="center"
+                variant="heading"
+              >
+                Player Actions
+              </Text>
+              {playerActions.map(action => (
+                <MenuItem key={action} onClick={() => openActionModal(action)}>
+                  {action}
+                </MenuItem>
+              ))}
+            </>
+          )}
           {gmActions.length > 0 && (
             <>
               <Text
                 borderBottom="1px solid black"
-                borderTop="3px solid black"
+                borderTop={
+                  playerActions.length > 0 ? '3px solid black' : 'none'
+                }
                 fontSize="12px"
                 p={3}
                 textAlign="center"

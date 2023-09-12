@@ -1,9 +1,7 @@
 import {
   Button,
-  FormControl,
-  FormHelperText,
-  FormLabel,
-  Input,
+  Flex,
+  Image,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -11,65 +9,69 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
+  useRadioGroup,
   useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { maxUint256, parseAbi } from 'viem';
+import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
+import { RadioCard } from '@/components/RadioCard';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 
-export const DropExperienceModal: React.FC = () => {
+export const AssignClassModal: React.FC = () => {
   const { game, reload: reloadGame, isMaster } = useGame();
-  const { selectedCharacter, giveExpModal } = useActions();
+  const { selectedCharacter, assignClassModal } = useActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const toast = useToast();
 
-  const [amount, setAmount] = useState<string>('');
+  const [classId, setClassId] = useState<string>('1');
 
-  const [showError, setShowError] = useState<boolean>(false);
-  const [isDropping, setIsDropping] = useState<boolean>(false);
+  const [isAssigning, setIsAssigning] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
-  const hasError = useMemo(
-    () =>
-      !amount ||
-      BigInt(amount).toString() === 'NaN' ||
-      BigInt(amount) <= BigInt(0) ||
-      BigInt(amount) > maxUint256,
-    [amount],
-  );
+  const invalidClass = useMemo(() => {
+    const selectedCharacterClasses =
+      selectedCharacter?.classes.map(c => c.classId) ?? [];
+    return selectedCharacterClasses.includes(classId);
+  }, [classId, selectedCharacter]);
+
+  const options = game?.classes.map(c => c.classId) ?? [];
+  const { getRootProps, getRadioProps, setValue } = useRadioGroup({
+    name: 'class',
+    defaultValue: '1',
+    onChange: setClassId,
+  });
+  const group = getRootProps();
 
   const resetData = useCallback(() => {
-    setAmount('');
-    setShowError(false);
-
-    setIsDropping(false);
+    setValue('1');
+    setClassId('1');
+    setIsAssigning(false);
     setTxHash(null);
     setIsSyncing(false);
     setIsSynced(false);
-  }, []);
+  }, [setValue]);
 
   useEffect(() => {
-    if (!giveExpModal?.isOpen) {
+    if (!assignClassModal?.isOpen) {
       resetData();
     }
-  }, [resetData, giveExpModal?.isOpen]);
+  }, [resetData, assignClassModal?.isOpen]);
 
-  const onDropExp = useCallback(
+  const onAssignClass = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
-      if (hasError) {
-        setShowError(true);
+      if (invalidClass) {
         return;
       }
 
@@ -93,13 +95,23 @@ export const DropExperienceModal: React.FC = () => {
         return;
       }
 
-      if (!game?.itemsAddress) {
+      if (!game?.classesAddress) {
         toast({
           description: `Could not find the game.`,
           position: 'top',
           status: 'error',
         });
         console.error(`Missing game data.`);
+        return;
+      }
+
+      if (game?.classes.length === 0) {
+        toast({
+          description: `No classes found.`,
+          position: 'top',
+          status: 'error',
+        });
+        console.error(`No classes found.`);
         return;
       }
 
@@ -113,22 +125,19 @@ export const DropExperienceModal: React.FC = () => {
         return;
       }
 
-      setIsDropping(true);
-
-      const characters = [selectedCharacter.account as Address];
-      const itemIds = [[BigInt(0)]];
-      const amounts = [[BigInt(amount)]];
+      setIsAssigning(true);
 
       try {
+        const { characterId } = selectedCharacter;
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
-          address: game.itemsAddress as Address,
+          address: game.classesAddress as Address,
           abi: parseAbi([
-            'function dropLoot(address[] calldata nftAddress, uint256[][] calldata itemIds, uint256[][] calldata amounts) external',
+            'function assignClass(uint256 characterId, uint256 classId) public',
           ]),
-          functionName: 'dropLoot',
-          args: [characters, itemIds, amounts],
+          functionName: 'assignClass',
+          args: [BigInt(characterId), BigInt(classId)],
         });
         setTxHash(transactionhash);
 
@@ -152,20 +161,20 @@ export const DropExperienceModal: React.FC = () => {
         reloadGame();
       } catch (e) {
         toast({
-          description: `Something went wrong giving XP to ${selectedCharacter.name}.`,
+          description: `Something went wrong assigning class to ${selectedCharacter.name}.`,
           position: 'top',
           status: 'error',
         });
         console.error(e);
       } finally {
         setIsSyncing(false);
-        setIsDropping(false);
+        setIsAssigning(false);
       }
     },
     [
-      amount,
+      classId,
       isMaster,
-      hasError,
+      invalidClass,
       publicClient,
       game,
       reloadGame,
@@ -175,15 +184,15 @@ export const DropExperienceModal: React.FC = () => {
     ],
   );
 
-  const isLoading = isDropping;
-  const isDisabled = isLoading;
+  const isLoading = isAssigning;
+  const isDisabled = isLoading || invalidClass;
 
   const content = () => {
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>
-          <Text>XP successfully given!</Text>
-          <Button onClick={giveExpModal?.onClose} variant="outline">
+          <Text>Class successfully assigned!</Text>
+          <Button onClick={assignClassModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -194,35 +203,46 @@ export const DropExperienceModal: React.FC = () => {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Giving ${amount} XP to ${selectedCharacter.name}...`}
+          text={`Assigning the class to ${selectedCharacter.name}...`}
           txHash={txHash}
         />
       );
     }
 
     return (
-      <VStack as="form" onSubmit={onDropExp} spacing={8}>
-        <FormControl isInvalid={showError}>
-          <FormLabel>Amount</FormLabel>
-          <Input
-            onChange={e => setAmount(e.target.value)}
-            type="number"
-            value={amount}
-          />
-          {showError && (
-            <FormHelperText color="red">
-              Please enter a valid amount
-            </FormHelperText>
-          )}
-        </FormControl>
+      <VStack as="form" onSubmit={onAssignClass} spacing={8}>
+        <Flex {...group} wrap="wrap" gap={4}>
+          {options.map(value => {
+            const radio = getRadioProps({ value });
+            const _class = game?.classes.find(c => c.classId === value);
+            if (!_class) return null;
+
+            return (
+              <RadioCard key={value} {...radio}>
+                <VStack justify="space-between" h="100%">
+                  <Image
+                    alt={`${_class.name} image`}
+                    h="70%"
+                    objectFit="contain"
+                    src={_class.image}
+                    w="100%"
+                  />
+                  <Text>{_class.name}</Text>
+                </VStack>
+              </RadioCard>
+            );
+          })}
+        </Flex>
+        {invalidClass && (
+          <Text color="red.500">This class is already assigned.</Text>
+        )}
         <Button
-          alignSelf="flex-end"
           isDisabled={isDisabled}
           isLoading={isLoading}
-          loadingText="Giving..."
+          loadingText="Assigning..."
           type="submit"
         >
-          Give
+          Assign
         </Button>
       </VStack>
     );
@@ -232,13 +252,13 @@ export const DropExperienceModal: React.FC = () => {
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={giveExpModal?.isOpen ?? false}
-      onClose={giveExpModal?.onClose ?? (() => {})}
+      isOpen={assignClassModal?.isOpen ?? false}
+      onClose={assignClassModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Give XP</Text>
+          <Text>Assign a Class</Text>
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>

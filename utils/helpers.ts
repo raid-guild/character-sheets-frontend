@@ -74,8 +74,15 @@ export const fetchMetadata = async (uri: string): Promise<Metadata> => {
 
 export const formatCharacter = async (
   character: CharacterInfoFragment,
+  classes: Class[],
 ): Promise<Character> => {
   const metadata = await fetchMetadata(uriToHttp(character.uri)[0]);
+  const characterClassIds = character.heldClasses.map(
+    c => c.classEntity.classId,
+  );
+  const characterClasses = classes.filter(c =>
+    characterClassIds.includes(c.classId),
+  );
 
   return {
     id: character.id,
@@ -87,6 +94,7 @@ export const formatCharacter = async (
     characterId: character.characterId,
     account: character.account,
     player: character.player,
+    classes: characterClasses,
   };
 };
 
@@ -141,6 +149,7 @@ export const formatGameMeta = async (
 
 export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
   const metadata = await fetchMetadata(uriToHttp(game.uri)[0]);
+  const classes = await Promise.all(game.classes.map(formatClass));
 
   return {
     id: game.id,
@@ -152,8 +161,10 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
     name: metadata.name,
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
-    characters: await Promise.all(game.characters.map(formatCharacter)),
-    classes: await Promise.all(game.classes.map(formatClass)),
+    characters: await Promise.all(
+      game.characters.map(c => formatCharacter(c, classes)),
+    ),
+    classes,
     items: await Promise.all(game.items.map(formatItem)),
     experience: game.experience,
   };
