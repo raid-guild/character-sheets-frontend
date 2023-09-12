@@ -9,6 +9,7 @@ import {
   MenuItem,
   MenuList,
   Text,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
 
@@ -21,6 +22,8 @@ export const CharacterCard: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
+  const toast = useToast();
+
   const { account, classes, description, experience, image, name } = character;
   const readableClasses = classes.map(c => c.name).join(', ');
 
@@ -42,7 +45,18 @@ export const CharacterCard: React.FC<{
           src={image}
           w="100px"
         />
-        <Button size="sm">View</Button>
+        <Button
+          onClick={() => {
+            toast({
+              title: 'Coming soon!',
+              position: 'top',
+              status: 'warning',
+            });
+          }}
+          size="sm"
+        >
+          View
+        </Button>
         <ActionMenu character={character} />
       </VStack>
       <VStack align="flex-start">
@@ -93,6 +107,8 @@ export const SmallCharacterCard: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
+  const toast = useToast();
+
   const { account, classes, description, experience, image, name } = character;
   const readableClasses = classes.map(c => c.name).join(', ');
 
@@ -108,7 +124,18 @@ export const SmallCharacterCard: React.FC<{
     >
       <VStack align="center" h="100%" w="35%">
         <Image alt="character avatar" h="60%" objectFit="cover" src={image} />
-        <Button size="sm">View</Button>
+        <Button
+          onClick={() => {
+            toast({
+              title: 'Coming soon!',
+              position: 'top',
+              status: 'warning',
+            });
+          }}
+          size="sm"
+        >
+          View
+        </Button>
         <ActionMenu character={character} />
       </VStack>
       <VStack align="flex-start">
