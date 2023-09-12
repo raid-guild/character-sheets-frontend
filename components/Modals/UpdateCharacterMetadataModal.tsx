@@ -127,7 +127,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
     }
   }, [resetData, editCharacterModal?.isOpen]);
 
-  const onUpdateName = useCallback(
+  const onUpdateCharacterMetadata = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
@@ -253,7 +253,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
         reloadGame();
       } catch (e) {
         toast({
-          description: `Something went wrong updating ${selectedCharacter.name}'s name.`,
+          description: `Something went wrong updating ${selectedCharacter.name}'s metadata.`,
           position: 'top',
           status: 'error',
         });
@@ -308,7 +308,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
     }
 
     return (
-      <VStack as="form" onSubmit={onUpdateName} spacing={8}>
+      <VStack as="form" onSubmit={onUpdateCharacterMetadata} spacing={8}>
         <FormControl isInvalid={showError && (!newName || noChanges)}>
           <FormLabel>Character Name</FormLabel>
           <Input onChange={e => setNewName(e.target.value)} value={newName} />
@@ -319,7 +319,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
           )}
           {showError && noChanges && (
             <FormHelperText color="red">
-              New name, description or avatar must be different from the old
+              New name, description, or avatar must be different from the old
             </FormHelperText>
           )}
         </FormControl>
@@ -345,7 +345,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
           )}
           {showError && noChanges && (
             <FormHelperText color="red">
-              New name, description or avatar must be different from the old
+              New name, description, or avatar must be different from the old
             </FormHelperText>
           )}
         </FormControl>
@@ -388,7 +388,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
           )}
           {showError && noChanges && (
             <FormHelperText color="red">
-              New name, description or avatar must be different from the old
+              New name, description, or avatar must be different from the old
             </FormHelperText>
           )}
         </FormControl>
