@@ -6,7 +6,7 @@ import { useGame } from '@/contexts/GameContext';
 import { Character } from '@/utils/types';
 
 enum PlayerActions {
-  EDIT_NAME = 'Edit name',
+  EDIT_CHARACTER = 'Edit character',
 }
 
 enum GameMasterActions {
@@ -23,7 +23,7 @@ type ActionsContextType = {
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
   assignClassModal: ReturnType<typeof useDisclosure> | undefined;
-  editNameModal: ReturnType<typeof useDisclosure> | undefined;
+  editCharacterModal: ReturnType<typeof useDisclosure> | undefined;
   giveExpModal: ReturnType<typeof useDisclosure> | undefined;
 };
 
@@ -36,7 +36,7 @@ const ActionsContext = createContext<ActionsContextType>({
 
   openActionModal: () => {},
   assignClassModal: undefined,
-  editNameModal: undefined,
+  editCharacterModal: undefined,
   giveExpModal: undefined,
 });
 
@@ -49,7 +49,7 @@ export const ActionsProvider: React.FC<{
   const { game, isMaster } = useGame();
 
   const assignClassModal = useDisclosure();
-  const editNameModal = useDisclosure();
+  const editCharacterModal = useDisclosure();
   const giveExpModal = useDisclosure();
 
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
@@ -85,8 +85,8 @@ export const ActionsProvider: React.FC<{
       case GameMasterActions.ASSIGN_CLASS:
         assignClassModal.onOpen();
         break;
-      case PlayerActions.EDIT_NAME:
-        editNameModal.onOpen();
+      case PlayerActions.EDIT_CHARACTER:
+        editCharacterModal.onOpen();
         break;
       case GameMasterActions.GIVE_XP:
         giveExpModal.onOpen();
@@ -108,7 +108,7 @@ export const ActionsProvider: React.FC<{
 
         openActionModal,
         assignClassModal,
-        editNameModal,
+        editCharacterModal,
         giveExpModal,
       }}
     >

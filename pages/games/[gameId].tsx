@@ -26,7 +26,7 @@ import { ItemsPanel } from '@/components/ItemsPanel';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { JoinGameModal } from '@/components/Modals/JoinGameModal';
-import { UpdateCharacterNameModal } from '@/components/Modals/UpdateCharacterNameModal';
+import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
 import { XPPanel } from '@/components/XPPanel';
 import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
 import { GameProvider, useGame } from '@/contexts/GameContext';
@@ -61,7 +61,7 @@ export default function GamePageOuter(): JSX.Element {
 
 function GamePage(): JSX.Element {
   const { game, character, loading } = useGame();
-  const { assignClassModal, editNameModal, giveExpModal } = useActions();
+  const { assignClassModal, editCharacterModal, giveExpModal } = useActions();
   const { isConnected } = useAccount();
   const joinGameModal = useDisclosure();
   const { chain } = useNetwork();
@@ -247,7 +247,7 @@ function GamePage(): JSX.Element {
       {content()}
       <JoinGameModal {...joinGameModal} />
       {assignClassModal && <AssignClassModal />}
-      {editNameModal && <UpdateCharacterNameModal />}
+      {editCharacterModal && <UpdateCharacterMetadataModal />}
       {giveExpModal && <DropExperienceModal />}
     </>
   );
