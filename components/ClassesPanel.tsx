@@ -5,7 +5,6 @@ import {
   useDisclosure,
   VStack,
 } from '@chakra-ui/react';
-import { useChainId } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 
@@ -16,7 +15,6 @@ export const ClassesPanel: React.FC = () => {
   const createClassModal = useDisclosure();
 
   const { game, isMaster } = useGame();
-  const chainId = useChainId();
 
   function content() {
     if (!game || game.classes.length === 0) {
@@ -30,12 +28,7 @@ export const ClassesPanel: React.FC = () => {
     return (
       <SimpleGrid columns={2} spacing={4} w="100%">
         {game.classes.map(c => (
-          <SmallClassCard
-            key={c.id}
-            {...c}
-            chainId={chainId}
-            isMaster={isMaster}
-          />
+          <SmallClassCard key={c.id} class={c} />
         ))}
       </SimpleGrid>
     );

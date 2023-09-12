@@ -8,21 +8,21 @@ import {
   MenuItem,
   MenuList,
   Text,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
 
+import { CardTypes, useActions } from '@/contexts/ActionsContext';
 import { shortenText } from '@/utils/helpers';
 import { Class } from '@/utils/types';
 
-type ClassCardProps = Class & {
-  chainId: number;
-  isMaster: boolean;
+type ClassCardProps = {
+  class: Class;
 };
 
-export const ClassCard: React.FC<ClassCardProps> = ({
-  isMaster,
-  ...classEntity
-}) => {
+export const ClassCard: React.FC<ClassCardProps> = ({ class: classEntity }) => {
+  const toast = useToast();
+
   const { classId, name, description, image } = classEntity;
   return (
     <HStack
@@ -42,8 +42,19 @@ export const ClassCard: React.FC<ClassCardProps> = ({
           src={image}
           w="100px"
         />
-        <Button size="sm">View</Button>
-        <ActionMenu isMaster={isMaster} />
+        <Button
+          onClick={() => {
+            toast({
+              title: 'Coming soon!',
+              position: 'top',
+              status: 'warning',
+            });
+          }}
+          size="sm"
+        >
+          View
+        </Button>
+        <ActionMenu class={classEntity} />
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="lg" fontWeight="bold">
@@ -71,9 +82,10 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 };
 
 export const SmallClassCard: React.FC<ClassCardProps> = ({
-  isMaster,
-  ...classEntity
+  class: classEntity,
 }) => {
+  const toast = useToast();
+
   const { classId, name, description, image } = classEntity;
   return (
     <HStack
@@ -87,8 +99,19 @@ export const SmallClassCard: React.FC<ClassCardProps> = ({
     >
       <VStack align="center" h="100%" w="35%">
         <Image alt="class emblem" h="60%" objectFit="cover" src={image} />
-        <Button size="sm">View</Button>
-        <ActionMenu isMaster={isMaster} />
+        <Button
+          onClick={() => {
+            toast({
+              title: 'Coming soon!',
+              position: 'top',
+              status: 'warning',
+            });
+          }}
+          size="sm"
+        >
+          View
+        </Button>
+        <ActionMenu class={classEntity} />
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="md" fontWeight="bold">
@@ -111,32 +134,42 @@ export const SmallClassCard: React.FC<ClassCardProps> = ({
 };
 
 type ActionMenuProps = {
-  isMaster: boolean;
+  class: Class;
 };
 
-const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
+const ActionMenu: React.FC<ActionMenuProps> = ({ class: classEntity }) => {
+  const { selectEntity, playerActions, gmActions, openActionModal } =
+    useActions();
+
   return (
-    <Menu>
+    <Menu onOpen={() => selectEntity(CardTypes.CLASS, classEntity)}>
       <MenuButton as={Button} size="sm">
         Actions
       </MenuButton>
       <MenuList>
-        <Text
-          borderBottom="1px solid black"
-          fontSize="12px"
-          p={3}
-          textAlign="center"
-          variant="heading"
-        >
-          Player Actions
-        </Text>
-        {/* TODO: Check if held by character */}
-        <MenuItem>Equip</MenuItem>
-        {isMaster && (
+        {playerActions.length > 0 && (
           <>
             <Text
               borderBottom="1px solid black"
-              borderTop="3px solid black"
+              fontSize="12px"
+              p={3}
+              textAlign="center"
+              variant="heading"
+            >
+              Player Actions
+            </Text>
+            {playerActions.map(action => (
+              <MenuItem key={action} onClick={() => openActionModal(action)}>
+                {action}
+              </MenuItem>
+            ))}
+          </>
+        )}
+        {gmActions.length > 0 && (
+          <>
+            <Text
+              borderBottom="1px solid black"
+              borderTop={playerActions.length > 0 ? '3px solid black' : 'none'}
               fontSize="12px"
               p={3}
               textAlign="center"
@@ -144,8 +177,11 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
             >
               GameMaster Actions
             </Text>
-            <MenuItem>Edit Class</MenuItem>
-            <MenuItem>Assign Class</MenuItem>
+            {gmActions.map(action => (
+              <MenuItem key={action} onClick={() => openActionModal(action)}>
+                {action}
+              </MenuItem>
+            ))}
           </>
         )}
       </MenuList>

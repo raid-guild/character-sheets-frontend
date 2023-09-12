@@ -13,7 +13,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 
-import { useActions } from '@/contexts/ActionsContext';
+import { CardTypes, useActions } from '@/contexts/ActionsContext';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character } from '@/utils/types';
@@ -178,57 +178,53 @@ type ActionMenuProps = {
 };
 
 const ActionMenu: React.FC<ActionMenuProps> = ({ character }) => {
-  const { selectCharacter, playerActions, gmActions, openActionModal } =
+  const { selectEntity, playerActions, gmActions, openActionModal } =
     useActions();
 
   return (
-    <>
-      <Menu onOpen={() => selectCharacter(character)}>
-        <MenuButton as={Button} size="sm">
-          Actions
-        </MenuButton>
-        <MenuList>
-          {playerActions.length > 0 && (
-            <>
-              <Text
-                borderBottom="1px solid black"
-                fontSize="12px"
-                p={3}
-                textAlign="center"
-                variant="heading"
-              >
-                Player Actions
-              </Text>
-              {playerActions.map(action => (
-                <MenuItem key={action} onClick={() => openActionModal(action)}>
-                  {action}
-                </MenuItem>
-              ))}
-            </>
-          )}
-          {gmActions.length > 0 && (
-            <>
-              <Text
-                borderBottom="1px solid black"
-                borderTop={
-                  playerActions.length > 0 ? '3px solid black' : 'none'
-                }
-                fontSize="12px"
-                p={3}
-                textAlign="center"
-                variant="heading"
-              >
-                GameMaster Actions
-              </Text>
-              {gmActions.map(action => (
-                <MenuItem key={action} onClick={() => openActionModal(action)}>
-                  {action}
-                </MenuItem>
-              ))}
-            </>
-          )}
-        </MenuList>
-      </Menu>
-    </>
+    <Menu onOpen={() => selectEntity(CardTypes.CHARACTER, character)}>
+      <MenuButton as={Button} size="sm">
+        Actions
+      </MenuButton>
+      <MenuList>
+        {playerActions.length > 0 && (
+          <>
+            <Text
+              borderBottom="1px solid black"
+              fontSize="12px"
+              p={3}
+              textAlign="center"
+              variant="heading"
+            >
+              Player Actions
+            </Text>
+            {playerActions.map(action => (
+              <MenuItem key={action} onClick={() => openActionModal(action)}>
+                {action}
+              </MenuItem>
+            ))}
+          </>
+        )}
+        {gmActions.length > 0 && (
+          <>
+            <Text
+              borderBottom="1px solid black"
+              borderTop={playerActions.length > 0 ? '3px solid black' : 'none'}
+              fontSize="12px"
+              p={3}
+              textAlign="center"
+              variant="heading"
+            >
+              GameMaster Actions
+            </Text>
+            {gmActions.map(action => (
+              <MenuItem key={action} onClick={() => openActionModal(action)}>
+                {action}
+              </MenuItem>
+            ))}
+          </>
+        )}
+      </MenuList>
+    </Menu>
   );
 };

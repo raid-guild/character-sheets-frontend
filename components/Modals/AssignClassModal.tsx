@@ -209,6 +209,10 @@ export const AssignClassModal: React.FC = () => {
       );
     }
 
+    if (game?.classes.length === 0) {
+      return <Text align="center">No classes found.</Text>;
+    }
+
     return (
       <VStack as="form" onSubmit={onAssignClass} spacing={8}>
         <Flex {...group} wrap="wrap" gap={4}>

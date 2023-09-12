@@ -8,6 +8,7 @@ import {
   MenuItem,
   MenuList,
   Text,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
 
@@ -20,6 +21,8 @@ type ItemCardProps = Item & {
 };
 
 export const ItemCard: React.FC<ItemCardProps> = ({ isMaster, ...item }) => {
+  const toast = useToast();
+
   const { itemId, name, description, image, supply } = item;
   return (
     <HStack
@@ -39,7 +42,18 @@ export const ItemCard: React.FC<ItemCardProps> = ({ isMaster, ...item }) => {
           src={image}
           w="100px"
         />
-        <Button size="sm">View</Button>
+        <Button
+          onClick={() => {
+            toast({
+              title: 'Coming soon!',
+              position: 'top',
+              status: 'warning',
+            });
+          }}
+          size="sm"
+        >
+          View
+        </Button>
         <ActionMenu isMaster={isMaster} />
       </VStack>
       <VStack align="flex-start">
@@ -72,6 +86,8 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({
   isMaster,
   ...item
 }) => {
+  const toast = useToast();
+
   const { itemId, name, description, image, supply } = item;
   return (
     <HStack
@@ -85,7 +101,18 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({
     >
       <VStack align="center" h="100%" w="35%">
         <Image alt="item emblem" h="60%" objectFit="cover" src={image} />
-        <Button size="sm">View</Button>
+        <Button
+          onClick={() => {
+            toast({
+              title: 'Coming soon!',
+              position: 'top',
+              status: 'warning',
+            });
+          }}
+          size="sm"
+        >
+          View
+        </Button>
         <ActionMenu isMaster={isMaster} />
       </VStack>
       <VStack align="flex-start">
