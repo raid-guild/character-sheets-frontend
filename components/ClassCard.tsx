@@ -23,7 +23,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   isMaster,
   ...classEntity
 }) => {
-  const { classId, name, description, image, holders, equippers } = classEntity;
+  const { classId, name, description, image } = classEntity;
   return (
     <HStack
       border="3px solid black"
@@ -63,8 +63,8 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         </Text>
 
         <Box background="black" h="3px" my={4} w={20} />
-        <Text>Held By: {holders.length}</Text>
-        <Text>Equipped By: {equippers.length}</Text>
+        <Text>Held By: 0</Text>
+        <Text>Equipped By: 0</Text>
       </VStack>
     </HStack>
   );
@@ -74,7 +74,7 @@ export const SmallClassCard: React.FC<ClassCardProps> = ({
   isMaster,
   ...classEntity
 }) => {
-  const { classId, name, description, image, holders, equippers } = classEntity;
+  const { classId, name, description, image } = classEntity;
   return (
     <HStack
       border="3px solid black"
@@ -103,8 +103,8 @@ export const SmallClassCard: React.FC<ClassCardProps> = ({
         </Text>
 
         <Box background="black" h="3px" my={4} w={20} />
-        <Text fontSize="xs">Held By: {holders.length}</Text>
-        <Text fontSize="xs">Equipped By: {equippers.length}</Text>
+        <Text fontSize="xs">Held By: 0</Text>
+        <Text fontSize="xs">Equipped By: 0</Text>
       </VStack>
     </HStack>
   );

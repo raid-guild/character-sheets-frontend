@@ -24,14 +24,8 @@ export const CharacterCard: React.FC<{
 }> = ({ chainId, character }) => {
   const toast = useToast();
 
-  const { account, classes, items, description, experience, image, name } =
-    character;
+  const { account, classes, description, experience, image, name } = character;
   const readableClasses = classes.map(c => c.name).join(', ');
-
-  const amountOfItems = items.reduce(
-    (acc, item) => acc + Number(item.amount),
-    0,
-  );
 
   return (
     <HStack
@@ -103,7 +97,7 @@ export const CharacterCard: React.FC<{
           </Text>
         </Text>
         <Text>XP: {experience}</Text>
-        <Text>Items: {amountOfItems}</Text>
+        <Text>Items: 0</Text>
       </VStack>
     </HStack>
   );
@@ -115,14 +109,8 @@ export const SmallCharacterCard: React.FC<{
 }> = ({ chainId, character }) => {
   const toast = useToast();
 
-  const { account, classes, description, items, experience, image, name } =
-    character;
+  const { account, classes, description, experience, image, name } = character;
   const readableClasses = classes.map(c => c.name).join(', ');
-
-  const amountOfItems = items.reduce(
-    (acc, item) => acc + Number(item.amount),
-    0,
-  );
 
   return (
     <HStack
@@ -179,7 +167,7 @@ export const SmallCharacterCard: React.FC<{
           {classes.length === 0 ? 'Villager' : shortenText(readableClasses, 32)}
         </Text>
         <Text fontSize="xs">XP: {experience}</Text>
-        <Text fontSize="xs">Items: {amountOfItems}</Text>
+        <Text fontSize="xs">Items: 0</Text>
       </VStack>
     </HStack>
   );

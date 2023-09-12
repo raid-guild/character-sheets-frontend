@@ -1,11 +1,5 @@
 import { useDisclosure } from '@chakra-ui/react';
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
@@ -16,7 +10,6 @@ enum PlayerActions {
 }
 
 enum GameMasterActions {
-  GIVE_ITEMS = 'Give items',
   ASSIGN_CLASS = 'Assign class',
   GIVE_XP = 'Give XP',
 }
@@ -30,7 +23,6 @@ type ActionsContextType = {
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
   assignClassModal: ReturnType<typeof useDisclosure> | undefined;
-  giveItemsModal: ReturnType<typeof useDisclosure> | undefined;
   editCharacterModal: ReturnType<typeof useDisclosure> | undefined;
   giveExpModal: ReturnType<typeof useDisclosure> | undefined;
 };
@@ -44,7 +36,6 @@ const ActionsContext = createContext<ActionsContextType>({
 
   openActionModal: () => {},
   assignClassModal: undefined,
-  giveItemsModal: undefined,
   editCharacterModal: undefined,
   giveExpModal: undefined,
 });
@@ -58,7 +49,6 @@ export const ActionsProvider: React.FC<{
   const { game, isMaster } = useGame();
 
   const assignClassModal = useDisclosure();
-  const giveItemsModal = useDisclosure();
   const editCharacterModal = useDisclosure();
   const giveExpModal = useDisclosure();
 
@@ -90,36 +80,21 @@ export const ActionsProvider: React.FC<{
     return [];
   }, [game, isMaster]);
 
-  const openActionModal = useCallback(
-    (action: PlayerActions | GameMasterActions) => {
-      switch (action) {
-        case GameMasterActions.GIVE_XP:
-          giveExpModal.onOpen();
-          break;
-        case GameMasterActions.GIVE_ITEMS:
-          giveItemsModal.onOpen();
-          break;
-        case GameMasterActions.ASSIGN_CLASS:
-          assignClassModal.onOpen();
-          break;
-        case PlayerActions.EDIT_CHARACTER:
-          editCharacterModal.onOpen();
-          break;
-        default:
-          break;
-      }
-    },
-    [
-      giveExpModal.onOpen,
-      giveItemsModal.onOpen,
-      assignClassModal.onOpen,
-      editCharacterModal.onOpen,
-    ],
-  );
-
-  const selectCharacter = useCallback((character: Character) => {
-    setSelectedCharacter(character);
-  }, []);
+  const openActionModal = (action: PlayerActions | GameMasterActions) => {
+    switch (action) {
+      case GameMasterActions.ASSIGN_CLASS:
+        assignClassModal.onOpen();
+        break;
+      case PlayerActions.EDIT_CHARACTER:
+        editCharacterModal.onOpen();
+        break;
+      case GameMasterActions.GIVE_XP:
+        giveExpModal.onOpen();
+        break;
+      default:
+        break;
+    }
+  };
 
   return (
     <ActionsContext.Provider
@@ -128,11 +103,11 @@ export const ActionsProvider: React.FC<{
         gmActions,
 
         selectedCharacter,
-        selectCharacter,
+        selectCharacter: (character: Character) =>
+          setSelectedCharacter(character),
 
         openActionModal,
         assignClassModal,
-        giveItemsModal,
         editCharacterModal,
         giveExpModal,
       }}

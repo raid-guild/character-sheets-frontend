@@ -227,7 +227,7 @@ export const AssignClassModal: React.FC = () => {
                     src={_class.image}
                     w="100%"
                   />
-                  <Text textAlign="center">{_class.name}</Text>
+                  <Text>{_class.name}</Text>
                 </VStack>
               </RadioCard>
             );

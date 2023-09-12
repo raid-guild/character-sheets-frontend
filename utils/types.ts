@@ -37,7 +37,6 @@ export type Character = Metadata & {
   experience: string;
   uri: string;
   classes: Class[];
-  items: Item[];
 };
 
 export type Class = Metadata & {
@@ -45,8 +44,6 @@ export type Class = Metadata & {
   classId: string;
   uri: string;
   name: string;
-  holders: { id: string }[];
-  equippers: { id: string }[];
 };
 
 export type Item = Metadata & {
@@ -55,8 +52,4 @@ export type Item = Metadata & {
   name: string;
   uri: string;
   supply: string;
-  totalSupply: string;
-  amount: string;
-  holders: { id: string }[];
-  equippers: { id: string }[];
 };

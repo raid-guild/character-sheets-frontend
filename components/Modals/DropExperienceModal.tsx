@@ -48,10 +48,6 @@ export const DropExperienceModal: React.FC = () => {
     [amount],
   );
 
-  useEffect(() => {
-    setShowError(false);
-  }, [amount]);
-
   const resetData = useCallback(() => {
     setAmount('');
     setShowError(false);
