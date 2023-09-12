@@ -75,14 +75,24 @@ export const fetchMetadata = async (uri: string): Promise<Metadata> => {
 export const formatCharacter = async (
   character: CharacterInfoFragment,
   classes: Class[],
+  items: Item[],
 ): Promise<Character> => {
   const metadata = await fetchMetadata(uriToHttp(character.uri)[0]);
-  const characterClassIds = character.heldClasses.map(
-    c => c.classEntity.classId,
-  );
+
   const characterClasses = classes.filter(c =>
-    characterClassIds.includes(c.classId),
+    character.heldClasses.find(h => h.classEntity.classId === c.classId),
   );
+
+  const characterItems: Item[] = [];
+
+  items.forEach(i => {
+    const held = character.heldItems.find(h => h.item.itemId === i.itemId);
+    if (!held) return;
+    characterItems.push({
+      ...i,
+      amount: held.amount,
+    });
+  });
 
   return {
     id: character.id,
@@ -95,6 +105,7 @@ export const formatCharacter = async (
     account: character.account,
     player: character.player,
     classes: characterClasses,
+    items: characterItems,
   };
 };
 
@@ -124,6 +135,8 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     image: uriToHttp(metadata.image)[0],
     itemId: item.itemId,
     supply: item.supply,
+    totalSupply: item.totalSupply,
+    amount: '0',
   };
 };
 
@@ -150,6 +163,7 @@ export const formatGameMeta = async (
 export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
   const metadata = await fetchMetadata(uriToHttp(game.uri)[0]);
   const classes = await Promise.all(game.classes.map(formatClass));
+  const items = await Promise.all(game.items.map(formatItem));
 
   return {
     id: game.id,
@@ -162,10 +176,10 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
     characters: await Promise.all(
-      game.characters.map(c => formatCharacter(c, classes)),
+      game.characters.map(c => formatCharacter(c, classes, items)),
     ),
     classes,
-    items: await Promise.all(game.items.map(formatItem)),
+    items,
     experience: game.experience,
   };
 };

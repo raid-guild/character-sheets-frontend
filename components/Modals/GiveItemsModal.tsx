@@ -1,7 +1,11 @@
 import {
   Button,
   Flex,
+  FormControl,
+  FormHelperText,
+  FormLabel,
   Image,
+  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -23,55 +27,83 @@ import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 
-export const AssignClassModal: React.FC = () => {
+export const GiveItemsModal: React.FC = () => {
   const { game, reload: reloadGame, isMaster } = useGame();
-  const { selectedCharacter, assignClassModal } = useActions();
+  const { selectedCharacter, giveItemsModal } = useActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const toast = useToast();
 
-  const [classId, setClassId] = useState<string>('1');
+  const [itemId, setItemId] = useState<string>('1');
+  const [amount, setAmount] = useState<string>('');
 
-  const [isAssigning, setIsAssigning] = useState<boolean>(false);
+  const [showError, setShowError] = useState<boolean>(false);
+  const [isGiving, setIsGiving] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
-  const invalidClass = useMemo(() => {
-    const selectedCharacterClasses =
-      selectedCharacter?.classes.map(c => c.classId) ?? [];
-    return selectedCharacterClasses.includes(classId);
-  }, [classId, selectedCharacter]);
+  const selectedItem = useMemo(() => {
+    const item = game?.items.find(c => c.itemId === itemId);
+    if (!item) return null;
+    return item;
+  }, [game?.items, itemId]);
 
-  const options = game?.classes.map(c => c.classId) ?? [];
+  const hasError = useMemo(
+    () =>
+      !amount ||
+      BigInt(amount).toString() === 'NaN' ||
+      BigInt(amount) <= BigInt(0) ||
+      BigInt(amount) > BigInt(selectedItem?.supply || '0'),
+    [amount, selectedItem],
+  );
+
+  useEffect(() => {
+    setShowError(false);
+  }, [amount, itemId]);
+
+  const invalidItem = useMemo(() => {
+    if (!selectedItem) return false;
+    const supply = Number(selectedItem.supply);
+    if (Number.isNaN(supply) || supply <= 0) return true;
+    return false;
+  }, [selectedItem]);
+
+  const options = game?.items.map(c => c.itemId) ?? [];
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
-    name: 'class',
+    name: 'item',
     defaultValue: '1',
-    onChange: setClassId,
+    onChange: setItemId,
   });
   const group = getRootProps();
 
   const resetData = useCallback(() => {
+    setAmount('');
     setValue('1');
-    setClassId('1');
-    setIsAssigning(false);
+    setItemId('1');
+    setIsGiving(false);
     setTxHash(null);
     setIsSyncing(false);
     setIsSynced(false);
   }, [setValue]);
 
   useEffect(() => {
-    if (!assignClassModal?.isOpen) {
+    if (!giveItemsModal?.isOpen) {
       resetData();
     }
-  }, [resetData, assignClassModal?.isOpen]);
+  }, [resetData, giveItemsModal?.isOpen]);
 
-  const onAssignClass = useCallback(
+  const onGiveItems = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
-      if (invalidClass) {
+      if (invalidItem) {
+        return;
+      }
+
+      if (hasError) {
+        setShowError(true);
         return;
       }
 
@@ -95,7 +127,7 @@ export const AssignClassModal: React.FC = () => {
         return;
       }
 
-      if (!game?.classesAddress) {
+      if (!game?.itemsAddress) {
         toast({
           description: `Could not find the game.`,
           position: 'top',
@@ -105,13 +137,13 @@ export const AssignClassModal: React.FC = () => {
         return;
       }
 
-      if (game?.classes.length === 0) {
+      if (game?.items.length === 0) {
         toast({
-          description: `No classes found.`,
+          description: `No items found.`,
           position: 'top',
           status: 'error',
         });
-        console.error(`No classes found.`);
+        console.error(`No items found.`);
         return;
       }
 
@@ -125,19 +157,22 @@ export const AssignClassModal: React.FC = () => {
         return;
       }
 
-      setIsAssigning(true);
+      setIsGiving(true);
 
       try {
-        const { characterId } = selectedCharacter;
+        const characters = [selectedCharacter.account as Address];
+        const itemIds = [[BigInt(itemId)]];
+        const amounts = [[BigInt(amount)]];
+
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
-          address: game.classesAddress as Address,
+          address: game.itemsAddress as Address,
           abi: parseAbi([
-            'function assignClass(uint256 characterId, uint256 classId) public',
+            'function dropLoot(address[] calldata nftAddress, uint256[][] calldata itemIds, uint256[][] calldata amounts) external',
           ]),
-          functionName: 'assignClass',
-          args: [BigInt(characterId), BigInt(classId)],
+          functionName: 'dropLoot',
+          args: [characters, itemIds, amounts],
         });
         setTxHash(transactionhash);
 
@@ -161,20 +196,22 @@ export const AssignClassModal: React.FC = () => {
         reloadGame();
       } catch (e) {
         toast({
-          description: `Something went wrong assigning class to ${selectedCharacter.name}.`,
+          description: `Something went wrong giving item(s) to ${selectedCharacter.name}.`,
           position: 'top',
           status: 'error',
         });
         console.error(e);
       } finally {
         setIsSyncing(false);
-        setIsAssigning(false);
+        setIsGiving(false);
       }
     },
     [
-      classId,
+      hasError,
+      amount,
+      itemId,
       isMaster,
-      invalidClass,
+      invalidItem,
       publicClient,
       game,
       reloadGame,
@@ -184,15 +221,15 @@ export const AssignClassModal: React.FC = () => {
     ],
   );
 
-  const isLoading = isAssigning;
-  const isDisabled = isLoading || invalidClass;
+  const isLoading = isGiving;
+  const isDisabled = isLoading || invalidItem;
 
   const content = () => {
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>
-          <Text>Class successfully assigned!</Text>
-          <Button onClick={assignClassModal?.onClose} variant="outline">
+          <Text>Item(s) successfully given!</Text>
+          <Button onClick={giveItemsModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -203,46 +240,64 @@ export const AssignClassModal: React.FC = () => {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Assigning the class to ${selectedCharacter.name}...`}
+          text={`Giving the item(s) to ${selectedCharacter.name}...`}
           txHash={txHash}
         />
       );
     }
 
     return (
-      <VStack as="form" onSubmit={onAssignClass} spacing={8}>
+      <VStack as="form" onSubmit={onGiveItems} spacing={8}>
         <Flex {...group} wrap="wrap" gap={4}>
           {options.map(value => {
             const radio = getRadioProps({ value });
-            const _class = game?.classes.find(c => c.classId === value);
-            if (!_class) return null;
+            const item = game?.items.find(c => c.itemId === value);
+            if (!item) return null;
 
             return (
               <RadioCard key={value} {...radio}>
                 <VStack justify="space-between" h="100%">
                   <Image
-                    alt={`${_class.name} image`}
-                    h="70%"
+                    alt={`${item.name} image`}
+                    h="55%"
                     objectFit="contain"
-                    src={_class.image}
+                    src={item.image}
                     w="100%"
                   />
-                  <Text textAlign="center">{_class.name}</Text>
+                  <Text textAlign="center">{item.name}</Text>
+                  <Text fontSize="xs">
+                    Supply: {`${item.supply} / ${item.totalSupply}`}
+                  </Text>
                 </VStack>
               </RadioCard>
             );
           })}
         </Flex>
-        {invalidClass && (
-          <Text color="red.500">This class is already assigned.</Text>
+        {invalidItem ? (
+          <Text color="red.500">This item has zero supply.</Text>
+        ) : (
+          <FormControl isInvalid={showError}>
+            <FormLabel>Amount</FormLabel>
+            <Input
+              onChange={e => setAmount(e.target.value)}
+              type="number"
+              value={amount}
+            />
+            {showError && (
+              <FormHelperText color="red">
+                Please enter a valid amount. Item supply is{' '}
+                {selectedItem?.supply}.
+              </FormHelperText>
+            )}
+          </FormControl>
         )}
         <Button
           isDisabled={isDisabled}
           isLoading={isLoading}
-          loadingText="Assigning..."
+          loadingText="Giving..."
           type="submit"
         >
-          Assign
+          Give
         </Button>
       </VStack>
     );
@@ -252,13 +307,13 @@ export const AssignClassModal: React.FC = () => {
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={assignClassModal?.isOpen ?? false}
-      onClose={assignClassModal?.onClose ?? (() => {})}
+      isOpen={giveItemsModal?.isOpen ?? false}
+      onClose={giveItemsModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Assign a Class</Text>
+          <Text>Give items</Text>
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>
