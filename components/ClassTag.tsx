@@ -5,11 +5,12 @@ import { Class } from '@/utils/types';
 
 type Size = 'sm' | 'md' | 'lg';
 
-type ClassTagProps = Class & {
+type ClassTagProps = {
+  classEntity: Class;
   size?: Size;
 };
 
-export const ClassTag: React.FC<ClassTagProps> = ({ size, ...classEntity }) => {
+export const ClassTag: React.FC<ClassTagProps> = ({ size, classEntity }) => {
   const { name, image } = classEntity;
   return <ClassTagInner name={name} image={image} size={size} />;
 };
@@ -77,7 +78,6 @@ const ClassTagInner: React.FC<{
       py={py}
       spacing={spacing}
       w="100%"
-      bg="gray.100"
       color="black"
       border="2px solid black"
     >
@@ -88,7 +88,9 @@ const ClassTagInner: React.FC<{
         objectFit="cover"
         src={image}
       />
-      <Text fontSize={fontSize}>{name}</Text>
+      <Text fontWeight="bold" fontSize={fontSize}>
+        {name}
+      </Text>
     </HStack>
   );
 };

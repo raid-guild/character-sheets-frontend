@@ -1,4 +1,4 @@
-import { useDisclosure } from '@chakra-ui/react';
+import { useDisclosure, useToast } from '@chakra-ui/react';
 import {
   createContext,
   useCallback,
@@ -9,13 +9,14 @@ import {
 import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
-import { Character } from '@/utils/types';
+import { Character, Item } from '@/utils/types';
 
-enum PlayerActions {
+export enum PlayerActions {
   EDIT_CHARACTER = 'Edit character',
+  EQUIP_ITEM = 'Equip/Unequip item',
 }
 
-enum GameMasterActions {
+export enum GameMasterActions {
   GIVE_ITEMS = 'Give items',
   ASSIGN_CLASS = 'Assign class',
   GIVE_XP = 'Give XP',
@@ -28,11 +29,15 @@ type ActionsContextType = {
   selectedCharacter: Character | null;
   selectCharacter: (character: Character) => void;
 
+  selectedItem: Item | null;
+  selectItem: (item: Item) => void;
+
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
   assignClassModal: ReturnType<typeof useDisclosure> | undefined;
   giveItemsModal: ReturnType<typeof useDisclosure> | undefined;
   editCharacterModal: ReturnType<typeof useDisclosure> | undefined;
   giveExpModal: ReturnType<typeof useDisclosure> | undefined;
+  equipItemModal: ReturnType<typeof useDisclosure> | undefined;
 };
 
 const ActionsContext = createContext<ActionsContextType>({
@@ -42,11 +47,15 @@ const ActionsContext = createContext<ActionsContextType>({
   selectedCharacter: null,
   selectCharacter: () => {},
 
+  selectedItem: null,
+  selectItem: () => {},
+
   openActionModal: () => {},
   assignClassModal: undefined,
   giveItemsModal: undefined,
   editCharacterModal: undefined,
   giveExpModal: undefined,
+  equipItemModal: undefined,
 });
 
 export const useActions = (): ActionsContextType => useContext(ActionsContext);
@@ -61,10 +70,13 @@ export const ActionsProvider: React.FC<{
   const giveItemsModal = useDisclosure();
   const editCharacterModal = useDisclosure();
   const giveExpModal = useDisclosure();
+  const equipItemModal = useDisclosure();
 
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null,
   );
+
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
   const playerActions = useMemo(() => {
     if (selectedCharacter?.player !== address?.toLowerCase()) {
@@ -90,8 +102,20 @@ export const ActionsProvider: React.FC<{
     return [];
   }, [game, isMaster]);
 
+  const toast = useToast();
+
   const openActionModal = useCallback(
     (action: PlayerActions | GameMasterActions) => {
+      if (!selectedCharacter) {
+        toast({
+          title: 'No character selected',
+          description: 'Please select a character first',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
       switch (action) {
         case GameMasterActions.GIVE_XP:
           giveExpModal.onOpen();
@@ -105,16 +129,31 @@ export const ActionsProvider: React.FC<{
         case PlayerActions.EDIT_CHARACTER:
           editCharacterModal.onOpen();
           break;
+        case PlayerActions.EQUIP_ITEM:
+          if (!selectedItem) {
+            toast({
+              title: 'No item selected',
+              description: 'Please select an item first',
+              status: 'error',
+              duration: 5000,
+              isClosable: true,
+            });
+            return;
+          }
+          equipItemModal.onOpen();
+          break;
         default:
           break;
       }
     },
-    [giveExpModal, giveItemsModal, assignClassModal, editCharacterModal],
+    [
+      giveExpModal,
+      giveItemsModal,
+      assignClassModal,
+      editCharacterModal,
+      equipItemModal,
+    ],
   );
-
-  const selectCharacter = useCallback((character: Character) => {
-    setSelectedCharacter(character);
-  }, []);
 
   return (
     <ActionsContext.Provider
@@ -123,13 +162,17 @@ export const ActionsProvider: React.FC<{
         gmActions,
 
         selectedCharacter,
-        selectCharacter,
+        selectCharacter: setSelectedCharacter,
+
+        selectedItem,
+        selectItem: setSelectedItem,
 
         openActionModal,
         assignClassModal,
         giveItemsModal,
         editCharacterModal,
         giveExpModal,
+        equipItemModal,
       }}
     >
       {children}

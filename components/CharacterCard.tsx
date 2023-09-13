@@ -21,6 +21,7 @@ import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character } from '@/utils/types';
 
 import { ClassTag, VillagerClassTag } from './ClassTag';
+import { ItemTag } from './ItemTag';
 
 export const CharacterCard: React.FC<{
   chainId: number;
@@ -28,100 +29,118 @@ export const CharacterCard: React.FC<{
 }> = ({ chainId, character }) => {
   const toast = useToast();
 
-  const { account, classes, items, description, experience, image, name } =
-    character;
-
-  const amountOfItems = items.reduce(
-    (acc, item) => acc + Number(item.amount),
-    0,
-  );
+  const {
+    characterId,
+    account,
+    classes,
+    heldItems,
+    description,
+    experience,
+    image,
+    name,
+  } = character;
 
   return (
-    <HStack
+    <VStack
       border="3px solid black"
       borderBottom="5px solid black"
       borderRight="5px solid black"
-      h="300px"
       transition="background 0.3s ease"
-      p={4}
+      py={4}
+      px={8}
+      spacing={4}
       w="100%"
-      align="stretch"
     >
-      <VStack w="20%">
-        <Box pos="relative">
-          <Image
-            alt="character avatar"
-            w="120px"
-            h="180px"
-            objectFit="cover"
-            src={image}
-          />
-          <HStack
-            bg="white"
-            border="1px solid black"
-            pos="absolute"
-            right="0"
-            bottom="0"
-            px={1}
-            fontSize="xs"
-          >
-            <Text>{experience} XP</Text>
-          </HStack>
-        </Box>
-        <VStack align="stretch" w="120px">
-          <Button
-            onClick={() => {
-              toast({
-                title: 'Coming soon!',
-                position: 'top',
-                status: 'warning',
-              });
-            }}
-            size="sm"
-            w="100%"
-          >
-            View
-          </Button>
-          <ActionMenu character={character} />
+      <HStack spacing={6} w="100%">
+        <VStack>
+          <Box pos="relative">
+            <Image
+              alt="character avatar"
+              w="120px"
+              h="180px"
+              objectFit="cover"
+              src={image}
+            />
+            <HStack
+              bg="white"
+              border="1px solid black"
+              pos="absolute"
+              right="0"
+              bottom="0"
+              px={1}
+              fontSize="xs"
+            >
+              <Text>{experience} XP</Text>
+            </HStack>
+          </Box>
+          <VStack align="stretch" w="120px">
+            <Button
+              onClick={() => {
+                toast({
+                  title: 'Coming soon!',
+                  position: 'top',
+                  status: 'warning',
+                });
+              }}
+              size="sm"
+              w="100%"
+            >
+              View
+            </Button>
+            <ActionMenu character={character} />
+          </VStack>
         </VStack>
-      </VStack>
-      <VStack align="flex-start" flex={1}>
-        <Text fontSize="lg" fontWeight="bold">
-          {name}
-        </Text>
-        <Text fontSize="sm">{shortenText(description, 130)}</Text>
-        <Link
-          alignItems="center"
-          color="blue"
-          display="flex"
-          fontSize="sm"
-          gap={2}
-          href={`${EXPLORER_URLS[chainId]}/address/${account}`}
-          isExternal
-          p={0}
-        >
-          {shortenAddress(account)}
-          <Image
-            alt="link to new tab"
-            height="14px"
-            src="/icons/new-tab.svg"
-            width="14px"
-          />
-        </Link>
-        <Box background="black" h="3px" my={4} w={20} />
-        <Wrap>
-          <WrapItem>
-            <VillagerClassTag />
-          </WrapItem>
-          {classes.map(classEntity => (
-            <WrapItem key={classEntity.classId}>
-              <ClassTag {...classEntity} />
+        <VStack align="flex-start" flex={1}>
+          <Text fontSize="lg" fontWeight="bold">
+            {name}
+          </Text>
+          <Text fontSize="sm">{shortenText(description, 130)}</Text>
+          <Link
+            alignItems="center"
+            color="blue"
+            display="flex"
+            fontSize="sm"
+            gap={2}
+            href={`${EXPLORER_URLS[chainId]}/address/${account}`}
+            isExternal
+            p={0}
+          >
+            {shortenAddress(account)}
+            <Image
+              alt="link to new tab"
+              height="14px"
+              src="/icons/new-tab.svg"
+              width="14px"
+            />
+          </Link>
+          <Box background="black" h="3px" my={4} w={20} />
+          <Text fontSize="sm">Classes:</Text>
+          <Wrap>
+            <WrapItem>
+              <VillagerClassTag />
             </WrapItem>
-          ))}
-        </Wrap>
-        <Text>Items: {amountOfItems}</Text>
-      </VStack>
-    </HStack>
+            {classes.map(classEntity => (
+              <WrapItem key={classEntity.classId}>
+                <ClassTag classEntity={classEntity} />
+              </WrapItem>
+            ))}
+          </Wrap>
+        </VStack>
+      </HStack>
+      {heldItems.length > 0 && (
+        <VStack w="100%" align="stretch" spacing={4}>
+          <Box background="black" h="3px" my={4} w="50%" />
+          <Text fontSize="sm">Items:</Text>
+          <Wrap>
+            {heldItems.map(item => (
+              <WrapItem key={item.itemId}>
+                <ItemTag item={item} holderId={characterId} />
+              </WrapItem>
+            ))}
+          </Wrap>
+        </VStack>
+      )}
+    </VStack>
   );
 };
 
@@ -131,16 +150,19 @@ export const SmallCharacterCard: React.FC<{
 }> = ({ chainId, character }) => {
   const toast = useToast();
 
-  const { account, classes, description, items, experience, image, name } =
-    character;
-
-  const amountOfItems = items.reduce(
-    (acc, item) => acc + Number(item.amount),
-    0,
-  );
+  const {
+    characterId,
+    account,
+    classes,
+    description,
+    heldItems,
+    experience,
+    image,
+    name,
+  } = character;
 
   return (
-    <HStack
+    <VStack
       border="3px solid black"
       borderBottom="5px solid black"
       borderRight="5px solid black"
@@ -148,83 +170,97 @@ export const SmallCharacterCard: React.FC<{
       p={4}
       spacing={5}
       w="100%"
-      align="stretch"
     >
-      <VStack align="center" h="100%" w="30%">
-        <Box pos="relative">
-          <Image
-            alt="character avatar"
-            w="100px"
-            h="150px"
-            objectFit="cover"
-            src={image}
-          />
-          <HStack
-            bg="white"
-            border="1px solid black"
-            pos="absolute"
-            right="0"
-            bottom="0"
-            px={1}
-            fontSize="2xs"
-          >
-            <Text>{experience} XP</Text>
-          </HStack>
-        </Box>
-        <VStack align="stretch" w="100px">
-          <Button
-            onClick={() => {
-              toast({
-                title: 'Coming soon!',
-                position: 'top',
-                status: 'warning',
-              });
-            }}
-            size="sm"
-            w="100%"
-          >
-            View
-          </Button>
-          <ActionMenu character={character} />
+      <HStack spacing={5} w="100%">
+        <VStack align="stretch" h="100%">
+          <Box pos="relative">
+            <Image
+              alt="character avatar"
+              w="100px"
+              h="150px"
+              objectFit="cover"
+              src={image}
+            />
+            <HStack
+              bg="white"
+              border="1px solid black"
+              pos="absolute"
+              right="0"
+              bottom="0"
+              px={1}
+              fontSize="2xs"
+            >
+              <Text>{experience} XP</Text>
+            </HStack>
+          </Box>
+          <VStack align="stretch" w="100px">
+            <Button
+              onClick={() => {
+                toast({
+                  title: 'Coming soon!',
+                  position: 'top',
+                  status: 'warning',
+                });
+              }}
+              size="sm"
+              w="100%"
+            >
+              View
+            </Button>
+            <ActionMenu character={character} />
+          </VStack>
         </VStack>
-      </VStack>
-      <VStack align="flex-start" flex={1}>
-        <Text fontSize="md" fontWeight="bold">
-          {name}
-        </Text>
-        <Text fontSize="xs">{shortenText(description, 130)}</Text>
-        <Link
-          alignItems="center"
-          color="blue"
-          display="flex"
-          fontSize="sm"
-          gap={2}
-          href={`${EXPLORER_URLS[chainId]}/address/${account}`}
-          isExternal
-          p={0}
-        >
-          {shortenAddress(account)}
-          <Image
-            alt="link to new tab"
-            height="14px"
-            src="/icons/new-tab.svg"
-            width="14px"
-          />
-        </Link>
-        <Box background="black" h="3px" my={2} w={20} />
-        <Wrap>
-          <WrapItem>
-            <VillagerClassTag size="sm" />
-          </WrapItem>
-          {classes.map(classEntity => (
-            <WrapItem key={classEntity.classId}>
-              <ClassTag {...classEntity} size="sm" />
+        <VStack align="flex-start" flex={1}>
+          <Text fontSize="md" fontWeight="bold">
+            {name}
+          </Text>
+          <Text fontSize="xs">{shortenText(description, 130)}</Text>
+          <Link
+            alignItems="center"
+            color="blue"
+            display="flex"
+            fontSize="sm"
+            gap={2}
+            href={`${EXPLORER_URLS[chainId]}/address/${account}`}
+            isExternal
+            p={0}
+          >
+            {shortenAddress(account)}
+            <Image
+              alt="link to new tab"
+              height="14px"
+              src="/icons/new-tab.svg"
+              width="14px"
+            />
+          </Link>
+          <Box background="black" h="3px" my={2} w={20} />
+          <Text fontSize="xs">Classes:</Text>
+          <Wrap>
+            <WrapItem>
+              <VillagerClassTag size="sm" />
             </WrapItem>
-          ))}
-        </Wrap>
-        <Text fontSize="xs">Items: {amountOfItems}</Text>
-      </VStack>
-    </HStack>
+            {classes.map(classEntity => (
+              <WrapItem key={classEntity.classId}>
+                <ClassTag classEntity={classEntity} size="sm" />
+              </WrapItem>
+            ))}
+          </Wrap>
+        </VStack>
+      </HStack>
+      {heldItems.length > 0 && (
+        <VStack w="100%" align="stretch" spacing={4}>
+          <Box background="black" h="3px" my={2} w="50%" />
+          <Text fontSize="xs">Items:</Text>
+          <Wrap>
+            {heldItems.map(item => (
+              <WrapItem key={item.itemId}>
+                <ItemTag item={item} holderId={characterId} size="sm" />
+              </WrapItem>
+            ))}
+          </Wrap>
+        </VStack>
+      )}
+    </VStack>
   );
 };
 

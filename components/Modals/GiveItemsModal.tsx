@@ -266,7 +266,8 @@ export const GiveItemsModal: React.FC = () => {
                   />
                   <Text textAlign="center">{item.name}</Text>
                   <Text fontSize="xs">
-                    Supply: {`${item.supply} / ${item.totalSupply}`}
+                    Supply:{' '}
+                    {`${item.supply.toString()} / ${item.totalSupply.toString()}`}
                   </Text>
                 </VStack>
               </RadioCard>
@@ -286,7 +287,7 @@ export const GiveItemsModal: React.FC = () => {
             {showError && (
               <FormHelperText color="red">
                 Please enter a valid amount. Item supply is{' '}
-                {selectedItem?.supply}.
+                {selectedItem?.supply.toString()}.
               </FormHelperText>
             )}
           </FormControl>
