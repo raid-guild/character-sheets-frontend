@@ -29,6 +29,7 @@ import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
 import { JoinGameModal } from '@/components/Modals/JoinGameModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
+import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
 import { XPPanel } from '@/components/XPPanel';
 import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
 import { GameProvider, useGame } from '@/contexts/GameContext';
@@ -66,8 +67,10 @@ function GamePage(): JSX.Element {
   const { assignClassModal, editCharacterModal, giveExpModal, giveItemsModal } =
     useActions();
   const { isConnected } = useAccount();
-  const joinGameModal = useDisclosure();
   const { chain } = useNetwork();
+
+  const joinGameModal = useDisclosure();
+  const updateGameMetadata = useDisclosure();
 
   const [isConnectedAndMount, setIsConnectedAndMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<
@@ -148,7 +151,7 @@ function GamePage(): JSX.Element {
               />
             </Link>
             {isMaster && (
-              <Button size="sm">
+              <Button onClick={updateGameMetadata.onOpen} size="sm">
                 <Flex align="center" gap={2}>
                   <Image
                     alt="link to new tab"
@@ -262,10 +265,12 @@ function GamePage(): JSX.Element {
     <>
       {content()}
       <JoinGameModal {...joinGameModal} />
-      {giveItemsModal && <GiveItemsModal />}
+      <UpdateGameMetadataModal {...updateGameMetadata} />
+
       {assignClassModal && <AssignClassModal />}
       {editCharacterModal && <UpdateCharacterMetadataModal />}
       {giveExpModal && <DropExperienceModal />}
+      {giveItemsModal && <GiveItemsModal />}
     </>
   );
 }

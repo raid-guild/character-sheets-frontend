@@ -58,6 +58,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
     isUploading,
     isUploaded,
   } = useUploadFile({ fileName: 'gameEmblem' });
+
   const [gameName, setGameName] = useState<string>('');
   const [gameDescription, setGameDescription] = useState<string>('');
   const [gameMasters, setGameMasters] = useState<string>('');
