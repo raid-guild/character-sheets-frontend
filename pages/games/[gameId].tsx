@@ -78,7 +78,7 @@ function GamePage(): JSX.Element {
   const joinGameModal = useDisclosure();
   const updateGameMetadata = useDisclosure();
 
-  const [isConnectedAndMount, setIsConnectedAndMounted] = useState(false);
+  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<
     'characters' | 'xp' | 'classes' | 'items'
   >('characters');
@@ -104,14 +104,6 @@ function GamePage(): JSX.Element {
       return (
         <VStack as="main" pt={20}>
           <Text align="center">Game not found.</Text>
-        </VStack>
-      );
-    }
-
-    if (!isConnectedAndMount) {
-      return (
-        <VStack as="main" pt={20}>
-          <Text align="center">Connect wallet to play this game.</Text>
         </VStack>
       );
     }
@@ -216,11 +208,18 @@ function GamePage(): JSX.Element {
           </AccordionItem>
         </Accordion>
 
-        {character ? (
+        {isConnectedAndMounted && character && (
           <CharacterCard chainId={chainId} character={character} />
-        ) : (
+        )}
+
+        {isConnectedAndMounted && !character && (
           <Button onClick={joinGameModal.onOpen}>Join this Game</Button>
         )}
+
+        {!isConnectedAndMounted && (
+          <Text align="center">Connect wallet to play this game.</Text>
+        )}
+
         <SimpleGrid columns={2} spacing={4} w="100%">
           <Button
             border="3px solid black"
