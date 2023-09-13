@@ -88,9 +88,9 @@ export const ItemTag: React.FC<ItemTagProps> = ({
       p={padding}
       spacing={spacing}
       w={width}
-      bg={isEquipped ? 'black' : 'white'}
-      color={isEquipped ? 'white' : 'black'}
-      border="2px solid black"
+      bg={isEquipped ? 'gold.100' : 'white'}
+      borderColor={isEquipped ? 'gold.400' : 'black'}
+      borderWidth={isEquipped ? '3px' : '2px'}
       h="100%"
       justify="space-between"
     >

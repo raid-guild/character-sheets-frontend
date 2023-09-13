@@ -249,6 +249,12 @@ const Tooltip = {
 
 export const theme = extendTheme({
   config: { initialColorMode: 'light', useSystemColorMode: false },
+  colors: {
+    gold: {
+      100: '#FFFAE2',
+      400: '#DBB865',
+    },
+  },
   components: {
     Button,
     FormLabel,

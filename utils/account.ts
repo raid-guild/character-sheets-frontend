@@ -2,11 +2,12 @@ import {
   Abi,
   Account,
   Chain,
-  WalletClient,
-  WriteContractParameters,
   encodeFunctionData,
   parseAbi,
+  WalletClient,
+  WriteContractParameters,
 } from 'viem';
+
 import { Character } from './types';
 
 export const executeAsCharacter = (

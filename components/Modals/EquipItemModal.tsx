@@ -187,7 +187,8 @@ export const EquipItemModal: React.FC = () => {
       return (
         <VStack py={10} spacing={4}>
           <Text>
-            Item(s) successfully {isEquipped ? 'equipped' : 'unequipped'}!
+            {/* NOTE: Becuase the game data reloads before this text appears, the logic is flipped */}
+            Item(s) successfully {isEquipped ? 'unequipped' : 'equipped'}!
           </Text>
           <Button onClick={equipItemModal?.onClose} variant="outline">
             Close
@@ -200,7 +201,9 @@ export const EquipItemModal: React.FC = () => {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Equipping ${selectedItem.name}.`}
+          text={`${isEquipped ? 'Unequipping' : 'Equipping'} ${
+            selectedItem.name
+          }.`}
           txHash={txHash}
         />
       );
