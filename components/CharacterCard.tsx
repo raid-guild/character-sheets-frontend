@@ -11,12 +11,16 @@ import {
   Text,
   useToast,
   VStack,
+  Wrap,
+  WrapItem,
 } from '@chakra-ui/react';
 
 import { useActions } from '@/contexts/ActionsContext';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character } from '@/utils/types';
+
+import { ClassTag, VillagerClassTag } from './ClassTag';
 
 export const CharacterCard: React.FC<{
   chainId: number;
@@ -26,7 +30,6 @@ export const CharacterCard: React.FC<{
 
   const { account, classes, items, description, experience, image, name } =
     character;
-  const readableClasses = classes.map(c => c.name).join(', ');
 
   const amountOfItems = items.reduce(
     (acc, item) => acc + Number(item.amount),
@@ -42,39 +45,51 @@ export const CharacterCard: React.FC<{
       transition="background 0.3s ease"
       p={4}
       w="100%"
+      align="stretch"
     >
-      <VStack w="30%">
-        <Image
-          alt="character avatar"
-          h="140px"
-          objectFit="cover"
-          src={image}
-          w="100px"
-        />
-        <Button
-          onClick={() => {
-            toast({
-              title: 'Coming soon!',
-              position: 'top',
-              status: 'warning',
-            });
-          }}
-          size="sm"
-        >
-          View
-        </Button>
-        <ActionMenu character={character} />
+      <VStack w="20%">
+        <Box pos="relative">
+          <Image
+            alt="character avatar"
+            w="120px"
+            h="180px"
+            objectFit="cover"
+            src={image}
+          />
+          <HStack
+            bg="white"
+            border="1px solid black"
+            pos="absolute"
+            right="0"
+            bottom="0"
+            px={1}
+            fontSize="xs"
+          >
+            <Text>{experience} XP</Text>
+          </HStack>
+        </Box>
+        <VStack align="stretch" w="120px">
+          <Button
+            onClick={() => {
+              toast({
+                title: 'Coming soon!',
+                position: 'top',
+                status: 'warning',
+              });
+            }}
+            size="sm"
+            w="100%"
+          >
+            View
+          </Button>
+          <ActionMenu character={character} />
+        </VStack>
       </VStack>
-      <VStack align="flex-start">
+      <VStack align="flex-start" flex={1}>
         <Text fontSize="lg" fontWeight="bold">
           {name}
         </Text>
-        <Text>
-          Description:{' '}
-          <Text as="span" fontSize="xs">
-            {shortenText(description, 130)}
-          </Text>
-        </Text>
+        <Text fontSize="sm">{shortenText(description, 130)}</Text>
         <Link
           alignItems="center"
           color="blue"
@@ -94,15 +109,16 @@ export const CharacterCard: React.FC<{
           />
         </Link>
         <Box background="black" h="3px" my={4} w={20} />
-        <Text>
-          Classes:{' '}
-          <Text as="span" fontSize="xs">
-            {classes.length === 0
-              ? 'Villager'
-              : shortenText(readableClasses, 32)}
-          </Text>
-        </Text>
-        <Text>XP: {experience}</Text>
+        <Wrap>
+          <WrapItem>
+            <VillagerClassTag />
+          </WrapItem>
+          {classes.map(classEntity => (
+            <WrapItem key={classEntity.classId}>
+              <ClassTag {...classEntity} />
+            </WrapItem>
+          ))}
+        </Wrap>
         <Text>Items: {amountOfItems}</Text>
       </VStack>
     </HStack>
@@ -117,7 +133,6 @@ export const SmallCharacterCard: React.FC<{
 
   const { account, classes, description, items, experience, image, name } =
     character;
-  const readableClasses = classes.map(c => c.name).join(', ');
 
   const amountOfItems = items.reduce(
     (acc, item) => acc + Number(item.amount),
@@ -131,26 +146,49 @@ export const SmallCharacterCard: React.FC<{
       borderRight="5px solid black"
       transition="background 0.3s ease"
       p={4}
-      spacing={8}
+      spacing={5}
       w="100%"
+      align="stretch"
     >
-      <VStack align="center" h="100%" w="35%">
-        <Image alt="character avatar" h="60%" objectFit="cover" src={image} />
-        <Button
-          onClick={() => {
-            toast({
-              title: 'Coming soon!',
-              position: 'top',
-              status: 'warning',
-            });
-          }}
-          size="sm"
-        >
-          View
-        </Button>
-        <ActionMenu character={character} />
+      <VStack align="center" h="100%" w="30%">
+        <Box pos="relative">
+          <Image
+            alt="character avatar"
+            w="100px"
+            h="150px"
+            objectFit="cover"
+            src={image}
+          />
+          <HStack
+            bg="white"
+            border="1px solid black"
+            pos="absolute"
+            right="0"
+            bottom="0"
+            px={1}
+            fontSize="2xs"
+          >
+            <Text>{experience} XP</Text>
+          </HStack>
+        </Box>
+        <VStack align="stretch" w="100px">
+          <Button
+            onClick={() => {
+              toast({
+                title: 'Coming soon!',
+                position: 'top',
+                status: 'warning',
+              });
+            }}
+            size="sm"
+            w="100%"
+          >
+            View
+          </Button>
+          <ActionMenu character={character} />
+        </VStack>
       </VStack>
-      <VStack align="flex-start">
+      <VStack align="flex-start" flex={1}>
         <Text fontSize="md" fontWeight="bold">
           {name}
         </Text>
@@ -173,12 +211,17 @@ export const SmallCharacterCard: React.FC<{
             width="14px"
           />
         </Link>
-        <Box background="black" h="3px" my={4} w={20} />
-        <Text fontSize="xs">
-          Classes:{' '}
-          {classes.length === 0 ? 'Villager' : shortenText(readableClasses, 32)}
-        </Text>
-        <Text fontSize="xs">XP: {experience}</Text>
+        <Box background="black" h="3px" my={2} w={20} />
+        <Wrap>
+          <WrapItem>
+            <VillagerClassTag size="sm" />
+          </WrapItem>
+          {classes.map(classEntity => (
+            <WrapItem key={classEntity.classId}>
+              <ClassTag {...classEntity} size="sm" />
+            </WrapItem>
+          ))}
+        </Wrap>
         <Text fontSize="xs">Items: {amountOfItems}</Text>
       </VStack>
     </HStack>
@@ -196,7 +239,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ character }) => {
   return (
     <>
       <Menu onOpen={() => selectCharacter(character)}>
-        <MenuButton as={Button} size="sm">
+        <MenuButton as={Button} size="sm" w="100%">
           Actions
         </MenuButton>
         <MenuList>

@@ -124,7 +124,7 @@ function GamePage(): JSX.Element {
     const chainId = chain?.id ?? DEFAULT_CHAIN.id;
 
     return (
-      <VStack as="main" pt={10} pb={20} spacing={10} maxW="2xl" mx="auto">
+      <VStack as="main" pt={10} pb={20} spacing={10} maxW="3xl" mx="auto">
         <HStack w="100%" justify="space-between" spacing={16}>
           <VStack align="stretch">
             <Text fontWeight="bold" fontSize="xl">
