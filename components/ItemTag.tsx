@@ -1,6 +1,7 @@
-import { Button, Image, Text, useToast, VStack } from '@chakra-ui/react';
+import { Button, Image, Text, VStack } from '@chakra-ui/react';
 import { useMemo } from 'react';
 
+import { PlayerActions, useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { Item } from '@/utils/types';
 
@@ -37,7 +38,7 @@ const spacingMap = {
 type Size = 'sm' | 'md' | 'lg';
 
 type ItemTagProps = {
-  holderId: string;
+  holderId?: string;
   item: Item;
   size?: Size;
 };
@@ -47,8 +48,6 @@ export const ItemTag: React.FC<ItemTagProps> = ({
   item,
   holderId,
 }) => {
-  const toast = useToast();
-
   const { fontSize, smallFontSize, width, padding, spacing } = useMemo(
     () => ({
       fontSize: fontSizeMap[size],
@@ -65,15 +64,24 @@ export const ItemTag: React.FC<ItemTagProps> = ({
   const { itemId, name, image, amount } = item;
 
   const showActions = useMemo(() => {
-    return size != 'sm' && holderId === character?.characterId;
+    return (
+      size != 'sm' &&
+      !!holderId &&
+      !!character &&
+      holderId === character.characterId
+    );
   }, [size, character, holderId]);
 
   const isEquipped = useMemo(() => {
     return (
-      holderId === character?.characterId &&
-      character?.equippedItems.find(h => h.itemId === itemId)
+      !!holderId &&
+      !!character &&
+      holderId === character.characterId &&
+      character.equippedItems.find(h => h.itemId === itemId)
     );
   }, [character, holderId, itemId]);
+
+  const { openActionModal, selectCharacter, selectItem } = useActions();
 
   return (
     <VStack
@@ -104,11 +112,11 @@ export const ItemTag: React.FC<ItemTagProps> = ({
       {showActions && (
         <Button
           onClick={() => {
-            toast({
-              title: 'Coming soon!',
-              position: 'top',
-              status: 'warning',
-            });
+            selectItem(item);
+            if (character) {
+              selectCharacter(character);
+            }
+            openActionModal(PlayerActions.EQUIP_ITEM);
           }}
           size="sm"
           w="100%"

@@ -11,7 +11,7 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
@@ -48,6 +48,18 @@ export const EquipItemModal: React.FC = () => {
       ) !== undefined
     );
   }, [character, selectedItem, selectedCharacter]);
+
+  const resetData = useCallback(() => {
+    setTxHash(null);
+    setIsSyncing(false);
+    setIsSynced(false);
+  }, []);
+
+  useEffect(() => {
+    if (!equipItemModal?.isOpen) {
+      resetData();
+    }
+  }, [resetData, equipItemModal?.isOpen]);
 
   const onEquipItem = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {

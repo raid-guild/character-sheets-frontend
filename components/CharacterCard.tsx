@@ -14,8 +14,9 @@ import {
   Wrap,
   WrapItem,
 } from '@chakra-ui/react';
+import { useMemo } from 'react';
 
-import { useActions } from '@/contexts/ActionsContext';
+import { PlayerActions, useActions } from '@/contexts/ActionsContext';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character } from '@/utils/types';
@@ -34,11 +35,24 @@ export const CharacterCard: React.FC<{
     account,
     classes,
     heldItems,
+    equippedItems,
     description,
     experience,
     image,
     name,
   } = character;
+
+  const items = useMemo(() => {
+    const items = [...equippedItems];
+
+    heldItems.forEach(item => {
+      if (!items.find(i => i.itemId === item.itemId)) {
+        items.push(item);
+      }
+    });
+
+    return items;
+  }, [equippedItems, heldItems]);
 
   return (
     <VStack
@@ -127,12 +141,12 @@ export const CharacterCard: React.FC<{
           </Wrap>
         </VStack>
       </HStack>
-      {heldItems.length > 0 && (
+      {items.length > 0 && (
         <VStack w="100%" align="stretch" spacing={4}>
           <Box background="black" h="3px" my={4} w="50%" />
           <Text fontSize="sm">Items:</Text>
           <Wrap>
-            {heldItems.map(item => (
+            {items.map(item => (
               <WrapItem key={item.itemId}>
                 <ItemTag item={item} holderId={characterId} />
               </WrapItem>
@@ -151,11 +165,10 @@ export const SmallCharacterCard: React.FC<{
   const toast = useToast();
 
   const {
-    characterId,
     account,
     classes,
     description,
-    heldItems,
+    equippedItems: items,
     experience,
     image,
     name,
@@ -247,14 +260,14 @@ export const SmallCharacterCard: React.FC<{
           </Wrap>
         </VStack>
       </HStack>
-      {heldItems.length > 0 && (
+      {items.length > 0 && (
         <VStack w="100%" align="stretch" spacing={4}>
           <Box background="black" h="3px" my={2} w="50%" />
           <Text fontSize="xs">Items:</Text>
           <Wrap>
-            {heldItems.map(item => (
+            {items.map(item => (
               <WrapItem key={item.itemId}>
-                <ItemTag item={item} holderId={characterId} size="sm" />
+                <ItemTag item={item} size="sm" />
               </WrapItem>
             ))}
           </Wrap>
@@ -290,11 +303,16 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ character }) => {
               >
                 Player Actions
               </Text>
-              {playerActions.map(action => (
-                <MenuItem key={action} onClick={() => openActionModal(action)}>
-                  {action}
-                </MenuItem>
-              ))}
+              {playerActions
+                .filter(a => a != PlayerActions.EQUIP_ITEM)
+                .map(action => (
+                  <MenuItem
+                    key={action}
+                    onClick={() => openActionModal(action)}
+                  >
+                    {action}
+                  </MenuItem>
+                ))}
             </>
           )}
           {gmActions.length > 0 && (

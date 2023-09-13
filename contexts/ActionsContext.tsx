@@ -1,4 +1,4 @@
-import { useDisclosure, useToast } from '@chakra-ui/react';
+import { useDisclosure } from '@chakra-ui/react';
 import {
   createContext,
   useCallback,
@@ -102,20 +102,8 @@ export const ActionsProvider: React.FC<{
     return [];
   }, [game, isMaster]);
 
-  const toast = useToast();
-
   const openActionModal = useCallback(
     (action: PlayerActions | GameMasterActions) => {
-      if (!selectedCharacter) {
-        toast({
-          title: 'No character selected',
-          description: 'Please select a character first',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-        return;
-      }
       switch (action) {
         case GameMasterActions.GIVE_XP:
           giveExpModal.onOpen();
@@ -130,16 +118,6 @@ export const ActionsProvider: React.FC<{
           editCharacterModal.onOpen();
           break;
         case PlayerActions.EQUIP_ITEM:
-          if (!selectedItem) {
-            toast({
-              title: 'No item selected',
-              description: 'Please select an item first',
-              status: 'error',
-              duration: 5000,
-              isClosable: true,
-            });
-            return;
-          }
           equipItemModal.onOpen();
           break;
         default:

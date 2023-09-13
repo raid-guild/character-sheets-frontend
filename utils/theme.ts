@@ -50,6 +50,7 @@ const Button = {
     },
     outline: {
       color: 'black',
+      background: 'white',
       borderBottom: '5px solid black',
       borderLeft: '3px solid black',
       borderRadius: '0',
