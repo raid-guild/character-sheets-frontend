@@ -26,6 +26,7 @@ import { ClassesPanel } from '@/components/ClassesPanel';
 import { ItemsPanel } from '@/components/ItemsPanel';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
+import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
 import { JoinGameModal } from '@/components/Modals/JoinGameModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
@@ -64,8 +65,13 @@ export default function GamePageOuter(): JSX.Element {
 
 function GamePage(): JSX.Element {
   const { game, character, isMaster, loading } = useGame();
-  const { assignClassModal, editCharacterModal, giveExpModal, giveItemsModal } =
-    useActions();
+  const {
+    assignClassModal,
+    editCharacterModal,
+    giveExpModal,
+    giveItemsModal,
+    equipItemModal,
+  } = useActions();
   const { isConnected } = useAccount();
   const { chain } = useNetwork();
 
@@ -124,7 +130,7 @@ function GamePage(): JSX.Element {
     const chainId = chain?.id ?? DEFAULT_CHAIN.id;
 
     return (
-      <VStack as="main" pt={10} pb={20} spacing={10} maxW="2xl" mx="auto">
+      <VStack as="main" pt={10} pb={20} spacing={10} maxW="3xl" mx="auto">
         <HStack w="100%" justify="space-between" spacing={16}>
           <VStack align="stretch">
             <Text fontWeight="bold" fontSize="xl">
@@ -271,6 +277,7 @@ function GamePage(): JSX.Element {
       {editCharacterModal && <UpdateCharacterMetadataModal />}
       {giveExpModal && <DropExperienceModal />}
       {giveItemsModal && <GiveItemsModal />}
+      {equipItemModal && <EquipItemModal />}
     </>
   );
 }

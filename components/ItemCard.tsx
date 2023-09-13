@@ -12,6 +12,8 @@ import {
   VStack,
 } from '@chakra-ui/react';
 
+import { PlayerActions, useActions } from '@/contexts/ActionsContext';
+import { useGame } from '@/contexts/GameContext';
 import { shortenText } from '@/utils/helpers';
 import { Item } from '@/utils/types';
 
@@ -33,6 +35,25 @@ export const ItemCard: React.FC<ItemCardProps> = ({ isMaster, ...item }) => {
     holders,
     equippers,
   } = item;
+
+  const { character } = useGame();
+
+  const isHeld =
+    character?.heldItems.find(h => h.itemId === item.itemId) !== undefined;
+  const isEquipped =
+    character?.equippedItems.find(e => e.itemId === item.itemId) !== undefined;
+
+  const holdersDisplay = isHeld
+    ? holders.length === 1
+      ? 'you'
+      : `you and ${holders.length - 1} others`
+    : holders.length;
+  const equippersDisplay = isEquipped
+    ? equippers.length === 1
+      ? 'you'
+      : `you and ${equippers.length - 1} others`
+    : equippers.length;
+
   return (
     <HStack
       border="3px solid black"
@@ -63,7 +84,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ isMaster, ...item }) => {
         >
           View
         </Button>
-        <ActionMenu isMaster={isMaster} />
+        <ActionMenu isMaster={isMaster} item={item} />
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="lg" fontWeight="bold">
@@ -84,10 +105,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({ isMaster, ...item }) => {
 
         <Box background="black" h="3px" my={4} w={20} />
         <Text>
-          Supply: {supply} / {totalSupply}
+          Supply: {supply.toString()} / {totalSupply.toString()}
         </Text>
-        <Text>Held By: {holders.length}</Text>
-        <Text>Equipped By: {equippers.length}</Text>
+        <Text>Held By: {holdersDisplay}</Text>
+        <Text>Equipped By: {equippersDisplay}</Text>
       </VStack>
     </HStack>
   );
@@ -109,6 +130,25 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({
     holders,
     equippers,
   } = item;
+
+  const { character } = useGame();
+
+  const isHeld =
+    character?.heldItems.find(h => h.itemId === item.itemId) !== undefined;
+  const isEquipped =
+    character?.equippedItems.find(e => e.itemId === item.itemId) !== undefined;
+
+  const holdersDisplay = isHeld
+    ? holders.length === 1
+      ? 'you'
+      : `you and ${holders.length - 1} others`
+    : holders.length;
+  const equippersDisplay = isEquipped
+    ? equippers.length === 1
+      ? 'you'
+      : `you and ${equippers.length - 1} others`
+    : equippers.length;
+
   return (
     <HStack
       border="3px solid black"
@@ -133,7 +173,7 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({
         >
           View
         </Button>
-        <ActionMenu isMaster={isMaster} />
+        <ActionMenu isMaster={isMaster} item={item} />
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="md" fontWeight="bold">
@@ -149,10 +189,10 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({
 
         <Box background="black" h="3px" my={4} w={20} />
         <Text fontSize="xs">
-          Supply: {supply} / {totalSupply}
+          Supply: {supply.toString()} / {totalSupply.toString()}
         </Text>
-        <Text fontSize="xs">Held By: {holders.length}</Text>
-        <Text fontSize="xs">Equipped By: {equippers.length}</Text>
+        <Text fontSize="xs">Held By: {holdersDisplay}</Text>
+        <Text fontSize="xs">Equipped By: {equippersDisplay}</Text>
       </VStack>
     </HStack>
   );
@@ -160,43 +200,53 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({
 
 type ActionMenuProps = {
   isMaster: boolean;
+  item: Item;
 };
 
-const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
+const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster, item }) => {
   const toast = useToast();
+  const { selectItem, selectCharacter, openActionModal } = useActions();
+  const { character } = useGame();
+
+  const isHeld =
+    character?.heldItems.find(h => h.itemId === item.itemId) !== undefined;
+  const isEquipped =
+    character?.equippedItems.find(e => e.itemId === item.itemId) !== undefined;
 
   return (
-    <Menu>
+    <Menu
+      onOpen={() => {
+        selectItem(item);
+        if (character) {
+          selectCharacter(character);
+        }
+      }}
+    >
       <MenuButton as={Button} size="sm">
         Actions
       </MenuButton>
       <MenuList>
-        <Text
-          borderBottom="1px solid black"
-          fontSize="12px"
-          p={3}
-          textAlign="center"
-          variant="heading"
-        >
-          Player Actions
-        </Text>
-        {/* TODO: Check if held by character */}
-        <MenuItem
-          onClick={() => {
-            toast({
-              title: 'Coming soon!',
-              position: 'top',
-              status: 'warning',
-            });
-          }}
-        >
-          Equip
-        </MenuItem>
+        {isHeld && (
+          <>
+            <Text
+              borderBottom="1px solid black"
+              fontSize="12px"
+              p={3}
+              textAlign="center"
+              variant="heading"
+            >
+              Player Actions
+            </Text>
+            <MenuItem onClick={() => openActionModal(PlayerActions.EQUIP_ITEM)}>
+              {isEquipped ? 'Unequip Item' : 'Equip'}
+            </MenuItem>
+          </>
+        )}
         {isMaster && (
           <>
             <Text
               borderBottom="1px solid black"
-              borderTop="3px solid black"
+              borderTop={isHeld ? '3px solid black' : 'none'}
               fontSize="12px"
               p={3}
               textAlign="center"

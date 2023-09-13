@@ -83,14 +83,23 @@ export const formatCharacter = async (
     character.heldClasses.find(h => h.classEntity.classId === c.classId),
   );
 
-  const characterItems: Item[] = [];
+  const heldItems: Item[] = [];
+  const equippedItems: Item[] = [];
 
   items.forEach(i => {
     const held = character.heldItems.find(h => h.item.itemId === i.itemId);
     if (!held) return;
-    characterItems.push({
+    heldItems.push({
       ...i,
-      amount: held.amount,
+      amount: BigInt(held.amount),
+    });
+    const equipped = character.equippedItems.find(
+      e => e.item.itemId === i.itemId,
+    );
+    if (!equipped) return;
+    equippedItems.push({
+      ...i,
+      amount: BigInt(equipped.heldItem.amount),
     });
   });
 
@@ -105,7 +114,8 @@ export const formatCharacter = async (
     account: character.account,
     player: character.player,
     classes: characterClasses,
-    items: characterItems,
+    heldItems,
+    equippedItems,
   };
 };
 
@@ -136,9 +146,9 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
     itemId: item.itemId,
-    supply: item.supply,
-    totalSupply: item.totalSupply,
-    amount: '0',
+    supply: BigInt(item.supply),
+    totalSupply: BigInt(item.totalSupply),
+    amount: BigInt(0),
     holders: item.holders,
     equippers: item.equippers,
   };

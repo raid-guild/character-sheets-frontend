@@ -22,6 +22,14 @@ fragment CharacterInfo on Character {
       ...ItemInfo
     }
   }
+  equippedItems {
+    heldItem {
+      amount
+    }
+    item {
+      ...ItemInfo
+    }
+  }
 }
 
 fragment ClassInfo on Class {
