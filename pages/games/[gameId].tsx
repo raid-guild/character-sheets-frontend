@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionPanel,
   Button,
+  Flex,
   HStack,
   Image,
   Link,
@@ -28,6 +29,7 @@ import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
 import { JoinGameModal } from '@/components/Modals/JoinGameModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
+import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
 import { XPPanel } from '@/components/XPPanel';
 import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
 import { GameProvider, useGame } from '@/contexts/GameContext';
@@ -61,12 +63,14 @@ export default function GamePageOuter(): JSX.Element {
 }
 
 function GamePage(): JSX.Element {
-  const { game, character, loading } = useGame();
+  const { game, character, isMaster, loading } = useGame();
   const { assignClassModal, editCharacterModal, giveExpModal, giveItemsModal } =
     useActions();
   const { isConnected } = useAccount();
-  const joinGameModal = useDisclosure();
   const { chain } = useNetwork();
+
+  const joinGameModal = useDisclosure();
+  const updateGameMetadata = useDisclosure();
 
   const [isConnectedAndMount, setIsConnectedAndMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<
@@ -142,10 +146,23 @@ function GamePage(): JSX.Element {
               <Image
                 alt="link to new tab"
                 height="14px"
-                src="/new-tab.svg"
+                src="/icons/new-tab.svg"
                 width="14px"
               />
             </Link>
+            {isMaster && (
+              <Button onClick={updateGameMetadata.onOpen} size="sm">
+                <Flex align="center" gap={2}>
+                  <Image
+                    alt="link to new tab"
+                    height="14px"
+                    src="/icons/edit.svg"
+                    width="14px"
+                  />
+                  Edit
+                </Flex>
+              </Button>
+            )}
           </VStack>
           <Image
             alt="game emblem"
@@ -183,7 +200,7 @@ function GamePage(): JSX.Element {
                     <Image
                       alt="link to new tab"
                       height="14px"
-                      src="/new-tab.svg"
+                      src="/icons/new-tab.svg"
                       width="14px"
                     />
                   </Link>
@@ -248,10 +265,12 @@ function GamePage(): JSX.Element {
     <>
       {content()}
       <JoinGameModal {...joinGameModal} />
-      {giveItemsModal && <GiveItemsModal />}
+      <UpdateGameMetadataModal {...updateGameMetadata} />
+
       {assignClassModal && <AssignClassModal />}
       {editCharacterModal && <UpdateCharacterMetadataModal />}
       {giveExpModal && <DropExperienceModal />}
+      {giveItemsModal && <GiveItemsModal />}
     </>
   );
 }

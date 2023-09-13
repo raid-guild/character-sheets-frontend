@@ -58,6 +58,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
     isUploading,
     isUploaded,
   } = useUploadFile({ fileName: 'gameEmblem' });
+
   const [gameName, setGameName] = useState<string>('');
   const [gameDescription, setGameDescription] = useState<string>('');
   const [gameMasters, setGameMasters] = useState<string>('');
@@ -410,7 +411,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
                 alt="down arrow"
                 height="14px"
                 mb={2}
-                src="/question-mark.svg"
+                src="/icons/question-mark.svg"
                 width="14px"
               />
             </Tooltip>
@@ -439,7 +440,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
                 alt="down arrow"
                 height="14px"
                 mb={2}
-                src="/question-mark.svg"
+                src="/icons/question-mark.svg"
                 width="14px"
               />
             </Tooltip>

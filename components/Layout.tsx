@@ -123,7 +123,7 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
                       alt="down arrow"
                       height={4}
                       pb={1}
-                      src="/arrow-down.svg"
+                      src="/icons/arrow-down.svg"
                       width={4}
                     />
                   </Flex>
