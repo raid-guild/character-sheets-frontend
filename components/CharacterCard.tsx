@@ -89,7 +89,7 @@ export const CharacterCard: React.FC<{
           <Image
             alt="link to new tab"
             height="14px"
-            src="/new-tab.svg"
+            src="/icons/new-tab.svg"
             width="14px"
           />
         </Link>
@@ -169,7 +169,7 @@ export const SmallCharacterCard: React.FC<{
           <Image
             alt="link to new tab"
             height="14px"
-            src="/new-tab.svg"
+            src="/icons/new-tab.svg"
             width="14px"
           />
         </Link>

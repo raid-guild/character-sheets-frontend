@@ -410,7 +410,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
                 alt="down arrow"
                 height="14px"
                 mb={2}
-                src="/question-mark.svg"
+                src="/icons/question-mark.svg"
                 width="14px"
               />
             </Tooltip>
@@ -439,7 +439,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
                 alt="down arrow"
                 height="14px"
                 mb={2}
-                src="/question-mark.svg"
+                src="/icons/question-mark.svg"
                 width="14px"
               />
             </Tooltip>

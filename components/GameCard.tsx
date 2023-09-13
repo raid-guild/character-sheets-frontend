@@ -74,7 +74,7 @@ export const GameCard: React.FC<GameCardProps> = ({
           <Image
             alt="link to new tab"
             height="14px"
-            src="/new-tab.svg"
+            src="/icons/new-tab.svg"
             width="14px"
           />
         </Link>

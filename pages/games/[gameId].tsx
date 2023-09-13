@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionPanel,
   Button,
+  Flex,
   HStack,
   Image,
   Link,
@@ -61,7 +62,7 @@ export default function GamePageOuter(): JSX.Element {
 }
 
 function GamePage(): JSX.Element {
-  const { game, character, loading } = useGame();
+  const { game, character, isMaster, loading } = useGame();
   const { assignClassModal, editCharacterModal, giveExpModal, giveItemsModal } =
     useActions();
   const { isConnected } = useAccount();
@@ -142,10 +143,23 @@ function GamePage(): JSX.Element {
               <Image
                 alt="link to new tab"
                 height="14px"
-                src="/new-tab.svg"
+                src="/icons/new-tab.svg"
                 width="14px"
               />
             </Link>
+            {isMaster && (
+              <Button size="sm">
+                <Flex align="center" gap={2}>
+                  <Image
+                    alt="link to new tab"
+                    height="14px"
+                    src="/icons/edit.svg"
+                    width="14px"
+                  />
+                  Edit
+                </Flex>
+              </Button>
+            )}
           </VStack>
           <Image
             alt="game emblem"
@@ -183,7 +197,7 @@ function GamePage(): JSX.Element {
                     <Image
                       alt="link to new tab"
                       height="14px"
-                      src="/new-tab.svg"
+                      src="/icons/new-tab.svg"
                       width="14px"
                     />
                   </Link>
