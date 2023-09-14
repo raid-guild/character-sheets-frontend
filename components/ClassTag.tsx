@@ -85,7 +85,7 @@ const ClassTagInner: React.FC<{
         alt="class emblem"
         h={imageHeight}
         w={imageWidth}
-        objectFit="cover"
+        objectFit="contain"
         src={image}
       />
       <Text fontWeight="bold" fontSize={fontSize}>

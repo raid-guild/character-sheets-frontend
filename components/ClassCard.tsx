@@ -41,7 +41,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         <Image
           alt="class emblem"
           h="140px"
-          objectFit="cover"
+          objectFit="contain"
           src={image}
           w="100px"
         />
@@ -102,7 +102,7 @@ export const SmallClassCard: React.FC<ClassCardProps> = ({
       w="100%"
     >
       <VStack align="center" h="100%" w="35%">
-        <Image alt="class emblem" h="60%" objectFit="cover" src={image} />
+        <Image alt="class emblem" h="60%" objectFit="contain" src={image} />
         <Button
           onClick={() => {
             toast({

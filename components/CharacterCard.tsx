@@ -24,6 +24,9 @@ import { Character } from '@/utils/types';
 import { ClassTag, VillagerClassTag } from './ClassTag';
 import { ItemTag } from './ItemTag';
 
+const DEMO_WARRIOR_IMAGE =
+  'https://ipfs.io/ipfs/bafybeigjgzwetsye6mdolqekhhlktpzoehtpnrhfpgppmb6bp6dejkybim/warrior_without_sword.svg';
+
 export const CharacterCard: React.FC<{
   chainId: number;
   character: Character;
@@ -54,6 +57,21 @@ export const CharacterCard: React.FC<{
     return items;
   }, [equippedItems, heldItems]);
 
+  const hasWarriorClass = useMemo(
+    () => classes.find(c => c.name === 'Warrior') !== undefined,
+    [classes],
+  );
+
+  const hasSwordItemEquipped = useMemo(
+    () => equippedItems.find(i => i.name === 'Sword') !== undefined,
+    [equippedItems],
+  );
+
+  const warriorClassImage = useMemo(
+    () => classes.find(c => c.name === 'Warrior')?.image ?? '',
+    [classes],
+  );
+
   return (
     <VStack
       border="3px solid black"
@@ -72,8 +90,14 @@ export const CharacterCard: React.FC<{
               alt="character avatar"
               w="120px"
               h="180px"
-              objectFit="cover"
-              src={image}
+              objectFit="contain"
+              src={
+                hasSwordItemEquipped && hasWarriorClass
+                  ? warriorClassImage
+                  : hasWarriorClass
+                  ? DEMO_WARRIOR_IMAGE
+                  : image
+              }
             />
             <HStack
               bg="white"
@@ -174,6 +198,21 @@ export const SmallCharacterCard: React.FC<{
     name,
   } = character;
 
+  const hasWarriorClass = useMemo(
+    () => classes.find(c => c.name === 'Warrior') !== undefined,
+    [classes],
+  );
+
+  const hasSwordItemEquipped = useMemo(
+    () => items.find(i => i.name === 'Sword') !== undefined,
+    [items],
+  );
+
+  const warriorClassImage = useMemo(
+    () => classes.find(c => c.name === 'Warrior')?.image ?? '',
+    [classes],
+  );
+
   return (
     <VStack
       border="3px solid black"
@@ -192,7 +231,13 @@ export const SmallCharacterCard: React.FC<{
               w="100px"
               h="150px"
               objectFit="cover"
-              src={image}
+              src={
+                hasSwordItemEquipped && hasWarriorClass
+                  ? warriorClassImage
+                  : hasWarriorClass
+                  ? DEMO_WARRIOR_IMAGE
+                  : image
+              }
             />
             <HStack
               bg="white"
@@ -263,7 +308,7 @@ export const SmallCharacterCard: React.FC<{
       {items.length > 0 && (
         <VStack w="100%" align="stretch" spacing={4}>
           <Box background="black" h="3px" my={2} w="50%" />
-          <Text fontSize="xs">Items:</Text>
+          <Text fontSize="xs">Equipped items:</Text>
           <Wrap>
             {items.map(item => (
               <WrapItem key={item.itemId}>
