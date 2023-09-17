@@ -9,11 +9,11 @@ import {
   MenuItem,
   MenuList,
   Text,
-  useToast,
   VStack,
   Wrap,
   WrapItem,
 } from '@chakra-ui/react';
+import NextLink from 'next/link';
 import { useMemo } from 'react';
 
 import { PlayerActions, useActions } from '@/contexts/ActionsContext';
@@ -28,9 +28,8 @@ export const CharacterCard: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
-  const toast = useToast();
-
   const {
+    id,
     characterId,
     account,
     classes,
@@ -88,17 +87,7 @@ export const CharacterCard: React.FC<{
             </HStack>
           </Box>
           <VStack align="stretch" w="120px">
-            <Button
-              onClick={() => {
-                toast({
-                  title: 'Coming soon!',
-                  position: 'top',
-                  status: 'warning',
-                });
-              }}
-              size="sm"
-              w="100%"
-            >
+            <Button as={NextLink} href={`/characters/${id}`} size="sm" w="100%">
               View
             </Button>
             <ActionMenu character={character} />
@@ -162,9 +151,8 @@ export const SmallCharacterCard: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
-  const toast = useToast();
-
   const {
+    id,
     account,
     classes,
     description,
@@ -207,17 +195,7 @@ export const SmallCharacterCard: React.FC<{
             </HStack>
           </Box>
           <VStack align="stretch" w="100px">
-            <Button
-              onClick={() => {
-                toast({
-                  title: 'Coming soon!',
-                  position: 'top',
-                  status: 'warning',
-                });
-              }}
-              size="sm"
-              w="100%"
-            >
+            <Button as={NextLink} href={`/characters/${id}`} size="sm" w="100%">
               View
             </Button>
             <ActionMenu character={character} />
