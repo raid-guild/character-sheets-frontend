@@ -15,7 +15,7 @@ import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { isAddress } from 'viem';
-import { useNetwork } from 'wagmi';
+import { useAccount, useNetwork } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { ClassTag, VillagerClassTag } from '@/components/ClassTag';
@@ -61,6 +61,7 @@ export default function CharacterPageOuter(): JSX.Element {
 
 function CharacterPage(): JSX.Element {
   const { game, pageCharacter, loading } = useGame();
+  const { isConnected } = useAccount();
   const { chain } = useNetwork();
   const {
     assignClassModal,
@@ -157,9 +158,11 @@ function CharacterPage(): JSX.Element {
                 w="14px"
               />
             </Link>
-            <Box w="100px">
-              <CharacterActionMenu character={pageCharacter} />
-            </Box>
+            {isConnected && (
+              <Box w="100px">
+                <CharacterActionMenu character={pageCharacter} />
+              </Box>
+            )}
             <Box background="black" h="3px" my={4} w={20} />
             <Text fontSize="sm">Classes:</Text>
             <Wrap>

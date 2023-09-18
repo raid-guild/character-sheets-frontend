@@ -11,6 +11,7 @@ import {
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { useMemo } from 'react';
+import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { EXPLORER_URLS } from '@/utils/constants';
@@ -24,6 +25,8 @@ export const CharacterCard: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
+  const { isConnected } = useAccount();
+
   const {
     id,
     characterId,
@@ -86,7 +89,7 @@ export const CharacterCard: React.FC<{
             <Button as={NextLink} href={`/characters/${id}`} size="sm" w="100%">
               View
             </Button>
-            <CharacterActionMenu character={character} />
+            {isConnected && <CharacterActionMenu character={character} />}
           </VStack>
         </VStack>
         <VStack align="flex-start" flex={1}>
@@ -147,6 +150,8 @@ export const SmallCharacterCard: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
+  const { isConnected } = useAccount();
+
   const {
     id,
     account,
@@ -194,7 +199,7 @@ export const SmallCharacterCard: React.FC<{
             <Button as={NextLink} href={`/characters/${id}`} size="sm" w="100%">
               View
             </Button>
-            <CharacterActionMenu character={character} />
+            {isConnected && <CharacterActionMenu character={character} />}
           </VStack>
         </VStack>
         <VStack align="flex-start" flex={1}>
