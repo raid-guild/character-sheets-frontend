@@ -15,7 +15,7 @@ import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { isAddress } from 'viem';
-import { useAccount, useNetwork } from 'wagmi';
+import { useNetwork } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { ClassTag, VillagerClassTag } from '@/components/ClassTag';
@@ -61,7 +61,6 @@ export default function CharacterPageOuter(): JSX.Element {
 
 function CharacterPage(): JSX.Element {
   const { game, pageCharacter, loading } = useGame();
-  const { isConnected } = useAccount();
   const { chain } = useNetwork();
   const {
     assignClassModal,
@@ -71,18 +70,9 @@ function CharacterPage(): JSX.Element {
     equipItemModal,
   } = useActions();
 
-  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<'inventory' | 'transactions'>(
     'inventory',
   );
-
-  useEffect(() => {
-    if (isConnected) {
-      setIsConnectedAndMounted(true);
-    } else {
-      setIsConnectedAndMounted(false);
-    }
-  }, [isConnected]);
 
   const chainId = chain?.id ?? DEFAULT_CHAIN.id;
 
@@ -101,7 +91,7 @@ function CharacterPage(): JSX.Element {
   }, [pageCharacter]);
 
   const content = () => {
-    if (loading || !isConnectedAndMounted) {
+    if (loading) {
       return (
         <VStack as="main" pt={20}>
           <Spinner size="lg" />
