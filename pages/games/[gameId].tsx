@@ -152,7 +152,7 @@ function GamePage(): JSX.Element {
               <Button onClick={updateGameMetadata.onOpen} size="sm">
                 <Flex align="center" gap={2}>
                   <Image
-                    alt="link to new tab"
+                    alt="edit"
                     height="14px"
                     src="/icons/edit.svg"
                     width="14px"

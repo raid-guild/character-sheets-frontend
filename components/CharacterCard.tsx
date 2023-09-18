@@ -133,7 +133,7 @@ export const CharacterCard: React.FC<{
       {items.length > 0 && (
         <VStack w="100%" align="stretch" spacing={4}>
           <Box background="black" h="3px" my={4} w="50%" />
-          <Text fontSize="sm">Items:</Text>
+          <Text fontSize="sm">Inventory:</Text>
           <Wrap>
             {items.map(item => (
               <WrapItem key={item.itemId}>
@@ -241,7 +241,7 @@ export const SmallCharacterCard: React.FC<{
       {items.length > 0 && (
         <VStack w="100%" align="stretch" spacing={4}>
           <Box background="black" h="3px" my={2} w="50%" />
-          <Text fontSize="xs">Items:</Text>
+          <Text fontSize="xs">Equipped items:</Text>
           <Wrap>
             {items.map(item => (
               <WrapItem key={item.itemId}>
