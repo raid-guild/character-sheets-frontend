@@ -11,6 +11,7 @@ import {
   Wrap,
   WrapItem,
 } from '@chakra-ui/react';
+import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { isAddress } from 'viem';
@@ -59,7 +60,7 @@ export default function CharacterPageOuter(): JSX.Element {
 }
 
 function CharacterPage(): JSX.Element {
-  const { pageCharacter, loading } = useGame();
+  const { game, pageCharacter, loading } = useGame();
   const { isConnected } = useAccount();
   const { chain } = useNetwork();
   const {
@@ -108,7 +109,7 @@ function CharacterPage(): JSX.Element {
       );
     }
 
-    if (!pageCharacter) {
+    if (!(pageCharacter && game)) {
       return (
         <VStack as="main" pt={20}>
           <Text align="center">Character not found.</Text>
@@ -128,6 +129,19 @@ function CharacterPage(): JSX.Element {
 
     return (
       <VStack as="main" pt={10} pb={20} spacing={10} maxW="2xl" mx="auto">
+        <Link
+          alignItems="center"
+          alignSelf="flex-start"
+          as={NextLink}
+          display="flex"
+          gap={2}
+          href={`/games/${game.id}`}
+          size="sm"
+          w="auto"
+        >
+          <Image alt="back arrow" h="14px" src="/icons/arrow-back.svg" />
+          Back to {game.name}
+        </Link>
         <HStack w="100%" justify="space-between" spacing={16}>
           <VStack align="stretch">
             <Text fontWeight="bold" fontSize="xl">
