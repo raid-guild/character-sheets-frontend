@@ -140,7 +140,7 @@ function CharacterPage(): JSX.Element {
           w="auto"
         >
           <Image alt="back arrow" h="14px" src="/icons/arrow-back.svg" />
-          Back to {game.name}
+          View {game.name}
         </Link>
         <HStack w="100%" justify="space-between" spacing={16}>
           <VStack align="stretch">
