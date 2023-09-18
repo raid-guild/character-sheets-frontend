@@ -16,9 +16,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { isAddress } from 'viem';
 import { useAccount, useNetwork } from 'wagmi';
 
+import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { ClassTag, VillagerClassTag } from '@/components/ClassTag';
 import { ItemTag } from '@/components/ItemTag';
-import { ActionsProvider } from '@/contexts/ActionsContext';
+import { AssignClassModal } from '@/components/Modals/AssignClassModal';
+import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
+import { EquipItemModal } from '@/components/Modals/EquipItemModal';
+import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
+import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
+import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
 import { GameProvider, useGame } from '@/contexts/GameContext';
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { EXPLORER_URLS } from '@/utils/constants';
@@ -56,6 +62,13 @@ function CharacterPage(): JSX.Element {
   const { pageCharacter, loading } = useGame();
   const { isConnected } = useAccount();
   const { chain } = useNetwork();
+  const {
+    assignClassModal,
+    editCharacterModal,
+    giveExpModal,
+    giveItemsModal,
+    equipItemModal,
+  } = useActions();
 
   const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<'inventory' | 'transactions'>(
@@ -135,24 +148,14 @@ function CharacterPage(): JSX.Element {
               {shortenAddress(account)}
               <Image
                 alt="link to new tab"
-                height="14px"
+                h="14px"
                 src="/icons/new-tab.svg"
-                width="14px"
+                w="14px"
               />
             </Link>
-            {/* {isOwner && (
-              <Button onClick={updateCharacterMetadata.onOpen} size="sm">
-                <Flex align="center" gap={2}>
-                  <Image
-                    alt="link to new tab"
-                    height="14px"
-                    src="/icons/edit.svg"
-                    width="14px"
-                  />
-                  Edit
-                </Flex>
-              </Button>
-            )} */}
+            <Box w="100px">
+              <CharacterActionMenu character={pageCharacter} />
+            </Box>
             <Box background="black" h="3px" my={4} w={20} />
             <Text fontSize="sm">Classes:</Text>
             <Wrap>
@@ -224,5 +227,14 @@ function CharacterPage(): JSX.Element {
     );
   };
 
-  return <>{content()}</>;
+  return (
+    <>
+      {content()}
+      {assignClassModal && <AssignClassModal />}
+      {editCharacterModal && <UpdateCharacterMetadataModal />}
+      {giveExpModal && <DropExperienceModal />}
+      {giveItemsModal && <GiveItemsModal />}
+      {equipItemModal && <EquipItemModal />}
+    </>
+  );
 }

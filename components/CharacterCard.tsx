@@ -4,10 +4,6 @@ import {
   HStack,
   Image,
   Link,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
   Text,
   VStack,
   Wrap,
@@ -16,7 +12,7 @@ import {
 import NextLink from 'next/link';
 import { useMemo } from 'react';
 
-import { PlayerActions, useActions } from '@/contexts/ActionsContext';
+import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character } from '@/utils/types';
@@ -90,7 +86,7 @@ export const CharacterCard: React.FC<{
             <Button as={NextLink} href={`/characters/${id}`} size="sm" w="100%">
               View
             </Button>
-            <ActionMenu character={character} />
+            <CharacterActionMenu character={character} />
           </VStack>
         </VStack>
         <VStack align="flex-start" flex={1}>
@@ -198,7 +194,7 @@ export const SmallCharacterCard: React.FC<{
             <Button as={NextLink} href={`/characters/${id}`} size="sm" w="100%">
               View
             </Button>
-            <ActionMenu character={character} />
+            <CharacterActionMenu character={character} />
           </VStack>
         </VStack>
         <VStack align="flex-start" flex={1}>
@@ -252,70 +248,5 @@ export const SmallCharacterCard: React.FC<{
         </VStack>
       )}
     </VStack>
-  );
-};
-
-type ActionMenuProps = {
-  character: Character;
-};
-
-const ActionMenu: React.FC<ActionMenuProps> = ({ character }) => {
-  const { selectCharacter, playerActions, gmActions, openActionModal } =
-    useActions();
-
-  return (
-    <>
-      <Menu onOpen={() => selectCharacter(character)}>
-        <MenuButton as={Button} size="sm" w="100%">
-          Actions
-        </MenuButton>
-        <MenuList>
-          {playerActions.length > 0 && (
-            <>
-              <Text
-                borderBottom="1px solid black"
-                fontSize="12px"
-                p={3}
-                textAlign="center"
-                variant="heading"
-              >
-                Player Actions
-              </Text>
-              {playerActions
-                .filter(a => a != PlayerActions.EQUIP_ITEM)
-                .map(action => (
-                  <MenuItem
-                    key={action}
-                    onClick={() => openActionModal(action)}
-                  >
-                    {action}
-                  </MenuItem>
-                ))}
-            </>
-          )}
-          {gmActions.length > 0 && (
-            <>
-              <Text
-                borderBottom="1px solid black"
-                borderTop={
-                  playerActions.length > 0 ? '3px solid black' : 'none'
-                }
-                fontSize="12px"
-                p={3}
-                textAlign="center"
-                variant="heading"
-              >
-                GameMaster Actions
-              </Text>
-              {gmActions.map(action => (
-                <MenuItem key={action} onClick={() => openActionModal(action)}>
-                  {action}
-                </MenuItem>
-              ))}
-            </>
-          )}
-        </MenuList>
-      </Menu>
-    </>
   );
 };
