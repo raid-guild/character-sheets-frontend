@@ -18,7 +18,7 @@ import {
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { isAddress } from 'viem';
-import { useAccount, useNetwork } from 'wagmi';
+import { useAccount } from 'wagmi';
 
 import { CharacterCard } from '@/components/CharacterCard';
 import { CharactersPanel } from '@/components/CharactersPanel';
@@ -73,7 +73,6 @@ function GamePage(): JSX.Element {
     equipItemModal,
   } = useActions();
   const { isConnected } = useAccount();
-  const { chain } = useNetwork();
 
   const joinGameModal = useDisclosure();
   const updateGameMetadata = useDisclosure();
@@ -119,7 +118,7 @@ function GamePage(): JSX.Element {
       items,
       masters,
     } = game;
-    const chainId = chain?.id ?? DEFAULT_CHAIN.id;
+    const chainId = DEFAULT_CHAIN.id;
 
     return (
       <VStack as="main" pt={10} pb={20} spacing={10} maxW="3xl" mx="auto">
