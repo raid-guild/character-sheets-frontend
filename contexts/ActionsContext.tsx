@@ -14,6 +14,7 @@ import { Character, Item } from '@/utils/types';
 export enum PlayerActions {
   EDIT_CHARACTER = 'Edit character',
   EQUIP_ITEM = 'Equip/Unequip item',
+  RENOUNCE_CHARACTER = 'Renounce character',
 }
 
 export enum GameMasterActions {
@@ -34,10 +35,11 @@ type ActionsContextType = {
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
   assignClassModal: ReturnType<typeof useDisclosure> | undefined;
-  giveItemsModal: ReturnType<typeof useDisclosure> | undefined;
   editCharacterModal: ReturnType<typeof useDisclosure> | undefined;
-  giveExpModal: ReturnType<typeof useDisclosure> | undefined;
   equipItemModal: ReturnType<typeof useDisclosure> | undefined;
+  giveExpModal: ReturnType<typeof useDisclosure> | undefined;
+  giveItemsModal: ReturnType<typeof useDisclosure> | undefined;
+  renounceCharacterModal: ReturnType<typeof useDisclosure> | undefined;
 };
 
 const ActionsContext = createContext<ActionsContextType>({
@@ -52,10 +54,11 @@ const ActionsContext = createContext<ActionsContextType>({
 
   openActionModal: () => {},
   assignClassModal: undefined,
-  giveItemsModal: undefined,
   editCharacterModal: undefined,
-  giveExpModal: undefined,
   equipItemModal: undefined,
+  giveExpModal: undefined,
+  giveItemsModal: undefined,
+  renounceCharacterModal: undefined,
 });
 
 export const useActions = (): ActionsContextType => useContext(ActionsContext);
@@ -67,10 +70,11 @@ export const ActionsProvider: React.FC<{
   const { game, isMaster } = useGame();
 
   const assignClassModal = useDisclosure();
-  const giveItemsModal = useDisclosure();
   const editCharacterModal = useDisclosure();
-  const giveExpModal = useDisclosure();
   const equipItemModal = useDisclosure();
+  const giveExpModal = useDisclosure();
+  const giveItemsModal = useDisclosure();
+  const renounceCharacterModal = useDisclosure();
 
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null,
@@ -120,16 +124,19 @@ export const ActionsProvider: React.FC<{
         case PlayerActions.EQUIP_ITEM:
           equipItemModal.onOpen();
           break;
+        case PlayerActions.RENOUNCE_CHARACTER:
+          renounceCharacterModal.onOpen();
         default:
           break;
       }
     },
     [
-      giveExpModal,
-      giveItemsModal,
       assignClassModal,
       editCharacterModal,
       equipItemModal,
+      giveExpModal,
+      giveItemsModal,
+      renounceCharacterModal,
     ],
   );
 
@@ -147,10 +154,11 @@ export const ActionsProvider: React.FC<{
 
         openActionModal,
         assignClassModal,
-        giveItemsModal,
         editCharacterModal,
-        giveExpModal,
         equipItemModal,
+        giveExpModal,
+        giveItemsModal,
+        renounceCharacterModal,
       }}
     >
       {children}
