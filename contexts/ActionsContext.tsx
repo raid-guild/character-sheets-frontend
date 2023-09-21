@@ -41,6 +41,7 @@ type ActionsContextType = {
   equipItemModal: ReturnType<typeof useDisclosure> | undefined;
   giveExpModal: ReturnType<typeof useDisclosure> | undefined;
   giveItemsModal: ReturnType<typeof useDisclosure> | undefined;
+  jailPlayerModal: ReturnType<typeof useDisclosure> | undefined;
   renounceCharacterModal: ReturnType<typeof useDisclosure> | undefined;
   revokeClassModal: ReturnType<typeof useDisclosure> | undefined;
 };
@@ -61,6 +62,7 @@ const ActionsContext = createContext<ActionsContextType>({
   equipItemModal: undefined,
   giveExpModal: undefined,
   giveItemsModal: undefined,
+  jailPlayerModal: undefined,
   renounceCharacterModal: undefined,
   revokeClassModal: undefined,
 });
@@ -78,6 +80,7 @@ export const ActionsProvider: React.FC<{
   const equipItemModal = useDisclosure();
   const giveExpModal = useDisclosure();
   const giveItemsModal = useDisclosure();
+  const jailPlayerModal = useDisclosure();
   const renounceCharacterModal = useDisclosure();
   const revokeClassModal = useDisclosure();
 
@@ -181,6 +184,7 @@ export const ActionsProvider: React.FC<{
         equipItemModal,
         giveExpModal,
         giveItemsModal,
+        jailPlayerModal,
         renounceCharacterModal,
         revokeClassModal,
       }}
