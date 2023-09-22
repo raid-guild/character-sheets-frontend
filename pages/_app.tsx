@@ -1,6 +1,7 @@
 import '@rainbow-me/rainbowkit/styles.css';
 
-import { ChakraProvider } from '@chakra-ui/react';
+// import { ChakraProvider } from '@chakra-ui/react';
+import { RGThemeProvider } from '@raidguild/design-system';
 import { Global } from '@emotion/react';
 import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { Analytics } from '@vercel/analytics/react';
@@ -54,7 +55,7 @@ export default function App({
         <meta content="width=device-width, initial-scale=1" name="viewport" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <ChakraProvider resetCSS theme={theme}>
+      <RGThemeProvider>
         <Global styles={globalStyles} />
         <Provider value={client}>
           <WagmiConfig config={wagmiConfig}>
@@ -68,7 +69,7 @@ export default function App({
             </RainbowKitProvider>
           </WagmiConfig>
         </Provider>
-      </ChakraProvider>
+      </RGThemeProvider>
     </>
   );
 }
