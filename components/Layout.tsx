@@ -1,48 +1,45 @@
-import { Box, Flex, Image, Link, Text } from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, Icon, Image, Link, Text, Spacer } from '@chakra-ui/react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import NextLink from 'next/link';
 
 import { ActiveLink } from '@/components/ActiveLink';
+import {
+  FaCopy,
+  FaRegSun,
+  FaCaretDown,
+  FaRegTimesCircle,
+} from 'react-icons/fa';
 
 export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
   return (
     <Flex direction="column" minH="100vh">
       <Box
         as="header"
-        background="white"
-        borderBottom="5px solid black"
-        h={20}
-        pb={1}
+        py={7}
+        px={8}
         position="fixed"
         top={0}
         w="100%"
         zIndex={1000}
+        bg={"rgba(0,0,0,0.85)"}        
       >
-        <Flex align="center" h="100%" justify="center" px={10} w="100%">
-          <Flex
-            alignItems="center"
-            as="nav"
-            justify="space-between"
-            position="relative"
-            w="100%"
-          >
-            <Link as={NextLink} fontSize="sm" href="/" variant="heading">
-              CS
+        <Flex align="center" h="100%" justify="start" w="100%">
+
+            <Link as={NextLink} fontSize="sm" href="/" variant="heading" _hover={{borderColor: 'none'}}>
+              <Heading fontSize='24px' color={'primary.500'} variant={'noShadow'}>Character Sheets</Heading>
             </Link>
-            <Flex
-              justify="space-between"
-              position="absolute"
-              left="50%"
-              transform="translateX(-50%)"
-              w={300}
+            <Spacer />
+
+            <Box
+            mr={10}
             >
-              <ActiveLink fontSize="sm" href="/my-games" variant="heading">
+              <ActiveLink href="/my-games" variant="heading">
                 My Games
               </ActiveLink>
-              <ActiveLink fontSize="sm" href="/all-games" variant="heading">
+              <ActiveLink href="/all-games" variant="text">
                 All Games
               </ActiveLink>
-            </Flex>
+            </Box>
             <ConnectButton.Custom>
               {({
                 account,
@@ -59,11 +56,11 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
                     align="center"
                     cursor="pointer"
                     gap={3}
-                    _hover={{
-                      p: {
-                        borderBottom: '2px solid black',
-                      },
-                    }}
+                    // _hover={{
+                    //   p: {
+                    //     borderBottom: '2px solid black',
+                    //   },
+                    // }}
                     {...(!mounted && {
                       'aria-hidden': true,
                       style: {
@@ -76,63 +73,51 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
                     {(() => {
                       if (!connected) {
                         return (
-                          <button onClick={openConnectModal} type="button">
-                            <Text
-                              borderBottom="2px solid transparent"
-                              fontSize="xs"
-                              transition="all 0.2s ease-in-out"
-                              variant="heading"
-                            >
-                              Connect Wallet
-                            </Text>
-                          </button>
+                          <Button
+                          variant='outline'
+                          color='whiteAlpha.800'
+                          borderColor='primary.500'
+                          onClick={openConnectModal}>
+                            {/* <Icon as={FaRegTimesCircle} color='raid' /> */}
+                              Connect
+                          </Button>
                         );
                       }
 
                       if (chain.unsupported) {
                         return (
-                          <button onClick={openChainModal} type="button">
-                            <Text
-                              borderBottom="2px solid transparent"
-                              fontSize="xs"
-                              transition="all 0.2s ease-in-out"
-                              variant="heading"
-                            >
+                          <Button
+                          variant='outline'
+                          color='whiteAlpha.800'
+                          borderColor='primary.500'
+                          onClick={openChainModal}>
                               Wrong network
-                            </Text>
-                          </button>
+                          </Button>
                         );
                       }
 
                       return (
-                        <div style={{ display: 'flex', gap: 12 }}>
-                          <button onClick={openAccountModal} type="button">
-                            <Text
-                              borderBottom="2px solid transparent"
-                              fontSize="xs"
-                              transition="all 0.2s ease-in-out"
-                              variant="heading"
-                            >
+                          <Button
+                          variant='outline'
+                          color='whiteAlpha.800'
+                          borderColor='primary.500'
+                          onClick={openAccountModal}>
                               {account.displayName}
-                            </Text>
-                          </button>
-                        </div>
+                          </Button>
                       );
                     })()}
-                    <Image
+                    {/* <Image
                       alt="down arrow"
                       height={4}
                       pb={1}
                       src="/icons/arrow-down.svg"
                       width={4}
-                    />
+                    /> */}
                   </Flex>
                 );
               }}
             </ConnectButton.Custom>
-          </Flex>
         </Flex>
-        <Box background="white" borderTop="2px solid black" height={1} />
       </Box>
       <Box mt={20}>{children}</Box>
       <Flex
