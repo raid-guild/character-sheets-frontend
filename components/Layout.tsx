@@ -6,7 +6,7 @@ import { ActiveLink } from '@/components/ActiveLink';
 
 export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
   return (
-    <>
+    <Flex direction="column" minH="100vh">
       <Box
         as="header"
         background="white"
@@ -135,6 +135,23 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         <Box background="white" borderTop="2px solid black" height={1} />
       </Box>
       <Box mt={20}>{children}</Box>
-    </>
+      <Flex
+        align="center"
+        as="footer"
+        background="white"
+        borderTop="5px solid black"
+        h={24}
+        justify="center"
+        marginTop="auto"
+      >
+        <Link as={NextLink} href="https://raidguild.org" isExternal>
+          <Text alignItems="center" display="flex" gap={2}>
+            Built by{' '}
+            <Image alt="RaidGuild logo" h="28px" src="/favicon.ico" w="28px" />{' '}
+            RaidGuild
+          </Text>
+        </Link>
+      </Flex>
+    </Flex>
   );
 };
