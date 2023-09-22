@@ -1,10 +1,10 @@
 import {
   Button,
-  Flex,
+  // Flex,
   FormControl,
   FormHelperText,
   FormLabel,
-  Image,
+  // Image,
   Input,
   Modal,
   ModalBody,
@@ -12,6 +12,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  SimpleGrid,
   Text,
   Textarea,
   useToast,
@@ -43,13 +44,17 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const {
     file: characterAvatar,
     setFile: setCharacterAvatar,
-    onRemove,
+    // onRemove,
     onUpload,
     isUploading,
-    isUploaded,
+    // isUploaded,
   } = useUploadFile({ fileName: 'characterAvatar' });
   const [characterName, setCharacterName] = useState<string>('');
   const [characterDescription, setCharacterDescription] = useState<string>('');
+
+  const [activeTab, setActiveTab] = useState<
+    'background' | 'body' | 'eyes' | 'hair' | 'mouth'
+  >('background');
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -312,7 +317,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
             </FormHelperText>
           )}
         </FormControl>
-        <FormControl isInvalid={showError && !characterAvatar}>
+        {/* <FormControl isInvalid={showError && !characterAvatar}>
           <FormLabel>Character Avatar</FormLabel>
           {!characterAvatar && (
             <Input
@@ -349,7 +354,60 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
               A character avatar is required
             </FormHelperText>
           )}
-        </FormControl>
+        </FormControl> */}
+
+        <SimpleGrid columns={5} spacing={0.5} w="100%">
+          <Button
+            border="3px solid black"
+            onClick={() => setActiveTab('background')}
+            p={4}
+            size="sm"
+            variant={activeTab === 'background' ? 'solid' : 'outline'}
+            w="100%"
+          >
+            <Text>Background</Text>
+          </Button>
+          <Button
+            border="3px solid black"
+            onClick={() => setActiveTab('body')}
+            p={4}
+            size="sm"
+            variant={activeTab === 'body' ? 'solid' : 'outline'}
+            w="100%"
+          >
+            <Text>Body</Text>
+          </Button>
+          <Button
+            border="3px solid black"
+            onClick={() => setActiveTab('eyes')}
+            p={4}
+            size="sm"
+            variant={activeTab === 'eyes' ? 'solid' : 'outline'}
+            w="100%"
+          >
+            <Text>Eyes</Text>
+          </Button>
+          <Button
+            border="3px solid black"
+            onClick={() => setActiveTab('hair')}
+            p={4}
+            size="sm"
+            variant={activeTab === 'hair' ? 'solid' : 'outline'}
+            w="100%"
+          >
+            <Text>Hair</Text>
+          </Button>
+          <Button
+            border="3px solid black"
+            onClick={() => setActiveTab('mouth')}
+            p={4}
+            size="sm"
+            variant={activeTab === 'mouth' ? 'solid' : 'outline'}
+            w="100%"
+          >
+            <Text>Mouth</Text>
+          </Button>
+        </SimpleGrid>
 
         <Button
           alignSelf="flex-end"
