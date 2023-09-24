@@ -28,6 +28,7 @@ import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
+import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
 import { JoinGameModal } from '@/components/Modals/JoinGameModal';
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
 import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
@@ -73,6 +74,7 @@ function GamePage(): JSX.Element {
     equipItemModal,
     giveExpModal,
     giveItemsModal,
+    jailPlayerModal,
     renounceCharacterModal,
     revokeClassModal,
   } = useActions();
@@ -280,6 +282,7 @@ function GamePage(): JSX.Element {
       {equipItemModal && <EquipItemModal />}
       {giveExpModal && <DropExperienceModal />}
       {giveItemsModal && <GiveItemsModal />}
+      {jailPlayerModal && <JailPlayerModal />}
       {renounceCharacterModal && <RenounceCharacterModal />}
       {revokeClassModal && <RevokeClassModal />}
     </>

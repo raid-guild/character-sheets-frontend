@@ -23,8 +23,7 @@ export const JailPlayerModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
   const { selectedCharacter, jailPlayerModal } = useActions();
 
-  // const { isJailed } = selectedCharacter;
-  const isJailed = false;
+  const { jailed } = selectedCharacter ?? {};
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -93,7 +92,7 @@ export const JailPlayerModal: React.FC = () => {
             'function jailPlayer(address playerAddress, bool throwInJail) public',
           ]),
           functionName: 'jailPlayer',
-          args: [selectedCharacter.player as `0x${string}`, !isJailed],
+          args: [selectedCharacter.player as `0x${string}`, !jailed],
         });
         setTxHash(transactionhash);
 
@@ -129,7 +128,7 @@ export const JailPlayerModal: React.FC = () => {
     },
     [
       game,
-      isJailed,
+      jailed,
       publicClient,
       reloadGame,
       selectedCharacter,
@@ -147,7 +146,7 @@ export const JailPlayerModal: React.FC = () => {
         <VStack py={10} spacing={4}>
           <Text>
             {selectedCharacter.name}
-            {`'`}s player has been jailed!
+            {`'`}s player has been {jailed ? 'freed' : 'jailed'}!
           </Text>
           <Button onClick={jailPlayerModal?.onClose} variant="outline">
             Close
@@ -160,7 +159,9 @@ export const JailPlayerModal: React.FC = () => {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Jailing your ${selectedCharacter.name}'s player...`}
+          text={`${jailed ? 'Freeing' : 'Jailing'} your ${
+            selectedCharacter.name
+          }'s player...`}
           txHash={txHash}
         />
       );
@@ -169,17 +170,18 @@ export const JailPlayerModal: React.FC = () => {
     return (
       <VStack as="form" onSubmit={onJailPlayer} spacing={8}>
         <Text textAlign="center">
-          Are you sure you want to jail {selectedCharacter?.name}
+          Are you sure you want to {jailed ? 'free' : 'jail'}{' '}
+          {selectedCharacter?.name}
           {`'`}s player?
         </Text>
         <Button
           autoFocus
           isDisabled={isDisabled}
           isLoading={isLoading}
-          loadingText="Jailing..."
+          loadingText={`${jailed ? 'Freeing' : 'Jailing'}...`}
           type="submit"
         >
-          Jail
+          {jailed ? 'Free' : 'Jail'}
         </Button>
       </VStack>
     );
@@ -195,7 +197,9 @@ export const JailPlayerModal: React.FC = () => {
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Jail Character</Text>
+          {jailed && !isSynced && <Text>Free Character</Text>}
+          {!jailed && !isSynced && <Text>Jail Character</Text>}
+          {isSynced && <Text>Success!</Text>}
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>
