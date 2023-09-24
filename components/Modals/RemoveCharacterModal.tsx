@@ -19,33 +19,33 @@ import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 
-export const RenounceCharacterModal: React.FC = () => {
+export const RemoveCharacterModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
-  const { selectedCharacter, renounceCharacterModal } = useActions();
+  const { selectedCharacter, removeCharacterModal } = useActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const toast = useToast();
 
-  const [isRenouncing, setIsRenouncing] = useState<boolean>(false);
+  const [isRemoving, setIsRemoving] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
   const resetData = useCallback(() => {
-    setIsRenouncing(false);
+    setIsRemoving(false);
     setTxHash(null);
     setIsSyncing(false);
     setIsSynced(false);
   }, []);
 
   useEffect(() => {
-    if (!renounceCharacterModal?.isOpen) {
+    if (!removeCharacterModal?.isOpen) {
       resetData();
     }
-  }, [resetData, renounceCharacterModal?.isOpen]);
+  }, [resetData, removeCharacterModal?.isOpen]);
 
-  const onRenounceCharacter = useCallback(
+  const onRemoveSheet = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
@@ -79,17 +79,25 @@ export const RenounceCharacterModal: React.FC = () => {
         return;
       }
 
-      setIsRenouncing(true);
+      if (!selectedCharacter.jailed) {
+        toast({
+          description: 'Player must be jailed be sheet is removed.',
+          position: 'top',
+          status: 'error',
+        });
+        console.error('Player must be jailed be sheet is removed.');
+        return;
+      }
+
+      setIsRemoving(true);
 
       try {
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
           address: game.id as Address,
-          abi: parseAbi([
-            'function renounceSheet(uint256 _characterId) public',
-          ]),
-          functionName: 'renounceSheet',
+          abi: parseAbi(['function removeSheet(uint256 characterId) public']),
+          functionName: 'removeSheet',
           args: [BigInt(selectedCharacter.characterId)],
         });
         setTxHash(transactionhash);
@@ -114,28 +122,28 @@ export const RenounceCharacterModal: React.FC = () => {
         reloadGame();
       } catch (e) {
         toast({
-          description: `Something went wrong while renouncing ${selectedCharacter.name}`,
+          description: `Something went wrong while removing ${selectedCharacter.name}`,
           position: 'top',
           status: 'error',
         });
         console.error(e);
       } finally {
         setIsSyncing(false);
-        setIsRenouncing(false);
+        setIsRemoving(false);
       }
     },
     [game, publicClient, reloadGame, selectedCharacter, toast, walletClient],
   );
 
-  const isLoading = isRenouncing;
+  const isLoading = isRemoving;
   const isDisabled = isLoading;
 
   const content = () => {
-    if (isSynced) {
+    if (isSynced && selectedCharacter) {
       return (
         <VStack py={10} spacing={4}>
-          <Text>Your character has been renounced!</Text>
-          <Button onClick={renounceCharacterModal?.onClose} variant="outline">
+          <Text>{selectedCharacter.name} has been removed!</Text>
+          <Button onClick={removeCharacterModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -146,26 +154,26 @@ export const RenounceCharacterModal: React.FC = () => {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Renouncing your character...`}
+          text={`Removing ${selectedCharacter.name}...`}
           txHash={txHash}
         />
       );
     }
 
     return (
-      <VStack as="form" onSubmit={onRenounceCharacter} spacing={8}>
+      <VStack as="form" onSubmit={onRemoveSheet} spacing={8}>
         <Text textAlign="center">
-          Are you sure you want to renounce your character? This action is
-          irreversible.
+          Are you sure you want to remove {selectedCharacter?.name}? This action
+          is irreversible.
         </Text>
         <Button
           autoFocus
           isDisabled={isDisabled}
           isLoading={isLoading}
-          loadingText="Renouncing..."
+          loadingText="Removing..."
           type="submit"
         >
-          Renounce
+          Remove
         </Button>
       </VStack>
     );
@@ -175,13 +183,13 @@ export const RenounceCharacterModal: React.FC = () => {
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={renounceCharacterModal?.isOpen ?? false}
-      onClose={renounceCharacterModal?.onClose ?? (() => {})}
+      isOpen={removeCharacterModal?.isOpen ?? false}
+      onClose={removeCharacterModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Renounce Character</Text>
+          <Text>Remove Character</Text>
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>

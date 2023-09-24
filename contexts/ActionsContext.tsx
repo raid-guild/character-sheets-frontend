@@ -25,6 +25,7 @@ export enum GameMasterActions {
   FREE_PLAYER = 'Free player',
   GIVE_XP = 'Give XP',
   REVOKE_CLASS = 'Revoke class',
+  REMOVE_CHARACTER = 'Remove character',
 }
 
 type ActionsContextType = {
@@ -44,6 +45,7 @@ type ActionsContextType = {
   giveExpModal: ReturnType<typeof useDisclosure> | undefined;
   giveItemsModal: ReturnType<typeof useDisclosure> | undefined;
   jailPlayerModal: ReturnType<typeof useDisclosure> | undefined;
+  removeCharacterModal: ReturnType<typeof useDisclosure> | undefined;
   renounceCharacterModal: ReturnType<typeof useDisclosure> | undefined;
   revokeClassModal: ReturnType<typeof useDisclosure> | undefined;
 };
@@ -65,6 +67,7 @@ const ActionsContext = createContext<ActionsContextType>({
   giveExpModal: undefined,
   giveItemsModal: undefined,
   jailPlayerModal: undefined,
+  removeCharacterModal: undefined,
   renounceCharacterModal: undefined,
   revokeClassModal: undefined,
 });
@@ -83,6 +86,7 @@ export const ActionsProvider: React.FC<{
   const giveExpModal = useDisclosure();
   const giveItemsModal = useDisclosure();
   const jailPlayerModal = useDisclosure();
+  const removeCharacterModal = useDisclosure();
   const renounceCharacterModal = useDisclosure();
   const revokeClassModal = useDisclosure();
 
@@ -127,7 +131,11 @@ export const ActionsProvider: React.FC<{
       if (selectedCharacter?.jailed) {
         actions = actions.filter(a => a !== GameMasterActions.JAIL_PLAYER);
       } else {
-        actions = actions.filter(a => a !== GameMasterActions.FREE_PLAYER);
+        actions = actions.filter(
+          a =>
+            a !== GameMasterActions.FREE_PLAYER &&
+            a !== GameMasterActions.REMOVE_CHARACTER,
+        );
       }
 
       return actions;
@@ -153,6 +161,9 @@ export const ActionsProvider: React.FC<{
         case GameMasterActions.FREE_PLAYER:
           jailPlayerModal.onOpen();
           break;
+        case GameMasterActions.REMOVE_CHARACTER:
+          removeCharacterModal.onOpen();
+          break;
         case PlayerActions.EDIT_CHARACTER:
           editCharacterModal.onOpen();
           break;
@@ -176,6 +187,7 @@ export const ActionsProvider: React.FC<{
       giveExpModal,
       giveItemsModal,
       jailPlayerModal,
+      removeCharacterModal,
       renounceCharacterModal,
       revokeClassModal,
     ],
@@ -200,6 +212,7 @@ export const ActionsProvider: React.FC<{
         giveExpModal,
         giveItemsModal,
         jailPlayerModal,
+        removeCharacterModal,
         renounceCharacterModal,
         revokeClassModal,
       }}
