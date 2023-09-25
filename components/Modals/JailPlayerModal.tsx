@@ -19,33 +19,35 @@ import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 
-export const RenounceCharacterModal: React.FC = () => {
+export const JailPlayerModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
-  const { selectedCharacter, renounceCharacterModal } = useActions();
+  const { selectedCharacter, jailPlayerModal } = useActions();
+
+  const { jailed } = selectedCharacter ?? {};
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const toast = useToast();
 
-  const [isRenouncing, setIsRenouncing] = useState<boolean>(false);
+  const [isJailing, setIsJailing] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
   const resetData = useCallback(() => {
-    setIsRenouncing(false);
+    setIsJailing(false);
     setTxHash(null);
     setIsSyncing(false);
     setIsSynced(false);
   }, []);
 
   useEffect(() => {
-    if (!renounceCharacterModal?.isOpen) {
+    if (!jailPlayerModal?.isOpen) {
       resetData();
     }
-  }, [resetData, renounceCharacterModal?.isOpen]);
+  }, [resetData, jailPlayerModal?.isOpen]);
 
-  const onRenounceCharacter = useCallback(
+  const onJailPlayer = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
@@ -79,7 +81,7 @@ export const RenounceCharacterModal: React.FC = () => {
         return;
       }
 
-      setIsRenouncing(true);
+      setIsJailing(true);
 
       try {
         const transactionhash = await walletClient.writeContract({
@@ -87,10 +89,10 @@ export const RenounceCharacterModal: React.FC = () => {
           account: walletClient.account?.address as Address,
           address: game.id as Address,
           abi: parseAbi([
-            'function renounceSheet(uint256 _characterId) public',
+            'function jailPlayer(address playerAddress, bool throwInJail) public',
           ]),
-          functionName: 'renounceSheet',
-          args: [BigInt(selectedCharacter.characterId)],
+          functionName: 'jailPlayer',
+          args: [selectedCharacter.player as `0x${string}`, !jailed],
         });
         setTxHash(transactionhash);
 
@@ -114,28 +116,39 @@ export const RenounceCharacterModal: React.FC = () => {
         reloadGame();
       } catch (e) {
         toast({
-          description: `Something went wrong while renouncing ${selectedCharacter.name}`,
+          description: `Something went wrong while jailing ${selectedCharacter.name}'s player.`,
           position: 'top',
           status: 'error',
         });
         console.error(e);
       } finally {
         setIsSyncing(false);
-        setIsRenouncing(false);
+        setIsJailing(false);
       }
     },
-    [game, publicClient, reloadGame, selectedCharacter, toast, walletClient],
+    [
+      game,
+      jailed,
+      publicClient,
+      reloadGame,
+      selectedCharacter,
+      toast,
+      walletClient,
+    ],
   );
 
-  const isLoading = isRenouncing;
+  const isLoading = isJailing;
   const isDisabled = isLoading;
 
   const content = () => {
-    if (isSynced) {
+    if (isSynced && selectedCharacter) {
       return (
         <VStack py={10} spacing={4}>
-          <Text>Your character has been renounced!</Text>
-          <Button onClick={renounceCharacterModal?.onClose} variant="outline">
+          <Text>
+            {selectedCharacter.name}
+            {`'`}s player has been {jailed ? 'freed' : 'jailed'}!
+          </Text>
+          <Button onClick={jailPlayerModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -146,26 +159,29 @@ export const RenounceCharacterModal: React.FC = () => {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Renouncing your character...`}
+          text={`${jailed ? 'Freeing' : 'Jailing'} your ${
+            selectedCharacter.name
+          }'s player...`}
           txHash={txHash}
         />
       );
     }
 
     return (
-      <VStack as="form" onSubmit={onRenounceCharacter} spacing={8}>
+      <VStack as="form" onSubmit={onJailPlayer} spacing={8}>
         <Text textAlign="center">
-          Are you sure you want to renounce your character? This action is
-          irreversible.
+          Are you sure you want to {jailed ? 'free' : 'jail'}{' '}
+          {selectedCharacter?.name}
+          {`'`}s player?
         </Text>
         <Button
           autoFocus
           isDisabled={isDisabled}
           isLoading={isLoading}
-          loadingText="Renouncing..."
+          loadingText={`${jailed ? 'Freeing' : 'Jailing'}...`}
           type="submit"
         >
-          Renounce
+          {jailed ? 'Free' : 'Jail'}
         </Button>
       </VStack>
     );
@@ -175,13 +191,15 @@ export const RenounceCharacterModal: React.FC = () => {
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={renounceCharacterModal?.isOpen ?? false}
-      onClose={renounceCharacterModal?.onClose ?? (() => {})}
+      isOpen={jailPlayerModal?.isOpen ?? false}
+      onClose={jailPlayerModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Renounce Character</Text>
+          {jailed && !isSynced && <Text>Free Character</Text>}
+          {!jailed && !isSynced && <Text>Jail Character</Text>}
+          {isSynced && <Text>Success!</Text>}
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>

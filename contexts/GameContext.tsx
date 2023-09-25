@@ -16,6 +16,7 @@ import { Character, Game } from '@/utils/types';
 type GameContextType = {
   game: Game | null;
   character: Character | null;
+  pageCharacter: Character | null;
   isMaster: boolean;
   loading: boolean;
   error: CombinedError | undefined;
@@ -25,6 +26,7 @@ type GameContextType = {
 const GameContext = createContext<GameContextType>({
   game: null,
   character: null,
+  pageCharacter: null,
   isMaster: false,
   loading: false,
   error: undefined,
@@ -36,7 +38,8 @@ export const useGame = (): GameContextType => useContext(GameContext);
 export const GameProvider: React.FC<{
   children: JSX.Element;
   gameId?: string | null | undefined | string[];
-}> = ({ children, gameId }) => {
+  characterId?: string | null | undefined | string[];
+}> = ({ children, gameId, characterId }) => {
   const { address } = useAccount();
   const [game, setGame] = useState<Game | null>(null);
   const [isFormatting, setIsFormatting] = useState(false);
@@ -84,6 +87,13 @@ export const GameProvider: React.FC<{
     );
   }, [game, address]);
 
+  const pageCharacter = useMemo(() => {
+    if (!characterId || typeof characterId !== 'string') return null;
+    return (
+      game?.characters.find(c => c.id === characterId.toLowerCase()) ?? null
+    );
+  }, [game, characterId]);
+
   const isMaster = useMemo(
     () => game?.masters.includes(address?.toLowerCase() ?? '') ?? false,
     [game, address],
@@ -94,6 +104,7 @@ export const GameProvider: React.FC<{
       value={{
         game,
         character,
+        pageCharacter,
         isMaster,
         loading: fetching || isFormatting || isRefetching,
         error,
