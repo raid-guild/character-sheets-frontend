@@ -29,6 +29,7 @@ import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
 import { JoinGameModal } from '@/components/Modals/JoinGameModal';
+import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
 import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
 import { XPPanel } from '@/components/XPPanel';
@@ -68,9 +69,10 @@ function GamePage(): JSX.Element {
   const {
     assignClassModal,
     editCharacterModal,
+    equipItemModal,
     giveExpModal,
     giveItemsModal,
-    equipItemModal,
+    renounceCharacterModal,
   } = useActions();
   const { isConnected } = useAccount();
 
@@ -273,9 +275,10 @@ function GamePage(): JSX.Element {
 
       {assignClassModal && <AssignClassModal />}
       {editCharacterModal && <UpdateCharacterMetadataModal />}
+      {equipItemModal && <EquipItemModal />}
       {giveExpModal && <DropExperienceModal />}
       {giveItemsModal && <GiveItemsModal />}
-      {equipItemModal && <EquipItemModal />}
+      {renounceCharacterModal && <RenounceCharacterModal />}
     </>
   );
 }
