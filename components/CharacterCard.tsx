@@ -4,19 +4,16 @@ import {
   HStack,
   Image,
   Link,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
   Text,
-  useToast,
   VStack,
   Wrap,
   WrapItem,
 } from '@chakra-ui/react';
+import NextLink from 'next/link';
 import { useMemo } from 'react';
+import { useAccount } from 'wagmi';
 
-import { PlayerActions, useActions } from '@/contexts/ActionsContext';
+import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character } from '@/utils/types';
@@ -28,9 +25,10 @@ export const CharacterCard: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
-  const toast = useToast();
+  const { isConnected } = useAccount();
 
   const {
+    id,
     characterId,
     account,
     classes,
@@ -88,20 +86,10 @@ export const CharacterCard: React.FC<{
             </HStack>
           </Box>
           <VStack align="stretch" w="120px">
-            <Button
-              onClick={() => {
-                toast({
-                  title: 'Coming soon!',
-                  position: 'top',
-                  status: 'warning',
-                });
-              }}
-              size="sm"
-              w="100%"
-            >
+            <Button as={NextLink} href={`/characters/${id}`} size="sm" w="100%">
               View
             </Button>
-            <ActionMenu character={character} />
+            {isConnected && <CharacterActionMenu character={character} />}
           </VStack>
         </VStack>
         <VStack align="flex-start" flex={1}>
@@ -144,7 +132,7 @@ export const CharacterCard: React.FC<{
       {items.length > 0 && (
         <VStack w="100%" align="stretch" spacing={4}>
           <Box background="black" h="3px" my={4} w="50%" />
-          <Text fontSize="sm">Items:</Text>
+          <Text fontSize="sm">Inventory:</Text>
           <Wrap>
             {items.map(item => (
               <WrapItem key={item.itemId}>
@@ -162,9 +150,10 @@ export const SmallCharacterCard: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
-  const toast = useToast();
+  const { isConnected } = useAccount();
 
   const {
+    id,
     account,
     classes,
     description,
@@ -207,20 +196,10 @@ export const SmallCharacterCard: React.FC<{
             </HStack>
           </Box>
           <VStack align="stretch" w="100px">
-            <Button
-              onClick={() => {
-                toast({
-                  title: 'Coming soon!',
-                  position: 'top',
-                  status: 'warning',
-                });
-              }}
-              size="sm"
-              w="100%"
-            >
+            <Button as={NextLink} href={`/characters/${id}`} size="sm" w="100%">
               View
             </Button>
-            <ActionMenu character={character} />
+            {isConnected && <CharacterActionMenu character={character} />}
           </VStack>
         </VStack>
         <VStack align="flex-start" flex={1}>
@@ -263,7 +242,7 @@ export const SmallCharacterCard: React.FC<{
       {items.length > 0 && (
         <VStack w="100%" align="stretch" spacing={4}>
           <Box background="black" h="3px" my={2} w="50%" />
-          <Text fontSize="xs">Items:</Text>
+          <Text fontSize="xs">Equipped items:</Text>
           <Wrap>
             {items.map(item => (
               <WrapItem key={item.itemId}>
@@ -274,70 +253,5 @@ export const SmallCharacterCard: React.FC<{
         </VStack>
       )}
     </VStack>
-  );
-};
-
-type ActionMenuProps = {
-  character: Character;
-};
-
-const ActionMenu: React.FC<ActionMenuProps> = ({ character }) => {
-  const { selectCharacter, playerActions, gmActions, openActionModal } =
-    useActions();
-
-  return (
-    <>
-      <Menu onOpen={() => selectCharacter(character)}>
-        <MenuButton as={Button} size="sm" w="100%">
-          Actions
-        </MenuButton>
-        <MenuList>
-          {playerActions.length > 0 && (
-            <>
-              <Text
-                borderBottom="1px solid black"
-                fontSize="12px"
-                p={3}
-                textAlign="center"
-                variant="heading"
-              >
-                Player Actions
-              </Text>
-              {playerActions
-                .filter(a => a != PlayerActions.EQUIP_ITEM)
-                .map(action => (
-                  <MenuItem
-                    key={action}
-                    onClick={() => openActionModal(action)}
-                  >
-                    {action}
-                  </MenuItem>
-                ))}
-            </>
-          )}
-          {gmActions.length > 0 && (
-            <>
-              <Text
-                borderBottom="1px solid black"
-                borderTop={
-                  playerActions.length > 0 ? '3px solid black' : 'none'
-                }
-                fontSize="12px"
-                p={3}
-                textAlign="center"
-                variant="heading"
-              >
-                GameMaster Actions
-              </Text>
-              {gmActions.map(action => (
-                <MenuItem key={action} onClick={() => openActionModal(action)}>
-                  {action}
-                </MenuItem>
-              ))}
-            </>
-          )}
-        </MenuList>
-      </Menu>
-    </>
   );
 };
