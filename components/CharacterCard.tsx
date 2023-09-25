@@ -37,6 +37,7 @@ export const CharacterCard: React.FC<{
     description,
     experience,
     image,
+    jailed,
     name,
   } = character;
 
@@ -68,11 +69,26 @@ export const CharacterCard: React.FC<{
           <Box pos="relative">
             <Image
               alt="character avatar"
+              filter={jailed ? 'grayscale(100%)' : 'none'}
               w="120px"
               h="180px"
               objectFit="cover"
               src={image}
             />
+            {jailed && (
+              <Text
+                bg="black"
+                color="red"
+                fontWeight="bold"
+                left="50%"
+                pos="absolute"
+                top="50%"
+                transform="translate(-50%, -50%)"
+                variant="heading"
+              >
+                JAILED
+              </Text>
+            )}
             <HStack
               bg="white"
               border="1px solid black"
@@ -160,6 +176,7 @@ export const SmallCharacterCard: React.FC<{
     equippedItems: items,
     experience,
     image,
+    jailed,
     name,
   } = character;
 
@@ -178,11 +195,26 @@ export const SmallCharacterCard: React.FC<{
           <Box pos="relative">
             <Image
               alt="character avatar"
+              filter={jailed ? 'grayscale(100%)' : 'none'}
               w="100px"
               h="150px"
               objectFit="cover"
               src={image}
             />
+            {jailed && (
+              <Text
+                bg="black"
+                color="red"
+                fontWeight="bold"
+                left="50%"
+                pos="absolute"
+                top="50%"
+                transform="translate(-50%, -50%)"
+                variant="heading"
+              >
+                JAILED
+              </Text>
+            )}
             <HStack
               bg="white"
               border="1px solid black"

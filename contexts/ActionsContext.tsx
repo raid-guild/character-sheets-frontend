@@ -21,8 +21,11 @@ export enum PlayerActions {
 export enum GameMasterActions {
   GIVE_ITEMS = 'Give items',
   ASSIGN_CLASS = 'Assign class',
+  JAIL_PLAYER = 'Jail player',
+  FREE_PLAYER = 'Free player',
   GIVE_XP = 'Give XP',
   REVOKE_CLASS = 'Revoke class',
+  REMOVE_CHARACTER = 'Remove character',
 }
 
 type ActionsContextType = {
@@ -41,6 +44,8 @@ type ActionsContextType = {
   equipItemModal: ReturnType<typeof useDisclosure> | undefined;
   giveExpModal: ReturnType<typeof useDisclosure> | undefined;
   giveItemsModal: ReturnType<typeof useDisclosure> | undefined;
+  jailPlayerModal: ReturnType<typeof useDisclosure> | undefined;
+  removeCharacterModal: ReturnType<typeof useDisclosure> | undefined;
   renounceCharacterModal: ReturnType<typeof useDisclosure> | undefined;
   revokeClassModal: ReturnType<typeof useDisclosure> | undefined;
 };
@@ -61,6 +66,8 @@ const ActionsContext = createContext<ActionsContextType>({
   equipItemModal: undefined,
   giveExpModal: undefined,
   giveItemsModal: undefined,
+  jailPlayerModal: undefined,
+  removeCharacterModal: undefined,
   renounceCharacterModal: undefined,
   revokeClassModal: undefined,
 });
@@ -78,6 +85,8 @@ export const ActionsProvider: React.FC<{
   const equipItemModal = useDisclosure();
   const giveExpModal = useDisclosure();
   const giveItemsModal = useDisclosure();
+  const jailPlayerModal = useDisclosure();
+  const removeCharacterModal = useDisclosure();
   const renounceCharacterModal = useDisclosure();
   const revokeClassModal = useDisclosure();
 
@@ -92,31 +101,41 @@ export const ActionsProvider: React.FC<{
       return [];
     }
 
-    const actions = Object.keys(PlayerActions).map(
+    let actions = Object.keys(PlayerActions).map(
       key => PlayerActions[key as keyof typeof PlayerActions],
     );
     if (selectedCharacter?.classes.length === 0) {
-      return actions.filter(a => a !== PlayerActions.REVOKE_CLASS);
+      actions = actions.filter(a => a !== PlayerActions.REVOKE_CLASS);
     }
     return actions;
   }, [address, selectedCharacter]);
 
   const gmActions = useMemo(() => {
     if (isMaster) {
-      const actions = Object.keys(GameMasterActions).map(
+      let actions = Object.keys(GameMasterActions).map(
         key => GameMasterActions[key as keyof typeof GameMasterActions],
       );
 
       if (game?.classes.length === 0) {
-        return actions.filter(a => a == GameMasterActions.ASSIGN_CLASS);
+        actions = actions.filter(a => a == GameMasterActions.ASSIGN_CLASS);
       }
 
       if (selectedCharacter?.classes.length === 0) {
-        return actions.filter(a => a !== GameMasterActions.REVOKE_CLASS);
+        actions = actions.filter(a => a !== GameMasterActions.REVOKE_CLASS);
       }
 
       if (selectedCharacter?.player === address?.toLowerCase()) {
-        return actions.filter(a => a !== GameMasterActions.REVOKE_CLASS);
+        actions = actions.filter(a => a !== GameMasterActions.REVOKE_CLASS);
+      }
+
+      if (selectedCharacter?.jailed) {
+        actions = actions.filter(a => a !== GameMasterActions.JAIL_PLAYER);
+      } else {
+        actions = actions.filter(
+          a =>
+            a !== GameMasterActions.FREE_PLAYER &&
+            a !== GameMasterActions.REMOVE_CHARACTER,
+        );
       }
 
       return actions;
@@ -135,6 +154,15 @@ export const ActionsProvider: React.FC<{
           break;
         case GameMasterActions.ASSIGN_CLASS:
           assignClassModal.onOpen();
+          break;
+        case GameMasterActions.JAIL_PLAYER:
+          jailPlayerModal.onOpen();
+          break;
+        case GameMasterActions.FREE_PLAYER:
+          jailPlayerModal.onOpen();
+          break;
+        case GameMasterActions.REMOVE_CHARACTER:
+          removeCharacterModal.onOpen();
           break;
         case PlayerActions.EDIT_CHARACTER:
           editCharacterModal.onOpen();
@@ -158,6 +186,8 @@ export const ActionsProvider: React.FC<{
       equipItemModal,
       giveExpModal,
       giveItemsModal,
+      jailPlayerModal,
+      removeCharacterModal,
       renounceCharacterModal,
       revokeClassModal,
     ],
@@ -181,6 +211,8 @@ export const ActionsProvider: React.FC<{
         equipItemModal,
         giveExpModal,
         giveItemsModal,
+        jailPlayerModal,
+        removeCharacterModal,
         renounceCharacterModal,
         revokeClassModal,
       }}
