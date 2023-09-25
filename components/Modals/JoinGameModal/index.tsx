@@ -1,10 +1,11 @@
 import {
+  Box,
   Button,
   // Flex,
   FormControl,
   FormHelperText,
   FormLabel,
-  // Image,
+  Image,
   Input,
   Modal,
   ModalBody,
@@ -26,6 +27,15 @@ import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import { uriToHttp } from '@/utils/helpers';
+
+import {
+  BODY_TRAITS,
+  EYES_TRAITS,
+  formatFileName,
+  HAIR_TRAITS,
+  MOUTH_TRAITS,
+} from './traits';
 
 type JoinGameModalProps = {
   isOpen: boolean;
@@ -53,8 +63,8 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const [characterDescription, setCharacterDescription] = useState<string>('');
 
   const [activeTab, setActiveTab] = useState<
-    'background' | 'body' | 'eyes' | 'hair' | 'mouth'
-  >('background');
+    'body' | 'eyes' | 'hair' | 'mouth'
+  >('body');
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -356,17 +366,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
           )}
         </FormControl> */}
 
-        <SimpleGrid columns={5} spacing={0.5} w="100%">
-          <Button
-            border="3px solid black"
-            onClick={() => setActiveTab('background')}
-            p={4}
-            size="sm"
-            variant={activeTab === 'background' ? 'solid' : 'outline'}
-            w="100%"
-          >
-            <Text>Background</Text>
-          </Button>
+        <SimpleGrid columns={4} spacing={0.5} w="100%">
           <Button
             border="3px solid black"
             onClick={() => setActiveTab('body')}
@@ -408,6 +408,67 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
             <Text>Mouth</Text>
           </Button>
         </SimpleGrid>
+
+        <Box
+          bg="lightgrey"
+          border="3px solid black"
+          pos="relative"
+          h="600px"
+          w="400px"
+        >
+          <Image
+            alt="character body"
+            h="100%"
+            left={0}
+            objectFit="cover"
+            pos="absolute"
+            src={`${uriToHttp(BODY_TRAITS[0].image)[0]}/${formatFileName(
+              BODY_TRAITS[0],
+            )}
+            `}
+            top={0}
+            w="100%"
+          />
+          <Image
+            alt="character eyes"
+            h="100%"
+            left={0}
+            objectFit="cover"
+            pos="absolute"
+            src={`${uriToHttp(EYES_TRAITS[1].image)[0]}/${formatFileName(
+              EYES_TRAITS[1],
+            )}
+            `}
+            top={0}
+            w="100%"
+          />
+          <Image
+            alt="character hair"
+            h="100%"
+            left={0}
+            objectFit="cover"
+            pos="absolute"
+            src={`${uriToHttp(HAIR_TRAITS[1].image)[0]}/${formatFileName(
+              HAIR_TRAITS[1],
+            )}
+            `}
+            top={0}
+            w="100%"
+          />
+          <Image
+            alt="character mouth"
+            h="100%"
+            left={0}
+            objectFit="cover"
+            pos="absolute"
+            src={`${uriToHttp(MOUTH_TRAITS[1].image)[0]}/${formatFileName(
+              MOUTH_TRAITS[1],
+            )}
+            `}
+            top={0}
+            w="100%"
+          />
+        </Box>
 
         <Button
           alignSelf="flex-end"
