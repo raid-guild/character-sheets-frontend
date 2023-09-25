@@ -15,12 +15,14 @@ export enum PlayerActions {
   EDIT_CHARACTER = 'Edit character',
   EQUIP_ITEM = 'Equip/Unequip item',
   RENOUNCE_CHARACTER = 'Renounce character',
+  REVOKE_CLASS = 'Revoke class',
 }
 
 export enum GameMasterActions {
   GIVE_ITEMS = 'Give items',
   ASSIGN_CLASS = 'Assign class',
   GIVE_XP = 'Give XP',
+  REVOKE_CLASS = 'Revoke class',
 }
 
 type ActionsContextType = {
@@ -40,6 +42,7 @@ type ActionsContextType = {
   giveExpModal: ReturnType<typeof useDisclosure> | undefined;
   giveItemsModal: ReturnType<typeof useDisclosure> | undefined;
   renounceCharacterModal: ReturnType<typeof useDisclosure> | undefined;
+  revokeClassModal: ReturnType<typeof useDisclosure> | undefined;
 };
 
 const ActionsContext = createContext<ActionsContextType>({
@@ -59,6 +62,7 @@ const ActionsContext = createContext<ActionsContextType>({
   giveExpModal: undefined,
   giveItemsModal: undefined,
   renounceCharacterModal: undefined,
+  revokeClassModal: undefined,
 });
 
 export const useActions = (): ActionsContextType => useContext(ActionsContext);
@@ -75,6 +79,7 @@ export const ActionsProvider: React.FC<{
   const giveExpModal = useDisclosure();
   const giveItemsModal = useDisclosure();
   const renounceCharacterModal = useDisclosure();
+  const revokeClassModal = useDisclosure();
 
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null,
@@ -86,25 +91,38 @@ export const ActionsProvider: React.FC<{
     if (selectedCharacter?.player !== address?.toLowerCase()) {
       return [];
     }
-    return Object.keys(PlayerActions).map(
+
+    const actions = Object.keys(PlayerActions).map(
       key => PlayerActions[key as keyof typeof PlayerActions],
     );
+    if (selectedCharacter?.classes.length === 0) {
+      return actions.filter(a => a !== PlayerActions.REVOKE_CLASS);
+    }
+    return actions;
   }, [address, selectedCharacter]);
 
   const gmActions = useMemo(() => {
     if (isMaster) {
-      if (game?.classes.length === 0) {
-        return Object.keys(GameMasterActions)
-          .map(key => GameMasterActions[key as keyof typeof GameMasterActions])
-          .filter(action => action !== GameMasterActions.ASSIGN_CLASS);
-      }
-
-      return Object.keys(GameMasterActions).map(
+      const actions = Object.keys(GameMasterActions).map(
         key => GameMasterActions[key as keyof typeof GameMasterActions],
       );
+
+      if (game?.classes.length === 0) {
+        return actions.filter(a => a == GameMasterActions.ASSIGN_CLASS);
+      }
+
+      if (selectedCharacter?.classes.length === 0) {
+        return actions.filter(a => a !== GameMasterActions.REVOKE_CLASS);
+      }
+
+      if (selectedCharacter?.player === address?.toLowerCase()) {
+        return actions.filter(a => a !== GameMasterActions.REVOKE_CLASS);
+      }
+
+      return actions;
     }
     return [];
-  }, [game, isMaster]);
+  }, [address, game, isMaster, selectedCharacter]);
 
   const openActionModal = useCallback(
     (action: PlayerActions | GameMasterActions) => {
@@ -126,6 +144,10 @@ export const ActionsProvider: React.FC<{
           break;
         case PlayerActions.RENOUNCE_CHARACTER:
           renounceCharacterModal.onOpen();
+          break;
+        case PlayerActions.REVOKE_CLASS:
+          revokeClassModal.onOpen();
+          break;
         default:
           break;
       }
@@ -137,6 +159,7 @@ export const ActionsProvider: React.FC<{
       giveExpModal,
       giveItemsModal,
       renounceCharacterModal,
+      revokeClassModal,
     ],
   );
 
@@ -159,6 +182,7 @@ export const ActionsProvider: React.FC<{
         giveExpModal,
         giveItemsModal,
         renounceCharacterModal,
+        revokeClassModal,
       }}
     >
       {children}
