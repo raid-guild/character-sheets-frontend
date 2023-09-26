@@ -1,7 +1,7 @@
 import {
   Box,
   Button,
-  // Flex,
+  Flex,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -27,14 +27,15 @@ import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useUploadFile } from '@/hooks/useUploadFile';
-import { uriToHttp } from '@/utils/helpers';
 
 import {
   BODY_TRAITS,
   EYES_TRAITS,
   formatFileName,
+  getImageUrl,
   HAIR_TRAITS,
   MOUTH_TRAITS,
+  TRAITS,
 } from './traits';
 
 type JoinGameModalProps = {
@@ -65,6 +66,12 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const [activeTab, setActiveTab] = useState<
     'body' | 'eyes' | 'hair' | 'mouth'
   >('body');
+  const [traits, setTraits] = useState<string[]>([
+    '1_Basic_a',
+    '2_Basic_a',
+    '3_Bald_a',
+    '5_Basic_a',
+  ]);
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -409,6 +416,12 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
           </Button>
         </SimpleGrid>
 
+        <TraitVariantControls
+          activeTab={activeTab}
+          setTraits={setTraits}
+          traits={traits}
+        />
+
         <Box
           bg="lightgrey"
           border="3px solid black"
@@ -416,58 +429,21 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
           h="600px"
           w="400px"
         >
-          <Image
-            alt="character body"
-            h="100%"
-            left={0}
-            objectFit="cover"
-            pos="absolute"
-            src={`${uriToHttp(BODY_TRAITS[0].image)[0]}/${formatFileName(
-              BODY_TRAITS[0],
-            )}
-            `}
-            top={0}
-            w="100%"
-          />
-          <Image
-            alt="character eyes"
-            h="100%"
-            left={0}
-            objectFit="cover"
-            pos="absolute"
-            src={`${uriToHttp(EYES_TRAITS[1].image)[0]}/${formatFileName(
-              EYES_TRAITS[1],
-            )}
-            `}
-            top={0}
-            w="100%"
-          />
-          <Image
-            alt="character hair"
-            h="100%"
-            left={0}
-            objectFit="cover"
-            pos="absolute"
-            src={`${uriToHttp(HAIR_TRAITS[1].image)[0]}/${formatFileName(
-              HAIR_TRAITS[1],
-            )}
-            `}
-            top={0}
-            w="100%"
-          />
-          <Image
-            alt="character mouth"
-            h="100%"
-            left={0}
-            objectFit="cover"
-            pos="absolute"
-            src={`${uriToHttp(MOUTH_TRAITS[1].image)[0]}/${formatFileName(
-              MOUTH_TRAITS[1],
-            )}
-            `}
-            top={0}
-            w="100%"
-          />
+          {traits.map((trait: string) => {
+            return (
+              <Image
+                alt={`${activeTab} trait layer`}
+                h="100%"
+                key={`image-${trait}`}
+                left={0}
+                objectFit="cover"
+                pos="absolute"
+                src={getImageUrl(TRAITS[trait])}
+                top={0}
+                w="100%"
+              />
+            );
+          })}
         </Box>
 
         <Button
@@ -499,5 +475,111 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
         <ModalBody>{content()}</ModalBody>
       </ModalContent>
     </Modal>
+  );
+};
+
+type TraitVariantControlsProps = {
+  activeTab: 'body' | 'eyes' | 'hair' | 'mouth';
+  setTraits: (traits: string[]) => void;
+  traits: string[];
+};
+
+const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
+  activeTab,
+  setTraits,
+  traits,
+}) => {
+  const selectedTrait = useMemo(() => {
+    switch (activeTab) {
+      case 'body':
+        return traits[0];
+      case 'eyes':
+        return traits[1];
+      case 'hair':
+        return traits[2];
+      case 'mouth':
+        return traits[3];
+      default:
+        return traits[0];
+    }
+  }, [activeTab, traits]);
+
+  const activeTraits = useMemo(() => {
+    switch (activeTab) {
+      case 'body':
+        return BODY_TRAITS;
+      case 'eyes':
+        return EYES_TRAITS;
+      case 'hair':
+        return HAIR_TRAITS;
+      case 'mouth':
+        return MOUTH_TRAITS;
+      default:
+        return [];
+    }
+  }, [activeTab]);
+
+  const [, variant] = selectedTrait.split('_');
+
+  const onPreviousVariant = useCallback(() => {
+    const nameIndex = traits.findIndex(t => t === selectedTrait);
+    const fullTraitIndex = activeTraits.findIndex(
+      t => formatFileName(t) === selectedTrait,
+    );
+    const previous = activeTraits[fullTraitIndex - 1];
+
+    if (!previous) {
+      return;
+    }
+
+    const newTraits = [...traits];
+    newTraits[nameIndex] = formatFileName(previous);
+    setTraits(newTraits);
+  }, [activeTraits, selectedTrait, setTraits, traits]);
+
+  const onNextVariant = useCallback(() => {
+    const nameIndex = traits.findIndex(t => t === selectedTrait);
+    const fullTraitIndex = activeTraits.findIndex(
+      t => formatFileName(t) === selectedTrait,
+    );
+    const next = activeTraits[fullTraitIndex + 1];
+
+    if (!next) {
+      return;
+    }
+
+    const newTraits = [...traits];
+    newTraits[nameIndex] = formatFileName(next);
+    setTraits(newTraits);
+  }, [activeTraits, selectedTrait, setTraits, traits]);
+
+  const disablePrevious = useMemo(() => {
+    const fullTraitIndex = activeTraits.findIndex(
+      t => formatFileName(t) === selectedTrait,
+    );
+    return fullTraitIndex === 0;
+  }, [activeTraits, selectedTrait]);
+
+  const disableNext = useMemo(() => {
+    const fullTraitIndex = activeTraits.findIndex(
+      t => formatFileName(t) === selectedTrait,
+    );
+    return fullTraitIndex === activeTraits.length - 1;
+  }, [activeTraits, selectedTrait]);
+
+  return (
+    <Flex gap={6}>
+      <Button
+        isDisabled={disablePrevious}
+        onClick={onPreviousVariant}
+        size="xs"
+      >
+        &#8592;
+      </Button>
+      <Text>{variant}</Text>
+      <Button isDisabled={disableNext} onClick={onNextVariant} size="xs">
+        &#8594;
+      </Button>
+    </Flex>
   );
 };

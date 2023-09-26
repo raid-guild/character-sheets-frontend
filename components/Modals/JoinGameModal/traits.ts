@@ -1,3 +1,5 @@
+import { uriToHttp } from '@/utils/helpers';
+
 enum TraitType {
   BODY = 'BODY',
   EYES = 'EYES',
@@ -5,7 +7,7 @@ enum TraitType {
   MOUTH = 'MOUTH',
 }
 
-type Trait = {
+export type Trait = {
   color: string;
   image: string;
   trait_type: TraitType;
@@ -229,4 +231,9 @@ export const MOUTH_TRAITS = Object.values(TRAITS).filter(
 );
 
 export const formatFileName = (trait: Trait): string =>
-  `${trait.z_index}_${trait.variation}_${trait.color}.png`;
+  `${trait.z_index}_${trait.variation}_${trait.color}`;
+
+export const getImageUrl = (trait: Trait): string => {
+  const fileName = formatFileName(trait);
+  return uriToHttp(trait.image)[0] + fileName + '.png';
+};
