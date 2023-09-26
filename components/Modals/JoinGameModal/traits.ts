@@ -1,9 +1,10 @@
 import { uriToHttp } from '@/utils/helpers';
 
-enum TraitType {
+export enum TraitType {
   BODY = 'BODY',
   EYES = 'EYES',
   HAIR = 'HAIR',
+  CLOTHING = 'CLOTHING',
   MOUTH = 'MOUTH',
 }
 
@@ -163,6 +164,14 @@ export const TRAITS: { [key: string]: Trait } = {
     variation: 'Mohawk',
     z_index: 3,
   },
+  // TODO: In the future this will probably be replaced by a masculine/feminine villager outfit
+  ['4_Archer_a']: {
+    color: 'a',
+    image: 'ipfs://bafybeiadbdcl6macxeqtjusxtkvesnur5fwb3m5clbaxz6nthqefwq624e',
+    trait_type: TraitType.CLOTHING,
+    variation: 'Archer',
+    z_index: 4,
+  },
   ['5_Basic_a']: {
     color: 'a',
     image: 'ipfs://bafybeidysol5f35ln23nxyf2iyco7mukg3gedluvf6x3pzxvmyhe3y2hia',
@@ -224,6 +233,10 @@ export const EYES_TRAITS = Object.values(TRAITS).filter(
 
 export const HAIR_TRAITS = Object.values(TRAITS).filter(
   trait => trait.trait_type === TraitType.HAIR,
+);
+
+export const CLOTHING_TRAITS = Object.values(TRAITS).filter(
+  trait => trait.trait_type === TraitType.CLOTHING,
 );
 
 export const MOUTH_TRAITS = Object.values(TRAITS).filter(

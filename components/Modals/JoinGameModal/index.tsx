@@ -31,12 +31,14 @@ import { useUploadFile } from '@/hooks/useUploadFile';
 
 import {
   BODY_TRAITS,
+  CLOTHING_TRAITS,
   EYES_TRAITS,
   formatFileName,
   getImageUrl,
   HAIR_TRAITS,
   MOUTH_TRAITS,
   TRAITS,
+  TraitType,
 } from './traits';
 
 type JoinGameModalProps = {
@@ -67,13 +69,12 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const [characterDescription, setCharacterDescription] = useState<string>('');
 
   const [showUpload, setShowUpload] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<
-    'body' | 'eyes' | 'hair' | 'mouth'
-  >('body');
+  const [activeTab, setActiveTab] = useState<TraitType>(TraitType.BODY);
   const [traits, setTraits] = useState<string[]>([
     '1_Basic_a',
     '2_Basic_a',
     '3_Bald_a',
+    '4_Archer_a',
     '5_Basic_a',
   ]);
   const [isMerging, setIsMerging] = useState<boolean>(false);
@@ -106,8 +107,14 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const resetData = useCallback(() => {
     setStep(0);
     setShowUpload(false);
-    setActiveTab('body');
-    setTraits(['1_Basic_a', '2_Basic_a', '3_Bald_a', '5_Basic_a']);
+    setActiveTab(TraitType.BODY);
+    setTraits([
+      '1_Basic_a',
+      '2_Basic_a',
+      '3_Bald_a',
+      '4_Archer_a',
+      '5_Basic_a',
+    ]);
 
     setCharacterName('');
     setCharacterDescription('');
@@ -129,11 +136,12 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const mergeTraitImages = useCallback(async (): Promise<string> => {
     try {
       setIsMerging(true);
-      const [blob1, blob2, blob3, blob4] = await Promise.all([
+      const [blob1, blob2, blob3, blob4, blob5] = await Promise.all([
         fetch(getImageUrl(TRAITS[traits[0]])).then(r => r.blob()),
         fetch(getImageUrl(TRAITS[traits[1]])).then(r => r.blob()),
         fetch(getImageUrl(TRAITS[traits[2]])).then(r => r.blob()),
         fetch(getImageUrl(TRAITS[traits[3]])).then(r => r.blob()),
+        fetch(getImageUrl(TRAITS[traits[4]])).then(r => r.blob()),
       ]);
 
       const formData = new FormData();
@@ -141,6 +149,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
       formData.append('layer2', blob2);
       formData.append('layer3', blob3);
       formData.append('layer4', blob4);
+      formData.append('layer5', blob5);
 
       const response = await fetch(`/api/uploadTraits`, {
         method: 'POST',
@@ -244,13 +253,22 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
       if (!showUpload) {
         const attributes = traits.map((trait, i) => {
           const [, variant, color] = trait.split('_');
-          const traitTypes = ['body', 'eyes', 'hair', 'mouth'];
+          const traitTypes = [
+            TraitType.BODY,
+            TraitType.EYES,
+            TraitType.HAIR,
+            TraitType.CLOTHING,
+            TraitType.MOUTH,
+          ];
           return {
-            trait_type: traitTypes[Number(i)].toUpperCase(),
+            trait_type: traitTypes[Number(i)],
             value: `${variant.toUpperCase()} ${color.toUpperCase()}`,
           };
         });
-        characterMetadata['attributes'] = attributes;
+        // TODO: For now, we are removing the clothing trait from metadata
+        characterMetadata['attributes'] = attributes.filter(
+          a => a.trait_type !== TraitType.CLOTHING,
+        );
       }
 
       setIsCreating(true);
@@ -371,18 +389,20 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
 
     if (step === 1) {
       switch (activeTab) {
-        case 'body':
-          setActiveTab('eyes');
+        case TraitType.BODY:
+          setActiveTab(TraitType.EYES);
           break;
-        case 'eyes':
-          setActiveTab('hair');
+        case TraitType.EYES:
+          setActiveTab(TraitType.HAIR);
           break;
-        case 'hair':
-          setActiveTab('mouth');
+        case TraitType.HAIR:
+          setActiveTab(TraitType.CLOTHING);
           break;
+        case TraitType.CLOTHING:
+          setActiveTab(TraitType.MOUTH);
           break;
         default:
-          setActiveTab('body');
+          setActiveTab(TraitType.BODY);
           break;
       }
     } else {
@@ -398,7 +418,8 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
 
   const isLoading = isCreating || isMerging;
   const isDisabled = isLoading || isUploading;
-  const showCreateButton = step === 1 && (activeTab === 'mouth' || showUpload);
+  const showCreateButton =
+    step === 1 && (activeTab === TraitType.MOUTH || showUpload);
 
   const content = () => {
     if (isSynced) {
@@ -520,43 +541,57 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
             )}
             {!showUpload && (
               <>
-                <SimpleGrid columns={4} spacing={0.5} w="100%">
+                <SimpleGrid columns={5} spacing={0.5} w="100%">
                   <Button
                     border="3px solid black"
-                    onClick={() => setActiveTab('body')}
+                    onClick={() => setActiveTab(TraitType.BODY)}
                     p={4}
                     size="sm"
-                    variant={activeTab === 'body' ? 'solid' : 'outline'}
+                    variant={activeTab === TraitType.BODY ? 'solid' : 'outline'}
                     w="100%"
                   >
                     <Text>Body</Text>
                   </Button>
                   <Button
                     border="3px solid black"
-                    onClick={() => setActiveTab('eyes')}
+                    onClick={() => setActiveTab(TraitType.EYES)}
                     p={4}
                     size="sm"
-                    variant={activeTab === 'eyes' ? 'solid' : 'outline'}
+                    variant={activeTab === TraitType.EYES ? 'solid' : 'outline'}
                     w="100%"
                   >
                     <Text>Eyes</Text>
                   </Button>
                   <Button
                     border="3px solid black"
-                    onClick={() => setActiveTab('hair')}
+                    onClick={() => setActiveTab(TraitType.HAIR)}
                     p={4}
                     size="sm"
-                    variant={activeTab === 'hair' ? 'solid' : 'outline'}
+                    variant={activeTab === TraitType.HAIR ? 'solid' : 'outline'}
                     w="100%"
                   >
                     <Text>Hair</Text>
                   </Button>
                   <Button
                     border="3px solid black"
-                    onClick={() => setActiveTab('mouth')}
+                    onClick={() => setActiveTab(TraitType.CLOTHING)}
                     p={4}
                     size="sm"
-                    variant={activeTab === 'mouth' ? 'solid' : 'outline'}
+                    variant={
+                      activeTab === TraitType.CLOTHING ? 'solid' : 'outline'
+                    }
+                    w="100%"
+                  >
+                    <Text>Clothing</Text>
+                  </Button>
+                  <Button
+                    border="3px solid black"
+                    onClick={() => setActiveTab(TraitType.MOUTH)}
+                    p={4}
+                    size="sm"
+                    variant={
+                      activeTab === TraitType.MOUTH ? 'solid' : 'outline'
+                    }
                     w="100%"
                   >
                     <Text>Mouth</Text>
@@ -672,7 +707,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
 };
 
 type TraitVariantControlsProps = {
-  activeTab: 'body' | 'eyes' | 'hair' | 'mouth';
+  activeTab: TraitType;
   setTraits: (traits: string[]) => void;
   traits: string[];
 };
@@ -684,14 +719,16 @@ const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
 }) => {
   const selectedTrait = useMemo(() => {
     switch (activeTab) {
-      case 'body':
+      case TraitType.BODY:
         return traits[0];
-      case 'eyes':
+      case TraitType.EYES:
         return traits[1];
-      case 'hair':
+      case TraitType.HAIR:
         return traits[2];
-      case 'mouth':
+      case TraitType.CLOTHING:
         return traits[3];
+      case TraitType.MOUTH:
+        return traits[4];
       default:
         return traits[0];
     }
@@ -699,13 +736,15 @@ const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
 
   const activeTraits = useMemo(() => {
     switch (activeTab) {
-      case 'body':
+      case TraitType.BODY:
         return BODY_TRAITS;
-      case 'eyes':
+      case TraitType.EYES:
         return EYES_TRAITS;
-      case 'hair':
+      case TraitType.HAIR:
         return HAIR_TRAITS;
-      case 'mouth':
+      case TraitType.CLOTHING:
+        return CLOTHING_TRAITS;
+      case TraitType.MOUTH:
         return MOUTH_TRAITS;
       default:
         return [];
