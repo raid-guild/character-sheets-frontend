@@ -519,7 +519,7 @@ const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
     }
   }, [activeTab]);
 
-  const [, variant] = selectedTrait.split('_');
+  const [, variant, color] = selectedTrait.split('_');
 
   const onPreviousVariant = useCallback(() => {
     const nameIndex = traits.findIndex(t => t === selectedTrait);
@@ -568,7 +568,7 @@ const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
   }, [activeTraits, selectedTrait]);
 
   return (
-    <Flex gap={6}>
+    <Flex justify="space-between" w="250px">
       <Button
         isDisabled={disablePrevious}
         onClick={onPreviousVariant}
@@ -576,7 +576,9 @@ const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
       >
         &#8592;
       </Button>
-      <Text>{variant}</Text>
+      <Text>
+        {variant} {color.toUpperCase()}
+      </Text>
       <Button isDisabled={disableNext} onClick={onNextVariant} size="xs">
         &#8594;
       </Button>
