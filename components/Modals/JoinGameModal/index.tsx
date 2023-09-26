@@ -14,6 +14,7 @@ import {
   ModalHeader,
   ModalOverlay,
   SimpleGrid,
+  Switch,
   Text,
   Textarea,
   useToast,
@@ -56,13 +57,16 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
     file: characterAvatar,
     setFile: setCharacterAvatar,
     onRemove,
-    // onUpload,
+    onUpload,
     isUploading,
     isUploaded,
   } = useUploadFile({ fileName: 'characterAvatar' });
+  const [step, setStep] = useState<number>(0);
+
   const [characterName, setCharacterName] = useState<string>('');
   const [characterDescription, setCharacterDescription] = useState<string>('');
 
+  const [showUpload, setShowUpload] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<
     'body' | 'eyes' | 'hair' | 'mouth'
   >('body');
@@ -72,6 +76,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
     '3_Bald_a',
     '5_Basic_a',
   ]);
+  const [isMerging, setIsMerging] = useState<boolean>(false);
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -86,18 +91,24 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const hasError = useMemo(() => {
     return (
       !characterDescription ||
-      // !characterAvatar ||
+      (showUpload && !characterAvatar) ||
       !characterName ||
       invalidCharacterDescription
     );
   }, [
     characterDescription,
-    // characterAvatar,
+    characterAvatar,
     characterName,
     invalidCharacterDescription,
+    showUpload,
   ]);
 
   const resetData = useCallback(() => {
+    setStep(0);
+    setShowUpload(false);
+    setActiveTab('body');
+    setTraits(['1_Basic_a', '2_Basic_a', '3_Bald_a', '5_Basic_a']);
+
     setCharacterName('');
     setCharacterDescription('');
     setCharacterAvatar(null);
@@ -116,27 +127,49 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   }, [resetData, isOpen]);
 
   const mergeTraitImages = useCallback(async (): Promise<string> => {
-    const [blob1, blob2, blob3, blob4] = await Promise.all([
-      fetch(getImageUrl(TRAITS[traits[0]])).then(r => r.blob()),
-      fetch(getImageUrl(TRAITS[traits[1]])).then(r => r.blob()),
-      fetch(getImageUrl(TRAITS[traits[2]])).then(r => r.blob()),
-      fetch(getImageUrl(TRAITS[traits[3]])).then(r => r.blob()),
-    ]);
+    try {
+      setIsMerging(true);
+      const [blob1, blob2, blob3, blob4] = await Promise.all([
+        fetch(getImageUrl(TRAITS[traits[0]])).then(r => r.blob()),
+        fetch(getImageUrl(TRAITS[traits[1]])).then(r => r.blob()),
+        fetch(getImageUrl(TRAITS[traits[2]])).then(r => r.blob()),
+        fetch(getImageUrl(TRAITS[traits[3]])).then(r => r.blob()),
+      ]);
 
-    const formData = new FormData();
-    formData.append('layer1', blob1);
-    formData.append('layer2', blob2);
-    formData.append('layer3', blob3);
-    formData.append('layer4', blob4);
+      const formData = new FormData();
+      formData.append('layer1', blob1);
+      formData.append('layer2', blob2);
+      formData.append('layer3', blob3);
+      formData.append('layer4', blob4);
 
-    const response = await fetch(`/api/uploadTraits`, {
-      method: 'POST',
-      body: formData,
-    });
+      const response = await fetch(`/api/uploadTraits`, {
+        method: 'POST',
+        body: formData,
+      });
 
-    const { cid } = await response.json();
-    return cid;
-  }, [traits]);
+      if (!response.ok) {
+        toast({
+          description: 'Something went wrong uploading your character avatar.',
+          position: 'top',
+          status: 'error',
+        });
+        return '';
+      }
+
+      const { cid } = await response.json();
+      return cid;
+    } catch (e) {
+      console.error(e);
+      toast({
+        description: 'Something went wrong uploading your character avatar.',
+        position: 'top',
+        status: 'error',
+      });
+      return '';
+    } finally {
+      setIsMerging(false);
+    }
+  }, [toast, traits]);
 
   const onJoinCharacter = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
@@ -177,8 +210,13 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
         return;
       }
 
-      const cid = await mergeTraitImages();
-      // const cid = await onUpload();
+      let cid = '';
+
+      if (showUpload) {
+        cid = await onUpload();
+      } else {
+        cid = await mergeTraitImages();
+      }
 
       if (!cid) {
         toast({
@@ -288,22 +326,58 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
       }
     },
     [
+      character,
       characterDescription,
       characterName,
-      hasError,
-      // onUpload,
-      publicClient,
       game,
-      character,
-      reloadGame,
+      hasError,
       mergeTraitImages,
+      onUpload,
+      publicClient,
+      showUpload,
       toast,
+      reloadGame,
       walletClient,
     ],
   );
 
-  const isLoading = isCreating;
+  const onNext = useCallback(() => {
+    if (hasError) {
+      setShowError(true);
+      return;
+    }
+    setShowError(false);
+
+    if (step === 1) {
+      switch (activeTab) {
+        case 'body':
+          setActiveTab('eyes');
+          break;
+        case 'eyes':
+          setActiveTab('hair');
+          break;
+        case 'hair':
+          setActiveTab('mouth');
+          break;
+          break;
+        default:
+          setActiveTab('body');
+          break;
+      }
+    } else {
+      setStep(1);
+    }
+  }, [activeTab, hasError, step]);
+
+  const onBack = useCallback(() => {
+    setStep(0);
+    setShowError(false);
+    setShowUpload(false);
+  }, []);
+
+  const isLoading = isCreating || isMerging;
   const isDisabled = isLoading || isUploading;
+  const showCreateButton = step === 1 && (activeTab === 'mouth' || showUpload);
 
   const content = () => {
     if (isSynced) {
@@ -329,157 +403,230 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
 
     return (
       <VStack as="form" onSubmit={onJoinCharacter} spacing={8}>
-        <FormControl isInvalid={showError && !characterName}>
-          <FormLabel>Character Name</FormLabel>
-          <Input
-            onChange={e => setCharacterName(e.target.value)}
-            type="text"
-            value={characterName}
-          />
-          {showError && !characterName && (
-            <FormHelperText color="red">
-              A character name is required
-            </FormHelperText>
-          )}
-        </FormControl>
-        <FormControl isInvalid={showError && !characterDescription}>
-          <FormLabel>Character Description (200 character limit)</FormLabel>
-          <Textarea
-            onChange={e => setCharacterDescription(e.target.value)}
-            value={characterDescription}
-          />
-          {showError && !characterDescription && (
-            <FormHelperText color="red">
-              A character description is required
-            </FormHelperText>
-          )}
-          {showError && invalidCharacterDescription && (
-            <FormHelperText color="red">
-              Character description must be less than 200 characters
-            </FormHelperText>
-          )}
-        </FormControl>
-        <FormControl isInvalid={showError && !characterAvatar}>
-          <FormLabel>Character Avatar</FormLabel>
-          {!characterAvatar && (
-            <Input
-              accept=".png, .jpg, .jpeg, .svg"
-              disabled={isUploading}
-              onChange={e => setCharacterAvatar(e.target.files?.[0] ?? null)}
-              type="file"
-              variant="file"
-            />
-          )}
-          {characterAvatar && (
-            <Flex align="center" gap={10} mt={4}>
-              <Image
-                alt="character avatar"
-                objectFit="contain"
-                src={URL.createObjectURL(characterAvatar)}
-                w="300px"
+        {step === 0 && (
+          <>
+            <FormControl isInvalid={showError && !characterName}>
+              <FormLabel>Character Name</FormLabel>
+              <Input
+                onChange={e => setCharacterName(e.target.value)}
+                type="text"
+                value={characterName}
               />
+              {showError && !characterName && (
+                <FormHelperText color="red">
+                  A character name is required
+                </FormHelperText>
+              )}
+            </FormControl>
+            <FormControl isInvalid={showError && !characterDescription}>
+              <FormLabel>Character Description (200 character limit)</FormLabel>
+              <Textarea
+                onChange={e => setCharacterDescription(e.target.value)}
+                value={characterDescription}
+              />
+              {showError && !characterDescription && (
+                <FormHelperText color="red">
+                  A character description is required
+                </FormHelperText>
+              )}
+              {showError && invalidCharacterDescription && (
+                <FormHelperText color="red">
+                  Character description must be less than 200 characters
+                </FormHelperText>
+              )}
+            </FormControl>
+          </>
+        )}
+
+        {step === 1 && (
+          <>
+            {step === 1 && (
+              <VStack>
+                <Flex align="center" gap={4}>
+                  <Text>Want to upload your own image avatar?</Text>
+                  <Switch
+                    isChecked={showUpload}
+                    onChange={() => setShowUpload(!showUpload)}
+                  />
+                </Flex>
+                <Text fontSize="12px">
+                  Uploading your own avatar prevents visual rendering of
+                  equipped items in the future.
+                </Text>
+              </VStack>
+            )}
+            {showUpload && (
+              <FormControl isInvalid={showError && !characterAvatar}>
+                <FormLabel>Character Avatar</FormLabel>
+                {!characterAvatar && (
+                  <Input
+                    accept=".png, .jpg, .jpeg, .svg"
+                    disabled={isUploading}
+                    onChange={e =>
+                      setCharacterAvatar(e.target.files?.[0] ?? null)
+                    }
+                    type="file"
+                    variant="file"
+                  />
+                )}
+                {characterAvatar && (
+                  <Flex align="center" gap={10} mt={4}>
+                    <Image
+                      alt="character avatar"
+                      objectFit="contain"
+                      src={URL.createObjectURL(characterAvatar)}
+                      w="300px"
+                    />
+                    <Button
+                      isDisabled={isUploading || isUploaded}
+                      isLoading={isUploading}
+                      loadingText="Uploading..."
+                      mt={4}
+                      onClick={!isUploaded ? onRemove : undefined}
+                      type="button"
+                      variant="outline"
+                    >
+                      {isUploaded ? 'Uploaded' : 'Remove'}
+                    </Button>
+                  </Flex>
+                )}
+                {showError && !characterAvatar && (
+                  <FormHelperText color="red">
+                    A character avatar is required
+                  </FormHelperText>
+                )}
+              </FormControl>
+            )}
+            {!showUpload && (
+              <>
+                <SimpleGrid columns={4} spacing={0.5} w="100%">
+                  <Button
+                    border="3px solid black"
+                    onClick={() => setActiveTab('body')}
+                    p={4}
+                    size="sm"
+                    variant={activeTab === 'body' ? 'solid' : 'outline'}
+                    w="100%"
+                  >
+                    <Text>Body</Text>
+                  </Button>
+                  <Button
+                    border="3px solid black"
+                    onClick={() => setActiveTab('eyes')}
+                    p={4}
+                    size="sm"
+                    variant={activeTab === 'eyes' ? 'solid' : 'outline'}
+                    w="100%"
+                  >
+                    <Text>Eyes</Text>
+                  </Button>
+                  <Button
+                    border="3px solid black"
+                    onClick={() => setActiveTab('hair')}
+                    p={4}
+                    size="sm"
+                    variant={activeTab === 'hair' ? 'solid' : 'outline'}
+                    w="100%"
+                  >
+                    <Text>Hair</Text>
+                  </Button>
+                  <Button
+                    border="3px solid black"
+                    onClick={() => setActiveTab('mouth')}
+                    p={4}
+                    size="sm"
+                    variant={activeTab === 'mouth' ? 'solid' : 'outline'}
+                    w="100%"
+                  >
+                    <Text>Mouth</Text>
+                  </Button>
+                </SimpleGrid>
+
+                <TraitVariantControls
+                  activeTab={activeTab}
+                  setTraits={setTraits}
+                  traits={traits}
+                />
+
+                <Box
+                  bg="lightgrey"
+                  border="3px solid black"
+                  pos="relative"
+                  h="400px"
+                  w="300px"
+                >
+                  {traits.map((trait: string) => {
+                    return (
+                      <Image
+                        alt={`${activeTab} trait layer`}
+                        h="100%"
+                        key={`image-${trait}`}
+                        left={0}
+                        objectFit="cover"
+                        pos="absolute"
+                        src={getImageUrl(TRAITS[trait])}
+                        top={0}
+                        w="100%"
+                      />
+                    );
+                  })}
+                </Box>
+              </>
+            )}
+          </>
+        )}
+
+        {!showCreateButton && (
+          <Flex gap={4}>
+            {step > 0 && (
               <Button
-                isDisabled={isUploading || isUploaded}
-                isLoading={isUploading}
-                loadingText="Uploading..."
-                mt={4}
-                onClick={!isUploaded ? onRemove : undefined}
+                isDisabled={isDisabled}
+                isLoading={isLoading}
+                loadingText="Back"
+                onClick={onBack}
+                size="sm"
                 type="button"
                 variant="outline"
               >
-                {isUploaded ? 'Uploaded' : 'Remove'}
+                Back
               </Button>
-            </Flex>
-          )}
-          {showError && !characterAvatar && (
-            <FormHelperText color="red">
-              A character avatar is required
-            </FormHelperText>
-          )}
-        </FormControl>
+            )}
+            <Button
+              isDisabled={isDisabled}
+              isLoading={isLoading}
+              loadingText="Next"
+              onClick={onNext}
+              size="sm"
+              type="button"
+            >
+              Next
+            </Button>
+          </Flex>
+        )}
 
-        <SimpleGrid columns={4} spacing={0.5} w="100%">
-          <Button
-            border="3px solid black"
-            onClick={() => setActiveTab('body')}
-            p={4}
-            size="sm"
-            variant={activeTab === 'body' ? 'solid' : 'outline'}
-            w="100%"
-          >
-            <Text>Body</Text>
-          </Button>
-          <Button
-            border="3px solid black"
-            onClick={() => setActiveTab('eyes')}
-            p={4}
-            size="sm"
-            variant={activeTab === 'eyes' ? 'solid' : 'outline'}
-            w="100%"
-          >
-            <Text>Eyes</Text>
-          </Button>
-          <Button
-            border="3px solid black"
-            onClick={() => setActiveTab('hair')}
-            p={4}
-            size="sm"
-            variant={activeTab === 'hair' ? 'solid' : 'outline'}
-            w="100%"
-          >
-            <Text>Hair</Text>
-          </Button>
-          <Button
-            border="3px solid black"
-            onClick={() => setActiveTab('mouth')}
-            p={4}
-            size="sm"
-            variant={activeTab === 'mouth' ? 'solid' : 'outline'}
-            w="100%"
-          >
-            <Text>Mouth</Text>
-          </Button>
-        </SimpleGrid>
-
-        <TraitVariantControls
-          activeTab={activeTab}
-          setTraits={setTraits}
-          traits={traits}
-        />
-
-        <Box
-          bg="lightgrey"
-          border="3px solid black"
-          pos="relative"
-          h="600px"
-          w="400px"
-        >
-          {traits.map((trait: string) => {
-            return (
-              <Image
-                alt={`${activeTab} trait layer`}
-                h="100%"
-                key={`image-${trait}`}
-                left={0}
-                objectFit="cover"
-                pos="absolute"
-                src={getImageUrl(TRAITS[trait])}
-                top={0}
-                w="100%"
-              />
-            );
-          })}
-        </Box>
-
-        <Button
-          alignSelf="flex-end"
-          isDisabled={isDisabled}
-          isLoading={isLoading}
-          loadingText="Creating..."
-          type="submit"
-        >
-          Create
-        </Button>
+        {showCreateButton && (
+          <Flex alignItems="center" direction="column" gap={4}>
+            <Button
+              isDisabled={isDisabled}
+              isLoading={isLoading}
+              loadingText="Creating..."
+              type="submit"
+            >
+              Create
+            </Button>
+            <Button
+              isDisabled={isDisabled}
+              isLoading={isLoading}
+              loadingText="Back"
+              onClick={onBack}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              Back
+            </Button>
+          </Flex>
+        )}
       </VStack>
     );
   };

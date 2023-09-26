@@ -206,6 +206,28 @@ const Modal = {
   },
 };
 
+const Switch = {
+  baseStyle: {
+    track: {
+      background: 'gray.400',
+      borderRadius: '10%',
+      height: '14px',
+
+      _checked: {
+        background: 'black',
+      },
+    },
+    thumb: {
+      height: '100%',
+      w: '40%',
+
+      _checked: {
+        transform: 'translateX(18px)',
+      },
+    },
+  },
+};
+
 const Text = {
   defaultProps: {
     variant: 'paragraph',
@@ -262,6 +284,7 @@ export const theme = extendTheme({
     Link,
     Menu,
     Modal,
+    Switch,
     Text,
     Textarea,
     Tooltip,
