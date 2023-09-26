@@ -18,7 +18,7 @@ import {
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { isAddress } from 'viem';
-import { useAccount, useNetwork } from 'wagmi';
+import { useAccount } from 'wagmi';
 
 import { CharacterCard } from '@/components/CharacterCard';
 import { CharactersPanel } from '@/components/CharactersPanel';
@@ -28,7 +28,11 @@ import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
+import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
 import { JoinGameModal } from '@/components/Modals/JoinGameModal';
+import { RemoveCharacterModal } from '@/components/Modals/RemoveCharacterModal';
+import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
+import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
 import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
 import { XPPanel } from '@/components/XPPanel';
@@ -68,12 +72,15 @@ function GamePage(): JSX.Element {
   const {
     assignClassModal,
     editCharacterModal,
+    equipItemModal,
     giveExpModal,
     giveItemsModal,
-    equipItemModal,
+    jailPlayerModal,
+    removeCharacterModal,
+    renounceCharacterModal,
+    revokeClassModal,
   } = useActions();
   const { isConnected } = useAccount();
-  const { chain } = useNetwork();
 
   const joinGameModal = useDisclosure();
   const updateGameMetadata = useDisclosure();
@@ -119,7 +126,7 @@ function GamePage(): JSX.Element {
       items,
       masters,
     } = game;
-    const chainId = chain?.id ?? DEFAULT_CHAIN.id;
+    const chainId = DEFAULT_CHAIN.id;
 
     return (
       <VStack as="main" pt={10} pb={20} spacing={10} maxW="3xl" mx="auto">
@@ -152,7 +159,7 @@ function GamePage(): JSX.Element {
               <Button onClick={updateGameMetadata.onOpen} size="sm">
                 <Flex align="center" gap={2}>
                   <Image
-                    alt="link to new tab"
+                    alt="edit"
                     height="14px"
                     src="/icons/edit.svg"
                     width="14px"
@@ -274,9 +281,13 @@ function GamePage(): JSX.Element {
 
       {assignClassModal && <AssignClassModal />}
       {editCharacterModal && <UpdateCharacterMetadataModal />}
+      {equipItemModal && <EquipItemModal />}
       {giveExpModal && <DropExperienceModal />}
       {giveItemsModal && <GiveItemsModal />}
-      {equipItemModal && <EquipItemModal />}
+      {jailPlayerModal && <JailPlayerModal />}
+      {removeCharacterModal && <RemoveCharacterModal />}
+      {renounceCharacterModal && <RenounceCharacterModal />}
+      {revokeClassModal && <RevokeClassModal />}
     </>
   );
 }

@@ -59,7 +59,7 @@ export const ItemTag: React.FC<ItemTagProps> = ({
     [size],
   );
 
-  const { character } = useGame();
+  const { character, pageCharacter } = useGame();
 
   const { itemId, name, image, amount } = item;
 
@@ -73,13 +73,14 @@ export const ItemTag: React.FC<ItemTagProps> = ({
   }, [size, character, holderId]);
 
   const isEquipped = useMemo(() => {
+    const focusedCharacter = pageCharacter ?? character;
     return (
       !!holderId &&
-      !!character &&
-      holderId === character.characterId &&
-      character.equippedItems.find(h => h.itemId === itemId)
+      !!focusedCharacter &&
+      holderId === focusedCharacter.characterId &&
+      focusedCharacter.equippedItems.find(h => h.itemId === itemId)
     );
-  }, [character, holderId, itemId]);
+  }, [character, holderId, itemId, pageCharacter]);
 
   const { openActionModal, selectCharacter, selectItem } = useActions();
 

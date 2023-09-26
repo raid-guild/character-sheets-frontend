@@ -113,6 +113,7 @@ export const formatCharacter = async (
     characterId: character.characterId,
     account: character.account,
     player: character.player,
+    jailed: character.jailed,
     classes: characterClasses,
     heldItems,
     equippedItems,

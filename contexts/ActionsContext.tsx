@@ -14,12 +14,18 @@ import { Character, Item } from '@/utils/types';
 export enum PlayerActions {
   EDIT_CHARACTER = 'Edit character',
   EQUIP_ITEM = 'Equip/Unequip item',
+  RENOUNCE_CHARACTER = 'Renounce character',
+  REVOKE_CLASS = 'Revoke class',
 }
 
 export enum GameMasterActions {
   GIVE_ITEMS = 'Give items',
   ASSIGN_CLASS = 'Assign class',
+  JAIL_PLAYER = 'Jail player',
+  FREE_PLAYER = 'Free player',
   GIVE_XP = 'Give XP',
+  REVOKE_CLASS = 'Revoke class',
+  REMOVE_CHARACTER = 'Remove character',
 }
 
 type ActionsContextType = {
@@ -34,10 +40,14 @@ type ActionsContextType = {
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
   assignClassModal: ReturnType<typeof useDisclosure> | undefined;
-  giveItemsModal: ReturnType<typeof useDisclosure> | undefined;
   editCharacterModal: ReturnType<typeof useDisclosure> | undefined;
-  giveExpModal: ReturnType<typeof useDisclosure> | undefined;
   equipItemModal: ReturnType<typeof useDisclosure> | undefined;
+  giveExpModal: ReturnType<typeof useDisclosure> | undefined;
+  giveItemsModal: ReturnType<typeof useDisclosure> | undefined;
+  jailPlayerModal: ReturnType<typeof useDisclosure> | undefined;
+  removeCharacterModal: ReturnType<typeof useDisclosure> | undefined;
+  renounceCharacterModal: ReturnType<typeof useDisclosure> | undefined;
+  revokeClassModal: ReturnType<typeof useDisclosure> | undefined;
 };
 
 const ActionsContext = createContext<ActionsContextType>({
@@ -52,10 +62,14 @@ const ActionsContext = createContext<ActionsContextType>({
 
   openActionModal: () => {},
   assignClassModal: undefined,
-  giveItemsModal: undefined,
   editCharacterModal: undefined,
-  giveExpModal: undefined,
   equipItemModal: undefined,
+  giveExpModal: undefined,
+  giveItemsModal: undefined,
+  jailPlayerModal: undefined,
+  removeCharacterModal: undefined,
+  renounceCharacterModal: undefined,
+  revokeClassModal: undefined,
 });
 
 export const useActions = (): ActionsContextType => useContext(ActionsContext);
@@ -67,10 +81,14 @@ export const ActionsProvider: React.FC<{
   const { game, isMaster } = useGame();
 
   const assignClassModal = useDisclosure();
-  const giveItemsModal = useDisclosure();
   const editCharacterModal = useDisclosure();
-  const giveExpModal = useDisclosure();
   const equipItemModal = useDisclosure();
+  const giveExpModal = useDisclosure();
+  const giveItemsModal = useDisclosure();
+  const jailPlayerModal = useDisclosure();
+  const removeCharacterModal = useDisclosure();
+  const renounceCharacterModal = useDisclosure();
+  const revokeClassModal = useDisclosure();
 
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null,
@@ -82,25 +100,48 @@ export const ActionsProvider: React.FC<{
     if (selectedCharacter?.player !== address?.toLowerCase()) {
       return [];
     }
-    return Object.keys(PlayerActions).map(
+
+    let actions = Object.keys(PlayerActions).map(
       key => PlayerActions[key as keyof typeof PlayerActions],
     );
+    if (selectedCharacter?.classes.length === 0) {
+      actions = actions.filter(a => a !== PlayerActions.REVOKE_CLASS);
+    }
+    return actions;
   }, [address, selectedCharacter]);
 
   const gmActions = useMemo(() => {
     if (isMaster) {
-      if (game?.classes.length === 0) {
-        return Object.keys(GameMasterActions)
-          .map(key => GameMasterActions[key as keyof typeof GameMasterActions])
-          .filter(action => action !== GameMasterActions.ASSIGN_CLASS);
-      }
-
-      return Object.keys(GameMasterActions).map(
+      let actions = Object.keys(GameMasterActions).map(
         key => GameMasterActions[key as keyof typeof GameMasterActions],
       );
+
+      if (game?.classes.length === 0) {
+        actions = actions.filter(a => a == GameMasterActions.ASSIGN_CLASS);
+      }
+
+      if (selectedCharacter?.classes.length === 0) {
+        actions = actions.filter(a => a !== GameMasterActions.REVOKE_CLASS);
+      }
+
+      if (selectedCharacter?.player === address?.toLowerCase()) {
+        actions = actions.filter(a => a !== GameMasterActions.REVOKE_CLASS);
+      }
+
+      if (selectedCharacter?.jailed) {
+        actions = actions.filter(a => a !== GameMasterActions.JAIL_PLAYER);
+      } else {
+        actions = actions.filter(
+          a =>
+            a !== GameMasterActions.FREE_PLAYER &&
+            a !== GameMasterActions.REMOVE_CHARACTER,
+        );
+      }
+
+      return actions;
     }
     return [];
-  }, [game, isMaster]);
+  }, [address, game, isMaster, selectedCharacter]);
 
   const openActionModal = useCallback(
     (action: PlayerActions | GameMasterActions) => {
@@ -114,22 +155,41 @@ export const ActionsProvider: React.FC<{
         case GameMasterActions.ASSIGN_CLASS:
           assignClassModal.onOpen();
           break;
+        case GameMasterActions.JAIL_PLAYER:
+          jailPlayerModal.onOpen();
+          break;
+        case GameMasterActions.FREE_PLAYER:
+          jailPlayerModal.onOpen();
+          break;
+        case GameMasterActions.REMOVE_CHARACTER:
+          removeCharacterModal.onOpen();
+          break;
         case PlayerActions.EDIT_CHARACTER:
           editCharacterModal.onOpen();
           break;
         case PlayerActions.EQUIP_ITEM:
           equipItemModal.onOpen();
           break;
+        case PlayerActions.RENOUNCE_CHARACTER:
+          renounceCharacterModal.onOpen();
+          break;
+        case PlayerActions.REVOKE_CLASS:
+          revokeClassModal.onOpen();
+          break;
         default:
           break;
       }
     },
     [
-      giveExpModal,
-      giveItemsModal,
       assignClassModal,
       editCharacterModal,
       equipItemModal,
+      giveExpModal,
+      giveItemsModal,
+      jailPlayerModal,
+      removeCharacterModal,
+      renounceCharacterModal,
+      revokeClassModal,
     ],
   );
 
@@ -147,10 +207,14 @@ export const ActionsProvider: React.FC<{
 
         openActionModal,
         assignClassModal,
-        giveItemsModal,
         editCharacterModal,
-        giveExpModal,
         equipItemModal,
+        giveExpModal,
+        giveItemsModal,
+        jailPlayerModal,
+        removeCharacterModal,
+        renounceCharacterModal,
+        revokeClassModal,
       }}
     >
       {children}

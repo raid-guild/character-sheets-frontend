@@ -11,6 +11,7 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
+import { useAccount } from 'wagmi';
 
 import { shortenText } from '@/utils/helpers';
 import { Class } from '@/utils/types';
@@ -25,6 +26,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   ...classEntity
 }) => {
   const toast = useToast();
+  const { isConnected } = useAccount();
 
   const { classId, name, description, image, holders, equippers } = classEntity;
   return (
@@ -57,7 +59,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         >
           View
         </Button>
-        <ActionMenu isMaster={isMaster} />
+        {isConnected && <ActionMenu isMaster={isMaster} />}
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="lg" fontWeight="bold">
@@ -89,6 +91,7 @@ export const SmallClassCard: React.FC<ClassCardProps> = ({
   ...classEntity
 }) => {
   const toast = useToast();
+  const { isConnected } = useAccount();
 
   const { classId, name, description, image, holders, equippers } = classEntity;
   return (
@@ -115,7 +118,7 @@ export const SmallClassCard: React.FC<ClassCardProps> = ({
         >
           View
         </Button>
-        <ActionMenu isMaster={isMaster} />
+        {isConnected && <ActionMenu isMaster={isMaster} />}
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="md" fontWeight="bold">

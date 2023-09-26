@@ -11,6 +11,7 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
+import { useAccount } from 'wagmi';
 
 import { PlayerActions, useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
@@ -24,6 +25,7 @@ type ItemCardProps = Item & {
 
 export const ItemCard: React.FC<ItemCardProps> = ({ isMaster, ...item }) => {
   const toast = useToast();
+  const { isConnected } = useAccount();
 
   const {
     itemId,
@@ -84,7 +86,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ isMaster, ...item }) => {
         >
           View
         </Button>
-        <ActionMenu isMaster={isMaster} item={item} />
+        {isConnected && <ActionMenu isMaster={isMaster} item={item} />}
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="lg" fontWeight="bold">
@@ -119,6 +121,7 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({
   ...item
 }) => {
   const toast = useToast();
+  const { isConnected } = useAccount();
 
   const {
     itemId,
@@ -173,7 +176,7 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({
         >
           View
         </Button>
-        <ActionMenu isMaster={isMaster} item={item} />
+        {isConnected && <ActionMenu isMaster={isMaster} item={item} />}
       </VStack>
       <VStack align="flex-start">
         <Text fontSize="md" fontWeight="bold">
