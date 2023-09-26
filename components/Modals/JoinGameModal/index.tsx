@@ -55,10 +55,10 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const {
     file: characterAvatar,
     setFile: setCharacterAvatar,
-    // onRemove,
-    onUpload,
+    onRemove,
+    // onUpload,
     isUploading,
-    // isUploaded,
+    isUploaded,
   } = useUploadFile({ fileName: 'characterAvatar' });
   const [characterName, setCharacterName] = useState<string>('');
   const [characterDescription, setCharacterDescription] = useState<string>('');
@@ -86,13 +86,13 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const hasError = useMemo(() => {
     return (
       !characterDescription ||
-      !characterAvatar ||
+      // !characterAvatar ||
       !characterName ||
       invalidCharacterDescription
     );
   }, [
     characterDescription,
-    characterAvatar,
+    // characterAvatar,
     characterName,
     invalidCharacterDescription,
   ]);
@@ -114,6 +114,29 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
       resetData();
     }
   }, [resetData, isOpen]);
+
+  const mergeTraitImages = useCallback(async (): Promise<string> => {
+    const [blob1, blob2, blob3, blob4] = await Promise.all([
+      fetch(getImageUrl(TRAITS[traits[0]])).then(r => r.blob()),
+      fetch(getImageUrl(TRAITS[traits[1]])).then(r => r.blob()),
+      fetch(getImageUrl(TRAITS[traits[2]])).then(r => r.blob()),
+      fetch(getImageUrl(TRAITS[traits[3]])).then(r => r.blob()),
+    ]);
+
+    const formData = new FormData();
+    formData.append('layer1', blob1);
+    formData.append('layer2', blob2);
+    formData.append('layer3', blob3);
+    formData.append('layer4', blob4);
+
+    const response = await fetch(`/api/uploadTraits`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const { cid } = await response.json();
+    return cid;
+  }, [traits]);
 
   const onJoinCharacter = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
@@ -154,7 +177,8 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
         return;
       }
 
-      const cid = await onUpload();
+      const cid = await mergeTraitImages();
+      // const cid = await onUpload();
 
       if (!cid) {
         toast({
@@ -267,11 +291,12 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
       characterDescription,
       characterName,
       hasError,
-      onUpload,
+      // onUpload,
       publicClient,
       game,
       character,
       reloadGame,
+      mergeTraitImages,
       toast,
       walletClient,
     ],
@@ -334,7 +359,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
             </FormHelperText>
           )}
         </FormControl>
-        {/* <FormControl isInvalid={showError && !characterAvatar}>
+        <FormControl isInvalid={showError && !characterAvatar}>
           <FormLabel>Character Avatar</FormLabel>
           {!characterAvatar && (
             <Input
@@ -371,7 +396,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
               A character avatar is required
             </FormHelperText>
           )}
-        </FormControl> */}
+        </FormControl>
 
         <SimpleGrid columns={4} spacing={0.5} w="100%">
           <Button
