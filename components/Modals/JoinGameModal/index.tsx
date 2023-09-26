@@ -227,11 +227,31 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
         return;
       }
 
-      const characterMetadata = {
+      const characterMetadata: {
+        name: string;
+        description: string;
+        image: string;
+        attributes?: {
+          trait_type: string;
+          value: string;
+        }[];
+      } = {
         name: characterName,
         description: characterDescription,
         image: `ipfs://${cid}`,
       };
+
+      if (!showUpload) {
+        const attributes = traits.map((trait, i) => {
+          const [, variant, color] = trait.split('_');
+          const traitTypes = ['body', 'eyes', 'hair', 'mouth'];
+          return {
+            trait_type: traitTypes[Number(i)].toUpperCase(),
+            value: `${variant.toUpperCase()} ${color.toUpperCase()}`,
+          };
+        });
+        characterMetadata['attributes'] = attributes;
+      }
 
       setIsCreating(true);
 
@@ -336,6 +356,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
       publicClient,
       showUpload,
       toast,
+      traits,
       reloadGame,
       walletClient,
     ],
