@@ -437,7 +437,13 @@ export const TRAITS: { [key: string]: Trait } = {
     variation: 'Mohawk',
     z_index: 3,
   },
-  // TODO: We still need to add a male villager outfit
+  ['4_Villager1_a']: {
+    color: 'a',
+    image: 'ipfs://bafybeidpavhou6rj6fffnfu7q6r2cslumz3xespppkknfgacixwce6lpwu',
+    trait_type: TraitType.CLOTHING,
+    variation: 'Villager1',
+    z_index: 4,
+  },
   ['4_Villager2_a']: {
     color: 'a',
     image: 'ipfs://bafybeicgxsn52x5m5igscibcgxxdzp23iru3aehsrtltxnr2zsv5nduvca',
