@@ -74,7 +74,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
     '1_Basic_a',
     '2_Basic_a',
     '3_Bald_a',
-    '4_Archer_a',
+    '4_Villager2_a',
     '5_Basic_a',
   ]);
   const [isMerging, setIsMerging] = useState<boolean>(false);
@@ -112,7 +112,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
       '1_Basic_a',
       '2_Basic_a',
       '3_Bald_a',
-      '4_Archer_a',
+      '4_Villager2_a',
       '5_Basic_a',
     ]);
 
