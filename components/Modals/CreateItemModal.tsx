@@ -12,13 +12,21 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  SimpleGrid,
+  Switch,
   Text,
   Textarea,
   useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { encodeAbiParameters, maxUint256, pad, parseAbi } from 'viem';
+import {
+  encodeAbiParameters,
+  isAddress,
+  maxUint256,
+  pad,
+  parseAbi,
+} from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
@@ -53,6 +61,12 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   const [itemName, setItemName] = useState<string>('');
   const [itemDescription, setItemDescription] = useState<string>('');
   const [itemSupply, setItemSupply] = useState<string>('');
+  const [classRequirementsToggle, setClassRequirementsToggle] =
+    useState<boolean>(false);
+  const [classRequirements, setClassRequirements] = useState<string[]>([]);
+  const [soulboundToggle, setSoulboundToggle] = useState<boolean>(false);
+  const [claimableToggle, setClaimableToggle] = useState<boolean>(false);
+  const [whitelistedClaimers, setWhitelistedClaimers] = useState<string>('');
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -73,6 +87,15 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     );
   }, [itemSupply]);
 
+  const invalidClaimerAddress = useMemo(() => {
+    const addresses = whitelistedClaimers.split(',');
+    const trimmedAddresses = addresses.map(address => address.trim());
+    return (
+      trimmedAddresses.some(address => !isAddress(address)) &&
+      !!whitelistedClaimers
+    );
+  }, [whitelistedClaimers]);
+
   const hasError = useMemo(() => {
     return (
       !itemDescription ||
@@ -80,12 +103,14 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       !itemName ||
       invalidItemDescription ||
       !itemSupply ||
-      invalidItemSupply
+      invalidItemSupply ||
+      invalidClaimerAddress
     );
   }, [
     itemDescription,
     itemEmblem,
     itemName,
+    invalidClaimerAddress,
     invalidItemDescription,
     itemSupply,
     invalidItemSupply,
@@ -354,6 +379,92 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
             </FormHelperText>
           )}
         </FormControl>
+        <FormControl isInvalid={showError && !itemSupply}>
+          <FormLabel>Require certain classes to claim? (tooltip)</FormLabel>
+          <Switch
+            isChecked={classRequirementsToggle}
+            onChange={e => setClassRequirementsToggle(e.target.checked)}
+          />
+        </FormControl>
+
+        {classRequirementsToggle && (
+          <SimpleGrid columns={4} spacing={3} w="100%">
+            {game?.classes.map(c => (
+              <Button
+                h="200px"
+                key={c.id}
+                onClick={() => {
+                  if (classRequirements.includes(c.id)) {
+                    setClassRequirements(
+                      classRequirements.filter(cr => cr !== c.id),
+                    );
+                  } else {
+                    setClassRequirements([...classRequirements, c.id]);
+                  }
+                }}
+                variant="unstyled"
+                width="100%"
+              >
+                <VStack
+                  background={
+                    classRequirements.includes(c.id) ? 'black' : 'white'
+                  }
+                  border="3px solid black"
+                  borderBottom="5px solid black"
+                  borderRight="5px solid black"
+                  color={classRequirements.includes(c.id) ? 'white' : 'black'}
+                  cursor="pointer"
+                  fontWeight={600}
+                  h="100%"
+                  justify="space-between"
+                  px={5}
+                  py={3}
+                >
+                  <Image
+                    alt={`${c.name} image`}
+                    h="70%"
+                    objectFit="contain"
+                    src={c.image}
+                    w="100%"
+                  />
+                  <Text textAlign="center" fontSize="14px">
+                    {c.name}
+                  </Text>
+                </VStack>
+              </Button>
+            ))}
+          </SimpleGrid>
+        )}
+        <FormControl isInvalid={showError && !itemSupply}>
+          <FormLabel>Is this item soulbound? (tooltip)</FormLabel>
+          <Switch
+            isChecked={soulboundToggle}
+            onChange={e => setSoulboundToggle(e.target.checked)}
+          />
+        </FormControl>
+        <FormControl isInvalid={showError && !itemSupply}>
+          <FormLabel>Allow players to claim? (tooltip)</FormLabel>
+          <Switch
+            isChecked={claimableToggle}
+            onChange={e => setClaimableToggle(e.target.checked)}
+          />
+        </FormControl>
+        {claimableToggle && (
+          <FormControl isInvalid={showError && invalidClaimerAddress}>
+            <FormLabel>
+              Whitelisted claimers (if left empty, any player can claim)
+            </FormLabel>
+            <Input
+              onChange={e => setWhitelistedClaimers(e.target.value)}
+              value={whitelistedClaimers}
+            />
+            {showError && invalidClaimerAddress && (
+              <FormHelperText color="red">
+                Invalid claimer address
+              </FormHelperText>
+            )}
+          </FormControl>
+        )}
         <FormControl isInvalid={showError && !itemEmblem}>
           <FormLabel>Item Emblem</FormLabel>
           {!itemEmblem && (
