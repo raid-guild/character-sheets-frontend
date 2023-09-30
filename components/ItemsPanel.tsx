@@ -8,6 +8,7 @@ import {
 import { useChainId } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
+import { ItemActionsProvider } from '@/contexts/ItemActionsContext';
 
 import { SmallItemCard } from './ItemCard';
 import { CreateItemModal } from './Modals/CreateItemModal';
@@ -28,16 +29,13 @@ export const ItemsPanel: React.FC = () => {
     }
 
     return (
-      <SimpleGrid columns={2} spacing={4} w="100%">
-        {game.items.map(c => (
-          <SmallItemCard
-            key={c.id}
-            {...c}
-            chainId={chainId}
-            isMaster={isMaster}
-          />
-        ))}
-      </SimpleGrid>
+      <ItemActionsProvider>
+        <SimpleGrid columns={2} spacing={4} w="100%">
+          {game.items.map(c => (
+            <SmallItemCard key={c.id} {...c} chainId={chainId} />
+          ))}
+        </SimpleGrid>
+      </ItemActionsProvider>
     );
   }
   return (
