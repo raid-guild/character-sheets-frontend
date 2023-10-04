@@ -228,7 +228,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster, item }) => {
       <MenuButton as={Button} size="sm">
         Actions
       </MenuButton>
-      <MenuList>
+      <MenuList bg='gray.800'>
         {isHeld && (
           <>
             <Text
@@ -240,7 +240,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster, item }) => {
             >
               Player Actions
             </Text>
-            <MenuItem onClick={() => openActionModal(PlayerActions.EQUIP_ITEM)}>
+            <MenuItem bg='gray.800' onClick={() => openActionModal(PlayerActions.EQUIP_ITEM)}>
               {isEquipped ? 'Unequip Item' : 'Equip'}
             </MenuItem>
           </>

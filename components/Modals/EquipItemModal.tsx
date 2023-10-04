@@ -270,7 +270,7 @@ export const EquipItemModal: React.FC = () => {
       onClose={equipItemModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent bg='gray.800'>
         <ModalHeader>
           <Text>{isEquipped ? 'Unequip item' : 'Equip item'}</Text>
           <ModalCloseButton size="lg" />

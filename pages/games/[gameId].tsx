@@ -7,10 +7,16 @@ import {
   Button,
   Flex,
   HStack,
+  Heading,
   Image,
   Link,
   SimpleGrid,
   Spinner,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
   Text,
   useDisclosure,
   VStack,
@@ -129,19 +135,24 @@ function GamePage(): JSX.Element {
     const chainId = DEFAULT_CHAIN.id;
 
     return (
-      <VStack as="main" pt={10} pb={20} spacing={10} maxW="3xl" mx="auto">
-        <HStack w="100%" justify="space-between" spacing={16}>
+      <VStack as="main" maxW="80vw" mx="auto" bg='blackAlpha.500' mt='14' mb='20' rounded={'5px'}>
+        <HStack w="100%" align='start' justify="space-between" spacing={16}  p={12}>
           <VStack align="stretch">
-            <Text fontWeight="bold" fontSize="xl">
-              {name}
-            </Text>
-            <Text as="span" fontSize="xs">
-              {shortenText(description, 130)}
-            </Text>
+          <VStack w="100%" justify='start' align='start' spacing={0} pt={2}>
+            <Heading
+              variant='noShadow'
+              fontSize='5xl'>
+                {name}
+            </Heading>
+
             <Link
               alignItems="center"
-              color="blue"
+              color="white"
               display="flex"
+              _hover={{
+                color: 'primary.500',
+                cursor: 'pointer',
+              }}
               fontSize="sm"
               gap={2}
               href={`${EXPLORER_URLS[chainId]}/address/${id}`}
@@ -151,10 +162,20 @@ function GamePage(): JSX.Element {
               <Image
                 alt="link to new tab"
                 height="14px"
-                src="/icons/new-tab.svg"
+                src="/icons/external-link.svg"
                 width="14px"
               />
             </Link>
+
+          </VStack>
+
+            {/* <Text as="span" fontSize="xs">
+              {shortenText(description, 130)}
+            </Text> */}
+                    {isConnectedAndMounted && !character && (
+          <Button onClick={joinGameModal.onOpen}>Join this Game</Button>
+        )}
+
             {isMaster && (
               <Button onClick={updateGameMetadata.onOpen} size="sm">
                 <Flex align="center" gap={2}>
@@ -177,56 +198,115 @@ function GamePage(): JSX.Element {
             src={image}
           />
         </HStack>
-        <Accordion allowToggle w="100%">
-          <AccordionItem>
-            <AccordionButton>
-              <HStack justify="space-between" w="100%">
-                <div />
-                <Text>GameMasters</Text>
-                <AccordionIcon />
-              </HStack>
-            </AccordionButton>
-            <AccordionPanel>
-              <VStack align="stretch" spacing={4}>
+
+
+
+
+
+            
+              <VStack px={14} pb={10} w='full' align="start" spacing={4}>
+              <Text fontSize='sm' color='gray.500'>GameMasters</Text>
+
                 {masters.map(master => (
                   <Link
                     alignItems="center"
-                    color="blue"
                     display="flex"
                     fontSize="sm"
                     justifyContent="center"
                     href={`${EXPLORER_URLS[chainId]}/address/${master}`}
                     key={`gm-${master}`}
-                    gap={2}
                     isExternal
                     p={0}
                   >
                     {master}
-                    <Image
-                      alt="link to new tab"
-                      height="14px"
-                      src="/icons/new-tab.svg"
-                      width="14px"
-                    />
                   </Link>
                 ))}
               </VStack>
-            </AccordionPanel>
-          </AccordionItem>
-        </Accordion>
 
-        {isConnectedAndMounted && character && (
-          <CharacterCard chainId={chainId} character={character} />
-        )}
 
-        {isConnectedAndMounted && !character && (
-          <Button onClick={joinGameModal.onOpen}>Join this Game</Button>
-        )}
 
         {!isConnectedAndMounted && (
           <Text align="center">Connect wallet to play this game.</Text>
         )}
+        
+        {isConnectedAndMounted && character && (
+          <VStack px={14} w='full' align='start' justify='start'>
+          <Text fontSize='sm' color='gray.500' textAlign='left'>Your character</Text>
+          <CharacterCard chainId={chainId} character={character} />
+          </VStack>
+        )}
+       
 
+<Tabs w='full' borderColor='whiteAlpha.300' colorScheme='white' >
+  <TabList px='10'>
+    <Tab>
+      <Image
+          alt="users"
+          height="20px"
+          src="/icons/users.svg"
+          width="20px"
+        />
+        <Text fontSize="xl" ml='2' mb='1'>
+        {characters.length} characters
+        </Text>
+    </Tab>
+    <Tab>
+      <Image
+          alt="xp"
+          height="20px"
+          src="/icons/xp.svg"
+          width="20px"
+        />
+      <Text fontSize="xl" ml='2' mb='1'>
+        {experience} XP
+      </Text>
+    </Tab>
+    <Tab>
+      <Image
+          alt="users"
+          height="20px"
+          src="/icons/users.svg"
+          width="20px"
+        />
+      <Text fontSize="xl" ml='2' mb='1'>
+        {classes.length} classes
+      </Text>
+    </Tab>
+    <Tab>
+      <Image
+          alt="items"
+          height="20px"
+          src="/icons/items.svg"
+          width="20px"
+        />
+      <Text fontSize="xl" ml='2' mb='1'>
+        {items.length} Items
+      </Text>
+    </Tab>
+
+  </TabList>
+
+  <TabPanels>
+    <TabPanel>
+      <CharactersPanel />
+    </TabPanel>
+    <TabPanel>
+      <XPPanel />
+    </TabPanel>
+    <TabPanel>
+      <ClassesPanel />
+    </TabPanel>
+    <TabPanel>
+      <ItemsPanel />
+    </TabPanel>
+  </TabPanels>
+</Tabs>
+
+
+
+
+
+{/* 
         <SimpleGrid columns={2} spacing={4} w="100%">
           <Button
             border="3px solid black"
@@ -268,7 +348,7 @@ function GamePage(): JSX.Element {
         {activeTab === 'characters' && <CharactersPanel />}
         {activeTab === 'xp' && <XPPanel />}
         {activeTab === 'classes' && <ClassesPanel />}
-        {activeTab === 'items' && <ItemsPanel />}
+        {activeTab === 'items' && <ItemsPanel />} */}
       </VStack>
     );
   };

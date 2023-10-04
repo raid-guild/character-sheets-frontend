@@ -1,4 +1,4 @@
-import { Box, Flex, Image, Link, Text } from '@chakra-ui/react';
+import { Box, Flex, Heading, Image, Link, Text } from '@chakra-ui/react';
 import NextLink from 'next/link';
 
 import { EXPLORER_URLS } from '@/utils/constants';
@@ -20,51 +20,39 @@ export const GameCard: React.FC<GameCardProps> = ({
   name,
 }) => {
   return (
+
     <Box
-      border="3px solid black"
-      borderBottom="5px solid black"
-      borderRight="5px solid black"
-      h="475px"
+      bg='blackAlpha.500'
       transition="background 0.3s ease"
       w="360px"
+      p={8}
     >
-      <NextLink href={`/games/[gameId]`} as={`/games/${id}`}>
-        <Box
+      <Box h='130px'>
+      <NextLink href={`/games/[gameId]`} as={`/games/${id}`} >
+        <Heading
+          variant='noShadow'
           _hover={{
-            background: 'gray.100',
+            color: 'primary.500',
             cursor: 'pointer',
+            transition: 'color 1000ms linear',
+            transitionDuration: '0.15s',
+            transitionTimingFunction: "ease-in-out"
           }}
-        >
-          <Image
-            alt="game emblem"
-            background="gray.400"
-            h="140px"
-            objectFit="cover"
-            src={image}
-            w="100%"
-          />
-          <Flex
-            align="center"
-            borderBottom="3px solid black"
-            borderTop="3px solid black"
-            justify="center"
-            h="50px"
-          >
-            <Text fontSize="lg">{name}</Text>
-          </Flex>
-        </Box>
+        >{name}</Heading>
       </NextLink>
-      <Box p={4}>
-        <Text h="100px">
-          Description:{' '}
+        {/* <Text h="100px">
           <Text as="span" fontSize="xs">
             {shortenText(description, 130)}
           </Text>
-        </Text>
-        <Link
+        </Text> */}
+                <Link
           alignItems="center"
-          color="blue"
+          color="white"
           display="flex"
+          _hover={{
+            color: 'primary.500',
+            cursor: 'pointer',
+          }}
           fontSize="sm"
           gap={2}
           href={`${EXPLORER_URLS[chainId]}/address/${id}`}
@@ -74,15 +62,66 @@ export const GameCard: React.FC<GameCardProps> = ({
           <Image
             alt="link to new tab"
             height="14px"
-            src="/icons/new-tab.svg"
+            src="/icons/external-link.svg"
             width="14px"
           />
         </Link>
-        <Box background="black" h="3px" my={4} w={20} />
-        <Text>Number of characters: {characters.length}</Text>
-        <Text>Number of classes: {classes.length}</Text>
-        <Text>Number of items: {items.length}</Text>
-      </Box>
+        </Box>
+        <Flex
+        direction='row'
+        align='center'>
+          <Image
+              alt="users"
+              height="20px"
+              src="/icons/users.svg"
+              width="20px"
+            />
+            <Text color="gray.400" fontSize="xl" ml='2' mb='1'>
+              {characters.length} characters
+           </Text>
+          </Flex>
+          <Flex
+          direction='row'
+          align='center'>
+            <Image
+                alt="users"
+                height="20px"
+                src="/icons/items.svg"
+                width="20px"
+              />
+            <Text color="gray.400" fontSize="xl" ml='2' mb='1'>
+              {items.length} items
+           </Text>
+          </Flex>
+          <Flex
+          direction='row'
+          align='center'>
+            <Image
+                alt="users"
+                height="20px"
+                src="/icons/xp.svg"
+                width="20px"
+              />
+            <Text color="gray.400" fontSize="xl" ml='2' mb='1'>
+             xp
+           </Text>
+          </Flex>
+        {/* <Text>Number of classes: {classes.length}</Text> */}
+
+        <Box
+          mt='8'
+        >
+          <Image
+            alt="game emblem"
+            rounded='5px'
+            background="gray.400"
+            h="140px"
+            objectFit="cover"
+            src={image}
+            w="100%"
+          />
+        </Box>
     </Box>
+
   );
 };

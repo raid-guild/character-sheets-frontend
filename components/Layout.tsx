@@ -15,18 +15,21 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
     <Flex direction="column" minH="100vh">
       <Box
         as="header"
-        py={7}
-        px={8}
+        pt={7}
+        px={6}
         position="fixed"
         top={0}
         w="100%"
         zIndex={1000}
-        bg={"rgba(0,0,0,0.85)"}        
+        bg='gray.900'   
       >
         <Flex align="center" h="100%" justify="start" w="100%">
 
             <Link as={NextLink} fontSize="sm" href="/" variant="heading" _hover={{borderColor: 'none'}}>
-              <Heading fontSize='24px' color={'primary.500'} variant={'noShadow'}>Character Sheets</Heading>
+              <Flex direction="row">
+                <Image alt="RaidGuild logo" h="28px" src="/favicon.ico" w="28px" />
+                <Heading ml='10px' fontSize='24px' color={'primary.500'} variant={'noShadow'}>Character Sheets</Heading>
+              </Flex>
             </Link>
             <Spacer />
 
@@ -118,13 +121,13 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
               }}
             </ConnectButton.Custom>
         </Flex>
+        <Box h='1px' w='full' mt={4} background='primary.500'></Box>
       </Box>
-      <Box mt={20}>{children}</Box>
+      <Box mt={20} bg="gray.900">{children}</Box>
       <Flex
         align="center"
         as="footer"
-        background="white"
-        borderTop="5px solid black"
+        background="blackAlpha.900"
         h={24}
         justify="center"
         marginTop="auto"
