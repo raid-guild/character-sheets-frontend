@@ -18,6 +18,7 @@ export enum PlayerActions {
 export enum GameMasterActions {
   EDIT_ITEM = 'Edit item',
   GIVE_ITEM = 'Give item',
+  ADD_REQUIREMENT = 'Add requirement',
 }
 
 type ItemActionsContextType = {
@@ -28,6 +29,7 @@ type ItemActionsContextType = {
   selectItem: (item: Item) => void;
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
+  addRequirementModal: ReturnType<typeof useDisclosure> | undefined;
   claimItemModal: ReturnType<typeof useDisclosure> | undefined;
 };
 
@@ -39,6 +41,7 @@ const ItemActionsContext = createContext<ItemActionsContextType>({
   selectItem: () => {},
 
   openActionModal: () => {},
+  addRequirementModal: undefined,
   claimItemModal: undefined,
 });
 
@@ -53,6 +56,7 @@ export const ItemActionsProvider: React.FC<{
   const toast = useToast();
 
   const claimItemModal = useDisclosure();
+  const addRequirementModal = useDisclosure();
 
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
@@ -95,11 +99,14 @@ export const ItemActionsProvider: React.FC<{
             status: 'warning',
           });
           break;
+        case GameMasterActions.ADD_REQUIREMENT:
+          addRequirementModal.onOpen();
+          break;
         default:
           break;
       }
     },
-    [claimItemModal, toast],
+    [addRequirementModal, claimItemModal, toast],
   );
 
   return (
@@ -112,6 +119,7 @@ export const ItemActionsProvider: React.FC<{
         selectItem: setSelectedItem,
 
         openActionModal,
+        addRequirementModal,
         claimItemModal,
       }}
     >

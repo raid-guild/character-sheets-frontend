@@ -15,6 +15,7 @@ import {
 } from '@/contexts/ItemActionsContext';
 
 import { SmallItemCard } from './ItemCard';
+import { AddItemRequirementModal } from './Modals/AddItemRequirementModal';
 import { ClaimItemModal } from './Modals/ClaimItemModal';
 import { CreateItemModal } from './Modals/CreateItemModal';
 
@@ -39,7 +40,7 @@ export const ItemsPanel: React.FC<PropsWithChildren> = () => {
 const ItemsPanelInner: React.FC = () => {
   const { game } = useGame();
   const chainId = useChainId();
-  const { claimItemModal } = useItemActions();
+  const { addRequirementModal, claimItemModal } = useItemActions();
 
   if (!game || game.items.length === 0) {
     return (
@@ -57,6 +58,7 @@ const ItemsPanelInner: React.FC = () => {
         ))}
       </SimpleGrid>
       {claimItemModal && <ClaimItemModal />}
+      {addRequirementModal && <AddItemRequirementModal />}
     </>
   );
 };
