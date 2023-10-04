@@ -106,7 +106,7 @@ export const formatCharacter = async (
   return {
     id: character.id,
     uri: character.uri,
-    name: character.name ?? metadata.name,
+    name: metadata.name,
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
     experience: character.experience,
@@ -128,12 +128,11 @@ export const formatClass = async (
   return {
     id: classEntity.id,
     uri: classEntity.uri,
-    name: classEntity.name ?? metadata.name,
+    name: metadata.name,
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
     classId: classEntity.classId,
     holders: classEntity.holders,
-    equippers: classEntity.equippers,
   };
 };
 
@@ -143,7 +142,7 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
   return {
     id: item.id,
     uri: item.uri,
-    name: item.name ?? metadata.name,
+    name: metadata.name,
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
     itemId: item.itemId,
