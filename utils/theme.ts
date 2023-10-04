@@ -3,7 +3,7 @@ import { css } from '@emotion/react';
 
 export const globalStyles = css`
 body {
-  background: radial-gradient(97.27% 170.54% at 98.7% 2.73%, rgb(36, 0, 58) 0%, rgba(26, 32, 44, 100) 100%);
+  background: #171923;
 }
 
 ::-webkit-scrollbar {

@@ -26,8 +26,8 @@ export default function AllGames(): JSX.Element {
   }
 
   return (
-    <VStack as="main" pt={10} pb={20} spacing={10}>
-      <Flex gap={10} justify="center" w="1200px" wrap="wrap">
+    <VStack as="main" pt={14} pb={20} spacing={10}>
+      <Flex gap={10} justify="center" w="full" wrap="wrap">
         {allGames.map(game => (
           <GameCard
             key={game.id}

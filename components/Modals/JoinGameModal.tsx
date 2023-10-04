@@ -372,7 +372,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
       onClose={onClose}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent bg='gray.800'>
         <ModalHeader>
           <Text>Create your Character</Text>
           <ModalCloseButton size="lg" />
