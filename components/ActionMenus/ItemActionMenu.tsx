@@ -7,7 +7,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 
-import { useActions } from '@/contexts/ItemActionsContext';
+import { useItemActions } from '@/contexts/ItemActionsContext';
 import { Item } from '@/utils/types';
 
 type ItemActionMenuProps = {
@@ -16,7 +16,7 @@ type ItemActionMenuProps = {
 
 export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({ item }) => {
   const { gmActions, openActionModal, playerActions, selectItem } =
-    useActions();
+    useItemActions();
 
   return (
     <>

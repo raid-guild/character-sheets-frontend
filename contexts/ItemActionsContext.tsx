@@ -28,6 +28,7 @@ type ItemActionsContextType = {
   selectItem: (item: Item) => void;
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
+  claimItemModal: ReturnType<typeof useDisclosure> | undefined;
 };
 
 const ItemActionsContext = createContext<ItemActionsContextType>({
@@ -38,9 +39,10 @@ const ItemActionsContext = createContext<ItemActionsContextType>({
   selectItem: () => {},
 
   openActionModal: () => {},
+  claimItemModal: undefined,
 });
 
-export const useActions = (): ItemActionsContextType =>
+export const useItemActions = (): ItemActionsContextType =>
   useContext(ItemActionsContext);
 
 export const ItemActionsProvider: React.FC<{
@@ -110,6 +112,7 @@ export const ItemActionsProvider: React.FC<{
         selectItem: setSelectedItem,
 
         openActionModal,
+        claimItemModal,
       }}
     >
       {children}

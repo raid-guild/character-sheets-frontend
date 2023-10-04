@@ -119,6 +119,12 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   const resetData = useCallback(() => {
     setItemName('');
     setItemDescription('');
+    setItemSupply('');
+    setClassRequirementsToggle(false);
+    setClassRequirements([]);
+    setSoulboundToggle(false);
+    setClaimableToggle(false);
+    setWhitelistedClaimers('');
     setItemEmblem(null);
 
     setShowError(false);
@@ -211,6 +217,19 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           return;
         }
 
+        const claimable = pad('0x00');
+
+        // if (claimableToggle) {
+        //   const addresses = whitelistedClaimers.split(',');
+        //   const trimmedAddresses = addresses.map(address => address.trim());
+
+        //   if (trimmedAddresses.length === 0) {
+        //     claimable = pad('0x01');
+        //   }
+        // }
+
+        const classIds = classRequirements.map(cr => BigInt(cr.split('-')[2]));
+
         const encodedItemCreationData = encodeAbiParameters(
           [
             {
@@ -246,9 +265,9 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
             itemName,
             BigInt(itemSupply),
             [],
-            [],
-            false,
-            pad('0x01'),
+            classIds,
+            soulboundToggle,
+            claimable,
             itemMetadataCid,
           ],
         );
@@ -296,6 +315,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       }
     },
     [
+      classRequirements,
       itemName,
       itemDescription,
       itemSupply,
@@ -304,6 +324,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       hasError,
       onUpload,
       publicClient,
+      soulboundToggle,
       toast,
       walletClient,
     ],
