@@ -35,7 +35,7 @@ export const GiveItemsModal: React.FC = () => {
   const publicClient = usePublicClient();
   const toast = useToast();
 
-  const [itemId, setItemId] = useState<string>('1');
+  const [itemId, setItemId] = useState<string>('0');
   const [amount, setAmount] = useState<string>('');
 
   const [showError, setShowError] = useState<boolean>(false);
@@ -73,15 +73,15 @@ export const GiveItemsModal: React.FC = () => {
   const options = game?.items.map(c => c.itemId) ?? [];
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'item',
-    defaultValue: '1',
+    defaultValue: '0',
     onChange: setItemId,
   });
   const group = getRootProps();
 
   const resetData = useCallback(() => {
     setAmount('');
-    setValue('1');
-    setItemId('1');
+    setValue('0');
+    setItemId('0');
     setIsGiving(false);
     setTxHash(null);
     setIsSyncing(false);
