@@ -86,11 +86,8 @@ export const RenounceCharacterModal: React.FC = () => {
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
           address: game.id as Address,
-          abi: parseAbi([
-            'function renounceSheet(uint256 _characterId) public',
-          ]),
+          abi: parseAbi(['function renounceSheet() public']),
           functionName: 'renounceSheet',
-          args: [BigInt(selectedCharacter.characterId)],
         });
         setTxHash(transactionhash);
 

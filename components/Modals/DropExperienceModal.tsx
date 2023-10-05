@@ -97,7 +97,7 @@ export const DropExperienceModal: React.FC = () => {
         return;
       }
 
-      if (!game?.itemsAddress) {
+      if (!game?.experienceAddress) {
         toast({
           description: `Could not find the game.`,
           position: 'top',
@@ -119,20 +119,19 @@ export const DropExperienceModal: React.FC = () => {
 
       setIsDropping(true);
 
-      const characters = [selectedCharacter.account as Address];
-      const itemIds = [[BigInt(0)]];
-      const amounts = [[BigInt(amount)]];
+      const character = selectedCharacter.account as Address;
+      const amountBG = BigInt(amount);
 
       try {
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
-          address: game.itemsAddress as Address,
+          address: game.experienceAddress as Address,
           abi: parseAbi([
-            'function dropLoot(address[] calldata nftAddress, uint256[][] calldata itemIds, uint256[][] calldata amounts) external',
+            'function dropExp(address character, uint256 amount) public',
           ]),
-          functionName: 'dropLoot',
-          args: [characters, itemIds, amounts],
+          functionName: 'dropExp',
+          args: [character, amountBG],
         });
         setTxHash(transactionhash);
 

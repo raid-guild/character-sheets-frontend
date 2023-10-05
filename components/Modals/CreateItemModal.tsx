@@ -186,23 +186,33 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           return;
         }
 
+        const requiredAssetsBytes = encodeAbiParameters(
+          [
+            {
+              name: 'requiredAssetCategories',
+              type: 'uint8[]',
+            },
+            {
+              name: 'requiredAssetAddresses',
+              type: 'address[]',
+            },
+            {
+              name: 'requiredAssetIds',
+              type: 'uint256[]',
+            },
+            {
+              name: 'requiredAssetAmounts',
+              type: 'uint256[]',
+            },
+          ],
+          [[], [], [], []],
+        );
+
         const encodedItemCreationData = encodeAbiParameters(
           [
             {
-              name: 'name',
-              type: 'string',
-            },
-            {
-              name: 'supply',
-              type: 'uint256',
-            },
-            {
-              name: 'newItemRequirements',
-              type: 'uint256[][]',
-            },
-            {
-              name: 'newClassRequirements',
-              type: 'uint256[]',
+              name: 'craftable',
+              type: 'bool',
             },
             {
               name: 'soulbound',
@@ -213,18 +223,25 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               type: 'bytes32',
             },
             {
+              name: 'supply',
+              type: 'uint256',
+            },
+            {
               name: 'cid',
               type: 'string',
             },
+            {
+              name: 'requiredAssets',
+              type: 'bytes',
+            },
           ],
           [
-            itemName,
-            BigInt(itemSupply),
-            [],
-            [],
+            false,
             false,
             pad('0x01'),
+            BigInt(itemSupply),
             itemMetadataCid,
+            requiredAssetsBytes,
           ],
         );
 

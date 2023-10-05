@@ -27,8 +27,8 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 }) => {
   const toast = useToast();
   const { isConnected } = useAccount();
+  const { classId, name, description, image, holders } = classEntity;
 
-  const { classId, name, description, image, holders, equippers } = classEntity;
   return (
     <HStack
       border="3px solid black"
@@ -80,7 +80,6 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 
         <Box background="black" h="3px" my={4} w={20} />
         <Text>Held By: {holders.length}</Text>
-        <Text>Equipped By: {equippers.length}</Text>
       </VStack>
     </HStack>
   );
@@ -93,7 +92,7 @@ export const SmallClassCard: React.FC<ClassCardProps> = ({
   const toast = useToast();
   const { isConnected } = useAccount();
 
-  const { classId, name, description, image, holders, equippers } = classEntity;
+  const { classId, name, description, image, holders } = classEntity;
   return (
     <HStack
       border="3px solid black"
@@ -134,7 +133,6 @@ export const SmallClassCard: React.FC<ClassCardProps> = ({
 
         <Box background="black" h="3px" my={4} w={20} />
         <Text fontSize="xs">Held By: {holders.length}</Text>
-        <Text fontSize="xs">Equipped By: {equippers.length}</Text>
       </VStack>
     </HStack>
   );
