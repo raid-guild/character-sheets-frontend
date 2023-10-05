@@ -94,6 +94,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   const resetData = useCallback(() => {
     setItemName('');
     setItemDescription('');
+    setItemSupply('');
     setItemEmblem(null);
 
     setShowError(false);
