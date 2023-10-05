@@ -167,15 +167,15 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         const encodedClassCreationData = encodeAbiParameters(
           [
             {
-              name: 'name',
-              type: 'string',
+              name: 'claimable',
+              type: 'bool',
             },
             {
               name: 'classesUri',
               type: 'string',
             },
           ],
-          [className, classMetadataCid],
+          [false, classMetadataCid],
         );
 
         const transactionhash = await walletClient.writeContract({

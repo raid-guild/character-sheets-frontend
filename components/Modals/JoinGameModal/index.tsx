@@ -21,7 +21,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { encodeAbiParameters, parseAbi } from 'viem';
+import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
@@ -304,32 +304,16 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
           return;
         }
 
-        const encodedCharacterCreationData = encodeAbiParameters(
-          [
-            {
-              name: 'name',
-              type: 'string',
-            },
-            {
-              name: 'tokenUri',
-              type: 'string',
-            },
-          ],
-          [characterName, characterMetadataCid],
-        );
 
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
           address: game.id as Address,
           abi: parseAbi([
-            'function rollCharacterSheet(address _to, bytes calldata _data) external',
+            'function rollCharacterSheet(string calldata _tokenUri) external',
           ]),
           functionName: 'rollCharacterSheet',
-          args: [
-            walletClient.account?.address as Address,
-            encodedCharacterCreationData,
-          ],
+          args: [characterMetadataCid],
         });
         setTxHash(transactionhash);
 

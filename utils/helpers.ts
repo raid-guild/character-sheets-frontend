@@ -183,6 +183,7 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
     id: game.id,
     classesAddress: game.classesAddress,
     itemsAddress: game.itemsAddress,
+    experienceAddress: game.experienceAddress,
     uri: game.uri,
     owners: game.owners,
     masters: game.masters,

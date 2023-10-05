@@ -128,16 +128,16 @@ export const AssignClassModal: React.FC = () => {
       setIsAssigning(true);
 
       try {
-        const { characterId } = selectedCharacter;
+        const { account } = selectedCharacter;
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
           address: game.classesAddress as Address,
           abi: parseAbi([
-            'function assignClass(uint256 characterId, uint256 classId) public',
+            'function assignClass(address character, uint256 classId) public',
           ]),
           functionName: 'assignClass',
-          args: [BigInt(characterId), BigInt(classId)],
+          args: [account as `0x${string}`, BigInt(classId)],
         });
         setTxHash(transactionhash);
 
