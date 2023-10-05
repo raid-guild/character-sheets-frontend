@@ -31,7 +31,7 @@ export const AssignClassModal: React.FC = () => {
   const publicClient = usePublicClient();
   const toast = useToast();
 
-  const [classId, setClassId] = useState<string>('1');
+  const [classId, setClassId] = useState<string>('0');
 
   const [isAssigning, setIsAssigning] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -47,14 +47,14 @@ export const AssignClassModal: React.FC = () => {
   const options = game?.classes.map(c => c.classId) ?? [];
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
-    defaultValue: '1',
+    defaultValue: '0',
     onChange: setClassId,
   });
   const group = getRootProps();
 
   const resetData = useCallback(() => {
-    setValue('1');
-    setClassId('1');
+    setValue('0');
+    setClassId('0');
     setIsAssigning(false);
     setTxHash(null);
     setIsSyncing(false);
@@ -128,16 +128,16 @@ export const AssignClassModal: React.FC = () => {
       setIsAssigning(true);
 
       try {
-        const { characterId } = selectedCharacter;
+        const { account } = selectedCharacter;
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
           address: game.classesAddress as Address,
           abi: parseAbi([
-            'function assignClass(uint256 characterId, uint256 classId) public',
+            'function assignClass(address character, uint256 classId) public',
           ]),
           functionName: 'assignClass',
-          args: [BigInt(characterId), BigInt(classId)],
+          args: [account as `0x${string}`, BigInt(classId)],
         });
         setTxHash(transactionhash);
 

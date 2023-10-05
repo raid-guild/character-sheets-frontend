@@ -111,16 +111,16 @@ export const RevokeClassModal: React.FC = () => {
       setIsRevoking(true);
 
       try {
-        const { characterId } = selectedCharacter;
+        const { account } = selectedCharacter;
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
           address: game.classesAddress as Address,
           abi: parseAbi([
-            'function revokeClass(uint256 characterId, uint256 classId) public',
+            'function revokeClass(address character, uint256 classId) public',
           ]),
           functionName: 'revokeClass',
-          args: [BigInt(characterId), BigInt(classId)],
+          args: [account as `0x${string}`, BigInt(classId)],
         });
         setTxHash(transactionhash);
 

@@ -252,7 +252,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
           account: walletClient.account?.address as Address,
           address: gameFactory as Address,
           abi: parseAbi([
-            'function create(address[], address, bytes calldata) external returns (address, address, address)',
+            'function create(address[], address, bytes calldata) external returns (address, address, address, address)',
           ]),
           functionName: 'create',
           args: [

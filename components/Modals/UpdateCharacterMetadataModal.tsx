@@ -226,10 +226,10 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
           account: walletClient.account?.address as Address,
           address: game.id as Address,
           abi: parseAbi([
-            'function updateCharacterMetadata(string calldata newName, string calldata newCid) public',
+            'function updateCharacterMetadata(string calldata newCid) public',
           ]),
           functionName: 'updateCharacterMetadata',
-          args: [newName, newCid],
+          args: [newCid],
         });
         setTxHash(transactionhash);
 

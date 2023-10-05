@@ -17,6 +17,7 @@ export type GameMeta = Metadata & {
 
 export type Game = Metadata & {
   id: string;
+  experienceAddress: string;
   itemsAddress: string;
   classesAddress: string;
   uri: string;
@@ -48,7 +49,6 @@ export type Class = Metadata & {
   uri: string;
   name: string;
   holders: { id: string }[];
-  equippers: { id: string }[];
 };
 
 export type Item = Metadata & {
