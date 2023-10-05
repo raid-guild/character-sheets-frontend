@@ -304,7 +304,6 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
           return;
         }
 
-
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
