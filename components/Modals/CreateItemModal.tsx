@@ -160,7 +160,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         return;
       }
 
-      if (!game?.itemsAddress) {
+      if (!(game && game.itemsAddress)) {
         toast({
           description: `Could not find an item factory for the ${walletClient.chain.name} network.`,
           position: 'top',
@@ -219,6 +219,8 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
 
         const claimable = pad('0x00');
 
+        //TODO: the claimable addresses still need added to requirements
+
         // if (claimableToggle) {
         //   const addresses = whitelistedClaimers.split(',');
         //   const trimmedAddresses = addresses.map(address => address.trim());
@@ -228,8 +230,15 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         //   }
         // }
 
-        // const classIds = classRequirements.map(cr => BigInt(cr.split('-')[2]));
+        const requiredClassIds = classRequirements.map(cr => BigInt(cr));
+        const requiredClassCategories = requiredClassIds.map(() => 2);
+        const requiredClassAddresses = requiredClassIds.map(
+          () => game.classesAddress as Address,
+        );
+        // TODO: Make amount dynamic when class levels are added
+        const requiredClassAmounts = requiredClassIds.map(() => BigInt(1));
 
+        // TODO: item and XP requirements still need added
         const requiredAssetsBytes = encodeAbiParameters(
           [
             {
@@ -249,7 +258,12 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               type: 'uint256[]',
             },
           ],
-          [[], [], [], []],
+          [
+            [...requiredClassCategories],
+            [...requiredClassAddresses],
+            [...requiredClassIds],
+            [...requiredClassAmounts],
+          ],
         );
 
         const encodedItemCreationData = encodeAbiParameters(
@@ -332,7 +346,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       }
     },
     [
-      // classRequirements,
+      classRequirements,
       itemName,
       itemDescription,
       itemSupply,
@@ -432,12 +446,12 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
                 h="200px"
                 key={c.id}
                 onClick={() => {
-                  if (classRequirements.includes(c.id)) {
+                  if (classRequirements.includes(c.classId)) {
                     setClassRequirements(
-                      classRequirements.filter(cr => cr !== c.id),
+                      classRequirements.filter(cr => cr !== c.classId),
                     );
                   } else {
-                    setClassRequirements([...classRequirements, c.id]);
+                    setClassRequirements([...classRequirements, c.classId]);
                   }
                 }}
                 variant="unstyled"
@@ -445,12 +459,14 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               >
                 <VStack
                   background={
-                    classRequirements.includes(c.id) ? 'black' : 'white'
+                    classRequirements.includes(c.classId) ? 'black' : 'white'
                   }
                   border="3px solid black"
                   borderBottom="5px solid black"
                   borderRight="5px solid black"
-                  color={classRequirements.includes(c.id) ? 'white' : 'black'}
+                  color={
+                    classRequirements.includes(c.classId) ? 'white' : 'black'
+                  }
                   cursor="pointer"
                   fontWeight={600}
                   h="100%"
