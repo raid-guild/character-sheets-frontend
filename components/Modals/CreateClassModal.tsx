@@ -167,15 +167,15 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         const encodedClassCreationData = encodeAbiParameters(
           [
             {
-              name: 'name',
-              type: 'string',
+              name: 'claimable',
+              type: 'bool',
             },
             {
               name: 'classesUri',
               type: 'string',
             },
           ],
-          [className, classMetadataCid],
+          [false, classMetadataCid],
         );
 
         const transactionhash = await walletClient.writeContract({
@@ -349,7 +349,11 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
       onClose={onClose}
     >
       <ModalOverlay />
+<<<<<<< HEAD
       <ModalContent bg='gray.800'>
+=======
+      <ModalContent bg="gray.800">
+>>>>>>> 12e7e6ec90becf7bdf8fc18a02bdc0a63076cccd
         <ModalHeader>
           <Text>Create a Class</Text>
           <ModalCloseButton size="lg" />

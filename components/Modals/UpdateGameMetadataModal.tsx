@@ -414,7 +414,11 @@ export const UpdateGameMetadataModal: React.FC<
       onClose={onClose}
     >
       <ModalOverlay />
+<<<<<<< HEAD
       <ModalContent bg='gray.800'>
+=======
+      <ModalContent bg="gray.800">
+>>>>>>> 12e7e6ec90becf7bdf8fc18a02bdc0a63076cccd
         <ModalHeader>
           <Text>Update Game</Text>
           <ModalCloseButton size="lg" />

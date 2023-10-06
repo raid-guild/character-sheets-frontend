@@ -117,7 +117,7 @@ export const ActionsProvider: React.FC<{
       );
 
       if (game?.classes.length === 0) {
-        actions = actions.filter(a => a == GameMasterActions.ASSIGN_CLASS);
+        actions = actions.filter(a => a !== GameMasterActions.ASSIGN_CLASS);
       }
 
       if (selectedCharacter?.classes.length === 0) {

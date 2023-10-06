@@ -86,11 +86,8 @@ export const RenounceCharacterModal: React.FC = () => {
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
           address: game.id as Address,
-          abi: parseAbi([
-            'function renounceSheet(uint256 _characterId) public',
-          ]),
+          abi: parseAbi(['function renounceSheet() public']),
           functionName: 'renounceSheet',
-          args: [BigInt(selectedCharacter.characterId)],
         });
         setTxHash(transactionhash);
 
@@ -179,7 +176,11 @@ export const RenounceCharacterModal: React.FC = () => {
       onClose={renounceCharacterModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
+<<<<<<< HEAD
       <ModalContent bg='gray.800'>
+=======
+      <ModalContent bg="gray.800">
+>>>>>>> 12e7e6ec90becf7bdf8fc18a02bdc0a63076cccd
         <ModalHeader>
           <Text>Renounce Character</Text>
           <ModalCloseButton size="lg" />

@@ -111,16 +111,16 @@ export const RevokeClassModal: React.FC = () => {
       setIsRevoking(true);
 
       try {
-        const { characterId } = selectedCharacter;
+        const { account } = selectedCharacter;
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
           address: game.classesAddress as Address,
           abi: parseAbi([
-            'function revokeClass(uint256 characterId, uint256 classId) public',
+            'function revokeClass(address character, uint256 classId) public',
           ]),
           functionName: 'revokeClass',
-          args: [BigInt(characterId), BigInt(classId)],
+          args: [account as `0x${string}`, BigInt(classId)],
         });
         setTxHash(transactionhash);
 
@@ -234,7 +234,11 @@ export const RevokeClassModal: React.FC = () => {
       onClose={revokeClassModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
+<<<<<<< HEAD
       <ModalContent bg='gray.800'>
+=======
+      <ModalContent bg="gray.800">
+>>>>>>> 12e7e6ec90becf7bdf8fc18a02bdc0a63076cccd
         <ModalHeader>
           <Text>Revoke a Class</Text>
           <ModalCloseButton size="lg" />

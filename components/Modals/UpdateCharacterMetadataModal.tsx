@@ -226,10 +226,10 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
           account: walletClient.account?.address as Address,
           address: game.id as Address,
           abi: parseAbi([
-            'function updateCharacterMetadata(string calldata newName, string calldata newCid) public',
+            'function updateCharacterMetadata(string calldata newCid) public',
           ]),
           functionName: 'updateCharacterMetadata',
-          args: [newName, newCid],
+          args: [newCid],
         });
         setTxHash(transactionhash);
 
@@ -423,7 +423,11 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       onClose={editCharacterModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
+<<<<<<< HEAD
       <ModalContent bg='gray.800'>
+=======
+      <ModalContent bg="gray.800">
+>>>>>>> 12e7e6ec90becf7bdf8fc18a02bdc0a63076cccd
         <ModalHeader>
           <Text>Update Character</Text>
           <ModalCloseButton size="lg" />

@@ -1,8 +1,13 @@
 import '@rainbow-me/rainbowkit/styles.css';
 
+<<<<<<< HEAD
 // import { ChakraProvider } from '@chakra-ui/react';
 import { RGThemeProvider } from '@raidguild/design-system';
+=======
+>>>>>>> 12e7e6ec90becf7bdf8fc18a02bdc0a63076cccd
 import { Global } from '@emotion/react';
+// import { ChakraProvider } from '@chakra-ui/react';
+import { RGThemeProvider } from '@raidguild/design-system';
 import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { Analytics } from '@vercel/analytics/react';
 import type { AppProps } from 'next/app';
@@ -15,7 +20,7 @@ import { GamesProvider } from '@/contexts/GamesContext';
 import { client } from '@/graphql/client';
 import { useGraphHealth } from '@/hooks/useGraphHealth';
 import { chains, wagmiConfig } from '@/lib/web3';
-import { globalStyles, theme } from '@/utils/theme';
+import { globalStyles } from '@/utils/theme';
 
 const TITLE = 'CharacterSheets';
 const DESCRIPTION =

@@ -1,4 +1,17 @@
+<<<<<<< HEAD
 import { Box, Button, Flex, Heading, Icon, Image, Link, Text, Spacer } from '@chakra-ui/react';
+=======
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Image,
+  Link,
+  Spacer,
+  Text,
+} from '@chakra-ui/react';
+>>>>>>> 12e7e6ec90becf7bdf8fc18a02bdc0a63076cccd
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import NextLink from 'next/link';
 
@@ -21,6 +34,7 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         top={0}
         w="100%"
         zIndex={1000}
+<<<<<<< HEAD
         bg='gray.900'   
       >
         <Flex align="center" h="100%" justify="start" w="100%">
@@ -98,8 +112,93 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
                           </Button>
                         );
                       }
+=======
+        bg="gray.900"
+      >
+        <Flex align="center" h="100%" justify="start" w="100%">
+          <Link
+            as={NextLink}
+            fontSize="sm"
+            href="/"
+            variant="heading"
+            _hover={{ borderColor: 'none' }}
+          >
+            <Flex direction="row">
+              <Image
+                alt="RaidGuild logo"
+                h="28px"
+                src="/favicon.ico"
+                w="28px"
+              />
+              <Heading
+                ml="10px"
+                fontSize="24px"
+                color={'primary.500'}
+                variant={'noShadow'}
+              >
+                Character Sheets
+              </Heading>
+            </Flex>
+          </Link>
+          <Spacer />
 
+          <Box mr={10}>
+            <ActiveLink href="/my-games" variant="heading">
+              My Games
+            </ActiveLink>
+            <ActiveLink href="/all-games" variant="text">
+              All Games
+            </ActiveLink>
+          </Box>
+          <ConnectButton.Custom>
+            {({
+              account,
+              chain,
+              openAccountModal,
+              openChainModal,
+              openConnectModal,
+              mounted,
+            }) => {
+              const connected = mounted && account && chain;
+
+              return (
+                <Flex
+                  align="center"
+                  cursor="pointer"
+                  gap={3}
+                  // _hover={{
+                  //   p: {
+                  //     borderBottom: '2px solid black',
+                  //   },
+                  // }}
+                  {...(!mounted && {
+                    'aria-hidden': true,
+                    style: {
+                      opacity: 0,
+                      pointerEvents: 'none',
+                      userSelect: 'none',
+                    },
+                  })}
+                >
+                  {(() => {
+                    if (!connected) {
                       return (
+                        <Button
+                          variant="outline"
+                          color="whiteAlpha.800"
+                          borderColor="primary.500"
+                          onClick={openConnectModal}
+                        >
+                          {/* <Icon as={FaRegTimesCircle} color='raid' /> */}
+                          Connect
+                        </Button>
+                      );
+                    }
+>>>>>>> 12e7e6ec90becf7bdf8fc18a02bdc0a63076cccd
+
+                    if (chain.unsupported) {
+                      return (
+<<<<<<< HEAD
                           <Button
                           variant='outline'
                           color='whiteAlpha.800'
@@ -110,12 +209,38 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
                       );
                     })()}
                     {/* <Image
+=======
+                        <Button
+                          variant="outline"
+                          color="whiteAlpha.800"
+                          borderColor="primary.500"
+                          onClick={openChainModal}
+                        >
+                          Wrong network
+                        </Button>
+                      );
+                    }
+
+                    return (
+                      <Button
+                        variant="outline"
+                        color="whiteAlpha.800"
+                        borderColor="primary.500"
+                        onClick={openAccountModal}
+                      >
+                        {account.displayName}
+                      </Button>
+                    );
+                  })()}
+                  {/* <Image
+>>>>>>> 12e7e6ec90becf7bdf8fc18a02bdc0a63076cccd
                       alt="down arrow"
                       height={4}
                       pb={1}
                       src="/icons/arrow-down.svg"
                       width={4}
                     /> */}
+<<<<<<< HEAD
                   </Flex>
                 );
               }}
@@ -124,6 +249,18 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         <Box h='1px' w='full' mt={4} background='primary.500'></Box>
       </Box>
       <Box mt={20} bg="gray.900">{children}</Box>
+=======
+                </Flex>
+              );
+            }}
+          </ConnectButton.Custom>
+        </Flex>
+        <Box h="1px" w="full" mt={4} background="primary.500"></Box>
+      </Box>
+      <Box mt={20} bg="gray.900">
+        {children}
+      </Box>
+>>>>>>> 12e7e6ec90becf7bdf8fc18a02bdc0a63076cccd
       <Flex
         align="center"
         as="footer"

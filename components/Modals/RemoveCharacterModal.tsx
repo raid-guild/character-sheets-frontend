@@ -187,7 +187,11 @@ export const RemoveCharacterModal: React.FC = () => {
       onClose={removeCharacterModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
+<<<<<<< HEAD
       <ModalContent bg='gray.800'>
+=======
+      <ModalContent bg="gray.800">
+>>>>>>> 12e7e6ec90becf7bdf8fc18a02bdc0a63076cccd
         <ModalHeader>
           <Text>Remove Character</Text>
           <ModalCloseButton size="lg" />
