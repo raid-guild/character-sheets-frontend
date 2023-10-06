@@ -129,12 +129,12 @@ function GamePage(): JSX.Element {
     return (
       <VStack as="main" maxW="70vw" mb={20} mt={14} mx="auto">
         <HStack
-          w="100%"
           align="start"
           justify="space-between"
-          spacing={16}
           py={12}
           px={14}
+          spacing={16}
+          w="100%"
         >
           <VStack align="stretch">
             <VStack align="start" justify="start" spacing={4} w="100%">

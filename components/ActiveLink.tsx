@@ -14,7 +14,7 @@ export const ActiveLink: React.FC<LinkProps> = ({ href, ...props }) => {
       _hover={{ borderBottom: '2px solid black' }}
       {...props}
     >
-      <>{props.children}</>
+      {props.children}
     </Link>
   );
 };

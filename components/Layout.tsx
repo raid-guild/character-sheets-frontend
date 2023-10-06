@@ -134,6 +134,7 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
       <Flex
         align="center"
         as="footer"
+        background="white"
         borderTop="5px solid black"
         h={24}
         justify="center"
