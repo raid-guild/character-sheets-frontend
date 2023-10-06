@@ -475,7 +475,7 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
       onClose={onClose}
     >
       <ModalOverlay />
-      <ModalContent bg='gray.800'>
+      <ModalContent bg="gray.800">
         <ModalHeader>
           <Text>Create a Game</Text>
           <ModalCloseButton size="lg" />

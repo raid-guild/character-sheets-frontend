@@ -150,7 +150,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
       <MenuButton as={Button} size="sm">
         Actions
       </MenuButton>
-      <MenuList bg='gray.800'>
+      <MenuList bg="gray.800">
         <Text
           borderBottom="1px solid black"
           fontSize="12px"
@@ -162,7 +162,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
         </Text>
         {/* TODO: Check if held by character */}
         <MenuItem
-        bg='gray.800'
+          bg="gray.800"
           onClick={() => {
             toast({
               title: 'Coming soon!',

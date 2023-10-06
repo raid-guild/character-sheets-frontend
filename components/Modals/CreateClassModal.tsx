@@ -349,7 +349,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
       onClose={onClose}
     >
       <ModalOverlay />
-      <ModalContent bg='gray.800'>
+      <ModalContent bg="gray.800">
         <ModalHeader>
           <Text>Create a Class</Text>
           <ModalCloseButton size="lg" />

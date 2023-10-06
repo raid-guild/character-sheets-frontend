@@ -1,22 +1,16 @@
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
   Button,
   Flex,
-  HStack,
   Heading,
+  HStack,
   Image,
   Link,
-  SimpleGrid,
   Spinner,
-  Tabs,
-  TabList,
-  TabPanels,
   Tab,
+  TabList,
   TabPanel,
+  TabPanels,
+  Tabs,
   Text,
   useDisclosure,
   VStack,
@@ -46,7 +40,7 @@ import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
 import { GameProvider, useGame } from '@/contexts/GameContext';
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { EXPLORER_URLS } from '@/utils/constants';
-import { shortenAddress, shortenText } from '@/utils/helpers';
+import { shortenAddress } from '@/utils/helpers';
 
 export default function GamePageOuter(): JSX.Element {
   const {
@@ -92,9 +86,6 @@ function GamePage(): JSX.Element {
   const updateGameMetadata = useDisclosure();
 
   const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    'characters' | 'xp' | 'classes' | 'items'
-  >('characters');
 
   useEffect(() => {
     if (isConnected) {
@@ -121,60 +112,63 @@ function GamePage(): JSX.Element {
       );
     }
 
-    const {
-      experience,
-      image,
-      name,
-      id,
-      description,
-      characters,
-      classes,
-      items,
-      masters,
-    } = game;
+    const { experience, image, name, id, characters, classes, items, masters } =
+      game;
+
     const chainId = DEFAULT_CHAIN.id;
 
     return (
-      <VStack as="main" maxW="80vw" mx="auto" bg='blackAlpha.500' mt='14' mb='20' rounded={'5px'}>
-        <HStack w="100%" align='start' justify="space-between" spacing={16}  p={12}>
+      <VStack
+        as="main"
+        maxW="80vw"
+        mx="auto"
+        bg="blackAlpha.500"
+        mt="14"
+        mb="20"
+        rounded={'5px'}
+      >
+        <HStack
+          w="100%"
+          align="start"
+          justify="space-between"
+          spacing={16}
+          p={12}
+        >
           <VStack align="stretch">
-          <VStack w="100%" justify='start' align='start' spacing={0} pt={2}>
-            <Heading
-              variant='noShadow'
-              fontSize='5xl'>
+            <VStack w="100%" justify="start" align="start" spacing={0} pt={2}>
+              <Heading variant="noShadow" fontSize="5xl">
                 {name}
-            </Heading>
+              </Heading>
 
-            <Link
-              alignItems="center"
-              color="white"
-              display="flex"
-              _hover={{
-                color: 'primary.500',
-                cursor: 'pointer',
-              }}
-              fontSize="sm"
-              gap={2}
-              href={`${EXPLORER_URLS[chainId]}/address/${id}`}
-              isExternal
-            >
-              {shortenAddress(id)}
-              <Image
-                alt="link to new tab"
-                height="14px"
-                src="/icons/external-link.svg"
-                width="14px"
-              />
-            </Link>
-
-          </VStack>
+              <Link
+                alignItems="center"
+                color="white"
+                display="flex"
+                _hover={{
+                  color: 'primary.500',
+                  cursor: 'pointer',
+                }}
+                fontSize="sm"
+                gap={2}
+                href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+                isExternal
+              >
+                {shortenAddress(id)}
+                <Image
+                  alt="link to new tab"
+                  height="14px"
+                  src="/icons/external-link.svg"
+                  width="14px"
+                />
+              </Link>
+            </VStack>
 
             {/* <Text as="span" fontSize="xs">
               {shortenText(description, 130)}
             </Text> */}
-                    {isConnectedAndMounted && !character && (
-          <Button onClick={joinGameModal.onOpen}>Join this Game</Button>
-        )}
+            {isConnectedAndMounted && !character && (
+              <Button onClick={joinGameModal.onOpen}>Join this Game</Button>
+            )}
 
             {isMaster && (
               <Button onClick={updateGameMetadata.onOpen} size="sm">
@@ -199,114 +193,100 @@ function GamePage(): JSX.Element {
           />
         </HStack>
 
+        <VStack px={14} pb={10} w="full" align="start" spacing={4}>
+          <Text fontSize="sm" color="gray.500">
+            GameMasters
+          </Text>
 
-
-
-
-            
-              <VStack px={14} pb={10} w='full' align="start" spacing={4}>
-              <Text fontSize='sm' color='gray.500'>GameMasters</Text>
-
-                {masters.map(master => (
-                  <Link
-                    alignItems="center"
-                    display="flex"
-                    fontSize="sm"
-                    justifyContent="center"
-                    href={`${EXPLORER_URLS[chainId]}/address/${master}`}
-                    key={`gm-${master}`}
-                    isExternal
-                    p={0}
-                  >
-                    {master}
-                  </Link>
-                ))}
-              </VStack>
-
-
+          {masters.map(master => (
+            <Link
+              alignItems="center"
+              display="flex"
+              fontSize="sm"
+              justifyContent="center"
+              href={`${EXPLORER_URLS[chainId]}/address/${master}`}
+              key={`gm-${master}`}
+              isExternal
+              p={0}
+            >
+              {master}
+            </Link>
+          ))}
+        </VStack>
 
         {!isConnectedAndMounted && (
           <Text align="center">Connect wallet to play this game.</Text>
         )}
-        
+
         {isConnectedAndMounted && character && (
-          <VStack px={14} w='full' align='start' justify='start'>
-          <Text fontSize='sm' color='gray.500' textAlign='left'>Your character</Text>
-          <CharacterCard chainId={chainId} character={character} />
+          <VStack px={14} w="full" align="start" justify="start">
+            <Text fontSize="sm" color="gray.500" textAlign="left">
+              Your character
+            </Text>
+            <CharacterCard chainId={chainId} character={character} />
           </VStack>
         )}
-       
 
-<Tabs w='full' borderColor='whiteAlpha.300' colorScheme='white' >
-  <TabList px='10'>
-    <Tab>
-      <Image
-          alt="users"
-          height="20px"
-          src="/icons/users.svg"
-          width="20px"
-        />
-        <Text fontSize="xl" ml='2' mb='1'>
-        {characters.length} characters
-        </Text>
-    </Tab>
-    <Tab>
-      <Image
-          alt="xp"
-          height="20px"
-          src="/icons/xp.svg"
-          width="20px"
-        />
-      <Text fontSize="xl" ml='2' mb='1'>
-        {experience} XP
-      </Text>
-    </Tab>
-    <Tab>
-      <Image
-          alt="users"
-          height="20px"
-          src="/icons/users.svg"
-          width="20px"
-        />
-      <Text fontSize="xl" ml='2' mb='1'>
-        {classes.length} classes
-      </Text>
-    </Tab>
-    <Tab>
-      <Image
-          alt="items"
-          height="20px"
-          src="/icons/items.svg"
-          width="20px"
-        />
-      <Text fontSize="xl" ml='2' mb='1'>
-        {items.length} Items
-      </Text>
-    </Tab>
+        <Tabs w="full" borderColor="whiteAlpha.300" colorScheme="white">
+          <TabList px="10">
+            <Tab>
+              <Image
+                alt="users"
+                height="20px"
+                src="/icons/users.svg"
+                width="20px"
+              />
+              <Text fontSize="xl" ml="2" mb="1">
+                {characters.length} characters
+              </Text>
+            </Tab>
+            <Tab>
+              <Image alt="xp" height="20px" src="/icons/xp.svg" width="20px" />
+              <Text fontSize="xl" ml="2" mb="1">
+                {experience} XP
+              </Text>
+            </Tab>
+            <Tab>
+              <Image
+                alt="users"
+                height="20px"
+                src="/icons/users.svg"
+                width="20px"
+              />
+              <Text fontSize="xl" ml="2" mb="1">
+                {classes.length} classes
+              </Text>
+            </Tab>
+            <Tab>
+              <Image
+                alt="items"
+                height="20px"
+                src="/icons/items.svg"
+                width="20px"
+              />
+              <Text fontSize="xl" ml="2" mb="1">
+                {items.length} Items
+              </Text>
+            </Tab>
+          </TabList>
 
-  </TabList>
+          <TabPanels>
+            <TabPanel>
+              <CharactersPanel />
+            </TabPanel>
+            <TabPanel>
+              <XPPanel />
+            </TabPanel>
+            <TabPanel>
+              <ClassesPanel />
+            </TabPanel>
+            <TabPanel>
+              <ItemsPanel />
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
 
-  <TabPanels>
-    <TabPanel>
-      <CharactersPanel />
-    </TabPanel>
-    <TabPanel>
-      <XPPanel />
-    </TabPanel>
-    <TabPanel>
-      <ClassesPanel />
-    </TabPanel>
-    <TabPanel>
-      <ItemsPanel />
-    </TabPanel>
-  </TabPanels>
-</Tabs>
-
-
-
-
-
-{/* 
+        {/* 
         <SimpleGrid columns={2} spacing={4} w="100%">
           <Button
             border="3px solid black"

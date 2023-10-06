@@ -26,7 +26,7 @@ export const CharacterActionMenu: React.FC<CharacterActionMenuProps> = ({
         <MenuButton as={Button} size="sm" w="100%">
           Actions
         </MenuButton>
-        <MenuList bg='gray.500'>
+        <MenuList bg="gray.500">
           {playerActions.length > 0 && (
             <>
               <Text
@@ -42,7 +42,7 @@ export const CharacterActionMenu: React.FC<CharacterActionMenuProps> = ({
                 .filter(a => a != PlayerActions.EQUIP_ITEM)
                 .map(action => (
                   <MenuItem
-                  bg='gray.500'
+                    bg="gray.500"
                     key={action}
                     onClick={() => openActionModal(action)}
                   >

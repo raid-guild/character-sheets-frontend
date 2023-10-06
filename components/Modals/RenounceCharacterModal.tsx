@@ -176,7 +176,7 @@ export const RenounceCharacterModal: React.FC = () => {
       onClose={renounceCharacterModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent bg='gray.800'>
+      <ModalContent bg="gray.800">
         <ModalHeader>
           <Text>Renounce Character</Text>
           <ModalCloseButton size="lg" />

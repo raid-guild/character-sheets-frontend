@@ -239,7 +239,7 @@ export const DropExperienceModal: React.FC = () => {
       onClose={giveExpModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent bg='gray.800'>
+      <ModalContent bg="gray.800">
         <ModalHeader>
           <Text>Give XP</Text>
           <ModalCloseButton size="lg" />

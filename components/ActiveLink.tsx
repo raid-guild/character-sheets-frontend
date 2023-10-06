@@ -9,10 +9,10 @@ export const ActiveLink: React.FC<LinkProps> = ({ href, ...props }) => {
   return (
     <Link
       as={NextLink}
-      fontSize='18px'
+      fontSize="18px"
       fontFamily={'texturina'}
       href={href ?? ''}
-      color={isActive ?'primary.500':'white'}
+      color={isActive ? 'primary.500' : 'white'}
       mx={4}
       fontWeight={isActive ? 'extrabold' : 'normal'}
       _hover={{ opacity: '1', fontWeight: 'extrabold' }}
@@ -20,8 +20,8 @@ export const ActiveLink: React.FC<LinkProps> = ({ href, ...props }) => {
       {...props}
     >
       <>
-      {isActive ? '• ' : null}
-      {props.children}
+        {isActive ? '• ' : null}
+        {props.children}
       </>
     </Link>
   );
