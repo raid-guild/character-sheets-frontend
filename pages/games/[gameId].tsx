@@ -214,18 +214,17 @@ function GamePage(): JSX.Element {
           ))}
         </VStack>
 
-        {!isConnectedAndMounted && (
-          <Text align="center">Connect wallet to play this game.</Text>
-        )}
-
-        {isConnectedAndMounted && character && (
-          <VStack px={14} w="full" align="start" justify="start">
-            <Text fontSize="lg" fontWeight="bold">
-              Your character
-            </Text>
+        <VStack px={14} w="full" align="start" justify="start">
+          <Text fontSize="lg" fontWeight="bold">
+            Your character
+          </Text>
+          {!isConnectedAndMounted && (
+            <Text align="center">Connect wallet to play this game.</Text>
+          )}
+          {isConnectedAndMounted && character && (
             <CharacterCard chainId={chainId} character={character} />
-          </VStack>
-        )}
+          )}
+        </VStack>
 
         <Tabs borderColor="white" colorScheme="white" mt={10} px={14} w="full">
           <TabList>
