@@ -26,15 +26,15 @@ export const CharacterActionMenu: React.FC<CharacterActionMenuProps> = ({
         <MenuButton as={Button} size="sm" w="100%">
           Actions
         </MenuButton>
-        <MenuList bg="gray.500">
+        <MenuList>
           {playerActions.length > 0 && (
             <>
               <Text
                 borderBottom="1px solid black"
                 fontSize="12px"
+                fontWeight="bold"
                 p={3}
                 textAlign="center"
-                variant="heading"
               >
                 Player Actions
               </Text>
@@ -42,7 +42,6 @@ export const CharacterActionMenu: React.FC<CharacterActionMenuProps> = ({
                 .filter(a => a != PlayerActions.EQUIP_ITEM)
                 .map(action => (
                   <MenuItem
-                    bg="gray.500"
                     key={action}
                     onClick={() => openActionModal(action)}
                   >
@@ -59,9 +58,9 @@ export const CharacterActionMenu: React.FC<CharacterActionMenuProps> = ({
                   playerActions.length > 0 ? '3px solid black' : 'none'
                 }
                 fontSize="12px"
+                fontWeight="bold"
                 p={3}
                 textAlign="center"
-                variant="heading"
               >
                 GameMaster Actions
               </Text>

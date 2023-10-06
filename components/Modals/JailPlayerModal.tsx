@@ -195,7 +195,7 @@ export const JailPlayerModal: React.FC = () => {
       onClose={jailPlayerModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent bg="gray.800">
+      <ModalContent>
         <ModalHeader>
           {jailed && !isSynced && <Text>Free Character</Text>}
           {!jailed && !isSynced && <Text>Jail Character</Text>}

@@ -150,19 +150,18 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
       <MenuButton as={Button} size="sm">
         Actions
       </MenuButton>
-      <MenuList bg="gray.800">
+      <MenuList>
         <Text
           borderBottom="1px solid black"
           fontSize="12px"
+          fontWeight="bold"
           p={3}
           textAlign="center"
-          variant="heading"
         >
           Player Actions
         </Text>
         {/* TODO: Check if held by character */}
         <MenuItem
-          bg="gray.800"
           onClick={() => {
             toast({
               title: 'Coming soon!',
@@ -179,9 +178,9 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
               borderBottom="1px solid black"
               borderTop="3px solid black"
               fontSize="12px"
+              fontWeight="bold"
               p={3}
               textAlign="center"
-              variant="heading"
             >
               GameMaster Actions
             </Text>

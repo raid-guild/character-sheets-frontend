@@ -228,22 +228,19 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster, item }) => {
       <MenuButton as={Button} size="sm">
         Actions
       </MenuButton>
-      <MenuList bg="gray.800">
+      <MenuList>
         {isHeld && (
           <>
             <Text
               borderBottom="1px solid black"
               fontSize="12px"
+              fontWeight="bold"
               p={3}
               textAlign="center"
-              variant="heading"
             >
               Player Actions
             </Text>
-            <MenuItem
-              bg="gray.800"
-              onClick={() => openActionModal(PlayerActions.EQUIP_ITEM)}
-            >
+            <MenuItem onClick={() => openActionModal(PlayerActions.EQUIP_ITEM)}>
               {isEquipped ? 'Unequip Item' : 'Equip'}
             </MenuItem>
           </>
@@ -254,9 +251,9 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster, item }) => {
               borderBottom="1px solid black"
               borderTop={isHeld ? '3px solid black' : 'none'}
               fontSize="12px"
+              fontWeight="bold"
               p={3}
               textAlign="center"
-              variant="heading"
             >
               GameMaster Actions
             </Text>

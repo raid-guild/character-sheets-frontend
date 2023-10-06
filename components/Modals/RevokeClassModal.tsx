@@ -234,7 +234,7 @@ export const RevokeClassModal: React.FC = () => {
       onClose={revokeClassModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent bg="gray.800">
+      <ModalContent>
         <ModalHeader>
           <Text>Revoke a Class</Text>
           <ModalCloseButton size="lg" />

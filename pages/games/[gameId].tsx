@@ -112,42 +112,40 @@ function GamePage(): JSX.Element {
       );
     }
 
-    const { experience, image, name, id, characters, classes, items, masters } =
-      game;
+    const {
+      description,
+      experience,
+      image,
+      name,
+      id,
+      characters,
+      classes,
+      items,
+      masters,
+    } = game;
 
     const chainId = DEFAULT_CHAIN.id;
 
     return (
-      <VStack
-        as="main"
-        maxW="80vw"
-        mx="auto"
-        bg="blackAlpha.500"
-        mt="14"
-        mb="20"
-        rounded={'5px'}
-      >
+      <VStack as="main" maxW="70vw" mb={20} mt={14} mx="auto">
         <HStack
           w="100%"
           align="start"
           justify="space-between"
           spacing={16}
-          p={12}
+          py={12}
+          px={14}
         >
           <VStack align="stretch">
-            <VStack w="100%" justify="start" align="start" spacing={0} pt={2}>
-              <Heading variant="noShadow" fontSize="5xl">
+            <VStack align="start" justify="start" spacing={4} w="100%">
+              <Heading fontSize="4xl" variant="primary">
                 {name}
               </Heading>
-
+              <Text>{description}</Text>
               <Link
                 alignItems="center"
-                color="white"
+                color="blue"
                 display="flex"
-                _hover={{
-                  color: 'primary.500',
-                  cursor: 'pointer',
-                }}
                 fontSize="sm"
                 gap={2}
                 href={`${EXPLORER_URLS[chainId]}/address/${id}`}
@@ -157,15 +155,11 @@ function GamePage(): JSX.Element {
                 <Image
                   alt="link to new tab"
                   height="14px"
-                  src="/icons/external-link.svg"
+                  src="/icons/new-tab.svg"
                   width="14px"
                 />
               </Link>
             </VStack>
-
-            {/* <Text as="span" fontSize="xs">
-              {shortenText(description, 130)}
-            </Text> */}
             {isConnectedAndMounted && !character && (
               <Button onClick={joinGameModal.onOpen}>Join this Game</Button>
             )}
@@ -193,23 +187,29 @@ function GamePage(): JSX.Element {
           />
         </HStack>
 
-        <VStack px={14} pb={10} w="full" align="start" spacing={4}>
-          <Text fontSize="sm" color="gray.500">
+        <VStack align="start" pb={10} px={14} w="full">
+          <Text fontSize="lg" fontWeight="bold">
             GameMasters
           </Text>
 
           {masters.map(master => (
             <Link
               alignItems="center"
+              color="blue"
               display="flex"
               fontSize="sm"
-              justifyContent="center"
-              href={`${EXPLORER_URLS[chainId]}/address/${master}`}
-              key={`gm-${master}`}
+              gap={2}
+              href={`${EXPLORER_URLS[chainId]}/address/${id}`}
               isExternal
-              p={0}
+              key={`gm-${master}`}
             >
               {master}
+              <Image
+                alt="link to new tab"
+                height="14px"
+                src="/icons/new-tab.svg"
+                width="14px"
+              />
             </Link>
           ))}
         </VStack>
@@ -220,115 +220,63 @@ function GamePage(): JSX.Element {
 
         {isConnectedAndMounted && character && (
           <VStack px={14} w="full" align="start" justify="start">
-            <Text fontSize="sm" color="gray.500" textAlign="left">
+            <Text fontSize="lg" fontWeight="bold">
               Your character
             </Text>
             <CharacterCard chainId={chainId} character={character} />
           </VStack>
         )}
 
-        <Tabs w="full" borderColor="whiteAlpha.300" colorScheme="white">
-          <TabList px="10">
-            <Tab>
+        <Tabs borderColor="white" colorScheme="white" mt={10} px={14} w="full">
+          <TabList>
+            <Tab gap={2}>
               <Image
                 alt="users"
                 height="20px"
                 src="/icons/users.svg"
                 width="20px"
               />
-              <Text fontSize="xl" ml="2" mb="1">
-                {characters.length} characters
-              </Text>
+              <Text>{characters.length} characters</Text>
             </Tab>
-            <Tab>
+            <Tab gap={2}>
               <Image alt="xp" height="20px" src="/icons/xp.svg" width="20px" />
-              <Text fontSize="xl" ml="2" mb="1">
-                {experience} XP
-              </Text>
+              <Text>{experience} XP</Text>
             </Tab>
-            <Tab>
+            <Tab gap={2}>
               <Image
                 alt="users"
                 height="20px"
                 src="/icons/users.svg"
                 width="20px"
               />
-              <Text fontSize="xl" ml="2" mb="1">
-                {classes.length} classes
-              </Text>
+              <Text>{classes.length} classes</Text>
             </Tab>
-            <Tab>
+            <Tab gap={2}>
               <Image
                 alt="items"
                 height="20px"
                 src="/icons/items.svg"
                 width="20px"
               />
-              <Text fontSize="xl" ml="2" mb="1">
-                {items.length} Items
-              </Text>
+              <Text>{items.length} Items</Text>
             </Tab>
           </TabList>
 
           <TabPanels>
-            <TabPanel>
+            <TabPanel px={0}>
               <CharactersPanel />
             </TabPanel>
-            <TabPanel>
+            <TabPanel px={0}>
               <XPPanel />
             </TabPanel>
-            <TabPanel>
+            <TabPanel px={0}>
               <ClassesPanel />
             </TabPanel>
-            <TabPanel>
+            <TabPanel px={0}>
               <ItemsPanel />
             </TabPanel>
           </TabPanels>
         </Tabs>
-
-        {/* 
-        <SimpleGrid columns={2} spacing={4} w="100%">
-          <Button
-            border="3px solid black"
-            onClick={() => setActiveTab('characters')}
-            p={4}
-            variant={activeTab === 'characters' ? 'solid' : 'outline'}
-            w="100%"
-          >
-            <Text>{characters.length} Characters</Text>
-          </Button>
-          <Button
-            border="3px solid black"
-            onClick={() => setActiveTab('xp')}
-            p={4}
-            variant={activeTab === 'xp' ? 'solid' : 'outline'}
-            w="100%"
-          >
-            <Text>{experience} XP</Text>
-          </Button>
-          <Button
-            border="3px solid black"
-            onClick={() => setActiveTab('classes')}
-            p={4}
-            variant={activeTab === 'classes' ? 'solid' : 'outline'}
-            w="100%"
-          >
-            <Text>{classes.length} Classes</Text>
-          </Button>
-          <Button
-            border="3px solid black"
-            onClick={() => setActiveTab('items')}
-            p={4}
-            variant={activeTab === 'items' ? 'solid' : 'outline'}
-            w="100%"
-          >
-            <Text>{items.length} Items</Text>
-          </Button>
-        </SimpleGrid>
-        {activeTab === 'characters' && <CharactersPanel />}
-        {activeTab === 'xp' && <XPPanel />}
-        {activeTab === 'classes' && <ClassesPanel />}
-        {activeTab === 'items' && <ItemsPanel />} */}
       </VStack>
     );
   };

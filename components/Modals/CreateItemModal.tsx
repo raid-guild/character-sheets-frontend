@@ -431,7 +431,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       onClose={onClose}
     >
       <ModalOverlay />
-      <ModalContent bg="gray.800">
+      <ModalContent>
         <ModalHeader>
           <Text>Create an Item</Text>
           <ModalCloseButton size="lg" />

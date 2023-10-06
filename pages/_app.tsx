@@ -1,8 +1,7 @@
 import '@rainbow-me/rainbowkit/styles.css';
 
+import { ChakraProvider } from '@chakra-ui/react';
 import { Global } from '@emotion/react';
-// import { ChakraProvider } from '@chakra-ui/react';
-import { RGThemeProvider } from '@raidguild/design-system';
 import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { Analytics } from '@vercel/analytics/react';
 import type { AppProps } from 'next/app';
@@ -15,7 +14,7 @@ import { GamesProvider } from '@/contexts/GamesContext';
 import { client } from '@/graphql/client';
 import { useGraphHealth } from '@/hooks/useGraphHealth';
 import { chains, wagmiConfig } from '@/lib/web3';
-import { globalStyles } from '@/utils/theme';
+import { globalStyles, theme } from '@/utils/theme';
 
 const TITLE = 'CharacterSheets';
 const DESCRIPTION =
@@ -55,7 +54,7 @@ export default function App({
         <meta content="width=device-width, initial-scale=1" name="viewport" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <RGThemeProvider>
+      <ChakraProvider resetCSS theme={theme}>
         <Global styles={globalStyles} />
         <Provider value={client}>
           <WagmiConfig config={wagmiConfig}>
@@ -69,7 +68,7 @@ export default function App({
             </RainbowKitProvider>
           </WagmiConfig>
         </Provider>
-      </RGThemeProvider>
+      </ChakraProvider>
     </>
   );
 }

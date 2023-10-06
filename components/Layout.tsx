@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Flex,
   Heading,
   Image,
@@ -18,49 +17,35 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
     <Flex direction="column" minH="100vh">
       <Box
         as="header"
-        pt={7}
-        px={6}
+        background="white"
+        borderBottom="5px solid black"
+        h={20}
+        pb={1}
         position="fixed"
         top={0}
         w="100%"
         zIndex={1000}
-        bg="gray.900"
       >
-        <Flex align="center" h="100%" justify="start" w="100%">
-          <Link
-            as={NextLink}
-            fontSize="sm"
-            href="/"
-            variant="heading"
-            _hover={{ borderColor: 'none' }}
-          >
-            <Flex direction="row">
+        <Flex align="center" h="100%" justify="start" px={6} w="100%">
+          <Link as={NextLink} fontSize="sm" href="/">
+            <Flex align="center">
               <Image
                 alt="RaidGuild logo"
                 h="28px"
                 src="/favicon.ico"
                 w="28px"
               />
-              <Heading
-                ml="10px"
-                fontSize="24px"
-                color={'primary.500'}
-                variant={'noShadow'}
-              >
-                Character Sheets
+              <Heading ml="10px" size="xs">
+                CharacterSheets
               </Heading>
             </Flex>
           </Link>
           <Spacer />
 
-          <Box mr={10}>
-            <ActiveLink href="/my-games" variant="heading">
-              My Games
-            </ActiveLink>
-            <ActiveLink href="/all-games" variant="text">
-              All Games
-            </ActiveLink>
-          </Box>
+          <Flex as="nav" gap={4} mr={10}>
+            <ActiveLink href="/my-games">My Games</ActiveLink>
+            <ActiveLink href="/all-games">All Games</ActiveLink>
+          </Flex>
           <ConnectButton.Custom>
             {({
               account,
@@ -77,11 +62,11 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
                   align="center"
                   cursor="pointer"
                   gap={3}
-                  // _hover={{
-                  //   p: {
-                  //     borderBottom: '2px solid black',
-                  //   },
-                  // }}
+                  _hover={{
+                    p: {
+                      borderBottom: '2px solid black',
+                    },
+                  }}
                   {...(!mounted && {
                     'aria-hidden': true,
                     style: {
@@ -94,63 +79,62 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
                   {(() => {
                     if (!connected) {
                       return (
-                        <Button
-                          variant="outline"
-                          color="whiteAlpha.800"
-                          borderColor="primary.500"
-                          onClick={openConnectModal}
-                        >
-                          {/* <Icon as={FaRegTimesCircle} color='raid' /> */}
-                          Connect
-                        </Button>
+                        <button onClick={openConnectModal} type="button">
+                          <Text
+                            borderBottom="2px solid transparent"
+                            transition="all 0.2s ease-in-out"
+                          >
+                            Connect Wallet
+                          </Text>
+                        </button>
                       );
                     }
 
                     if (chain.unsupported) {
                       return (
-                        <Button
-                          variant="outline"
-                          color="whiteAlpha.800"
-                          borderColor="primary.500"
-                          onClick={openChainModal}
-                        >
-                          Wrong network
-                        </Button>
+                        <button onClick={openChainModal} type="button">
+                          <Text
+                            borderBottom="2px solid transparent"
+                            transition="all 0.2s ease-in-out"
+                          >
+                            Wrong network
+                          </Text>
+                        </button>
                       );
                     }
 
                     return (
-                      <Button
-                        variant="outline"
-                        color="whiteAlpha.800"
-                        borderColor="primary.500"
-                        onClick={openAccountModal}
-                      >
-                        {account.displayName}
-                      </Button>
+                      <div style={{ display: 'flex', gap: 12 }}>
+                        <button onClick={openAccountModal} type="button">
+                          <Text
+                            borderBottom="2px solid transparent"
+                            transition="all 0.2s ease-in-out"
+                          >
+                            {account.displayName}
+                          </Text>
+                        </button>
+                      </div>
                     );
                   })()}
-                  {/* <Image
-                      alt="down arrow"
-                      height={4}
-                      pb={1}
-                      src="/icons/arrow-down.svg"
-                      width={4}
-                    /> */}
+                  <Image
+                    alt="down arrow"
+                    height={4}
+                    pb={1}
+                    src="/icons/arrow-down.svg"
+                    width={4}
+                  />
                 </Flex>
               );
             }}
           </ConnectButton.Custom>
         </Flex>
-        <Box h="1px" w="full" mt={4} background="primary.500"></Box>
+        <Box background="white" borderTop="2px solid black" height={1} />
       </Box>
-      <Box mt={20} bg="gray.900">
-        {children}
-      </Box>
+      <Box mt={20}>{children}</Box>
       <Flex
         align="center"
         as="footer"
-        background="blackAlpha.900"
+        borderTop="5px solid black"
         h={24}
         justify="center"
         marginTop="auto"
