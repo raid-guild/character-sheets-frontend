@@ -16,6 +16,7 @@ import {
   Switch,
   Text,
   Textarea,
+  Tooltip,
   useToast,
   VStack,
 } from '@chakra-ui/react';
@@ -432,7 +433,18 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           )}
         </FormControl>
         <FormControl isInvalid={showError && !itemSupply}>
-          <FormLabel>Require certain classes to claim? (tooltip)</FormLabel>
+          <Flex align="center">
+            <FormLabel>Restrict to characters with specific classes?</FormLabel>
+            <Tooltip label="Only characters that hold the configured list of classes will be able to claim this item.">
+              <Image
+                alt="down arrow"
+                height="14px"
+                mb={2}
+                src="/icons/question-mark.svg"
+                width="14px"
+              />
+            </Tooltip>
+          </Flex>
           <Switch
             isChecked={classRequirementsToggle}
             onChange={e => setClassRequirementsToggle(e.target.checked)}
@@ -490,14 +502,25 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           </SimpleGrid>
         )}
         <FormControl isInvalid={showError && !itemSupply}>
-          <FormLabel>Is this item soulbound? (tooltip)</FormLabel>
+          <Flex align="center">
+            <FormLabel>Is this item soulbound?</FormLabel>
+            <Tooltip label="By making this item soulbound, you prevent characters who hold the item from ever being able to transfer it.">
+              <Image
+                alt="down arrow"
+                height="14px"
+                mb={2}
+                src="/icons/question-mark.svg"
+                width="14px"
+              />
+            </Tooltip>
+          </Flex>
           <Switch
             isChecked={soulboundToggle}
             onChange={e => setSoulboundToggle(e.target.checked)}
           />
         </FormControl>
         <FormControl isInvalid={showError && !itemSupply}>
-          <FormLabel>Allow players to claim? (tooltip)</FormLabel>
+          <FormLabel>Restrict to specific players?</FormLabel>
           <Switch
             isChecked={claimableToggle}
             onChange={e => setClaimableToggle(e.target.checked)}
