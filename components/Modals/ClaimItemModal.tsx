@@ -1,10 +1,17 @@
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Button,
   FormControl,
   FormHelperText,
   FormLabel,
+  HStack,
   Image,
   Input,
+  ListItem,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -12,6 +19,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
+  UnorderedList,
   useToast,
   VStack,
 } from '@chakra-ui/react';
@@ -34,6 +42,7 @@ export const ClaimItemModal: React.FC = () => {
   const publicClient = usePublicClient();
   const toast = useToast();
 
+  const [openDetails, setOpenDetails] = useState(-1); // -1 = closed, 0 = open
   const [amount, setAmount] = useState<string>('');
 
   const [showError, setShowError] = useState<boolean>(false);
@@ -52,6 +61,7 @@ export const ClaimItemModal: React.FC = () => {
   );
 
   const resetData = useCallback(() => {
+    setOpenDetails(-1);
     setAmount('');
     setIsClaiming(false);
     setTxHash(null);
@@ -63,12 +73,22 @@ export const ClaimItemModal: React.FC = () => {
     setShowError(false);
   }, [amount]);
 
-  const invalidItem = useMemo(() => {
+  const noSupply = useMemo(() => {
     if (!selectedItem) return false;
     const supply = Number(selectedItem.supply);
     if (Number.isNaN(supply) || supply <= 0) return true;
     return false;
   }, [selectedItem]);
+
+  const insufficientClasses = useMemo(() => {
+    if (!selectedItem) return false;
+    if (!character) return false;
+    const requirements = selectedItem.requirements || [];
+    const classes = character.classes || [];
+    return requirements.some(
+      r => !classes.some(c => BigInt(c.classId) === BigInt(r.assetId)),
+    );
+  }, [selectedItem, character]);
 
   useEffect(() => {
     if (!claimItemModal?.isOpen) {
@@ -80,12 +100,22 @@ export const ClaimItemModal: React.FC = () => {
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
-      if (invalidItem) {
+      if (noSupply) {
         return;
       }
 
       if (hasError) {
         setShowError(true);
+        return;
+      }
+
+      if (insufficientClasses) {
+        setOpenDetails(0);
+        toast({
+          description: 'You do not have the required classes.',
+          position: 'top',
+          status: 'warning',
+        });
         return;
       }
 
@@ -194,7 +224,8 @@ export const ClaimItemModal: React.FC = () => {
       character,
       game,
       hasError,
-      invalidItem,
+      insufficientClasses,
+      noSupply,
       publicClient,
       selectedItem,
       reloadGame,
@@ -243,7 +274,61 @@ export const ClaimItemModal: React.FC = () => {
             {selectedItem?.totalSupply.toString()}
           </Text>
         </VStack>
-        {invalidItem ? (
+        <Accordion allowToggle w="100%" index={openDetails}>
+          <AccordionItem>
+            <AccordionButton
+              id="item-details-button"
+              onClick={() => setOpenDetails(openDetails === 0 ? -1 : 0)}
+            >
+              <HStack justify="space-between" w="100%">
+                <div />
+                <Text>View Details</Text>
+                <AccordionIcon />
+              </HStack>
+            </AccordionButton>
+            <AccordionPanel>
+              <VStack spacing={2}>
+                <Text fontSize="sm">
+                  Soulbound: {selectedItem?.soulbound ? 'true' : 'false'}
+                </Text>
+                <Text fontSize="sm" fontWeight="bold">
+                  Required classes:
+                </Text>
+                {selectedItem && selectedItem.requirements.length > 0 ? (
+                  <UnorderedList>
+                    {selectedItem?.requirements.map((r, i) => {
+                      const className = game?.classes.find(
+                        c => BigInt(c.classId) === BigInt(r.assetId),
+                      )?.name;
+                      const classNotAssigned =
+                        character?.classes.find(
+                          c => BigInt(c.classId) === BigInt(r.assetId),
+                        ) === undefined;
+
+                      if (classNotAssigned) {
+                        return (
+                          <ListItem key={i}>
+                            <Text fontSize="sm" color="red.500">
+                              {className} (not assigned)
+                            </Text>
+                          </ListItem>
+                        );
+                      }
+                      return (
+                        <ListItem key={i}>
+                          <Text fontSize="sm">{className}</Text>
+                        </ListItem>
+                      );
+                    })}
+                  </UnorderedList>
+                ) : (
+                  <Text fontSize="sm">None</Text>
+                )}
+              </VStack>
+            </AccordionPanel>
+          </AccordionItem>
+        </Accordion>
+        {noSupply ? (
           <Text color="red.500">This item has zero supply.</Text>
         ) : (
           <FormControl isInvalid={showError}>

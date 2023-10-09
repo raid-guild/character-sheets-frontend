@@ -51,14 +51,23 @@ export type Class = Metadata & {
   holders: { id: string }[];
 };
 
+export type ItemRequirement = {
+  amount: bigint;
+  assetId: bigint;
+  assetAddress: string;
+  assetCategory: string;
+};
+
 export type Item = Metadata & {
   id: string;
   itemId: string;
   name: string;
   uri: string;
+  soulbound: boolean;
   supply: bigint;
   totalSupply: bigint;
   amount: bigint;
+  requirements: ItemRequirement[];
   holders: { id: string }[];
   equippers: { id: string }[];
 };
