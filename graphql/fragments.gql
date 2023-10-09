@@ -42,12 +42,23 @@ fragment ClassInfo on Class {
   }
 }
 
+fragment ItemRequirementInfo on ItemRequirement {
+  assetCategory
+  assetAddress
+  assetId
+  amount
+}
+
 fragment ItemInfo on Item {
   id
   itemId
   uri
+  soulbound
   supply
   totalSupply
+  requirements {
+    ...ItemRequirementInfo
+  }
   holders {
     id
   }

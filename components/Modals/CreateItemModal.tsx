@@ -12,13 +12,22 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  SimpleGrid,
+  Switch,
   Text,
   Textarea,
+  Tooltip,
   useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { encodeAbiParameters, maxUint256, pad, parseAbi } from 'viem';
+import {
+  encodeAbiParameters,
+  isAddress,
+  maxUint256,
+  pad,
+  parseAbi,
+} from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
@@ -53,6 +62,12 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   const [itemName, setItemName] = useState<string>('');
   const [itemDescription, setItemDescription] = useState<string>('');
   const [itemSupply, setItemSupply] = useState<string>('');
+  const [classRequirementsToggle, setClassRequirementsToggle] =
+    useState<boolean>(false);
+  const [classRequirements, setClassRequirements] = useState<string[]>([]);
+  const [soulboundToggle, setSoulboundToggle] = useState<boolean>(false);
+  // const [claimableToggle, setClaimableToggle] = useState<boolean>(false);
+  const [whitelistedClaimers, setWhitelistedClaimers] = useState<string>('');
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -73,6 +88,15 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     );
   }, [itemSupply]);
 
+  const invalidClaimerAddress = useMemo(() => {
+    const addresses = whitelistedClaimers.split(',');
+    const trimmedAddresses = addresses.map(address => address.trim());
+    return (
+      trimmedAddresses.some(address => !isAddress(address)) &&
+      !!whitelistedClaimers
+    );
+  }, [whitelistedClaimers]);
+
   const hasError = useMemo(() => {
     return (
       !itemDescription ||
@@ -80,12 +104,14 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       !itemName ||
       invalidItemDescription ||
       !itemSupply ||
-      invalidItemSupply
+      invalidItemSupply ||
+      invalidClaimerAddress
     );
   }, [
     itemDescription,
     itemEmblem,
     itemName,
+    invalidClaimerAddress,
     invalidItemDescription,
     itemSupply,
     invalidItemSupply,
@@ -95,6 +121,11 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     setItemName('');
     setItemDescription('');
     setItemSupply('');
+    setClassRequirementsToggle(false);
+    setClassRequirements([]);
+    setSoulboundToggle(false);
+    // setClaimableToggle(false);
+    setWhitelistedClaimers('');
     setItemEmblem(null);
 
     setShowError(false);
@@ -130,7 +161,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         return;
       }
 
-      if (!game?.itemsAddress) {
+      if (!(game && game.itemsAddress)) {
         toast({
           description: `Could not find an item factory for the ${walletClient.chain.name} network.`,
           position: 'top',
@@ -187,6 +218,28 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           return;
         }
 
+        const claimable = pad('0x00');
+
+        //TODO: the claimable addresses still need added to requirements
+
+        // if (claimableToggle) {
+        //   const addresses = whitelistedClaimers.split(',');
+        //   const trimmedAddresses = addresses.map(address => address.trim());
+
+        //   if (trimmedAddresses.length === 0) {
+        //     claimable = pad('0x01');
+        //   }
+        // }
+
+        const requiredClassIds = classRequirements.map(cr => BigInt(cr));
+        const requiredClassCategories = requiredClassIds.map(() => 2);
+        const requiredClassAddresses = requiredClassIds.map(
+          () => game.classesAddress as Address,
+        );
+        // TODO: Make amount dynamic when class levels are added
+        const requiredClassAmounts = requiredClassIds.map(() => BigInt(1));
+
+        // TODO: item and XP requirements still need added
         const requiredAssetsBytes = encodeAbiParameters(
           [
             {
@@ -206,7 +259,12 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               type: 'uint256[]',
             },
           ],
-          [[], [], [], []],
+          [
+            [...requiredClassCategories],
+            [...requiredClassAddresses],
+            [...requiredClassIds],
+            [...requiredClassAmounts],
+          ],
         );
 
         const encodedItemCreationData = encodeAbiParameters(
@@ -238,8 +296,8 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           ],
           [
             false,
-            false,
-            pad('0x01'),
+            soulboundToggle,
+            claimable,
             BigInt(itemSupply),
             itemMetadataCid,
             requiredAssetsBytes,
@@ -289,6 +347,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       }
     },
     [
+      classRequirements,
       itemName,
       itemDescription,
       itemSupply,
@@ -297,6 +356,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       hasError,
       onUpload,
       publicClient,
+      soulboundToggle,
       toast,
       walletClient,
     ],
@@ -372,6 +432,116 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
             </FormHelperText>
           )}
         </FormControl>
+        <FormControl isInvalid={showError && !itemSupply}>
+          <Flex align="center">
+            <FormLabel>Restrict to characters with specific classes?</FormLabel>
+            <Tooltip label="Only characters that hold the configured list of classes will be able to claim this item.">
+              <Image
+                alt="down arrow"
+                height="14px"
+                mb={2}
+                src="/icons/question-mark.svg"
+                width="14px"
+              />
+            </Tooltip>
+          </Flex>
+          <Switch
+            isChecked={classRequirementsToggle}
+            onChange={e => setClassRequirementsToggle(e.target.checked)}
+          />
+        </FormControl>
+
+        {classRequirementsToggle && (
+          <SimpleGrid columns={4} spacing={3} w="100%">
+            {game?.classes.map(c => (
+              <Button
+                h="200px"
+                key={c.id}
+                onClick={() => {
+                  if (classRequirements.includes(c.classId)) {
+                    setClassRequirements(
+                      classRequirements.filter(cr => cr !== c.classId),
+                    );
+                  } else {
+                    setClassRequirements([...classRequirements, c.classId]);
+                  }
+                }}
+                variant="unstyled"
+                width="100%"
+              >
+                <VStack
+                  background={
+                    classRequirements.includes(c.classId) ? 'black' : 'white'
+                  }
+                  border="3px solid black"
+                  borderBottom="5px solid black"
+                  borderRight="5px solid black"
+                  color={
+                    classRequirements.includes(c.classId) ? 'white' : 'black'
+                  }
+                  cursor="pointer"
+                  fontWeight={600}
+                  h="100%"
+                  justify="space-between"
+                  px={5}
+                  py={3}
+                >
+                  <Image
+                    alt={`${c.name} image`}
+                    h="70%"
+                    objectFit="contain"
+                    src={c.image}
+                    w="100%"
+                  />
+                  <Text textAlign="center" fontSize="14px">
+                    {c.name}
+                  </Text>
+                </VStack>
+              </Button>
+            ))}
+          </SimpleGrid>
+        )}
+        <FormControl isInvalid={showError && !itemSupply}>
+          <Flex align="center">
+            <FormLabel>Is this item soulbound?</FormLabel>
+            <Tooltip label="By making this item soulbound, you prevent characters who hold the item from ever being able to transfer it.">
+              <Image
+                alt="down arrow"
+                height="14px"
+                mb={2}
+                src="/icons/question-mark.svg"
+                width="14px"
+              />
+            </Tooltip>
+          </Flex>
+          <Switch
+            isChecked={soulboundToggle}
+            onChange={e => setSoulboundToggle(e.target.checked)}
+          />
+        </FormControl>
+        {/* <FormControl isInvalid={showError && !itemSupply}>
+          <FormLabel>Restrict to specific players?</FormLabel>
+          <Switch
+            isChecked={claimableToggle}
+            onChange={e => setClaimableToggle(e.target.checked)}
+          />
+        </FormControl>
+        {claimableToggle && (
+          <FormControl isInvalid={showError && invalidClaimerAddress}>
+            <FormLabel>
+              Whitelisted claimers (if left empty, any player can claim)
+            </FormLabel>
+            <Input
+              onChange={e => setWhitelistedClaimers(e.target.value)}
+              value={whitelistedClaimers}
+            />
+            {showError && invalidClaimerAddress && (
+              <FormHelperText color="red">
+                Invalid claimer address
+              </FormHelperText>
+            )}
+          </FormControl>
+        )} */}
         <FormControl isInvalid={showError && !itemEmblem}>
           <FormLabel>Item Emblem</FormLabel>
           {!itemEmblem && (
