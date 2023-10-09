@@ -1,3 +1,4 @@
+import { useDisclosure } from '@chakra-ui/react';
 import {
   createContext,
   useCallback,
@@ -19,6 +20,7 @@ type GamesContextType = {
   loading: boolean;
   error: CombinedError | undefined;
   reload: () => void;
+  createGameModal: ReturnType<typeof useDisclosure> | undefined;
 };
 
 const GamesContext = createContext<GamesContextType>({
@@ -27,6 +29,7 @@ const GamesContext = createContext<GamesContextType>({
   loading: false,
   error: undefined,
   reload: () => {},
+  createGameModal: undefined,
 });
 
 export const useGamesContext = (): GamesContextType => useContext(GamesContext);
@@ -35,6 +38,9 @@ export const GamesProvider: React.FC<{
   children: JSX.Element;
 }> = ({ children }) => {
   const { address } = useAccount();
+
+  const createGameModal = useDisclosure();
+
   const [allGames, setAllGames] = useState<GameMeta[] | null>(null);
   const [isFormatting, setIsFormatting] = useState(false);
   const [isRefetching, setIsRefetching] = useState(false);
@@ -81,6 +87,7 @@ export const GamesProvider: React.FC<{
         loading: fetching || isFormatting || isRefetching,
         error,
         reload: refetch,
+        createGameModal,
       }}
     >
       {children}

@@ -88,10 +88,23 @@ const Button = {
     },
   },
 };
-
 const FormLabel = {
   baseStyle: {
     fontWeight: 300,
+  },
+};
+
+const Heading = {
+  defaultProps: {
+    variant: 'secondary',
+  },
+  variants: {
+    primary: {
+      fontFamily: `'Orbitron', sans-serif`,
+    },
+    secondary: {
+      fontFamily: `'Press Start 2P', cursive`,
+    },
   },
 };
 
@@ -230,13 +243,13 @@ const Switch = {
 
 const Text = {
   defaultProps: {
-    variant: 'paragraph',
+    variant: 'primary',
   },
   variants: {
-    paragraph: {
+    primary: {
       fontFamily: `'Orbitron', sans-serif`,
     },
-    heading: {
+    secondary: {
       fontFamily: `'Press Start 2P', cursive`,
     },
   },
@@ -280,6 +293,7 @@ export const theme = extendTheme({
   components: {
     Button,
     FormLabel,
+    Heading,
     Input,
     Link,
     Menu,

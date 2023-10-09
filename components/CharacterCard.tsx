@@ -84,7 +84,7 @@ export const CharacterCard: React.FC<{
                 pos="absolute"
                 top="50%"
                 transform="translate(-50%, -50%)"
-                variant="heading"
+                variant="secondary"
               >
                 JAILED
               </Text>
@@ -210,7 +210,7 @@ export const SmallCharacterCard: React.FC<{
                 pos="absolute"
                 top="50%"
                 transform="translate(-50%, -50%)"
-                variant="heading"
+                variant="secondary"
               >
                 JAILED
               </Text>
