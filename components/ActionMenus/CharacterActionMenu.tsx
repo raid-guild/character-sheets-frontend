@@ -32,9 +32,9 @@ export const CharacterActionMenu: React.FC<CharacterActionMenuProps> = ({
               <Text
                 borderBottom="1px solid black"
                 fontSize="12px"
+                fontWeight="bold"
                 p={3}
                 textAlign="center"
-                variant="heading"
               >
                 Player Actions
               </Text>
@@ -58,9 +58,9 @@ export const CharacterActionMenu: React.FC<CharacterActionMenuProps> = ({
                   playerActions.length > 0 ? '3px solid black' : 'none'
                 }
                 fontSize="12px"
+                fontWeight="bold"
                 p={3}
                 textAlign="center"
-                variant="heading"
               >
                 GameMaster Actions
               </Text>

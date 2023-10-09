@@ -154,9 +154,9 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
         <Text
           borderBottom="1px solid black"
           fontSize="12px"
+          fontWeight="bold"
           p={3}
           textAlign="center"
-          variant="heading"
         >
           Player Actions
         </Text>
@@ -178,9 +178,9 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
               borderBottom="1px solid black"
               borderTop="3px solid black"
               fontSize="12px"
+              fontWeight="bold"
               p={3}
               textAlign="center"
-              variant="heading"
             >
               GameMaster Actions
             </Text>

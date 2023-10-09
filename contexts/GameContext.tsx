@@ -41,6 +41,7 @@ export const GameProvider: React.FC<{
   characterId?: string | null | undefined | string[];
 }> = ({ children, gameId, characterId }) => {
   const { address } = useAccount();
+
   const [game, setGame] = useState<Game | null>(null);
   const [isFormatting, setIsFormatting] = useState(false);
   const [isRefetching, setIsRefetching] = useState(false);

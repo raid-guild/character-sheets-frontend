@@ -23,25 +23,16 @@ import { encodeAbiParameters, isAddress, parseAbi } from 'viem';
 import { Address, useAccount, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
+import { useGamesContext } from '@/contexts/GamesContext';
 import { useGlobal } from '@/hooks/useGlobal';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { DEFAULT_DAO_ADDRESSES } from '@/utils/constants';
 
-type CreateGameModalProps = {
-  reloadGames: () => void;
-  isOpen: boolean;
-  onClose: () => void;
-};
-
 const DEFAULT_DAO_ADDRESS = DEFAULT_DAO_ADDRESSES[DEFAULT_CHAIN.id];
 
-export const CreateGameModal: React.FC<CreateGameModalProps> = ({
-  reloadGames,
-  isOpen,
-  onClose,
-}) => {
+export const CreateGameModal: React.FC = () => {
   const { address } = useAccount();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -49,6 +40,8 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
     walletClient?.chain?.name?.toLowerCase() ?? '',
   );
   const toast = useToast();
+  const { createGameModal: { isOpen, onClose } = {}, reload: reloadGames } =
+    useGamesContext();
 
   const {
     file: gameEmblem,
@@ -471,8 +464,8 @@ export const CreateGameModal: React.FC<CreateGameModalProps> = ({
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={isOpen}
-      onClose={onClose}
+      isOpen={isOpen ?? false}
+      onClose={onClose ?? (() => undefined)}
     >
       <ModalOverlay />
       <ModalContent>

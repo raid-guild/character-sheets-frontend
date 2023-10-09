@@ -1,11 +1,4 @@
-import {
-  Button,
-  Flex,
-  Spinner,
-  Text,
-  useDisclosure,
-  VStack,
-} from '@chakra-ui/react';
+import { Button, Flex, Spinner, Text, VStack } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useAccount, useNetwork } from 'wagmi';
 
@@ -15,8 +8,7 @@ import { useGamesContext } from '@/contexts/GamesContext';
 
 export default function MyGames(): JSX.Element {
   const { isConnected } = useAccount();
-  const createGameModal = useDisclosure();
-  const { myGames, loading, reload } = useGamesContext();
+  const { createGameModal, loading, myGames } = useGamesContext();
   const { chain } = useNetwork();
 
   const [isConnectedAndMount, setIsConnectedAndMounted] = useState(false);
@@ -48,7 +40,7 @@ export default function MyGames(): JSX.Element {
 
     return (
       <VStack as="main" pt={10} pb={20} spacing={10}>
-        <Button onClick={createGameModal.onOpen}>Create a Game</Button>
+        <Button onClick={createGameModal?.onOpen}>Create a Game</Button>
         {!myGames || myGames.length === 0 ? (
           <VStack as="main" pt={10}>
             <Text>No games found.</Text>
@@ -71,7 +63,7 @@ export default function MyGames(): JSX.Element {
   return (
     <>
       {content()}
-      <CreateGameModal reloadGames={reload} {...createGameModal} />
+      {createGameModal && <CreateGameModal />}
     </>
   );
 }
