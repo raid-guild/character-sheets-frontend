@@ -39,23 +39,32 @@ export const AddItemRequirementModal: React.FC = () => {
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
   // TODO: For now we are only adding class requirements
-  // When the new contracts are deployed, we will add item requirements too
-  const options = game?.classes.map(c => c.classId) ?? [];
+  const allGameClasses = game?.classes.map(c => c.classId) ?? [];
+  const itemClassRequirements =
+    selectedItem?.requirements.filter(
+      r => r.assetAddress === game?.classesAddress,
+    ) ?? [];
+  const itemClassRequirementIds = itemClassRequirements.map(r =>
+    r.assetId.toString(),
+  );
+  const options = allGameClasses.filter(
+    c => !itemClassRequirementIds.includes(c),
+  ); // Filter out the classes that are already requirements for this item
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
-    defaultValue: '1',
+    defaultValue: options[0] ?? '0',
     onChange: setClassId,
   });
   const group = getRootProps();
 
   const resetData = useCallback(() => {
-    setValue('1');
-    setClassId('1');
+    setValue(options[0] ?? '0');
+    setClassId(options[0] ?? '0');
     setIsAdding(false);
     setTxHash(null);
     setIsSyncing(false);
     setIsSynced(false);
-  }, [setValue]);
+  }, [options, setValue]);
 
   useEffect(() => {
     if (!addRequirementModal?.isOpen) {
@@ -115,10 +124,16 @@ export const AddItemRequirementModal: React.FC = () => {
           account: walletClient.account?.address as Address,
           address: game.itemsAddress as Address,
           abi: parseAbi([
-            'function addClassRequirement(uint256 itemId, uint256 requiredClassId) public',
+            'function addItemRequirement(uint256 itemId, uint8 category, address assetAddress, uint256 assetId, uint256 amount) external',
           ]),
-          functionName: 'addClassRequirement',
-          args: [BigInt(selectedItem.itemId), BigInt(classId)],
+          functionName: 'addItemRequirement',
+          args: [
+            BigInt(selectedItem.itemId),
+            2,
+            game.classesAddress as Address, // TODO: Add amount as a parameter; also add item requirements
+            BigInt(classId),
+            BigInt(1),
+          ],
         });
         setTxHash(transactionhash);
 
