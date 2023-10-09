@@ -66,7 +66,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     useState<boolean>(false);
   const [classRequirements, setClassRequirements] = useState<string[]>([]);
   const [soulboundToggle, setSoulboundToggle] = useState<boolean>(false);
-  const [claimableToggle, setClaimableToggle] = useState<boolean>(false);
+  // const [claimableToggle, setClaimableToggle] = useState<boolean>(false);
   const [whitelistedClaimers, setWhitelistedClaimers] = useState<string>('');
 
   const [showError, setShowError] = useState<boolean>(false);
@@ -124,7 +124,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     setClassRequirementsToggle(false);
     setClassRequirements([]);
     setSoulboundToggle(false);
-    setClaimableToggle(false);
+    // setClaimableToggle(false);
     setWhitelistedClaimers('');
     setItemEmblem(null);
 
@@ -519,7 +519,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
             onChange={e => setSoulboundToggle(e.target.checked)}
           />
         </FormControl>
-        <FormControl isInvalid={showError && !itemSupply}>
+        {/* <FormControl isInvalid={showError && !itemSupply}>
           <FormLabel>Restrict to specific players?</FormLabel>
           <Switch
             isChecked={claimableToggle}
@@ -541,7 +541,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               </FormHelperText>
             )}
           </FormControl>
-        )}
+        )} */}
         <FormControl isInvalid={showError && !itemEmblem}>
           <FormLabel>Item Emblem</FormLabel>
           {!itemEmblem && (
