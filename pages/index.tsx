@@ -8,19 +8,19 @@ export default function Home(): JSX.Element {
   const { createGameModal } = useGamesContext();
 
   return (
-    <Flex direction="column" pt="120px" px="10vw">
-      <Heading fontSize="2xl">Eternalize your journey</Heading>
-      <Text fontSize={{ base: 'xl', lg: '2xl' }} maxW="630px" mt="6" w="full">
-        Build a character through your work as a web3 mercenary. Slay moloch,
-        earn XP.
+    <Flex direction="column" pt="110px" px="10vw">
+      <Heading fontSize="80px" lineHeight="70px" fontWeight={"regular"} textTransform={"capitalize"} maxW={"720px"}>Eternalize your journey</Heading>
+      <Text fontSize={{ base: 'lg', lg: 'lg' }} maxW="590px" mt="10" w="full">
+        Build your character as a live chronicle of your actions. Collect items, earn XP and level up classes to register your  growth on-chain.
       </Text>
-      <Flex direction={{ base: 'column', lg: 'row' }} mt="12">
+      <Flex direction={{ base: 'column', lg: 'row' }} mt="14">
         <Button
           as={NextLink}
           href="/all-games"
           mr={{ base: '0', lg: '15px' }}
           mt={{ base: '10px', lg: '0' }}
           size="lg"
+          variant={"solid"}
         >
           Browse games
         </Button>

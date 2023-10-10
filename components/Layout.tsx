@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Flex,
   Heading,
   Image,
@@ -17,28 +18,19 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
     <Flex direction="column" minH="100vh">
       <Box
         as="header"
-        background="white"
-        borderBottom="5px solid black"
-        h={20}
-        pb={1}
+        background="dark"
+        pt={6}
+        px={6}
         position="fixed"
         top={0}
         w="100%"
         zIndex={1000}
       >
-        <Flex align="center" h="100%" justify="start" px={6} w="100%">
-          <Link as={NextLink} fontSize="sm" href="/">
-            <Flex align="center">
-              <Image
-                alt="RaidGuild logo"
-                h="28px"
-                src="/favicon.ico"
-                w="28px"
-              />
-              <Heading ml="10px" size="xs">
+        <Flex align="center" h="100%" justify="start" w="100%">
+          <Link as={NextLink} ml={5} href="/">
+              <Heading fontSize="22px" fontWeight='regular' textTransform='uppercase'>
                 CharacterSheets
               </Heading>
-            </Flex>
           </Link>
           <Spacer />
 
@@ -79,69 +71,45 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
                   {(() => {
                     if (!connected) {
                       return (
-                        <button onClick={openConnectModal} type="button">
-                          <Text
-                            borderBottom="2px solid transparent"
-                            transition="all 0.2s ease-in-out"
-                          >
-                            Connect Wallet
-                          </Text>
-                        </button>
+                        <Button size='md' onClick={openConnectModal} type="button" variant={"outline"}>
+                          connect
+                        </Button>
                       );
                     }
 
                     if (chain.unsupported) {
                       return (
-                        <button onClick={openChainModal} type="button">
-                          <Text
-                            borderBottom="2px solid transparent"
-                            transition="all 0.2s ease-in-out"
-                          >
-                            Wrong network
-                          </Text>
-                        </button>
+                          <Button size='md' onClick={openChainModal} type="button" variant={"outline"}>
+                            wrong network
+                          </Button>
                       );
                     }
 
                     return (
-                      <div style={{ display: 'flex', gap: 12 }}>
-                        <button onClick={openAccountModal} type="button">
-                          <Text
-                            borderBottom="2px solid transparent"
-                            transition="all 0.2s ease-in-out"
-                          >
-                            {account.displayName}
-                          </Text>
-                        </button>
-                      </div>
+                        <Button size='md' onClick={openAccountModal} type="button" variant={"outline"}>
+                          {account.displayName}
+                        </Button>
                     );
                   })()}
-                  <Image
-                    alt="down arrow"
-                    height={4}
-                    pb={1}
-                    src="/icons/arrow-down.svg"
-                    width={4}
-                  />
                 </Flex>
               );
             }}
           </ConnectButton.Custom>
         </Flex>
-        <Box background="white" borderTop="2px solid black" height={1} />
+        <Box background="white" mt={4} height={"1px"} />
       </Box>
-      <Box mt={20}>{children}</Box>
+      <Box mt={"85px"}>{children}</Box>
       <Flex
         align="center"
         as="footer"
-        background="white"
+        background="black"
         borderTop="5px solid black"
         h={24}
         justify="center"
         marginTop="auto"
       >
         <Link as={NextLink} href="https://raidguild.org" isExternal>
-          <Text alignItems="center" display="flex" gap={2}>
+          <Text alignItems="center" fontFamily={'Texturina'} display="flex" gap={2}>
             Built by{' '}
             <Image alt="RaidGuild logo" h="28px" src="/favicon.ico" w="28px" />{' '}
             RaidGuild

@@ -3,16 +3,31 @@ import { css } from '@emotion/react';
 
 export const globalStyles = css`
   body {
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Unbounded', sans-serif;
     font-size: 1rem;
-    background: #fff;
-    color: #000;
+    background: #171922;
+    color: #fff;
   }
 `;
 
 const Button = {
+  baseStyle: {
+
+    _active: {
+      background: '#2D3748',
+      transform: 'scale(0.98)',
+      _disabled: {
+        transform: 'scale(1)',
+      },
+    },
+
+  },
   defaultProps: {
     variant: 'outline',
+    // _hover: {
+    //   transform: 'scale(1.1)',
+
+    // },
   },
   sizes: {
     sm: {
@@ -21,70 +36,50 @@ const Button = {
     },
     md: {
       fontSize: '16px',
-      h: '50px',
-      w: '180px',
+      lineHeight: '20px',
+      h: 'auto',
+      pt:'2',
+      pb: '3',
+      px: '6'
+    },
+    lg: {
+      fontSize: '18px',
+      lineHeight: '22px',
+      h: 'auto',
+      py:'14px',
+      px: '45px'
     },
   },
   variants: {
-    ghost: {
-      color: 'black',
-      background: 'white',
-      borderBottom: '5px solid',
-      borderLeft: '3px solid',
-      borderRadius: '0',
-      borderRight: '5px solid',
-      borderTop: '3px solid',
-      borderColor: 'white',
-      _hover: {
-        background: 'gray.300',
-        borderColor: 'gray.300',
-      },
-      _active: {
-        background: 'gray.300',
-        borderColor: 'gray.300',
-        transform: 'scale(0.98)',
-        _disabled: {
-          transform: 'scale(1)',
-        },
-      },
-    },
     outline: {
-      color: 'black',
-      background: 'white',
-      borderBottom: '5px solid black',
-      borderLeft: '3px solid black',
+      color: 'white',
+      borderBottom: '3px solid white',
+      borderLeft: '1px solid white',
       borderRadius: '0',
-      borderRight: '5px solid black',
-      borderTop: '3px solid black',
+      borderRight: '3px solid white',
+      borderTop: '1px solid white',
       borderColor: 'white',
       _hover: {
-        background: 'gray.100',
+        borderColor: 'accent',
+        color: 'accent',
+        bg: 'dark'
       },
-      _active: {
-        transform: 'scale(0.98)',
-        _disabled: {
-          transform: 'scale(1)',
-        },
-      },
+      // _active: {
+      //   transform: 'scale(0.98)',
+      //   _disabled: {
+      //     transform: 'scale(1)',
+      //   },
+      // },
     },
     solid: {
-      color: 'white',
-      background: 'black',
-      borderBottom: '5px solid black',
-      borderLeft: '3px solid black',
+      color: 'dark',
+      background: 'white',
       borderRadius: '0',
-      borderRight: '5px solid black',
-      borderTop: '3px solid black',
+      borderColor: 'white',
       _hover: {
-        background: 'gray.700',
+        bg: 'accent',
       },
-      _active: {
-        background: 'gray.700',
-        transform: 'scale(0.98)',
-        _disabled: {
-          transform: 'scale(1)',
-        },
-      },
+
     },
   },
 };
@@ -96,15 +91,12 @@ const FormLabel = {
 
 const Heading = {
   defaultProps: {
-    variant: 'secondary',
+    variant: 'primary',
   },
   variants: {
     primary: {
-      fontFamily: `'Orbitron', sans-serif`,
-    },
-    secondary: {
-      fontFamily: `'Press Start 2P', cursive`,
-    },
+      fontFamily: `'Unbounded', sans-serif`,
+    }
   },
 };
 
@@ -141,19 +133,13 @@ const Link = {
     variant: 'paragraph',
   },
   baseStyle: {
-    py: 1,
-    px: 2,
-    _hover: {
-      boxShadow: '0 0 1px 1px rgba(0, 0, 0, 0.1)',
-      textDecoration: 'none',
-    },
   },
   variants: {
     paragraph: {
-      fontFamily: `'Orbitron', sans-serif`,
+      fontFamily: `'Unbounded', sans-serif`,
     },
     heading: {
-      fontFamily: `'Press Start 2P', cursive`,
+      fontFamily: `'Unbounded', sans-serif`,
     },
   },
 };
@@ -242,15 +228,18 @@ const Switch = {
 };
 
 const Text = {
+  baseStyle: {
+    fontWeight: '300'
+  },
   defaultProps: {
     variant: 'primary',
   },
   variants: {
     primary: {
-      fontFamily: `'Orbitron', sans-serif`,
+      fontFamily: `'Unbounded', sans-serif`,
     },
     secondary: {
-      fontFamily: `'Press Start 2P', cursive`,
+      fontFamily: `'Unbounded', sans-serif`,
     },
   },
 };
@@ -285,10 +274,12 @@ const Tooltip = {
 export const theme = extendTheme({
   config: { initialColorMode: 'light', useSystemColorMode: false },
   colors: {
-    gold: {
-      100: '#FFFAE2',
-      400: '#DBB865',
-    },
+    dark: '#171922',
+    accent: '#4287f5',
+    // gold: {
+    //   100: '#FFFAE2',
+    //   400: '#DBB865',
+    // },
   },
   components: {
     Button,
