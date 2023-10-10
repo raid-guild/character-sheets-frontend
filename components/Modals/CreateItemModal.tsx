@@ -20,6 +20,7 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
+import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   encodeAbiParameters,
@@ -66,7 +67,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     useState<boolean>(false);
   const [classRequirements, setClassRequirements] = useState<string[]>([]);
   const [soulboundToggle, setSoulboundToggle] = useState<boolean>(false);
-  // const [claimableToggle, setClaimableToggle] = useState<boolean>(false);
+  const [claimableToggle, setClaimableToggle] = useState<boolean>(false);
   const [whitelistedClaimers, setWhitelistedClaimers] = useState<string>('');
 
   const [showError, setShowError] = useState<boolean>(false);
@@ -124,7 +125,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     setClassRequirementsToggle(false);
     setClassRequirements([]);
     setSoulboundToggle(false);
-    // setClaimableToggle(false);
+    setClaimableToggle(false);
     setWhitelistedClaimers('');
     setItemEmblem(null);
 
@@ -218,18 +219,48 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           return;
         }
 
-        const claimable = pad('0x00');
+        let claimable = pad('0x00');
 
-        //TODO: the claimable addresses still need added to requirements
+        if (claimableToggle) {
+          const addresses = whitelistedClaimers.split(',');
+          const trimmedAddresses = addresses.map(address => address.trim());
 
-        // if (claimableToggle) {
-        //   const addresses = whitelistedClaimers.split(',');
-        //   const trimmedAddresses = addresses.map(address => address.trim());
+          if (trimmedAddresses.length === 0) {
+            claimable = pad('0x01');
+          } else {
+            const leaves = trimmedAddresses.map(address => {
+              return [game.items.length, address, itemSupply];
+            });
+            const tree = StandardMerkleTree.of(leaves, [
+              'uint256',
+              'address',
+              'uint256',
+            ]);
+            claimable = tree.root as `0x${string}`;
 
-        //   if (trimmedAddresses.length === 0) {
-        //     claimable = pad('0x01');
-        //   }
-        // }
+            const jsonTree = JSON.stringify(tree.dump());
+            const data = {
+              itemId: game.items.length,
+              itemAddress: game.itemsAddress,
+              tree: jsonTree,
+            };
+            const res = await fetch('/api/storeTree', {
+              method: 'POST',
+              body: JSON.stringify(data),
+            });
+            if (!res.ok) {
+              console.error(
+                'Something went wrong uploading your claimable tree.',
+              );
+              toast({
+                description: 'Something went wrong while creating item.',
+                position: 'top',
+                status: 'error',
+              });
+              return;
+            }
+          }
+        }
 
         const requiredClassIds = classRequirements.map(cr => BigInt(cr));
         const requiredClassCategories = requiredClassIds.map(() => 2);
@@ -347,6 +378,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       }
     },
     [
+      claimableToggle,
       classRequirements,
       itemName,
       itemDescription,
@@ -359,6 +391,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       soulboundToggle,
       toast,
       walletClient,
+      whitelistedClaimers,
     ],
   );
 
@@ -519,8 +552,19 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
             onChange={e => setSoulboundToggle(e.target.checked)}
           />
         </FormControl>
-        {/* <FormControl isInvalid={showError && !itemSupply}>
-          <FormLabel>Restrict to specific players?</FormLabel>
+        <FormControl isInvalid={showError && !itemSupply}>
+          <Flex align="center">
+            <FormLabel>Allow players to claim?</FormLabel>
+            <Tooltip label="If you don't allow players to claim, then items can only be given by the GameMaster.">
+              <Image
+                alt="down arrow"
+                height="14px"
+                mb={2}
+                src="/icons/question-mark.svg"
+                width="14px"
+              />
+            </Tooltip>
+          </Flex>
           <Switch
             isChecked={claimableToggle}
             onChange={e => setClaimableToggle(e.target.checked)}
@@ -541,7 +585,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               </FormHelperText>
             )}
           </FormControl>
-        )} */}
+        )}
         <FormControl isInvalid={showError && !itemEmblem}>
           <FormLabel>Item Emblem</FormLabel>
           {!itemEmblem && (
