@@ -235,6 +235,7 @@ const Text = {
     variant: 'primary',
   },
   variants: {
+
     primary: {
       fontFamily: `'Unbounded', sans-serif`,
     },
@@ -275,7 +276,7 @@ export const theme = extendTheme({
   config: { initialColorMode: 'light', useSystemColorMode: false },
   colors: {
     dark: '#171922',
-    accent: '#4287f5',
+    accent: '#a9c8eb',
     // gold: {
     //   100: '#FFFAE2',
     //   400: '#DBB865',

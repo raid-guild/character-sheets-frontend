@@ -7,6 +7,7 @@ import {
   Link,
   Spacer,
   Text,
+  textDecoration,
 } from '@chakra-ui/react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import NextLink from 'next/link';
@@ -27,16 +28,16 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         zIndex={1000}
       >
         <Flex align="center" h="100%" justify="start" w="100%">
-          <Link as={NextLink} ml={5} href="/">
-              <Heading fontSize="22px" fontWeight='regular' textTransform='uppercase'>
+          <Link as={NextLink} ml={5} href="/" _hover={{textDecoration:'none', color: 'accent'}}>
+              <Heading fontSize="22px" fontWeight='regular' textTransform='uppercase' color={"inherit"} >
                 CharacterSheets
               </Heading>
           </Link>
           <Spacer />
 
           <Flex as="nav" gap={4} mr={10}>
-            <ActiveLink href="/my-games">My Games</ActiveLink>
-            <ActiveLink href="/all-games">All Games</ActiveLink>
+            <ActiveLink href="/my-games">My games</ActiveLink>
+            <ActiveLink href="/all-games">All games</ActiveLink>
           </Flex>
           <ConnectButton.Custom>
             {({

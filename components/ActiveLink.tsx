@@ -9,12 +9,16 @@ export const ActiveLink: React.FC<LinkProps> = ({ href, ...props }) => {
   return (
     <Link
       as={NextLink}
-      borderBottom={isActive ? '2px solid black' : '2px solid transparent'}
       href={href ?? ''}
-      _hover={{ borderBottom: '2px solid black' }}
+      fontWeight="medium"
+      fontSize={"md"}
+      color={isActive?'accent':'inherit'}
+      w="123px"
+      textAlign='center'
+      _hover={{ color: 'accent'}}
       {...props}
     >
-      {props.children}
+      {isActive? "• " + props.children+" •":props.children}
     </Link>
   );
 };
