@@ -75,6 +75,7 @@ fragment GameMetaInfo on Game {
   experience
   characters {
     id
+    player
   }
   classes {
     id

@@ -76,7 +76,11 @@ export const GamesProvider: React.FC<{
 
   const myGames = useMemo(() => {
     if (!allGames || !address) return null;
-    return allGames.filter(g => g.masters.includes(address.toLowerCase()));
+    return allGames.filter(
+      g =>
+        g.masters.includes(address.toLowerCase()) ||
+        g.players.includes(address.toLowerCase()),
+    );
   }, [allGames, address]);
 
   return (

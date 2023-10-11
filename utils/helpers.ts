@@ -186,6 +186,7 @@ export const formatGameMeta = async (
     uri: game.uri,
     owners: game.owners,
     masters: game.masters,
+    players: game.characters.map(c => c.player),
     name: metadata.name,
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
