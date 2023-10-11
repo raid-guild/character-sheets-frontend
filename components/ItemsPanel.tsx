@@ -18,6 +18,7 @@ import { SmallItemCard } from './ItemCard';
 import { AddItemRequirementModal } from './Modals/AddItemRequirementModal';
 import { ClaimItemModal } from './Modals/ClaimItemModal';
 import { CreateItemModal } from './Modals/CreateItemModal';
+import { RemoveItemRequirementModal } from './Modals/RemoveItemRequirementModal';
 
 export const ItemsPanel: React.FC<PropsWithChildren> = () => {
   const createItemModal = useDisclosure();
@@ -40,7 +41,8 @@ export const ItemsPanel: React.FC<PropsWithChildren> = () => {
 const ItemsPanelInner: React.FC = () => {
   const { game } = useGame();
   const chainId = useChainId();
-  const { addRequirementModal, claimItemModal } = useItemActions();
+  const { addRequirementModal, claimItemModal, removeRequirementModal } =
+    useItemActions();
 
   if (!game || game.items.length === 0) {
     return (
@@ -59,6 +61,7 @@ const ItemsPanelInner: React.FC = () => {
       </SimpleGrid>
       {claimItemModal && <ClaimItemModal />}
       {addRequirementModal && <AddItemRequirementModal />}
+      {removeRequirementModal && <RemoveItemRequirementModal />}
     </>
   );
 };

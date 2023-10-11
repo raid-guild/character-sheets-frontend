@@ -23,9 +23,9 @@ import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 
-export const AddItemRequirementModal: React.FC = () => {
+export const RemoveItemRequirementModal: React.FC = () => {
   const { character, game, reload: reloadGame } = useGame();
-  const { selectedItem, addRequirementModal } = useItemActions();
+  const { selectedItem, removeRequirementModal } = useItemActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -33,23 +33,17 @@ export const AddItemRequirementModal: React.FC = () => {
 
   const [classId, setClassId] = useState<string>('1');
 
-  const [isAdding, setIsAdding] = useState<boolean>(false);
+  const [isRemoving, setIsRemoving] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
-  // TODO: For now we are only adding class requirements
-  const allGameClasses = game?.classes.map(c => c.classId) ?? [];
+  // TODO: For now we are only removing class requirements
   const itemClassRequirements =
     selectedItem?.requirements.filter(
       r => r.assetAddress === game?.classesAddress,
     ) ?? [];
-  const itemClassRequirementIds = itemClassRequirements.map(r =>
-    r.assetId.toString(),
-  );
-  const options = allGameClasses.filter(
-    c => !itemClassRequirementIds.includes(c),
-  ); // Filter out the classes that are already requirements for this item
+  const options = itemClassRequirements.map(r => r.assetId.toString());
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
     defaultValue: options[0] ?? '0',
@@ -60,17 +54,17 @@ export const AddItemRequirementModal: React.FC = () => {
   const resetData = useCallback(() => {
     setValue(options[0] ?? '0');
     setClassId(options[0] ?? '0');
-    setIsAdding(false);
+    setIsRemoving(false);
     setTxHash(null);
     setIsSyncing(false);
     setIsSynced(false);
   }, [options, setValue]);
 
   useEffect(() => {
-    if (!addRequirementModal?.isOpen) {
+    if (!removeRequirementModal?.isOpen) {
       resetData();
     }
-  }, [resetData, addRequirementModal?.isOpen]);
+  }, [resetData, removeRequirementModal?.isOpen]);
 
   const onAddRequirement = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
@@ -116,7 +110,7 @@ export const AddItemRequirementModal: React.FC = () => {
         return;
       }
 
-      setIsAdding(true);
+      setIsRemoving(true);
 
       try {
         const transactionhash = await walletClient.writeContract({
@@ -124,15 +118,13 @@ export const AddItemRequirementModal: React.FC = () => {
           account: walletClient.account?.address as Address,
           address: game.itemsAddress as Address,
           abi: parseAbi([
-            'function addItemRequirement(uint256 itemId, uint8 category, address assetAddress, uint256 assetId, uint256 amount) external',
+            'function removeItemRequirement(uint256 itemId, address assetAddress, uint256 assetId) external',
           ]),
-          functionName: 'addItemRequirement',
+          functionName: 'removeItemRequirement',
           args: [
             BigInt(selectedItem.itemId),
-            2,
-            game.classesAddress as Address, // TODO: Add amount as a parameter; also add item requirements
+            game.classesAddress as Address,
             BigInt(classId),
-            BigInt(1),
           ],
         });
         setTxHash(transactionhash);
@@ -157,14 +149,14 @@ export const AddItemRequirementModal: React.FC = () => {
         reloadGame();
       } catch (e) {
         toast({
-          description: `Something went wrong while adding requirement.`,
+          description: `Something went wrong while removing requirement.`,
           position: 'top',
           status: 'error',
         });
         console.error(e);
       } finally {
         setIsSyncing(false);
-        setIsAdding(false);
+        setIsRemoving(false);
       }
     },
     [
@@ -179,15 +171,15 @@ export const AddItemRequirementModal: React.FC = () => {
     ],
   );
 
-  const isLoading = isAdding;
+  const isLoading = isRemoving;
   const isDisabled = isLoading;
 
   const content = () => {
     if (isSynced && selectedItem) {
       return (
         <VStack py={10} spacing={4}>
-          <Text>Item requirement has been added!</Text>
-          <Button onClick={addRequirementModal?.onClose} variant="outline">
+          <Text>Item requirement has been removed!</Text>
+          <Button onClick={removeRequirementModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -198,7 +190,7 @@ export const AddItemRequirementModal: React.FC = () => {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Adding requirement...`}
+          text={`Removing requirement...`}
           txHash={txHash}
         />
       );
@@ -232,10 +224,10 @@ export const AddItemRequirementModal: React.FC = () => {
           autoFocus
           isDisabled={isDisabled}
           isLoading={isLoading}
-          loadingText="Adding..."
+          loadingText="Removing..."
           type="submit"
         >
-          Add
+          Remove
         </Button>
       </VStack>
     );
@@ -245,13 +237,13 @@ export const AddItemRequirementModal: React.FC = () => {
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={addRequirementModal?.isOpen ?? false}
-      onClose={addRequirementModal?.onClose ?? (() => {})}
+      isOpen={removeRequirementModal?.isOpen ?? false}
+      onClose={removeRequirementModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Add Requirement</Text>
+          <Text>Remove Requirement</Text>
           {isSynced && <Text>Success!</Text>}
           <ModalCloseButton size="lg" />
         </ModalHeader>
