@@ -30,9 +30,19 @@ const Button = {
     // },
   },
   sizes: {
-    sm: {
+    xs: {
       fontSize: '12px',
-      w: '100px',
+      h: 'auto',
+      pt:'2',
+      pb: '2',
+      px: '6',
+    },
+    sm: {
+      fontSize: '14px',
+      h: 'auto',
+      pt:'2',
+      pb: '2',
+      px: '6'
     },
     md: {
       fontSize: '16px',
@@ -90,6 +100,9 @@ const FormLabel = {
 };
 
 const Heading = {
+  baseStyle: {
+    fontWeight: 400,
+  },
   defaultProps: {
     variant: 'primary',
   },
@@ -229,7 +242,7 @@ const Switch = {
 
 const Text = {
   baseStyle: {
-    fontWeight: '300'
+    fontWeight: 300
   },
   defaultProps: {
     variant: 'primary',
@@ -277,6 +290,8 @@ export const theme = extendTheme({
   colors: {
     dark: '#171922',
     accent: '#a9c8eb',
+    softgreen: "#79BA87",
+    softpurple: "#9087B5"
     // gold: {
     //   100: '#FFFAE2',
     //   400: '#DBB865',

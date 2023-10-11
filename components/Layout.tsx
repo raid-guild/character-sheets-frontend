@@ -72,7 +72,7 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
                   {(() => {
                     if (!connected) {
                       return (
-                        <Button size='md' onClick={openConnectModal} type="button" variant={"outline"}>
+                        <Button size='xs' onClick={openConnectModal} type="button" variant={"outline"}>
                           connect
                         </Button>
                       );
@@ -80,14 +80,14 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
 
                     if (chain.unsupported) {
                       return (
-                          <Button size='md' onClick={openChainModal} type="button" variant={"outline"}>
+                          <Button size='xs' onClick={openChainModal} type="button" variant={"outline"}>
                             wrong network
                           </Button>
                       );
                     }
 
                     return (
-                        <Button size='md' onClick={openAccountModal} type="button" variant={"outline"}>
+                        <Button size='xs' onClick={openAccountModal} type="button" variant={"outline"}>
                           {account.displayName}
                         </Button>
                     );

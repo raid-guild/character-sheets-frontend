@@ -11,9 +11,9 @@ export const ActiveLink: React.FC<LinkProps> = ({ href, ...props }) => {
       as={NextLink}
       href={href ?? ''}
       fontWeight="medium"
-      fontSize={"md"}
+      fontSize={"sm"}
       color={isActive?'accent':'inherit'}
-      w="123px"
+      w="110px"
       textAlign='center'
       _hover={{ color: 'accent'}}
       {...props}
