@@ -9,6 +9,7 @@ export type GameMeta = Metadata & {
   uri: string;
   owners: string[];
   masters: string[];
+  players: string[];
   characters: { id: string }[];
   classes: { id: string }[];
   items: { id: string }[];
