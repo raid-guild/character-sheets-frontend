@@ -241,10 +241,10 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
             const jsonTree = JSON.stringify(tree.dump());
             const data = {
               itemId: game.items.length,
-              itemAddress: game.itemsAddress,
+              gameAddress: game.id,
               tree: jsonTree,
             };
-            const res = await fetch('/api/storeTree', {
+            const res = await fetch('/api/setTree', {
               method: 'POST',
               body: JSON.stringify(data),
             });

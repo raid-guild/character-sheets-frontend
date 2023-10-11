@@ -23,7 +23,7 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
-// import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
+import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
@@ -162,16 +162,36 @@ export const ClaimItemModal: React.FC = () => {
       setIsClaiming(true);
 
       try {
-        // const values = [
-        //   [BigInt(selectedItem.itemId), character.player, BigInt(amount)],
-        // ];
-        // const tree = StandardMerkleTree.of(values, [
-        //   'uint256',
-        //   'address',
-        //   'uint256',
-        // ]);
+        const res = await fetch(
+          `/api/getTree?gameAddress=${game.id}&itemId=${selectedItem.itemId}`,
+        );
 
-        // const proof = tree.getProof(values[0]);
+        if (!res.ok) {
+          toast({
+            description: `Something went wrong while claiming ${selectedItem.name}.`,
+            position: 'top',
+            status: 'error',
+          });
+          console.error('Could not find the claimable tree.');
+          return;
+        }
+
+        const { tree: jsonTree } = await res.json();
+
+        if (!jsonTree) {
+          toast({
+            description: `Something went wrong while claiming ${selectedItem.name}.`,
+            position: 'top',
+            status: 'error',
+          });
+          console.error('Could not find the claimable tree.');
+          return;
+        }
+
+        const tree = StandardMerkleTree.load(JSON.parse(jsonTree));
+
+        // TODO: This should be getting the proof of the leaf associated with the claimer, not the first leaf
+        const proof = tree.getProof(0);
 
         const transactionhash = await executeAsCharacter(
           character,
@@ -184,7 +204,7 @@ export const ClaimItemModal: React.FC = () => {
               'function claimItems(uint256[] calldata itemIds, uint256[] calldata amounts, bytes32[][] calldata proofs) external',
             ]),
             functionName: 'claimItems',
-            args: [[BigInt(selectedItem.itemId)], [BigInt(amount)], [[]]],
+            args: [[BigInt(selectedItem.itemId)], [BigInt(amount)], [proof]],
           },
         );
         setTxHash(transactionhash);
