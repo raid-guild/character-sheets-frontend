@@ -3,10 +3,13 @@ import { createConfig } from 'wagmi';
 
 import {
   chains,
+  DEFAULT_CHAIN,
   PROJECT_ID,
+  RPC_URL,
   publicClient,
   webSocketPublicClient,
 } from './config';
+import { createPublicClient, http } from 'viem';
 
 // Required for BigInt serialization
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -28,4 +31,9 @@ export const wagmiConfig = createConfig({
   webSocketPublicClient,
 });
 
-export { DEFAULT_CHAIN, INFURA_KEY, publicClient } from './config';
+export { DEFAULT_CHAIN } from './config';
+
+export const readClient = createPublicClient({
+  chain: DEFAULT_CHAIN,
+  transport: http(RPC_URL),
+});

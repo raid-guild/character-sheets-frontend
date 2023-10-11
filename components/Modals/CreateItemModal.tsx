@@ -235,7 +235,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
                 return [
                   BigInt(game.items.length),
                   getAddress(address),
-                  BigInt(itemSupply),
+                  BigInt(1),
                 ];
               },
             );
@@ -253,10 +253,21 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               gameAddress: game.id,
               tree: jsonTree,
             };
+
+            const signature = await walletClient.signMessage({
+              message: '/api/setTree',
+              account: walletClient.account?.address as Address,
+            });
+
             const res = await fetch('/api/setTree', {
+              headers: {
+                'x-account-address': walletClient.account?.address as Address,
+                'x-account-signature': signature,
+              },
               method: 'POST',
               body: JSON.stringify(data),
             });
+
             if (!res.ok) {
               console.error(
                 'Something went wrong uploading your claimable tree.',

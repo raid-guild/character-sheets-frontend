@@ -1,3 +1,5 @@
+import { getAddress } from 'viem';
+
 import { dbPromise } from '@/lib/mongodb';
 
 export const getClaimableTree = async (
@@ -6,9 +8,10 @@ export const getClaimableTree = async (
 ): Promise<null | string> => {
   try {
     const client = await dbPromise;
-    const result = await client
-      .collection('claimableTrees')
-      .findOne({ gameAddress, itemId });
+    const result = await client.collection('claimableTrees').findOne({
+      gameAddress: getAddress(gameAddress),
+      itemId: BigInt(itemId).toString(),
+    });
     return result?.tree ?? null;
   } catch (error) {
     console.error(error);
