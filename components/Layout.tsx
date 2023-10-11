@@ -7,7 +7,6 @@ import {
   Link,
   Spacer,
   Text,
-  textDecoration,
 } from '@chakra-ui/react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import NextLink from 'next/link';
@@ -28,10 +27,20 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         zIndex={1000}
       >
         <Flex align="center" h="100%" justify="start" w="100%">
-          <Link as={NextLink} ml={5} href="/" _hover={{textDecoration:'none', color: 'accent'}}>
-              <Heading fontSize="22px" fontWeight='regular' textTransform='uppercase' color={"inherit"} >
-                CharacterSheets
-              </Heading>
+          <Link
+            as={NextLink}
+            ml={5}
+            href="/"
+            _hover={{ textDecoration: 'none', color: 'accent' }}
+          >
+            <Heading
+              fontSize="22px"
+              fontWeight="regular"
+              textTransform="uppercase"
+              color={'inherit'}
+            >
+              CharacterSheets
+            </Heading>
           </Link>
           <Spacer />
 
@@ -72,7 +81,12 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
                   {(() => {
                     if (!connected) {
                       return (
-                        <Button size='xs' onClick={openConnectModal} type="button" variant={"outline"}>
+                        <Button
+                          size="xs"
+                          onClick={openConnectModal}
+                          type="button"
+                          variant={'outline'}
+                        >
                           connect
                         </Button>
                       );
@@ -80,16 +94,26 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
 
                     if (chain.unsupported) {
                       return (
-                          <Button size='xs' onClick={openChainModal} type="button" variant={"outline"}>
-                            wrong network
-                          </Button>
+                        <Button
+                          size="xs"
+                          onClick={openChainModal}
+                          type="button"
+                          variant={'outline'}
+                        >
+                          wrong network
+                        </Button>
                       );
                     }
 
                     return (
-                        <Button size='xs' onClick={openAccountModal} type="button" variant={"outline"}>
-                          {account.displayName}
-                        </Button>
+                      <Button
+                        size="xs"
+                        onClick={openAccountModal}
+                        type="button"
+                        variant={'outline'}
+                      >
+                        {account.displayName}
+                      </Button>
                     );
                   })()}
                 </Flex>
@@ -97,9 +121,9 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
             }}
           </ConnectButton.Custom>
         </Flex>
-        <Box background="white" mt={4} height={"1px"} />
+        <Box background="white" mt={4} height={'1px'} />
       </Box>
-      <Box mt={"85px"}>{children}</Box>
+      <Box mt={'85px'}>{children}</Box>
       <Flex
         align="center"
         as="footer"
@@ -110,7 +134,12 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         marginTop="auto"
       >
         <Link as={NextLink} href="https://raidguild.org" isExternal>
-          <Text alignItems="center" fontFamily={'Texturina'} display="flex" gap={2}>
+          <Text
+            alignItems="center"
+            fontFamily={'Texturina'}
+            display="flex"
+            gap={2}
+          >
             Built by{' '}
             <Image alt="RaidGuild logo" h="28px" src="/favicon.ico" w="28px" />{' '}
             RaidGuild

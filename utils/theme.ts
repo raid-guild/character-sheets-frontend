@@ -12,7 +12,6 @@ export const globalStyles = css`
 
 const Button = {
   baseStyle: {
-
     _active: {
       background: '#2D3748',
       transform: 'scale(0.98)',
@@ -20,7 +19,6 @@ const Button = {
         transform: 'scale(1)',
       },
     },
-
   },
   defaultProps: {
     variant: 'outline',
@@ -33,31 +31,31 @@ const Button = {
     xs: {
       fontSize: '12px',
       h: 'auto',
-      pt:'2',
+      pt: '2',
       pb: '2',
       px: '6',
     },
     sm: {
       fontSize: '14px',
       h: 'auto',
-      pt:'2',
+      pt: '2',
       pb: '2',
-      px: '6'
+      px: '6',
     },
     md: {
       fontSize: '16px',
       lineHeight: '20px',
       h: 'auto',
-      pt:'2',
+      pt: '2',
       pb: '3',
-      px: '6'
+      px: '6',
     },
     lg: {
       fontSize: '18px',
       lineHeight: '22px',
       h: 'auto',
-      py:'14px',
-      px: '45px'
+      py: '14px',
+      px: '45px',
     },
   },
   variants: {
@@ -72,7 +70,7 @@ const Button = {
       _hover: {
         borderColor: 'accent',
         color: 'accent',
-        bg: 'dark'
+        bg: 'dark',
       },
       // _active: {
       //   transform: 'scale(0.98)',
@@ -89,7 +87,6 @@ const Button = {
       _hover: {
         bg: 'accent',
       },
-
     },
   },
 };
@@ -109,7 +106,7 @@ const Heading = {
   variants: {
     primary: {
       fontFamily: `'Unbounded', sans-serif`,
-    }
+    },
   },
 };
 
@@ -145,8 +142,7 @@ const Link = {
   defaultProps: {
     variant: 'paragraph',
   },
-  baseStyle: {
-  },
+  baseStyle: {},
   variants: {
     paragraph: {
       fontFamily: `'Unbounded', sans-serif`,
@@ -242,13 +238,12 @@ const Switch = {
 
 const Text = {
   baseStyle: {
-    fontWeight: 300
+    fontWeight: 300,
   },
   defaultProps: {
     variant: 'primary',
   },
   variants: {
-
     primary: {
       fontFamily: `'Unbounded', sans-serif`,
     },
@@ -290,8 +285,8 @@ export const theme = extendTheme({
   colors: {
     dark: '#171922',
     accent: '#a9c8eb',
-    softgreen: "#79BA87",
-    softpurple: "#9087B5"
+    softgreen: '#79BA87',
+    softpurple: '#9087B5',
     // gold: {
     //   100: '#FFFAE2',
     //   400: '#DBB865',

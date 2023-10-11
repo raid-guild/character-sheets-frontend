@@ -11,14 +11,14 @@ export const ActiveLink: React.FC<LinkProps> = ({ href, ...props }) => {
       as={NextLink}
       href={href ?? ''}
       fontWeight="medium"
-      fontSize={"sm"}
-      color={isActive?'accent':'inherit'}
+      fontSize={'sm'}
+      color={isActive ? 'accent' : 'inherit'}
       w="110px"
-      textAlign='center'
-      _hover={{ color: 'accent'}}
+      textAlign="center"
+      _hover={{ color: 'accent' }}
       {...props}
     >
-      {isActive? "• " + props.children+" •":props.children}
+      {isActive ? '• ' + props.children + ' •' : props.children}
     </Link>
   );
 };

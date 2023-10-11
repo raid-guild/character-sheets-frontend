@@ -1,8 +1,8 @@
-import { Box, Button, Flex, Heading, Image, Link, Text } from '@chakra-ui/react';
+import { Box, Flex, Heading, Image, Link, Text } from '@chakra-ui/react';
 import NextLink from 'next/link';
 
 import { EXPLORER_URLS } from '@/utils/constants';
-import { shortenAddress, shortenText } from '@/utils/helpers';
+import { shortenAddress } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
 
 type GameCardProps = GameMeta & {
@@ -12,7 +12,6 @@ type GameCardProps = GameMeta & {
 export const GameCard: React.FC<GameCardProps> = ({
   chainId,
   characters,
-  description,
   experience,
   id,
   image,
@@ -25,7 +24,7 @@ export const GameCard: React.FC<GameCardProps> = ({
       transition="background 0.3s ease"
       w="480px"
       borderBottom="5px solid rgba(255,255,255,0.2)"
-      pb={"20px"}
+      pb={'20px'}
     >
       <Link
         alignItems="center"
@@ -77,7 +76,6 @@ export const GameCard: React.FC<GameCardProps> = ({
           {items.length} items
         </Text>
       </Flex>
-
 
       <Box mt="8">
         <NextLink href={`/games/[gameId]`} as={`/games/${id}`}>

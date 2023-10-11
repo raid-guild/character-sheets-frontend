@@ -26,19 +26,19 @@ export default function AllGames(): JSX.Element {
   }
 
   return (
-    <Box pt={24} pb={20} pl={"10vw"} >
-    {/* <Text opacity={0.5} mb={10}>ALL GAMES :</Text> */}
-    <VStack as="main">
-      <Flex gap={20} justify="left" w="full" wrap="wrap">
-        {allGames.map(game => (
-          <GameCard
-            key={game.id}
-            chainId={chain?.id ?? DEFAULT_CHAIN.id}
-            {...game}
-          />
-        ))}
-      </Flex>
-    </VStack>
+    <Box pt={24} pb={20} pl={'10vw'}>
+      {/* <Text opacity={0.5} mb={10}>ALL GAMES :</Text> */}
+      <VStack as="main">
+        <Flex gap={20} justify="left" w="full" wrap="wrap">
+          {allGames.map(game => (
+            <GameCard
+              key={game.id}
+              chainId={chain?.id ?? DEFAULT_CHAIN.id}
+              {...game}
+            />
+          ))}
+        </Flex>
+      </VStack>
     </Box>
   );
 }
