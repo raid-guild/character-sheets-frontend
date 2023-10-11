@@ -20,8 +20,8 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         as="header"
         background="dark"
         pt={6}
-        px={6}
         position="fixed"
+        px={6}
         top={0}
         w="100%"
         zIndex={1000}
@@ -29,16 +29,11 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         <Flex align="center" h="100%" justify="start" w="100%">
           <Link
             as={NextLink}
-            ml={5}
             href="/"
-            _hover={{ textDecoration: 'none', color: 'accent' }}
+            ml={5}
+            _hover={{ color: 'accent', textDecoration: 'none' }}
           >
-            <Heading
-              fontSize="22px"
-              fontWeight="regular"
-              textTransform="uppercase"
-              color={'inherit'}
-            >
+            <Heading fontSize="22px" textTransform="uppercase">
               CharacterSheets
             </Heading>
           </Link>
@@ -82,10 +77,10 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
                     if (!connected) {
                       return (
                         <Button
-                          size="xs"
                           onClick={openConnectModal}
+                          size="xs"
                           type="button"
-                          variant={'outline'}
+                          variant="outline"
                         >
                           connect
                         </Button>
@@ -95,10 +90,10 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
                     if (chain.unsupported) {
                       return (
                         <Button
-                          size="xs"
                           onClick={openChainModal}
+                          size="xs"
                           type="button"
-                          variant={'outline'}
+                          variant="outline"
                         >
                           wrong network
                         </Button>
@@ -107,10 +102,10 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
 
                     return (
                       <Button
-                        size="xs"
                         onClick={openAccountModal}
+                        size="xs"
                         type="button"
-                        variant={'outline'}
+                        variant="outline"
                       >
                         {account.displayName}
                       </Button>
@@ -121,9 +116,9 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
             }}
           </ConnectButton.Custom>
         </Flex>
-        <Box background="white" mt={4} height={'1px'} />
+        <Box background="white" height="1px" mt={4} />
       </Box>
-      <Box mt={'85px'}>{children}</Box>
+      <Box mt="85px">{children}</Box>
       <Flex
         align="center"
         as="footer"
@@ -136,8 +131,8 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         <Link as={NextLink} href="https://raidguild.org" isExternal>
           <Text
             alignItems="center"
-            fontFamily={'Texturina'}
             display="flex"
+            fontFamily="Texturina"
             gap={2}
           >
             Built by{' '}

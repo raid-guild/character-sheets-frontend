@@ -24,28 +24,27 @@ const Button = {
     variant: 'outline',
     // _hover: {
     //   transform: 'scale(1.1)',
-
     // },
   },
   sizes: {
     xs: {
       fontSize: '12px',
       h: 'auto',
-      pt: '2',
       pb: '2',
+      pt: '2',
       px: '6',
     },
     sm: {
       fontSize: '14px',
       h: 'auto',
-      pt: '2',
       pb: '2',
+      pt: '2',
       px: '6',
     },
     md: {
       fontSize: '16px',
-      lineHeight: '20px',
       h: 'auto',
+      lineHeight: '20px',
       pt: '2',
       pb: '3',
       px: '6',
@@ -61,12 +60,12 @@ const Button = {
   variants: {
     outline: {
       color: 'white',
+      borderColor: 'white',
       borderBottom: '3px solid white',
       borderLeft: '1px solid white',
       borderRadius: '0',
       borderRight: '3px solid white',
       borderTop: '1px solid white',
-      borderColor: 'white',
       _hover: {
         borderColor: 'accent',
         color: 'accent',
@@ -80,10 +79,10 @@ const Button = {
       // },
     },
     solid: {
-      color: 'dark',
       background: 'white',
-      borderRadius: '0',
       borderColor: 'white',
+      borderRadius: '0',
+      color: 'dark',
       _hover: {
         bg: 'accent',
       },
@@ -114,10 +113,10 @@ const Input = {
   variants: {
     outline: {
       field: {
+        background: 'white',
         border: '2px solid',
         borderColor: 'black',
         borderRadius: 0,
-        background: 'white',
         fontSize: '12px',
 
         _hover: {

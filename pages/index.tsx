@@ -19,24 +19,23 @@ export default function Home(): JSX.Element {
 
   return (
     <Flex
-      direction="column"
-      py="100px"
-      px="10vw"
       backgroundImage="url('/RG_CS_bg.png')"
       backgroundPosition="0 -20vh"
       backgroundRepeat="no-repeat"
       backgroundSize="100%"
+      direction="column"
+      py="100px"
+      px="10vw"
     >
       <Heading
         fontSize="66px"
         lineHeight="56px"
-        fontWeight={'regular'}
-        textTransform={'capitalize'}
-        maxW={'720px'}
+        maxW="720px"
+        textTransform="capitalize"
       >
         Eternalize your journey
       </Heading>
-      <Text fontSize={{ base: 'lg', lg: 'md' }} maxW="520px" mt="10" w="full">
+      <Text fontSize={{ base: 'lg', lg: 'md' }} mt="10" maxW="520px" w="full">
         Build your character as a live chronicle of your actions. Collect items,
         earn XP and level up classes to register your growth on-chain.
       </Text>
@@ -47,7 +46,7 @@ export default function Home(): JSX.Element {
           mr={{ base: '0', lg: '15px' }}
           mt={{ base: '10px', lg: '0' }}
           size="lg"
-          variant={'solid'}
+          variant="solid"
         >
           Browse games
         </Button>
@@ -56,101 +55,100 @@ export default function Home(): JSX.Element {
         </Button>
       </Flex>
       <Text
-        color={'whiteAlpha.700'}
+        color="whiteAlpha.700"
+        fontSize="14px"
         mt={20}
         mb={6}
-        fontSize={'14px'}
-        textTransform={'uppercase'}
+        textTransform="uppercase"
       >
         Most recent :
       </Text>
 
-      {/* This could be Charactercard? */}
+      {/* TODO: This could be Charactercard? */}
       <HStack
-        w={'full'}
-        maxW={'900px'}
-        border={'1px solid white'}
+        align="stretch"
+        border="1px solid white"
+        flexWrap="wrap"
+        maxW="900px"
         p={5}
-        align={'stretch'}
-        flexWrap={'wrap'}
+        w="full"
       >
         <Image
           alt="character avatar"
-          w="358px"
-          minW="358px"
           h="474px"
-          rounded={10}
+          minW="358px"
           objectFit="cover"
+          rounded={10}
           src="/RG_CharacterSheet_CharacterBuild__v3_ex2.png"
+          w="358px"
         />
         <VStack
+          align="start"
           flex={1}
-          align={'start'}
-          justify={'start'}
-          pt={8}
+          justify="start"
           pl={10}
           pr={6}
+          pt={8}
           spacing={0}
         >
           <Heading _hover={{ color: 'accent', cursor: 'pointer' }}>
             McLizard the Hizard
           </Heading>
-          <Link fontSize="sm" href={`/`} isExternal fontWeight={300}>
-            0xIIO...mlmz
+          <Link fontSize="sm" href="/" isExternal fontWeight={300}>
+            0xaBc...123
           </Link>
-          <HStack spacing={4} mt={6} mb={8} flexWrap={'wrap'}>
-            {/* Maybe this is a Classtag? */}
+          <HStack flexWrap="wrap" mt={6} mb={8} spacing={4}>
+            {/* TODO: Maybe this is a Classtag? */}
             <HStack spacing={0}>
-              <Box h={'22px'} w={'6px'} bg={'softgreen'} m={0}></Box>
+              <Box bg="softgreen" h="22px" w="6px" />
               <Text
-                bg={'softgreen'}
-                color={'dark'}
-                fontWeight={'bold'}
-                fontSize={'sm'}
+                bg="softgreen"
+                color="dark"
+                fontSize="sm"
+                fontWeight="bold"
                 py={2}
                 px={8}
               >
                 Wizard
               </Text>
-              <Box h={'22px'} w={'6px'} bg={'softgreen'}></Box>
+              <Box bg="softgreen" h="22px" w="6px" />
             </HStack>
-            {/* Here is the next one: */}
             <HStack spacing={0}>
-              <Box h={'22px'} w={'6px'} bg={'softpurple'} m={0}></Box>
+              <Box bg="softpurple" h="22px" m={0} w="6px" />
               <Text
-                bg={'softpurple'}
-                color={'dark'}
-                fontWeight={'bold'}
-                fontSize={'sm'}
+                bg="softpurple"
+                color="dark"
+                fontSize="sm"
+                fontWeight="bold"
                 py={2}
                 px={8}
               >
                 Villager
               </Text>
-              <Box h={'22px'} w={'6px'} bg={'softpurple'}></Box>
+              <Box bg="softpurple" h="22px" w="6px" />
             </HStack>
           </HStack>
 
           <VStack spacing={0}>
-            <Flex direction="row" align="center" py={2}>
+            <Flex align="center" direction="row" py={2}>
               <Image
                 alt="users"
                 height="20px"
                 src="/icons/xp.svg"
                 width="20px"
               />
-              <Text ml="4" fontSize="lg" fontWeight="400">
+              <Text fontSize="lg" fontWeight="400" ml="4">
                 800 XP
               </Text>
             </Flex>
-            <Flex direction="row" align="center" py={2}>
+            <Flex align="center" direction="row" py={2}>
               <Image
                 alt="users"
                 height="20px"
                 src="/icons/items.svg"
                 width="20px"
               />
-              <Text ml="4" fontSize="lg" fontWeight="400">
+              <Text fontSize="lg" fontWeight="400" ml="4">
                 12 items
               </Text>
             </Flex>

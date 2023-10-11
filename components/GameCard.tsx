@@ -20,11 +20,10 @@ export const GameCard: React.FC<GameCardProps> = ({
 }) => {
   return (
     <Box
-      p={0}
-      transition="background 0.3s ease"
-      w="480px"
       borderBottom="5px solid rgba(255,255,255,0.2)"
-      pb={'20px'}
+      transition="background 0.3s ease"
+      pb="20px"
+      w="480px"
     >
       <Link
         alignItems="center"
@@ -54,25 +53,26 @@ export const GameCard: React.FC<GameCardProps> = ({
           >
             {name}
           </Heading>
+          {/* TODO: Possibly bring back description once re-design is complete */}
           {/* <Text fontSize="sm">{shortenText(description, 60)}</Text> */}
         </Box>
       </NextLink>
 
-      <Flex direction="row" align="center" py={2}>
+      <Flex align="center" direction="row" py={2}>
         <Image alt="users" height="20px" src="/icons/users.svg" width="20px" />
-        <Text ml="4" fontSize="lg" fontWeight="400">
+        <Text fontSize="lg" fontWeight="400" ml="4">
           {characters.length} characters
         </Text>
       </Flex>
-      <Flex direction="row" align="center" py={2}>
+      <Flex align="center" direction="row" py={2}>
         <Image alt="users" height="20px" src="/icons/xp.svg" width="20px" />
-        <Text ml="4" fontSize="lg" fontWeight="400">
+        <Text fontSize="lg" fontWeight="400" ml="4">
           {experience} XP
         </Text>
       </Flex>
-      <Flex direction="row" align="center" py={2}>
+      <Flex align="center" direction="row" py={2}>
         <Image alt="users" height="20px" src="/icons/items.svg" width="20px" />
-        <Text ml="4" fontSize="lg" fontWeight="400">
+        <Text fontSize="lg" fontWeight="400" ml="4">
           {items.length} items
         </Text>
       </Flex>
