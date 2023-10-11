@@ -128,7 +128,6 @@ export const AssignClassModal: React.FC = () => {
       setIsAssigning(true);
 
       try {
-        const { account } = selectedCharacter;
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
@@ -137,8 +136,9 @@ export const AssignClassModal: React.FC = () => {
             'function assignClass(address character, uint256 classId) public',
           ]),
           functionName: 'assignClass',
-          args: [account as `0x${string}`, BigInt(classId)],
+          args: [selectedCharacter.account as `0x${string}`, BigInt(classId)],
         });
+
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
