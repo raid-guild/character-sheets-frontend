@@ -24,6 +24,7 @@ import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   encodeAbiParameters,
+  getAddress,
   isAddress,
   maxUint256,
   pad,
@@ -33,6 +34,7 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
+import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
@@ -228,9 +230,16 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           if (trimmedAddresses.length === 0) {
             claimable = pad('0x01');
           } else {
-            const leaves = trimmedAddresses.map(address => {
-              return [game.items.length, address, itemSupply];
-            });
+            const leaves: ClaimableItemLeaf[] = trimmedAddresses.map(
+              address => {
+                return [
+                  BigInt(game.items.length),
+                  getAddress(address),
+                  BigInt(itemSupply),
+                ];
+              },
+            );
+
             const tree = StandardMerkleTree.of(leaves, [
               'uint256',
               'address',

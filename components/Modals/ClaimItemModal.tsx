@@ -23,14 +23,14 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
-import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { parseAbi } from 'viem';
+import { getAddress, pad, parseAbi, zeroAddress } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
+import { ClaimableItemLeaf, useClaimableTree } from '@/hooks/useClaimableTree';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { executeAsCharacter } from '@/utils/account';
 
@@ -95,6 +95,47 @@ export const ClaimItemModal: React.FC = () => {
       resetData();
     }
   }, [resetData, claimItemModal?.isOpen]);
+
+  const { tree } = useClaimableTree(
+    (game?.id || zeroAddress) as `0x${string}`,
+    BigInt(selectedItem?.itemId || '0'),
+  );
+
+  const claimableLeaves: Array<ClaimableItemLeaf> = useMemo(() => {
+    if (!tree) return [];
+    return tree.dump().values.map(leaf => {
+      const [itemId, claimer, amount] = leaf.value;
+      return [BigInt(itemId), getAddress(claimer), BigInt(amount)];
+    });
+  }, [tree]);
+
+  const claimableAmount: bigint = useMemo(() => {
+    if (!character) return BigInt(0);
+    if (!selectedItem) return BigInt(0);
+    if (!tree) return BigInt(0);
+    if (tree.root.toLowerCase() !== selectedItem.merkleRoot.toLowerCase())
+      return BigInt(0);
+    if (!claimableLeaves.length) return BigInt(0);
+    const claimableLeaf = claimableLeaves.find(
+      leaf =>
+        leaf[1] === getAddress(character.account) &&
+        leaf[0] === BigInt(selectedItem.itemId),
+    );
+    if (!claimableLeaf) return BigInt(0);
+    return claimableLeaf[2];
+  }, [character, selectedItem, tree, claimableLeaves]);
+
+  const isClaimableByPublic = useMemo(() => {
+    if (!selectedItem) return false;
+    if (selectedItem.merkleRoot === pad('0x00')) return true;
+    return false;
+  }, [selectedItem]);
+
+  const isClaimable = useMemo(() => {
+    if (!selectedItem) return false;
+    if (selectedItem.merkleRoot === pad('0x00')) return true;
+    return claimableAmount > BigInt(0);
+  }, [selectedItem, claimableAmount]);
 
   const onClaimItem = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
@@ -162,11 +203,7 @@ export const ClaimItemModal: React.FC = () => {
       setIsClaiming(true);
 
       try {
-        const res = await fetch(
-          `/api/getTree?gameAddress=${game.id}&itemId=${selectedItem.itemId}`,
-        );
-
-        if (!res.ok) {
+        if (!isClaimableByPublic && !tree) {
           toast({
             description: `Something went wrong while claiming ${selectedItem.name}.`,
             position: 'top',
@@ -176,22 +213,21 @@ export const ClaimItemModal: React.FC = () => {
           return;
         }
 
-        const { tree: jsonTree } = await res.json();
+        const itemId = BigInt(selectedItem.itemId);
 
-        if (!jsonTree) {
-          toast({
-            description: `Something went wrong while claiming ${selectedItem.name}.`,
-            position: 'top',
-            status: 'error',
-          });
-          console.error('Could not find the claimable tree.');
-          return;
+        let proof: string[] = [];
+        let claimingAmount = BigInt(amount);
+
+        if (isClaimable && tree && claimableAmount > BigInt(0)) {
+          const leaf: ClaimableItemLeaf = [
+            itemId,
+            getAddress(character.account),
+            BigInt(claimableAmount),
+          ];
+
+          proof = tree.getProof(leaf);
+          claimingAmount = claimableAmount;
         }
-
-        const tree = StandardMerkleTree.load(JSON.parse(jsonTree));
-
-        // TODO: This should be getting the proof of the leaf associated with the claimer, not the first leaf
-        const proof = tree.getProof(0);
 
         const transactionhash = await executeAsCharacter(
           character,
@@ -204,7 +240,7 @@ export const ClaimItemModal: React.FC = () => {
               'function claimItems(uint256[] calldata itemIds, uint256[] calldata amounts, bytes32[][] calldata proofs) external',
             ]),
             functionName: 'claimItems',
-            args: [[BigInt(selectedItem.itemId)], [BigInt(amount)], [proof]],
+            args: [[itemId], [claimingAmount], [proof]],
           },
         );
         setTxHash(transactionhash);
@@ -251,6 +287,10 @@ export const ClaimItemModal: React.FC = () => {
       reloadGame,
       toast,
       walletClient,
+      tree,
+      isClaimableByPublic,
+      claimableAmount,
+      isClaimable,
     ],
   );
 
@@ -350,7 +390,7 @@ export const ClaimItemModal: React.FC = () => {
         </Accordion>
         {noSupply ? (
           <Text color="red.500">This item has zero supply.</Text>
-        ) : (
+        ) : isClaimableByPublic ? (
           <FormControl isInvalid={showError}>
             <FormLabel>Amount</FormLabel>
             <Input
@@ -362,6 +402,20 @@ export const ClaimItemModal: React.FC = () => {
               <FormHelperText color="red">
                 Please enter a valid amount. Item supply is{' '}
                 {selectedItem?.supply.toString()}.
+              </FormHelperText>
+            )}
+          </FormControl>
+        ) : (
+          <FormControl isInvalid={!isClaimable}>
+            <FormLabel>Amount</FormLabel>
+            <Input
+              isDisabled
+              type="number"
+              value={claimableAmount.toString()}
+            />
+            {claimableAmount === BigInt(0) && (
+              <FormHelperText color="red">
+                You cannot claim this item.
               </FormHelperText>
             )}
           </FormControl>

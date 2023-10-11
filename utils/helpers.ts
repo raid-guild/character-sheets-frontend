@@ -173,6 +173,7 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     requirements: item.requirements.map(formatItemRequirement),
     holders: item.holders,
     equippers: item.equippers,
+    merkleRoot: item.merkleRoot,
   };
 };
 
