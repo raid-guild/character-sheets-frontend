@@ -49,9 +49,9 @@ export const useClaimableTree = (
   });
 
   return {
-    loading: isLoading || isValidating || data === undefined,
+    loading: isLoading || isValidating,
     tree: data || null,
     error: error || null,
     reload: mutate,
   };
-}
+};

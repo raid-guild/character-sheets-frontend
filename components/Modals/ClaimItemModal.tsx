@@ -96,7 +96,7 @@ export const ClaimItemModal: React.FC = () => {
     }
   }, [resetData, claimItemModal?.isOpen]);
 
-  const { tree } = useClaimableTree(
+  const { tree, loading: isLoadingTree } = useClaimableTree(
     (game?.id || zeroAddress) as `0x${string}`,
     BigInt(selectedItem?.itemId || '0'),
   );
@@ -131,9 +131,9 @@ export const ClaimItemModal: React.FC = () => {
     return false;
   }, [selectedItem]);
 
-  const isClaimable = useMemo(() => {
+  const isClaimableByMerkleProof = useMemo(() => {
     if (!selectedItem) return false;
-    if (selectedItem.merkleRoot === pad('0x00')) return true;
+    if (selectedItem.merkleRoot === pad('0x00')) return false;
     return claimableAmount > BigInt(0);
   }, [selectedItem, claimableAmount]);
 
@@ -142,10 +142,15 @@ export const ClaimItemModal: React.FC = () => {
       e.preventDefault();
 
       if (noSupply) {
+        toast({
+          description: 'This item has zero supply.',
+          position: 'top',
+          status: 'warning',
+        });
         return;
       }
 
-      if (hasError) {
+      if (hasError && isClaimableByPublic) {
         setShowError(true);
         return;
       }
@@ -218,7 +223,7 @@ export const ClaimItemModal: React.FC = () => {
         let proof: string[] = [];
         let claimingAmount = BigInt(amount);
 
-        if (isClaimable && tree && claimableAmount > BigInt(0)) {
+        if (isClaimableByMerkleProof && tree && claimableAmount > BigInt(0)) {
           const leaf: ClaimableItemLeaf = [
             itemId,
             getAddress(character.account),
@@ -227,6 +232,14 @@ export const ClaimItemModal: React.FC = () => {
 
           proof = tree.getProof(leaf);
           claimingAmount = claimableAmount;
+        } else if (!isClaimableByPublic) {
+          toast({
+            description: `Something went wrong while claiming ${selectedItem.name}.`,
+            position: 'top',
+            status: 'error',
+          });
+          console.error('Not claimable by public or merkle proof.');
+          return;
         }
 
         const transactionhash = await executeAsCharacter(
@@ -290,7 +303,7 @@ export const ClaimItemModal: React.FC = () => {
       tree,
       isClaimableByPublic,
       claimableAmount,
-      isClaimable,
+      isClaimableByMerkleProof,
     ],
   );
 
@@ -388,42 +401,46 @@ export const ClaimItemModal: React.FC = () => {
             </AccordionPanel>
           </AccordionItem>
         </Accordion>
-        {noSupply ? (
-          <Text color="red.500">This item has zero supply.</Text>
-        ) : isClaimableByPublic ? (
-          <FormControl isInvalid={showError}>
-            <FormLabel>Amount</FormLabel>
-            <Input
-              onChange={e => setAmount(e.target.value)}
-              type="number"
-              value={amount}
-            />
-            {showError && (
-              <FormHelperText color="red">
-                Please enter a valid amount. Item supply is{' '}
-                {selectedItem?.supply.toString()}.
-              </FormHelperText>
+        {!isLoadingTree && (
+          <>
+            {noSupply ? (
+              <Text color="red.500">This item has zero supply.</Text>
+            ) : isClaimableByPublic ? (
+              <FormControl isInvalid={showError}>
+                <FormLabel>Amount</FormLabel>
+                <Input
+                  onChange={e => setAmount(e.target.value)}
+                  type="number"
+                  value={amount}
+                />
+                {showError && (
+                  <FormHelperText color="red">
+                    Please enter a valid amount. Item supply is{' '}
+                    {selectedItem?.supply.toString()}.
+                  </FormHelperText>
+                )}
+              </FormControl>
+            ) : (
+              <FormControl isInvalid={!isClaimableByMerkleProof}>
+                <FormLabel>Amount</FormLabel>
+                <Input
+                  isDisabled
+                  type="number"
+                  value={claimableAmount.toString()}
+                />
+                {claimableAmount === BigInt(0) && (
+                  <FormHelperText color="red">
+                    You cannot claim this item.
+                  </FormHelperText>
+                )}
+              </FormControl>
             )}
-          </FormControl>
-        ) : (
-          <FormControl isInvalid={!isClaimable}>
-            <FormLabel>Amount</FormLabel>
-            <Input
-              isDisabled
-              type="number"
-              value={claimableAmount.toString()}
-            />
-            {claimableAmount === BigInt(0) && (
-              <FormHelperText color="red">
-                You cannot claim this item.
-              </FormHelperText>
-            )}
-          </FormControl>
+          </>
         )}
         <Button
           autoFocus
           isDisabled={isDisabled}
-          isLoading={isLoading}
+          isLoading={isLoading || isLoadingTree}
           loadingText="Claiming..."
           type="submit"
         >
@@ -443,7 +460,7 @@ export const ClaimItemModal: React.FC = () => {
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Claim Item</Text>
+          <Text>Claim Item {selectedItem?.itemId}</Text>
           {isSynced && <Text>Success!</Text>}
           <ModalCloseButton size="lg" />
         </ModalHeader>
