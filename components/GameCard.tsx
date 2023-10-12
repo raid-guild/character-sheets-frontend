@@ -28,13 +28,13 @@ export const GameCard: React.FC<GameCardProps> = ({
 }) => {
   return (
     <VStack
+      align="Start"
       borderBottom="5px solid rgba(255,255,255,0.2)"
-      transition="background 0.3s ease"
       pb={5}
+      transition="background 0.3s ease"
       w="450px"
-      align={'start'}
     >
-      <VStack mb={2} transition="background 0.3s ease" align={'start'}>
+      <VStack align="align" mb={2} transition="background 0.3s ease">
         <Link
           fontSize="sm"
           href={`${EXPLORER_URLS[chainId]}/address/${id}`}
@@ -45,7 +45,7 @@ export const GameCard: React.FC<GameCardProps> = ({
         >
           {shortenAddress(id)}
         </Link>
-        <NextLink href={`/games/[gameId]`} as={`/games/${id}`}>
+        <NextLink as={`/games/${id}`} href={`/games/[gameId]`}>
           <Heading
             display="inline-block"
             fontSize="40px"
@@ -58,7 +58,7 @@ export const GameCard: React.FC<GameCardProps> = ({
             {name}
           </Heading>
         </NextLink>
-        <Text mb={2} fontWeight={200} fontSize="xl">
+        <Text fontSize="xl" fontWeight={200} mb={2}>
           {shortenText(description, 60)}
         </Text>
       </VStack>
@@ -82,7 +82,7 @@ export const GameCard: React.FC<GameCardProps> = ({
         </Text>
       </Flex>
 
-      <Box w={'full'} mt="8">
+      <Box mt="8" w="full">
         <NextLink href={`/games/[gameId]`} as={`/games/${id}`}>
           <Image
             alt="game emblem"

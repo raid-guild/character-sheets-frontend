@@ -127,16 +127,16 @@ function GamePage(): JSX.Element {
     const chainId = DEFAULT_CHAIN.id;
 
     return (
-      <VStack as="main" w={'full'} px={6}>
+      <VStack as="main" px={6} w="full">
         <HStack align="start" py={16} px={20} w="100%">
           <HStack flex="1">
             <VStack align="start" justify="start" w="100%">
               <Link
                 fontSize="sm"
-                isExternal
                 fontWeight={300}
-                mb={2}
                 href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+                isExternal
+                mb={2}
                 textDecoration={'underline'}
               >
                 {shortenAddress(id)}

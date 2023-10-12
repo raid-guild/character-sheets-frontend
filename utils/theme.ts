@@ -110,7 +110,6 @@ const Heading = {
 };
 
 const Input = {
-
   variants: {
     outline: {
       field: {
@@ -147,8 +146,8 @@ const Link = {
   },
   baseStyle: {
     _hover: {
-      color: 'accent'
-    }
+      color: 'accent',
+    },
   },
   variants: {
     paragraph: {
@@ -262,10 +261,10 @@ const Text = {
 const Textarea = {
   variants: {
     outline: {
+      background: 'dark',
       border: '2px solid',
       borderColor: 'black',
       borderRadius: 0,
-      background: 'dark',
       fontSize: '12px',
 
       _hover: {
