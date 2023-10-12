@@ -15,7 +15,6 @@ import {
   ModalOverlay,
   Text,
   Textarea,
-  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -25,6 +24,7 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
 type UpdateGameMetadataModalProps = {
@@ -39,7 +39,7 @@ export const UpdateGameMetadataModal: React.FC<
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const toast = useToast();
+  const { renderError } = useToast();
 
   const {
     file: newGameEmblemFile,
@@ -59,6 +59,7 @@ export const UpdateGameMetadataModal: React.FC<
   const [showError, setShowError] = useState<boolean>(false);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
@@ -111,6 +112,7 @@ export const UpdateGameMetadataModal: React.FC<
 
     setIsUpdating(false);
     setTxHash(null);
+    setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
   }, [game, onRemove]);
@@ -141,25 +143,8 @@ export const UpdateGameMetadataModal: React.FC<
         return;
       }
 
-      if (!walletClient) {
-        toast({
-          description: 'Wallet client is not connected.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Could not find a wallet client.');
-        return;
-      }
-
-      if (!game) {
-        toast({
-          description: `Could not find the game.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(`Missing game data.`);
-        return;
-      }
+      if (!walletClient) throw new Error('Wallet client is not connected');
+      if (!game) throw new Error('Missing game data');
 
       const cid = newGameEmblemFile
         ? await onUpload()
@@ -167,15 +152,8 @@ export const UpdateGameMetadataModal: React.FC<
             .split('/')
             .filter(s => !!s)
             .pop();
-
-      if (!cid) {
-        toast({
-          description: 'Something went wrong uploading your game emblem.',
-          position: 'top',
-          status: 'error',
-        });
-        return;
-      }
+      if (!cid)
+        throw new Error('Something went wrong uploading your game emblem');
 
       setIsUpdating(true);
 
@@ -190,26 +168,12 @@ export const UpdateGameMetadataModal: React.FC<
           method: 'POST',
           body: JSON.stringify(gameMetadata),
         });
-
-        if (!res.ok) {
-          toast({
-            description: 'Something went wrong uploading game metadata.',
-            position: 'top',
-            status: 'error',
-          });
-          return;
-        }
+        if (!res.ok)
+          throw new Error('Something went wrong uploading game metadata');
 
         const { cid: newCid } = await res.json();
-
-        if (!newCid) {
-          toast({
-            description: 'Something went wrong uploading game metadata.',
-            position: 'top',
-            status: 'error',
-          });
-          return;
-        }
+        if (!newCid)
+          throw new Error('Something went wrong uploading game metadata');
 
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
@@ -222,30 +186,24 @@ export const UpdateGameMetadataModal: React.FC<
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
-        const receipt = await client.waitForTransactionReceipt({
+        const { blockNumber, status } = await client.waitForTransactionReceipt({
           hash: transactionhash,
         });
 
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(receipt.blockNumber);
-
-        if (!synced) {
-          toast({
-            description: 'Something went wrong while syncing.',
-            position: 'top',
-            status: 'warning',
-          });
-          return;
+        if (status === 'reverted') {
+          setTxFailed(true);
+          setIsUpdating(false);
+          throw new Error('Transaction failed');
         }
+
+        setIsSyncing(true);
+        const synced = await waitUntilBlock(blockNumber);
+        if (!synced) throw new Error('Something went wrong while syncing');
+
         setIsSynced(true);
         reloadGame();
       } catch (e) {
-        toast({
-          description: `Something went wrong updating game metadata.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(e);
+        renderError(e, 'Something went wrong updating game metadata');
       } finally {
         setIsSyncing(false);
         setIsUpdating(false);
@@ -260,7 +218,7 @@ export const UpdateGameMetadataModal: React.FC<
       onUpload,
       publicClient,
       reloadGame,
-      toast,
+      renderError,
       walletClient,
     ],
   );
@@ -273,6 +231,17 @@ export const UpdateGameMetadataModal: React.FC<
   }, [sameName, sameDescription, sameEmblem]);
 
   const content = () => {
+    if (txFailed) {
+      return (
+        <VStack py={10} spacing={4}>
+          <Text>Transaction failed.</Text>
+          <Button onClick={onClose} variant="outline">
+            Close
+          </Button>
+        </VStack>
+      );
+    }
+
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>

@@ -17,7 +17,6 @@ import {
   Switch,
   Text,
   Textarea,
-  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -27,6 +26,7 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
 import {
@@ -53,7 +53,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const { game, character, reload: reloadGame } = useGame();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const toast = useToast();
+  const { renderError } = useToast();
 
   const {
     file: characterAvatar,
@@ -82,6 +82,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
@@ -123,6 +124,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
 
     setIsCreating(false);
     setTxHash(null);
+    setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
   }, [setCharacterAvatar]);
@@ -156,29 +158,17 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
         body: formData,
       });
 
-      if (!response.ok) {
-        toast({
-          description: 'Something went wrong uploading your character avatar.',
-          position: 'top',
-          status: 'error',
-        });
-        return '';
-      }
+      if (!response.ok)
+        throw new Error('Something went wrong uploading your character avatar');
 
       const { cid } = await response.json();
       return cid;
     } catch (e) {
-      console.error(e);
-      toast({
-        description: 'Something went wrong uploading your character avatar.',
-        position: 'top',
-        status: 'error',
-      });
-      return '';
+      throw new Error('Something went wrong uploading your character avatar');
     } finally {
       setIsMerging(false);
     }
-  }, [toast, traits]);
+  }, [traits]);
 
   const onJoinCharacter = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
@@ -189,35 +179,9 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
         return;
       }
 
-      if (!walletClient) {
-        toast({
-          description: 'Wallet client is not connected.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Could not find a wallet client.');
-        return;
-      }
-
-      if (!game) {
-        toast({
-          description: `Could not find the game.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(`Missing game data.`);
-        return;
-      }
-
-      if (character) {
-        toast({
-          description: `Chracter already exists.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(`Character already exists.`);
-        return;
-      }
+      if (!walletClient) throw new Error('Could not find a wallet client');
+      if (!game) throw new Error('Missing game data');
+      if (character) throw new Error('Character already exists');
 
       let cid = '';
 
@@ -227,14 +191,8 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
         cid = await mergeTraitImages();
       }
 
-      if (!cid) {
-        toast({
-          description: 'Something went wrong uploading your character avatar.',
-          position: 'top',
-          status: 'error',
-        });
-        return;
-      }
+      if (!cid)
+        throw new Error('Something went wrong uploading your character avatar');
 
       const characterMetadata: {
         name: string;
@@ -282,27 +240,17 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
           },
         );
 
-        if (!res.ok) {
-          toast({
-            description:
-              'Something went wrong uploading your character metadata.',
-            position: 'top',
-            status: 'error',
-          });
-          return;
-        }
+        if (!res.ok)
+          throw new Error(
+            'Something went wrong uploading your character metadata',
+          );
 
         const { cid: characterMetadataCid } = await res.json();
 
-        if (!characterMetadataCid) {
-          toast({
-            description:
-              'Something went wrong uploading your character metadata.',
-            position: 'top',
-            status: 'error',
-          });
-          return;
-        }
+        if (!characterMetadataCid)
+          throw new Error(
+            'Something went wrong uploading your character metadata',
+          );
 
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
@@ -317,30 +265,25 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
-        const receipt = await client.waitForTransactionReceipt({
+        const { blockNumber, status } = await client.waitForTransactionReceipt({
           hash: transactionhash,
         });
 
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(receipt.blockNumber);
-
-        if (!synced) {
-          toast({
-            description: 'Something went wrong while syncing.',
-            position: 'top',
-            status: 'warning',
-          });
-          return;
+        if (status === 'reverted') {
+          setTxFailed(true);
+          setIsCreating(false);
+          throw new Error('Transaction failed');
         }
+
+        setIsSyncing(true);
+        const synced = await waitUntilBlock(blockNumber);
+
+        if (!synced) throw new Error('Something went wrong while syncing');
+
         setIsSynced(true);
         reloadGame();
       } catch (e) {
-        toast({
-          description: 'Something went wrong creating your character.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error(e);
+        renderError(e, 'Something went wrong creating your character');
       } finally {
         setIsSyncing(false);
         setIsCreating(false);
@@ -356,9 +299,9 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
       onUpload,
       publicClient,
       showUpload,
-      toast,
       traits,
       reloadGame,
+      renderError,
       walletClient,
     ],
   );
@@ -405,6 +348,17 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
     step === 1 && (activeTab === TraitType.MOUTH || showUpload);
 
   const content = () => {
+    if (txFailed) {
+      return (
+        <VStack py={10} spacing={4}>
+          <Text>Transaction failed.</Text>
+          <Button onClick={onClose} variant="outline">
+            Close
+          </Button>
+        </VStack>
+      );
+    }
+
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>

@@ -163,11 +163,9 @@ export const ClaimItemModal: React.FC = () => {
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
-        const receipt = await client.waitForTransactionReceipt({
+        const { blockNumber, status } = await client.waitForTransactionReceipt({
           hash: transactionhash,
         });
-
-        const { status } = receipt;
 
         if (status === 'reverted') {
           setTxFailed(true);
@@ -176,7 +174,7 @@ export const ClaimItemModal: React.FC = () => {
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(receipt.blockNumber);
+        const synced = await waitUntilBlock(blockNumber);
 
         if (!synced) {
           throw new Error('Something went wrong while syncing.');
@@ -212,7 +210,7 @@ export const ClaimItemModal: React.FC = () => {
     if (txFailed) {
       return (
         <VStack py={10} spacing={4}>
-          <Text>Claiming {selectedItem?.name} failed.</Text>
+          <Text>Transaction failed.</Text>
           <Button onClick={claimItemModal?.onClose} variant="outline">
             Close
           </Button>

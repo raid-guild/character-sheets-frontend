@@ -11,7 +11,6 @@ import {
   ModalHeader,
   ModalOverlay,
   Text,
-  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -22,6 +21,7 @@ import { TransactionPending } from '@/components/TransactionPending';
 import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { useToast } from '@/hooks/useToast';
 
 export const DropExperienceModal: React.FC = () => {
   const { game, reload: reloadGame, isMaster } = useGame();
@@ -29,13 +29,14 @@ export const DropExperienceModal: React.FC = () => {
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const toast = useToast();
+  const { renderError } = useToast();
 
   const [amount, setAmount] = useState<string>('');
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isDropping, setIsDropping] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
@@ -58,6 +59,7 @@ export const DropExperienceModal: React.FC = () => {
 
     setIsDropping(false);
     setTxHash(null);
+    setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
   }, []);
@@ -77,45 +79,10 @@ export const DropExperienceModal: React.FC = () => {
         return;
       }
 
-      if (!walletClient) {
-        toast({
-          description: 'Wallet client is not connected.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Could not find a wallet client.');
-        return;
-      }
-
-      if (!selectedCharacter) {
-        toast({
-          description: 'Character address not found.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Character address not found.');
-        return;
-      }
-
-      if (!game?.experienceAddress) {
-        toast({
-          description: `Could not find the game.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(`Missing game data.`);
-        return;
-      }
-
-      if (!isMaster) {
-        toast({
-          description: `Not the game master.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(`Not the game master.`);
-        return;
-      }
+      if (!walletClient) throw new Error('Wallet client is not connected');
+      if (!selectedCharacter) throw new Error('Character address not found');
+      if (!game?.experienceAddress) throw new Error('Could not find the game');
+      if (!isMaster) throw new Error('Not the game master');
 
       setIsDropping(true);
 
@@ -136,30 +103,27 @@ export const DropExperienceModal: React.FC = () => {
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
-        const receipt = await client.waitForTransactionReceipt({
+        const { blockNumber, status } = await client.waitForTransactionReceipt({
           hash: transactionhash,
         });
 
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(receipt.blockNumber);
-
-        if (!synced) {
-          toast({
-            description: 'Something went wrong while syncing.',
-            position: 'top',
-            status: 'warning',
-          });
-          return;
+        if (status === 'reverted') {
+          setTxFailed(true);
+          setIsDropping(false);
+          throw new Error('Transaction failed');
         }
+
+        setIsSyncing(true);
+        const synced = await waitUntilBlock(blockNumber);
+        if (!synced) throw new Error('Something went wrong while syncing');
+
         setIsSynced(true);
         reloadGame();
       } catch (e) {
-        toast({
-          description: `Something went wrong giving XP to ${selectedCharacter.name}.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(e);
+        renderError(
+          e,
+          `Something went wrong giving XP to ${selectedCharacter.name}`,
+        );
       } finally {
         setIsSyncing(false);
         setIsDropping(false);
@@ -172,8 +136,8 @@ export const DropExperienceModal: React.FC = () => {
       publicClient,
       game,
       reloadGame,
+      renderError,
       selectedCharacter,
-      toast,
       walletClient,
     ],
   );
@@ -182,6 +146,17 @@ export const DropExperienceModal: React.FC = () => {
   const isDisabled = isLoading;
 
   const content = () => {
+    if (txFailed) {
+      return (
+        <VStack py={10} spacing={4}>
+          <Text>Transaction failed.</Text>
+          <Button onClick={giveExpModal?.onClose} variant="outline">
+            Close
+          </Button>
+        </VStack>
+      );
+    }
+
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>
