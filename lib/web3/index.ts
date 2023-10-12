@@ -1,15 +1,15 @@
 import { getDefaultWallets } from '@rainbow-me/rainbowkit';
+import { createPublicClient, http } from 'viem';
 import { createConfig } from 'wagmi';
 
 import {
   chains,
   DEFAULT_CHAIN,
   PROJECT_ID,
-  RPC_URL,
   publicClient,
+  RPC_URL,
   webSocketPublicClient,
 } from './config';
-import { createPublicClient, http } from 'viem';
 
 // Required for BigInt serialization
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

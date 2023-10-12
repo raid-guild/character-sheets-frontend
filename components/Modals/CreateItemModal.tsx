@@ -38,6 +38,11 @@ import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
+import {
+  ClaimableAddress,
+  ClaimableAddressListInput,
+} from '../ClaimableAddressListInput';
+
 type CreateItemModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -70,7 +75,10 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   const [classRequirements, setClassRequirements] = useState<string[]>([]);
   const [soulboundToggle, setSoulboundToggle] = useState<boolean>(false);
   const [claimableToggle, setClaimableToggle] = useState<boolean>(false);
-  const [whitelistedClaimers, setWhitelistedClaimers] = useState<string>('');
+
+  const [claimableAddressList, setClaimableAddressList] = useState<
+    ClaimableAddress[]
+  >([]);
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -91,14 +99,15 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     );
   }, [itemSupply]);
 
-  const invalidClaimerAddress = useMemo(() => {
-    const addresses = whitelistedClaimers.split(',');
-    const trimmedAddresses = addresses.map(address => address.trim());
-    return (
-      trimmedAddresses.some(address => !isAddress(address)) &&
-      !!whitelistedClaimers
+  const invalidClaimableAddressList = useMemo(() => {
+    return claimableAddressList.some(
+      ({ address, amount }) =>
+        !isAddress(address) ||
+        BigInt(amount) <= BigInt(0) ||
+        BigInt(amount) > maxUint256 ||
+        BigInt(amount).toString() === 'NaN',
     );
-  }, [whitelistedClaimers]);
+  }, [claimableAddressList]);
 
   const hasError = useMemo(() => {
     return (
@@ -108,13 +117,13 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       invalidItemDescription ||
       !itemSupply ||
       invalidItemSupply ||
-      invalidClaimerAddress
+      invalidClaimableAddressList
     );
   }, [
     itemDescription,
     itemEmblem,
     itemName,
-    invalidClaimerAddress,
+    invalidClaimableAddressList,
     invalidItemDescription,
     itemSupply,
     invalidItemSupply,
@@ -128,7 +137,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     setClassRequirements([]);
     setSoulboundToggle(false);
     setClaimableToggle(false);
-    setWhitelistedClaimers('');
+    setClaimableAddressList([]);
     setItemEmblem(null);
 
     setShowError(false);
@@ -224,18 +233,15 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         let claimable = pad('0x00');
 
         if (claimableToggle) {
-          const addresses = whitelistedClaimers.split(',');
-          const trimmedAddresses = addresses.map(address => address.trim());
-
-          if (trimmedAddresses.length === 0) {
+          if (claimableAddressList.length === 0) {
             claimable = pad('0x01');
           } else {
-            const leaves: ClaimableItemLeaf[] = trimmedAddresses.map(
-              address => {
+            const leaves: ClaimableItemLeaf[] = claimableAddressList.map(
+              ({ address, amount }) => {
                 return [
                   BigInt(game.items.length),
                   getAddress(address),
-                  BigInt(1),
+                  BigInt(amount),
                 ];
               },
             );
@@ -411,7 +417,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       soulboundToggle,
       toast,
       walletClient,
-      whitelistedClaimers,
+      claimableAddressList,
     ],
   );
 
@@ -591,20 +597,10 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           />
         </FormControl>
         {claimableToggle && (
-          <FormControl isInvalid={showError && invalidClaimerAddress}>
-            <FormLabel>
-              Whitelisted claimers (if left empty, any player can claim)
-            </FormLabel>
-            <Input
-              onChange={e => setWhitelistedClaimers(e.target.value)}
-              value={whitelistedClaimers}
-            />
-            {showError && invalidClaimerAddress && (
-              <FormHelperText color="red">
-                Invalid claimer address
-              </FormHelperText>
-            )}
-          </FormControl>
+          <ClaimableAddressListInput
+            claimableAddressList={claimableAddressList}
+            setClaimableAddressList={setClaimableAddressList}
+          />
         )}
         <FormControl isInvalid={showError && !itemEmblem}>
           <FormLabel>Item Emblem</FormLabel>
