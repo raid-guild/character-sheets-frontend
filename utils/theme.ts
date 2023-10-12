@@ -110,17 +110,22 @@ const Heading = {
 };
 
 const Input = {
+
   variants: {
     outline: {
       field: {
-        background: 'white',
+        background: 'dark',
         border: '2px solid',
         borderColor: 'black',
         borderRadius: 0,
         fontSize: '12px',
 
         _hover: {
-          background: 'gray.100',
+          background: 'dark',
+          borderColor: 'black',
+        },
+        _active: {
+          background: 'dark',
           borderColor: 'black',
         },
       },
@@ -136,12 +141,15 @@ const Input = {
     },
   },
 };
-
 const Link = {
   defaultProps: {
     variant: 'paragraph',
   },
-  baseStyle: {},
+  baseStyle: {
+    _hover: {
+      color: 'accent'
+    }
+  },
   variants: {
     paragraph: {
       fontFamily: `'Unbounded', sans-serif`,
@@ -176,7 +184,6 @@ const Menu = {
     },
   },
 };
-
 const Modal = {
   defaultProps: {
     scrollBehavior: 'inside',
@@ -186,7 +193,7 @@ const Modal = {
       overflow: 'hidden',
     },
     dialog: {
-      background: 'white',
+      background: 'dark',
       border: '3px solid black',
       borderRadius: 0,
       maxH: { base: '100%', md: 'calc(100% - 7.5rem)' },
@@ -258,11 +265,15 @@ const Textarea = {
       border: '2px solid',
       borderColor: 'black',
       borderRadius: 0,
-      background: 'white',
+      background: 'dark',
       fontSize: '12px',
 
       _hover: {
-        background: 'gray.100',
+        background: 'dark',
+        borderColor: 'black',
+      },
+      _active: {
+        background: 'dark',
         borderColor: 'black',
       },
     },

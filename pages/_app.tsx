@@ -9,6 +9,11 @@ import Head from 'next/head';
 import { Provider } from 'urql';
 import { WagmiConfig } from 'wagmi';
 
+import '@fontsource/unbounded/200.css'
+import '@fontsource/unbounded/300.css'
+import '@fontsource/unbounded/400.css'
+import '@fontsource/unbounded/500.css'
+
 import { Layout } from '@/components/Layout';
 import { GamesProvider } from '@/contexts/GamesContext';
 import { client } from '@/graphql/client';
