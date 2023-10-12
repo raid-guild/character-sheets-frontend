@@ -1,4 +1,4 @@
-import { Flex, Text, VStack } from '@chakra-ui/react';
+import { Box, Flex, Text, VStack } from '@chakra-ui/react';
 import { useNetwork } from 'wagmi';
 
 import { GameCard } from '@/components/GameCard';
@@ -26,8 +26,9 @@ export default function AllGames(): JSX.Element {
   }
 
   return (
-    <VStack as="main" pt={14} pb={20} spacing={10}>
-      <Flex gap={10} justify="center" w="full" wrap="wrap">
+    <Box as="main" pb={20} pl="10vw" pt={24}>
+      {/* <Text opacity={0.5} mb={10}>ALL GAMES :</Text> */}
+      <Flex gap={20} justify="left" w="full" wrap="wrap">
         {allGames.map(game => (
           <GameCard
             key={game.id}
@@ -36,6 +37,6 @@ export default function AllGames(): JSX.Element {
           />
         ))}
       </Flex>
-    </VStack>
+    </Box>
   );
 }

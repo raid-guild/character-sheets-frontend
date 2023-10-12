@@ -127,38 +127,24 @@ function GamePage(): JSX.Element {
     const chainId = DEFAULT_CHAIN.id;
 
     return (
-      <VStack as="main" maxW="70vw" mb={20} mt={14} mx="auto">
-        <HStack
-          align="start"
-          justify="space-between"
-          py={12}
-          px={14}
-          spacing={16}
-          w="100%"
-        >
-          <VStack align="stretch">
-            <VStack align="start" justify="start" spacing={4} w="100%">
-              <Heading fontSize="4xl" variant="primary">
+      <VStack as="main" px={6} w="full">
+        <HStack align="start" py={16} px={20} w="100%">
+          <HStack flex="1">
+            <VStack align="start" justify="start" w="100%">
+              <Link
+                fontSize="sm"
+                fontWeight={300}
+                href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+                isExternal
+                mb={2}
+                textDecoration={'underline'}
+              >
+                {shortenAddress(id)}
+              </Link>
+              <Heading fontSize="40px" fontWeight="normal" lineHeight="40px">
                 {name}
               </Heading>
               <Text>{description}</Text>
-              <Link
-                alignItems="center"
-                color="blue"
-                display="flex"
-                fontSize="sm"
-                gap={2}
-                href={`${EXPLORER_URLS[chainId]}/address/${id}`}
-                isExternal
-              >
-                {shortenAddress(id)}
-                <Image
-                  alt="link to new tab"
-                  height="14px"
-                  src="/icons/new-tab.svg"
-                  width="14px"
-                />
-              </Link>
             </VStack>
             {isConnectedAndMounted && !character && (
               <Button onClick={joinGameModal.onOpen}>Join this Game</Button>
@@ -177,7 +163,7 @@ function GamePage(): JSX.Element {
                 </Flex>
               </Button>
             )}
-          </VStack>
+          </HStack>
           <Image
             alt="game emblem"
             background="gray.400"

@@ -42,7 +42,7 @@ export default function MyGames(): JSX.Element {
       <VStack as="main" pt={10} pb={20} spacing={10}>
         <Button onClick={createGameModal?.onOpen}>Create a Game</Button>
         {!myGames || myGames.length === 0 ? (
-          <VStack as="main" pt={10}>
+          <VStack pt={10}>
             <Text>No games found.</Text>
           </VStack>
         ) : (
