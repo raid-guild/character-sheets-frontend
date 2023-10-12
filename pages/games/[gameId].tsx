@@ -127,16 +127,11 @@ function GamePage(): JSX.Element {
     const chainId = DEFAULT_CHAIN.id;
 
     return (
-      <VStack as="main" w={"full"}  px={6}>
-        <HStack
-          align="start"
-          py={16}
-          px={20}
-          w="100%"
-        >
-          <HStack flex='1'>
+      <VStack as="main" w={'full'} px={6}>
+        <HStack align="start" py={16} px={20} w="100%">
+          <HStack flex="1">
             <VStack align="start" justify="start" w="100%">
-            <Link
+              <Link
                 fontSize="sm"
                 isExternal
                 fontWeight={300}
@@ -146,11 +141,7 @@ function GamePage(): JSX.Element {
               >
                 {shortenAddress(id)}
               </Link>
-            <Heading
-              fontSize="40px"
-              fontWeight="normal"
-              lineHeight="40px"
-            >
+              <Heading fontSize="40px" fontWeight="normal" lineHeight="40px">
                 {name}
               </Heading>
               <Text>{description}</Text>

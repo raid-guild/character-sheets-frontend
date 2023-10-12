@@ -1,12 +1,17 @@
-import { Box, Flex, Heading, Image, Link, Text, VStack } from '@chakra-ui/react';
+import {
+  Box,
+  Flex,
+  Heading,
+  Image,
+  Link,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
 import NextLink from 'next/link';
 
 import { EXPLORER_URLS } from '@/utils/constants';
-import { shortenAddress } from '@/utils/helpers';
+import { shortenAddress, shortenText } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
-import { shortenText } from '@/utils/helpers';
-import { start } from 'repl';
-
 type GameCardProps = GameMeta & {
   chainId: number;
 };
@@ -19,7 +24,7 @@ export const GameCard: React.FC<GameCardProps> = ({
   image,
   items,
   name,
-  description
+  description,
 }) => {
   return (
     <VStack
@@ -27,20 +32,17 @@ export const GameCard: React.FC<GameCardProps> = ({
       transition="background 0.3s ease"
       pb={5}
       w="450px"
-      align={"start"}
+      align={'start'}
     >
-        <VStack
-          mb={2}
-          transition="background 0.3s ease"
-          align={"start"}
+      <VStack mb={2} transition="background 0.3s ease" align={'start'}>
+        <Link
+          fontSize="sm"
+          href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+          isExternal
+          fontWeight={300}
+          mb={3}
+          textDecoration={'underline'}
         >
-          <Link
-            fontSize="sm"
-            href={`${EXPLORER_URLS[chainId]}/address/${id}`}
-            isExternal
-            fontWeight={300}
-            mb={3}
-            textDecoration={'underline'}>
           {shortenAddress(id)}
         </Link>
         <NextLink href={`/games/[gameId]`} as={`/games/${id}`}>
@@ -50,14 +52,16 @@ export const GameCard: React.FC<GameCardProps> = ({
             fontWeight="normal"
             lineHeight="40px"
             _hover={{
-                color: 'accent',
+              color: 'accent',
             }}
           >
             {name}
           </Heading>
-          </NextLink>
-        <Text mb={2} fontWeight={200} fontSize="xl">{shortenText(description, 60)}</Text>
-        </VStack>
+        </NextLink>
+        <Text mb={2} fontWeight={200} fontSize="xl">
+          {shortenText(description, 60)}
+        </Text>
+      </VStack>
 
       <Flex align="center" direction="row" py={1}>
         <Image alt="users" height="20px" src="/icons/users.svg" width="20px" />
