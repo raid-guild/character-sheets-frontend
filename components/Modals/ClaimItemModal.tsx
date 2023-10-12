@@ -90,16 +90,21 @@ export const ClaimItemModal: React.FC = () => {
     );
   }, [selectedItem, character]);
 
-  useEffect(() => {
-    if (!claimItemModal?.isOpen) {
-      resetData();
-    }
-  }, [resetData, claimItemModal?.isOpen]);
-
-  const { tree, loading: isLoadingTree } = useClaimableTree(
+  const {
+    tree,
+    loading: isLoadingTree,
+    reload: reloadTree,
+  } = useClaimableTree(
     (game?.id || zeroAddress) as `0x${string}`,
     BigInt(selectedItem?.itemId || '0'),
   );
+
+  useEffect(() => {
+    if (!claimItemModal?.isOpen) {
+      resetData();
+      reloadTree();
+    }
+  }, [resetData, claimItemModal?.isOpen, reloadTree]);
 
   const claimableLeaves: Array<ClaimableItemLeaf> = useMemo(() => {
     if (!tree) return [];
@@ -437,15 +442,19 @@ export const ClaimItemModal: React.FC = () => {
             )}
           </>
         )}
-        <Button
-          autoFocus
-          isDisabled={isDisabled}
-          isLoading={isLoading || isLoadingTree}
-          loadingText="Claiming..."
-          type="submit"
-        >
-          Claim
-        </Button>
+        {isLoadingTree ? (
+          <Text>Loading...</Text>
+        ) : (
+          <Button
+            autoFocus
+            isDisabled={isDisabled}
+            isLoading={isLoading}
+            loadingText="Claiming..."
+            type="submit"
+          >
+            Claim
+          </Button>
+        )}
       </VStack>
     );
   };
@@ -460,7 +469,7 @@ export const ClaimItemModal: React.FC = () => {
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Claim Item {selectedItem?.itemId}</Text>
+          <Text>Claim {selectedItem?.name ?? 'Item'}</Text>
           {isSynced && <Text>Success!</Text>}
           <ModalCloseButton size="lg" />
         </ModalHeader>

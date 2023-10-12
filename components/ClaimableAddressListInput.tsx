@@ -12,12 +12,15 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { getAddress, isAddress } from 'viem';
+import { getAddress } from 'viem';
 
 import { useGame } from '@/contexts/GameContext';
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress } from '@/utils/helpers';
+import { Character } from '@/utils/types';
+
+import { SelectCharacterInput } from './SelectCharacterInput';
 
 const getExplorerUrl = (address: string) => {
   return `${EXPLORER_URLS[DEFAULT_CHAIN.id]}/address/${address}`;
@@ -58,11 +61,19 @@ export const ClaimableAddressListInput: React.FC<Props> = ({
     [claimableAddressList, setClaimableAddressList],
   );
 
+  const charactersNotSelected = useMemo(() => {
+    const selectedAddresses = new Set(
+      claimableAddressList.map(c => c.address.toLowerCase()),
+    );
+    return characters.filter(c => !selectedAddresses.has(c.account));
+  }, [claimableAddressList, characters]);
+
   return (
     <VStack align="stretch" spacing={4} w="100%">
       <Text>Whitelisted claimers (if left empty, any player can claim)</Text>
       <ClaimableAddressInput
         setClaimableAddressList={setClaimableAddressList}
+        characters={charactersNotSelected}
       />
       <VStack spacing={2} w="100%">
         {Array(claimableAddressList.length)
@@ -152,16 +163,19 @@ type InputProps = {
   setClaimableAddressList: React.Dispatch<
     React.SetStateAction<Array<ClaimableAddress>>
   >;
+  characters: Character[];
 };
 
 const ClaimableAddressInput: React.FC<InputProps> = ({
   setClaimableAddressList,
+  characters,
 }) => {
-  const [address, setAddress] = useState<string>('');
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
+    null,
+  );
   const [amount, setAmount] = useState<string>('');
   const [showError, setShowError] = useState<boolean>(false);
 
-  const addressInvalid = useMemo(() => !isAddress(address), [address]);
   const amountInvalid = useMemo(
     () => !amount || Number.isNaN(Number(amount)),
     [amount],
@@ -169,22 +183,25 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
 
   useEffect(() => {
     setShowError(false);
-  }, [address, amount]);
+  }, [selectedCharacter, amount]);
 
   const onAddClaimableAddress = useCallback(() => {
-    if (addressInvalid || amountInvalid) {
+    if (!selectedCharacter || amountInvalid) {
       setShowError(true);
       return;
     }
 
     setClaimableAddressList(oldList => [
       ...oldList,
-      { address: getAddress(address), amount: BigInt(amount) },
+      {
+        address: getAddress(selectedCharacter.account),
+        amount: BigInt(amount),
+      },
     ]);
-    setAddress('');
+    setSelectedCharacter(null);
     setAmount('');
     setShowError(false);
-  }, [address, amount, addressInvalid, amountInvalid, setClaimableAddressList]);
+  }, [amount, selectedCharacter, amountInvalid, setClaimableAddressList]);
 
   return (
     <VStack spacing={4} w="100%" mb={4}>
@@ -199,12 +216,10 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
           gridGap={4}
           position="relative"
         >
-          <Input
-            value={address}
-            placeholder="Address"
-            isInvalid={addressInvalid && showError}
-            onChange={e => setAddress(e.target.value)}
-            maxLength={42}
+          <SelectCharacterInput
+            characters={characters}
+            selectedCharacter={selectedCharacter}
+            setSelectedCharacter={setSelectedCharacter}
           />
           <Input
             type="number"
@@ -218,11 +233,11 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
         </Grid>
         {showError && (
           <FormHelperText color="red.500">
-            {addressInvalid &&
+            {!selectedCharacter &&
               amountInvalid &&
-              'Address and amount are invalid'}
-            {addressInvalid && !amountInvalid && 'Address is invalid'}
-            {!addressInvalid && amountInvalid && 'Amount is invalid'}
+              'Character and amount are invalid'}
+            {!selectedCharacter && !amountInvalid && 'Character is invalid'}
+            {selectedCharacter && amountInvalid && 'Amount is invalid'}
           </FormHelperText>
         )}
       </FormControl>

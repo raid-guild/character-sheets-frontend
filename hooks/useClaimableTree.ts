@@ -11,19 +11,22 @@ const fetcher = async ([
   _gameAddress,
   _itemId,
 ]: FetcherInput): Promise<StandardMerkleTree<ClaimableItemLeaf> | null> => {
-  const uri = `/api/getTree?gameAddress=${_gameAddress}&itemId=${_itemId.toString()}`;
+  try {
+    const uri = `/api/getTree?gameAddress=${_gameAddress}&itemId=${_itemId.toString()}`;
 
-  const data = await fetch(uri);
+    const data = await fetch(uri);
+    const { tree } = await data.json();
 
-  const { tree } = await data.json();
+    if (!tree) {
+      return null;
+    }
 
-  if (!tree) {
+    const merkleTree = StandardMerkleTree.load(JSON.parse(tree));
+
+    return merkleTree as StandardMerkleTree<ClaimableItemLeaf>;
+  } catch (e) {
     return null;
   }
-
-  const merkleTree = StandardMerkleTree.load(JSON.parse(tree));
-
-  return merkleTree as StandardMerkleTree<ClaimableItemLeaf>;
 };
 
 export const useClaimableTree = (
@@ -49,7 +52,7 @@ export const useClaimableTree = (
   });
 
   return {
-    loading: isLoading || isValidating,
+    loading: isLoading || isValidating || data === undefined,
     tree: data || null,
     error: error || null,
     reload: mutate,
