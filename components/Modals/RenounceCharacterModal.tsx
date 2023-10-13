@@ -143,8 +143,8 @@ export const RenounceCharacterModal: React.FC = () => {
     return (
       <VStack as="form" onSubmit={onRenounceCharacter} spacing={8}>
         <Text textAlign="center">
-          Are you sure you want to renounce your character? This action is
-          irreversible.
+          Are you sure you want to renounce your character? You will still be
+          able to restore your character in the future.
         </Text>
         <Button
           autoFocus

@@ -218,8 +218,11 @@ function GamePage(): JSX.Element {
           {!isConnectedAndMounted && (
             <Text align="center">Connect wallet to play this game.</Text>
           )}
-          {isConnectedAndMounted && character && (
+          {isConnectedAndMounted && character && !character.removed && (
             <CharacterCard chainId={chainId} character={character} />
+          )}
+          {isConnectedAndMounted && character && character.removed && (
+            <Text align="center">Your character has been removed.</Text>
           )}
         </VStack>
 
