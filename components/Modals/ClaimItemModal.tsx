@@ -23,14 +23,14 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
-// import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { parseAbi } from 'viem';
+import { getAddress, pad, parseAbi, zeroAddress } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
+import { ClaimableItemLeaf, useClaimableTree } from '@/hooks/useClaimableTree';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { executeAsCharacter } from '@/utils/account';
 
@@ -90,21 +90,73 @@ export const ClaimItemModal: React.FC = () => {
     );
   }, [selectedItem, character]);
 
+  const {
+    tree,
+    loading: isLoadingTree,
+    reload: reloadTree,
+  } = useClaimableTree(
+    (game?.id || zeroAddress) as `0x${string}`,
+    BigInt(selectedItem?.itemId || '0'),
+  );
+
   useEffect(() => {
     if (!claimItemModal?.isOpen) {
       resetData();
+    } else {
+      reloadTree();
     }
-  }, [resetData, claimItemModal?.isOpen]);
+  }, [resetData, claimItemModal?.isOpen, reloadTree]);
+
+  const claimableLeaves: Array<ClaimableItemLeaf> = useMemo(() => {
+    if (!tree) return [];
+    return tree.dump().values.map(leaf => {
+      const [itemId, claimer, amount] = leaf.value;
+      return [BigInt(itemId), getAddress(claimer), BigInt(amount)];
+    });
+  }, [tree]);
+
+  const claimableAmount: bigint = useMemo(() => {
+    if (!character) return BigInt(0);
+    if (!selectedItem) return BigInt(0);
+    if (!tree) return BigInt(0);
+    if (tree.root.toLowerCase() !== selectedItem.merkleRoot.toLowerCase())
+      return BigInt(0);
+    if (!claimableLeaves.length) return BigInt(0);
+    const claimableLeaf = claimableLeaves.find(
+      leaf =>
+        leaf[1] === getAddress(character.account) &&
+        leaf[0] === BigInt(selectedItem.itemId),
+    );
+    if (!claimableLeaf) return BigInt(0);
+    return claimableLeaf[2];
+  }, [character, selectedItem, tree, claimableLeaves]);
+
+  const isClaimableByPublic = useMemo(() => {
+    if (!selectedItem) return false;
+    if (selectedItem.merkleRoot === pad('0x00')) return true;
+    return false;
+  }, [selectedItem]);
+
+  const isClaimableByMerkleProof = useMemo(() => {
+    if (!selectedItem) return false;
+    if (selectedItem.merkleRoot === pad('0x00')) return false;
+    return claimableAmount > BigInt(0);
+  }, [selectedItem, claimableAmount]);
 
   const onClaimItem = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
       if (noSupply) {
+        toast({
+          description: 'This item has zero supply.',
+          position: 'top',
+          status: 'warning',
+        });
         return;
       }
 
-      if (hasError) {
+      if (hasError && isClaimableByPublic) {
         setShowError(true);
         return;
       }
@@ -162,16 +214,39 @@ export const ClaimItemModal: React.FC = () => {
       setIsClaiming(true);
 
       try {
-        // const values = [
-        //   [BigInt(selectedItem.itemId), character.player, BigInt(amount)],
-        // ];
-        // const tree = StandardMerkleTree.of(values, [
-        //   'uint256',
-        //   'address',
-        //   'uint256',
-        // ]);
+        if (!isClaimableByPublic && !tree) {
+          toast({
+            description: `Something went wrong while claiming ${selectedItem.name}.`,
+            position: 'top',
+            status: 'error',
+          });
+          console.error('Could not find the claimable tree.');
+          return;
+        }
 
-        // const proof = tree.getProof(values[0]);
+        const itemId = BigInt(selectedItem.itemId);
+
+        let proof: string[] = [];
+        let claimingAmount = BigInt(amount);
+
+        if (isClaimableByMerkleProof && tree && claimableAmount > BigInt(0)) {
+          const leaf: ClaimableItemLeaf = [
+            itemId,
+            getAddress(character.account),
+            BigInt(claimableAmount),
+          ];
+
+          proof = tree.getProof(leaf);
+          claimingAmount = claimableAmount;
+        } else if (!isClaimableByPublic) {
+          toast({
+            description: `Something went wrong while claiming ${selectedItem.name}.`,
+            position: 'top',
+            status: 'error',
+          });
+          console.error('Not claimable by public or merkle proof.');
+          return;
+        }
 
         const transactionhash = await executeAsCharacter(
           character,
@@ -184,7 +259,7 @@ export const ClaimItemModal: React.FC = () => {
               'function claimItems(uint256[] calldata itemIds, uint256[] calldata amounts, bytes32[][] calldata proofs) external',
             ]),
             functionName: 'claimItems',
-            args: [[BigInt(selectedItem.itemId)], [BigInt(amount)], [[]]],
+            args: [[itemId], [claimingAmount], [proof]],
           },
         );
         setTxHash(transactionhash);
@@ -231,6 +306,10 @@ export const ClaimItemModal: React.FC = () => {
       reloadGame,
       toast,
       walletClient,
+      tree,
+      isClaimableByPublic,
+      claimableAmount,
+      isClaimableByMerkleProof,
     ],
   );
 
@@ -328,33 +407,55 @@ export const ClaimItemModal: React.FC = () => {
             </AccordionPanel>
           </AccordionItem>
         </Accordion>
-        {noSupply ? (
-          <Text color="red.500">This item has zero supply.</Text>
-        ) : (
-          <FormControl isInvalid={showError}>
-            <FormLabel>Amount</FormLabel>
-            <Input
-              onChange={e => setAmount(e.target.value)}
-              type="number"
-              value={amount}
-            />
-            {showError && (
-              <FormHelperText color="red">
-                Please enter a valid amount. Item supply is{' '}
-                {selectedItem?.supply.toString()}.
-              </FormHelperText>
+        {!isLoadingTree && (
+          <>
+            {noSupply ? (
+              <Text color="red.500">This item has zero supply.</Text>
+            ) : isClaimableByPublic ? (
+              <FormControl isInvalid={showError}>
+                <FormLabel>Amount</FormLabel>
+                <Input
+                  onChange={e => setAmount(e.target.value)}
+                  type="number"
+                  value={amount}
+                />
+                {showError && (
+                  <FormHelperText color="red">
+                    Please enter a valid amount. Item supply is{' '}
+                    {selectedItem?.supply.toString()}.
+                  </FormHelperText>
+                )}
+              </FormControl>
+            ) : (
+              <FormControl isInvalid={!isClaimableByMerkleProof}>
+                <FormLabel>Amount</FormLabel>
+                <Input
+                  isDisabled
+                  type="number"
+                  value={claimableAmount.toString()}
+                />
+                {claimableAmount === BigInt(0) && (
+                  <FormHelperText color="red">
+                    You cannot claim this item.
+                  </FormHelperText>
+                )}
+              </FormControl>
             )}
-          </FormControl>
+          </>
         )}
-        <Button
-          autoFocus
-          isDisabled={isDisabled}
-          isLoading={isLoading}
-          loadingText="Claiming..."
-          type="submit"
-        >
-          Claim
-        </Button>
+        {isLoadingTree ? (
+          <Text>Loading...</Text>
+        ) : (
+          <Button
+            autoFocus
+            isDisabled={isDisabled}
+            isLoading={isLoading}
+            loadingText="Claiming..."
+            type="submit"
+          >
+            Claim
+          </Button>
+        )}
       </VStack>
     );
   };
@@ -369,7 +470,7 @@ export const ClaimItemModal: React.FC = () => {
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Claim Item</Text>
+          <Text>Claim {selectedItem?.name ?? 'Item'}</Text>
           {isSynced && <Text>Success!</Text>}
           <ModalCloseButton size="lg" />
         </ModalHeader>

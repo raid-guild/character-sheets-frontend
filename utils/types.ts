@@ -71,4 +71,5 @@ export type Item = Metadata & {
   requirements: ItemRequirement[];
   holders: { id: string }[];
   equippers: { id: string }[];
+  merkleRoot: string;
 };
