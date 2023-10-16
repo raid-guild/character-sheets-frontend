@@ -9,6 +9,7 @@ export type GameMeta = Metadata & {
   uri: string;
   owners: string[];
   masters: string[];
+  players: string[];
   characters: { id: string }[];
   classes: { id: string }[];
   items: { id: string }[];
@@ -70,4 +71,5 @@ export type Item = Metadata & {
   requirements: ItemRequirement[];
   holders: { id: string }[];
   equippers: { id: string }[];
+  merkleRoot: string;
 };

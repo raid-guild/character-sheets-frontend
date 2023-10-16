@@ -17,7 +17,7 @@ import { Layout } from '@/components/Layout';
 import { GamesProvider } from '@/contexts/GamesContext';
 import { client } from '@/graphql/client';
 import { useGraphHealth } from '@/hooks/useGraphHealth';
-import { chains, wagmiConfig } from '@/lib/web3';
+import { DEFAULT_CHAIN, wagmiConfig } from '@/lib/web3';
 import { globalStyles, theme } from '@/utils/theme';
 
 const TITLE = 'CharacterSheets';
@@ -62,7 +62,7 @@ export default function App({
         <Global styles={globalStyles} />
         <Provider value={client}>
           <WagmiConfig config={wagmiConfig}>
-            <RainbowKitProvider chains={chains} theme={darkTheme()}>
+            <RainbowKitProvider chains={[DEFAULT_CHAIN]} theme={darkTheme()}>
               <Analytics />
               <GamesProvider>
                 <Layout>

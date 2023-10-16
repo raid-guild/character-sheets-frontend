@@ -56,6 +56,7 @@ fragment ItemInfo on Item {
   soulbound
   supply
   totalSupply
+  merkleRoot
   requirements {
     ...ItemRequirementInfo
   }
@@ -75,6 +76,7 @@ fragment GameMetaInfo on Game {
   experience
   characters {
     id
+    player
   }
   classes {
     id

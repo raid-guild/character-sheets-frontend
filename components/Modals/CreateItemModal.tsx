@@ -20,9 +20,11 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
+import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   encodeAbiParameters,
+  getAddress,
   isAddress,
   maxUint256,
   pad,
@@ -32,8 +34,14 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
+import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useUploadFile } from '@/hooks/useUploadFile';
+
+import {
+  ClaimableAddress,
+  ClaimableAddressListInput,
+} from '../ClaimableAddressListInput';
 
 type CreateItemModalProps = {
   isOpen: boolean;
@@ -66,8 +74,11 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     useState<boolean>(false);
   const [classRequirements, setClassRequirements] = useState<string[]>([]);
   const [soulboundToggle, setSoulboundToggle] = useState<boolean>(false);
-  // const [claimableToggle, setClaimableToggle] = useState<boolean>(false);
-  const [whitelistedClaimers, setWhitelistedClaimers] = useState<string>('');
+  const [claimableToggle, setClaimableToggle] = useState<boolean>(false);
+
+  const [claimableAddressList, setClaimableAddressList] = useState<
+    ClaimableAddress[]
+  >([]);
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -88,14 +99,21 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     );
   }, [itemSupply]);
 
-  const invalidClaimerAddress = useMemo(() => {
-    const addresses = whitelistedClaimers.split(',');
-    const trimmedAddresses = addresses.map(address => address.trim());
-    return (
-      trimmedAddresses.some(address => !isAddress(address)) &&
-      !!whitelistedClaimers
+  const invalidClaimableAddressList = useMemo(() => {
+    const totalAmount = claimableAddressList.reduce(
+      (acc, { amount }) => acc + BigInt(amount),
+      BigInt(0),
     );
-  }, [whitelistedClaimers]);
+
+    if (totalAmount > BigInt(itemSupply)) return true;
+    return claimableAddressList.some(
+      ({ address, amount }) =>
+        !isAddress(address) ||
+        BigInt(amount) <= BigInt(0) ||
+        BigInt(amount) > maxUint256 ||
+        BigInt(amount).toString() === 'NaN',
+    );
+  }, [claimableAddressList, itemSupply]);
 
   const hasError = useMemo(() => {
     return (
@@ -105,13 +123,13 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       invalidItemDescription ||
       !itemSupply ||
       invalidItemSupply ||
-      invalidClaimerAddress
+      invalidClaimableAddressList
     );
   }, [
     itemDescription,
     itemEmblem,
     itemName,
-    invalidClaimerAddress,
+    invalidClaimableAddressList,
     invalidItemDescription,
     itemSupply,
     invalidItemSupply,
@@ -124,8 +142,8 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     setClassRequirementsToggle(false);
     setClassRequirements([]);
     setSoulboundToggle(false);
-    // setClaimableToggle(false);
-    setWhitelistedClaimers('');
+    setClaimableToggle(false);
+    setClaimableAddressList([]);
     setItemEmblem(null);
 
     setShowError(false);
@@ -218,18 +236,63 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           return;
         }
 
-        const claimable = pad('0x00');
+        let claimable = pad('0x01');
 
-        //TODO: the claimable addresses still need added to requirements
+        if (claimableToggle) {
+          if (claimableAddressList.length === 0) {
+            claimable = pad('0x00');
+          } else {
+            const leaves: ClaimableItemLeaf[] = claimableAddressList.map(
+              ({ address, amount }) => {
+                return [
+                  BigInt(game.items.length),
+                  getAddress(address),
+                  BigInt(amount),
+                ];
+              },
+            );
 
-        // if (claimableToggle) {
-        //   const addresses = whitelistedClaimers.split(',');
-        //   const trimmedAddresses = addresses.map(address => address.trim());
+            const tree = StandardMerkleTree.of(leaves, [
+              'uint256',
+              'address',
+              'uint256',
+            ]);
+            claimable = tree.root as `0x${string}`;
 
-        //   if (trimmedAddresses.length === 0) {
-        //     claimable = pad('0x01');
-        //   }
-        // }
+            const jsonTree = JSON.stringify(tree.dump());
+            const data = {
+              itemId: game.items.length,
+              gameAddress: game.id,
+              tree: jsonTree,
+            };
+
+            const signature = await walletClient.signMessage({
+              message: '/api/setTree',
+              account: walletClient.account?.address as Address,
+            });
+
+            const res = await fetch('/api/setTree', {
+              headers: {
+                'x-account-address': walletClient.account?.address as Address,
+                'x-account-signature': signature,
+              },
+              method: 'POST',
+              body: JSON.stringify(data),
+            });
+
+            if (!res.ok) {
+              console.error(
+                'Something went wrong uploading your claimable tree.',
+              );
+              toast({
+                description: 'Something went wrong while creating item.',
+                position: 'top',
+                status: 'error',
+              });
+              return;
+            }
+          }
+        }
 
         const requiredClassIds = classRequirements.map(cr => BigInt(cr));
         const requiredClassCategories = requiredClassIds.map(() => 2);
@@ -347,6 +410,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       }
     },
     [
+      claimableToggle,
       classRequirements,
       itemName,
       itemDescription,
@@ -359,6 +423,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       soulboundToggle,
       toast,
       walletClient,
+      claimableAddressList,
     ],
   );
 
@@ -519,29 +584,31 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
             onChange={e => setSoulboundToggle(e.target.checked)}
           />
         </FormControl>
-        {/* <FormControl isInvalid={showError && !itemSupply}>
-          <FormLabel>Restrict to specific players?</FormLabel>
+        <FormControl isInvalid={showError && !itemSupply}>
+          <Flex align="center">
+            <FormLabel>Allow players to claim?</FormLabel>
+            <Tooltip label="If you don't allow players to claim, then items can only be given by the GameMaster.">
+              <Image
+                alt="down arrow"
+                height="14px"
+                mb={2}
+                src="/icons/question-mark.svg"
+                width="14px"
+              />
+            </Tooltip>
+          </Flex>
           <Switch
             isChecked={claimableToggle}
             onChange={e => setClaimableToggle(e.target.checked)}
           />
         </FormControl>
         {claimableToggle && (
-          <FormControl isInvalid={showError && invalidClaimerAddress}>
-            <FormLabel>
-              Whitelisted claimers (if left empty, any player can claim)
-            </FormLabel>
-            <Input
-              onChange={e => setWhitelistedClaimers(e.target.value)}
-              value={whitelistedClaimers}
-            />
-            {showError && invalidClaimerAddress && (
-              <FormHelperText color="red">
-                Invalid claimer address
-              </FormHelperText>
-            )}
-          </FormControl>
-        )} */}
+          <ClaimableAddressListInput
+            claimableAddressList={claimableAddressList}
+            itemSupply={itemSupply}
+            setClaimableAddressList={setClaimableAddressList}
+          />
+        )}
         <FormControl isInvalid={showError && !itemEmblem}>
           <FormLabel>Item Emblem</FormLabel>
           {!itemEmblem && (
