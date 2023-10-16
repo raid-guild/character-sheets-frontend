@@ -31,28 +31,40 @@ export default async function uploadTraits(
   try {
     [, files] = await form.parse(req);
 
+    const formFile0 = files?.layer0 as [FormFile] | undefined;
     const formFile1 = files?.layer1 as [FormFile] | undefined;
     const formFile2 = files?.layer2 as [FormFile] | undefined;
     const formFile3 = files?.layer3 as [FormFile] | undefined;
     const formFile4 = files?.layer4 as [FormFile] | undefined;
     const formFile5 = files?.layer5 as [FormFile] | undefined;
 
-    if (!(formFile1 && formFile2 && formFile3 && formFile4 && formFile5)) {
+    if (
+      !(
+        formFile0 &&
+        formFile1 &&
+        formFile2 &&
+        formFile3 &&
+        formFile4 &&
+        formFile5
+      )
+    ) {
       return res.status(400).json({ error: 'Missing layers' });
     }
 
+    const image0 = await Jimp.read(formFile0[0]._writeStream.path);
     const image1 = await Jimp.read(formFile1[0]._writeStream.path);
     const image2 = await Jimp.read(formFile2[0]._writeStream.path);
     const image3 = await Jimp.read(formFile3[0]._writeStream.path);
     const image4 = await Jimp.read(formFile4[0]._writeStream.path);
     const image5 = await Jimp.read(formFile5[0]._writeStream.path);
 
-    image1.composite(image2, 0, 0);
-    image1.composite(image3, 0, 0);
-    image1.composite(image4, 0, 0);
-    image1.composite(image5, 0, 0);
+    image0.composite(image1, 0, 0);
+    image0.composite(image2, 0, 0);
+    image0.composite(image3, 0, 0);
+    image0.composite(image4, 0, 0);
+    image0.composite(image5, 0, 0);
 
-    const fileContents = await image1.getBufferAsync(Jimp.MIME_PNG);
+    const fileContents = await image0.getBufferAsync(Jimp.MIME_PNG);
 
     const file = new File([fileContents], 'characterAvater.png');
 

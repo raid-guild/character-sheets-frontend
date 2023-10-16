@@ -103,6 +103,10 @@ export const TRAITS = [
   '6_Lipstick_e',
 ];
 
+export const BACKGROUND_TRAITS = Object.values(TRAITS).filter(
+  trait => trait.split('_')[0] === '0',
+);
+
 export const BODY_TRAITS = Object.values(TRAITS).filter(
   trait => trait.split('_')[0] === '1',
 );
