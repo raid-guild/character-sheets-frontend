@@ -33,11 +33,9 @@ import {
   BODY_TRAITS,
   CLOTHING_TRAITS,
   EYES_TRAITS,
-  formatFileName,
   getImageUrl,
   HAIR_TRAITS,
   MOUTH_TRAITS,
-  TRAITS,
   TraitType,
 } from './traits';
 
@@ -71,11 +69,11 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const [showUpload, setShowUpload] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<TraitType>(TraitType.BODY);
   const [traits, setTraits] = useState<string[]>([
-    '1_Basic_a',
-    '2_Basic_a',
+    '1_Type1_a',
+    '2_Type1_a',
     '3_Bald_a',
-    '4_Villager1_a',
-    '5_Basic_a',
+    '5_Villager1_a',
+    '6_Basic_a',
   ]);
   const [isMerging, setIsMerging] = useState<boolean>(false);
 
@@ -110,11 +108,11 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
     setShowUpload(false);
     setActiveTab(TraitType.BODY);
     setTraits([
-      '1_Basic_a',
-      '2_Basic_a',
+      '1_Type1_a',
+      '2_Type1_a',
       '3_Bald_a',
-      '4_Villager1_a',
-      '5_Basic_a',
+      '5_Villager1_a',
+      '6_Basic_a',
     ]);
 
     setCharacterName('');
@@ -139,11 +137,11 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
     try {
       setIsMerging(true);
       const [blob1, blob2, blob3, blob4, blob5] = await Promise.all([
-        fetch(getImageUrl(TRAITS[traits[0]])).then(r => r.blob()),
-        fetch(getImageUrl(TRAITS[traits[1]])).then(r => r.blob()),
-        fetch(getImageUrl(TRAITS[traits[2]])).then(r => r.blob()),
-        fetch(getImageUrl(TRAITS[traits[3]])).then(r => r.blob()),
-        fetch(getImageUrl(TRAITS[traits[4]])).then(r => r.blob()),
+        fetch(getImageUrl(traits[0])).then(r => r.blob()),
+        fetch(getImageUrl(traits[1])).then(r => r.blob()),
+        fetch(getImageUrl(traits[2])).then(r => r.blob()),
+        fetch(getImageUrl(traits[3])).then(r => r.blob()),
+        fetch(getImageUrl(traits[4])).then(r => r.blob()),
       ]);
 
       const formData = new FormData();
@@ -557,7 +555,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
                         left={0}
                         objectFit="cover"
                         pos="absolute"
-                        src={getImageUrl(TRAITS[trait])}
+                        src={getImageUrl(trait)}
                         top={0}
                         w="100%"
                       />
@@ -692,9 +690,7 @@ const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
 
   const onPreviousVariant = useCallback(() => {
     const nameIndex = traits.findIndex(t => t === selectedTrait);
-    const fullTraitIndex = activeTraits.findIndex(
-      t => formatFileName(t) === selectedTrait,
-    );
+    const fullTraitIndex = activeTraits.findIndex(t => t === selectedTrait);
     const previous = activeTraits[fullTraitIndex - 1];
 
     if (!previous) {
@@ -702,15 +698,13 @@ const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
     }
 
     const newTraits = [...traits];
-    newTraits[nameIndex] = formatFileName(previous);
+    newTraits[nameIndex] = previous;
     setTraits(newTraits);
   }, [activeTraits, selectedTrait, setTraits, traits]);
 
   const onNextVariant = useCallback(() => {
     const nameIndex = traits.findIndex(t => t === selectedTrait);
-    const fullTraitIndex = activeTraits.findIndex(
-      t => formatFileName(t) === selectedTrait,
-    );
+    const fullTraitIndex = activeTraits.findIndex(t => t === selectedTrait);
     const next = activeTraits[fullTraitIndex + 1];
 
     if (!next) {
@@ -718,21 +712,17 @@ const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
     }
 
     const newTraits = [...traits];
-    newTraits[nameIndex] = formatFileName(next);
+    newTraits[nameIndex] = next;
     setTraits(newTraits);
   }, [activeTraits, selectedTrait, setTraits, traits]);
 
   const disablePrevious = useMemo(() => {
-    const fullTraitIndex = activeTraits.findIndex(
-      t => formatFileName(t) === selectedTrait,
-    );
+    const fullTraitIndex = activeTraits.findIndex(t => t === selectedTrait);
     return fullTraitIndex === 0;
   }, [activeTraits, selectedTrait]);
 
   const disableNext = useMemo(() => {
-    const fullTraitIndex = activeTraits.findIndex(
-      t => formatFileName(t) === selectedTrait,
-    );
+    const fullTraitIndex = activeTraits.findIndex(t => t === selectedTrait);
     return fullTraitIndex === activeTraits.length - 1;
   }, [activeTraits, selectedTrait]);
 
