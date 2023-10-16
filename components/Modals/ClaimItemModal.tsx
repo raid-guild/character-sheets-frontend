@@ -102,6 +102,7 @@ export const ClaimItemModal: React.FC = () => {
   useEffect(() => {
     if (!claimItemModal?.isOpen) {
       resetData();
+    } else {
       reloadTree();
     }
   }, [resetData, claimItemModal?.isOpen, reloadTree]);

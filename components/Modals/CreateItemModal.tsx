@@ -100,6 +100,12 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   }, [itemSupply]);
 
   const invalidClaimableAddressList = useMemo(() => {
+    const totalAmount = claimableAddressList.reduce(
+      (acc, { amount }) => acc + BigInt(amount),
+      BigInt(0),
+    );
+
+    if (totalAmount > BigInt(itemSupply)) return true;
     return claimableAddressList.some(
       ({ address, amount }) =>
         !isAddress(address) ||
@@ -107,7 +113,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         BigInt(amount) > maxUint256 ||
         BigInt(amount).toString() === 'NaN',
     );
-  }, [claimableAddressList]);
+  }, [claimableAddressList, itemSupply]);
 
   const hasError = useMemo(() => {
     return (
@@ -230,11 +236,11 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           return;
         }
 
-        let claimable = pad('0x00');
+        let claimable = pad('0x01');
 
         if (claimableToggle) {
           if (claimableAddressList.length === 0) {
-            claimable = pad('0x01');
+            claimable = pad('0x00');
           } else {
             const leaves: ClaimableItemLeaf[] = claimableAddressList.map(
               ({ address, amount }) => {
@@ -599,6 +605,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         {claimableToggle && (
           <ClaimableAddressListInput
             claimableAddressList={claimableAddressList}
+            itemSupply={itemSupply}
             setClaimableAddressList={setClaimableAddressList}
           />
         )}
