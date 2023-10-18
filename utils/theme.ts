@@ -165,6 +165,7 @@ const Menu = {
       background: 'white',
       border: '3px solid black',
       borderRadius: 0,
+      color: 'black',
     },
     item: {
       background: 'white',

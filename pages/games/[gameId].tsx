@@ -212,7 +212,13 @@ function GamePage(): JSX.Element {
           )}
         </VStack>
 
-        <Tabs borderColor="white" colorScheme="white" mt={10} px={14} w="full">
+        <Tabs
+          borderColor="transparent"
+          colorScheme="white"
+          mt={10}
+          px={14}
+          w="full"
+        >
           <TabList>
             <Tab gap={2}>
               <Image
