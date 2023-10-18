@@ -17,6 +17,7 @@
     "@chakra-ui/react": "^2.8.1",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@fontsource/unbounded": "^5.0.15",
     "@openzeppelin/merkle-tree": "^1.0.5",
     "@rainbow-me/rainbowkit": "^1.1.1",
     "@types/node": "20.8.4",

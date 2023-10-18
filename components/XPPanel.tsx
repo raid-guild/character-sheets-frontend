@@ -43,14 +43,10 @@ export const XPPanel: React.FC = () => {
           <Thead>
             <Tr>
               <Th>
-                <Text color="black" variant="secondary">
-                  Character
-                </Text>
+                <Text color="white">Character</Text>
               </Th>
               <Th>
-                <Text color="black" variant="secondary">
-                  XP
-                </Text>
+                <Text color="white">XP</Text>
               </Th>
             </Tr>
           </Thead>

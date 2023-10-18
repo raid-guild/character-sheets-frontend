@@ -73,14 +73,7 @@ const ClassTagInner: React.FC<{
   );
 
   return (
-    <HStack
-      px={px}
-      py={py}
-      spacing={spacing}
-      w="100%"
-      color="black"
-      border="2px solid black"
-    >
+    <HStack border="2px solid white" px={px} py={py} spacing={spacing} w="100%">
       <Image
         alt="class emblem"
         h={imageHeight}
