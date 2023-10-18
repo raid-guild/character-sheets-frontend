@@ -12,6 +12,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  Switch,
   Text,
   Textarea,
   VStack,
@@ -52,6 +53,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
 
   const [className, setClassName] = useState<string>('');
   const [classDescription, setClassDescription] = useState<string>('');
+  const [isClaimable, setIsClaimable] = useState<boolean>(false);
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -73,6 +75,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   const resetData = useCallback(() => {
     setClassName('');
     setClassDescription('');
+    setIsClaimable(false);
     setClassEmblem(null);
 
     setShowError(false);
@@ -141,7 +144,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
               type: 'string',
             },
           ],
-          [false, classMetadataCid],
+          [isClaimable, classMetadataCid],
         );
 
         const transactionhash = await walletClient.writeContract({
@@ -181,13 +184,14 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
       }
     },
     [
-      game,
       classDescription,
-      reloadGame,
       className,
+      game,
       hasError,
+      isClaimable,
       onUpload,
       publicClient,
+      reloadGame,
       renderError,
       walletClient,
     ],
@@ -260,6 +264,13 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
               Class description must be less than 200 characters
             </FormHelperText>
           )}
+        </FormControl>
+        <FormControl>
+          <FormLabel>Allow any character to claim this class?</FormLabel>
+          <Switch
+            isChecked={isClaimable}
+            onChange={e => setIsClaimable(e.target.checked)}
+          />
         </FormControl>
         <FormControl isInvalid={showError && !classEmblem}>
           <FormLabel>Class Emblem</FormLabel>
