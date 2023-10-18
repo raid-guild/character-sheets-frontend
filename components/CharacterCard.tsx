@@ -98,7 +98,7 @@ export const CharacterCard: React.FC<{
               px={1}
               fontSize="xs"
             >
-              <Text>{experience} XP</Text>
+              <Text color="black">{experience} XP</Text>
             </HStack>
           </Box>
           <VStack align="stretch" w="120px">
@@ -172,6 +172,7 @@ export const SmallCharacterCard: React.FC<{
     id,
     account,
     classes,
+    characterId,
     description,
     equippedItems: items,
     experience,
@@ -224,7 +225,7 @@ export const SmallCharacterCard: React.FC<{
               px={1}
               fontSize="2xs"
             >
-              <Text>{experience} XP</Text>
+              <Text color="black">{experience} XP</Text>
             </HStack>
           </Box>
           <VStack align="stretch" w="100px">
@@ -278,7 +279,7 @@ export const SmallCharacterCard: React.FC<{
           <Wrap>
             {items.map(item => (
               <WrapItem key={item.itemId}>
-                <ItemTag item={item} size="sm" />
+                <ItemTag holderId={characterId} item={item} size="sm" />
               </WrapItem>
             ))}
           </Wrap>
