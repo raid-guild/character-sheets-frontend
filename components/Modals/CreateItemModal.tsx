@@ -248,12 +248,9 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               console.error(
                 'Something went wrong uploading your claimable tree.',
               );
-              toast({
-                description: 'Something went wrong while creating item.',
-                position: 'top',
-                status: 'error',
-              });
-              return;
+              throw new Error(
+                'Something went wrong uploading your claimable tree',
+              );
             }
           }
         }
