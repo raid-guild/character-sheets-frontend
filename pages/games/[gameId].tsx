@@ -26,6 +26,7 @@ import { ClassesPanel } from '@/components/ClassesPanel';
 import { ItemsPanel } from '@/components/ItemsPanel';
 import { AddItemRequirementModal } from '@/components/Modals/AddItemRequirementModal';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
+import { ClaimClassModal } from '@/components/Modals/ClaimClassModal';
 import { ClaimItemModal } from '@/components/Modals/ClaimItemModal';
 import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
@@ -81,6 +82,7 @@ function GamePage(): JSX.Element {
   const { game, character, isMaster, loading } = useGame();
   const {
     assignClassModal,
+    claimClassModal,
     editCharacterModal,
     equipItemModal,
     giveExpModal,
@@ -300,19 +302,19 @@ function GamePage(): JSX.Element {
       <UpdateGameMetadataModal {...updateGameMetadata} />
       <RestoreCharacterModal {...restoreCharacterModal} />
 
+      {addRequirementModal && <AddItemRequirementModal />}
       {assignClassModal && <AssignClassModal />}
+      {claimClassModal && <ClaimClassModal />}
+      {claimItemModal && <ClaimItemModal />}
       {editCharacterModal && <UpdateCharacterMetadataModal />}
       {equipItemModal && <EquipItemModal />}
       {giveExpModal && <DropExperienceModal />}
       {giveItemsModal && <GiveItemsModal />}
       {jailPlayerModal && <JailPlayerModal />}
       {removeCharacterModal && <RemoveCharacterModal />}
+      {removeRequirementModal && <RemoveItemRequirementModal />}
       {renounceCharacterModal && <RenounceCharacterModal />}
       {revokeClassModal && <RevokeClassModal />}
-
-      {claimItemModal && <ClaimItemModal />}
-      {addRequirementModal && <AddItemRequirementModal />}
-      {removeRequirementModal && <RemoveItemRequirementModal />}
     </>
   );
 }

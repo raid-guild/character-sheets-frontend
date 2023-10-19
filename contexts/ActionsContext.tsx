@@ -12,6 +12,7 @@ import { useGame } from '@/contexts/GameContext';
 import { Character, Item } from '@/utils/types';
 
 export enum PlayerActions {
+  CLAIM_CLASS = 'Claim class',
   EDIT_CHARACTER = 'Edit character',
   EQUIP_ITEM = 'Equip/Unequip item',
   RENOUNCE_CHARACTER = 'Renounce character',
@@ -40,6 +41,7 @@ type ActionsContextType = {
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
   assignClassModal: ReturnType<typeof useDisclosure> | undefined;
+  claimClassModal: ReturnType<typeof useDisclosure> | undefined;
   editCharacterModal: ReturnType<typeof useDisclosure> | undefined;
   equipItemModal: ReturnType<typeof useDisclosure> | undefined;
   giveExpModal: ReturnType<typeof useDisclosure> | undefined;
@@ -62,6 +64,7 @@ const ActionsContext = createContext<ActionsContextType>({
 
   openActionModal: () => {},
   assignClassModal: undefined,
+  claimClassModal: undefined,
   editCharacterModal: undefined,
   equipItemModal: undefined,
   giveExpModal: undefined,
@@ -81,6 +84,7 @@ export const ActionsProvider: React.FC<{
   const { game, isMaster } = useGame();
 
   const assignClassModal = useDisclosure();
+  const claimClassModal = useDisclosure();
   const editCharacterModal = useDisclosure();
   const equipItemModal = useDisclosure();
   const giveExpModal = useDisclosure();
@@ -107,8 +111,12 @@ export const ActionsProvider: React.FC<{
     if (selectedCharacter?.classes.length === 0) {
       actions = actions.filter(a => a !== PlayerActions.REVOKE_CLASS);
     }
+
+    if (game?.classes.filter(c => c.claimable).length === 0) {
+      actions = actions.filter(a => a !== PlayerActions.CLAIM_CLASS);
+    }
     return actions;
-  }, [address, selectedCharacter]);
+  }, [address, game, selectedCharacter]);
 
   const gmActions = useMemo(() => {
     if (isMaster) {
@@ -164,6 +172,9 @@ export const ActionsProvider: React.FC<{
         case GameMasterActions.REMOVE_CHARACTER:
           removeCharacterModal.onOpen();
           break;
+        case PlayerActions.CLAIM_CLASS:
+          claimClassModal.onOpen();
+          break;
         case PlayerActions.EDIT_CHARACTER:
           editCharacterModal.onOpen();
           break;
@@ -182,6 +193,7 @@ export const ActionsProvider: React.FC<{
     },
     [
       assignClassModal,
+      claimClassModal,
       editCharacterModal,
       equipItemModal,
       giveExpModal,
@@ -207,6 +219,7 @@ export const ActionsProvider: React.FC<{
 
         openActionModal,
         assignClassModal,
+        claimClassModal,
         editCharacterModal,
         equipItemModal,
         giveExpModal,

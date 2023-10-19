@@ -49,7 +49,7 @@ export type Class = Metadata & {
   id: string;
   classId: string;
   uri: string;
-  name: string;
+  claimable: boolean;
   holders: { id: string }[];
 };
 
@@ -63,7 +63,6 @@ export type ItemRequirement = {
 export type Item = Metadata & {
   id: string;
   itemId: string;
-  name: string;
   uri: string;
   soulbound: boolean;
   supply: bigint;

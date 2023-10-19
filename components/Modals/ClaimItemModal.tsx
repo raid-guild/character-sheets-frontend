@@ -40,7 +40,7 @@ export const ClaimItemModal: React.FC = () => {
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const { renderError } = useToast();
+  const { renderError, renderWarning } = useToast();
 
   const [openDetails, setOpenDetails] = useState(-1); // -1 = closed, 0 = open
   const [amount, setAmount] = useState<string>('');
@@ -150,11 +150,7 @@ export const ClaimItemModal: React.FC = () => {
       e.preventDefault();
 
       if (noSupply) {
-        toast({
-          description: 'This item has zero supply.',
-          position: 'top',
-          status: 'warning',
-        });
+        renderWarning('This item has zero supply.');
         return;
       }
 
@@ -188,13 +184,10 @@ export const ClaimItemModal: React.FC = () => {
 
       try {
         if (!isClaimableByPublic && !tree) {
-          toast({
-            description: `Something went wrong while claiming ${selectedItem.name}.`,
-            position: 'top',
-            status: 'error',
-          });
           console.error('Could not find the claimable tree.');
-          return;
+          throw new Error(
+            `Something went wrong while claiming ${selectedItem.name}.`,
+          );
         }
 
         const itemId = BigInt(selectedItem.itemId);
@@ -212,13 +205,10 @@ export const ClaimItemModal: React.FC = () => {
           proof = tree.getProof(leaf);
           claimingAmount = claimableAmount;
         } else if (!isClaimableByPublic) {
-          toast({
-            description: `Something went wrong while claiming ${selectedItem.name}.`,
-            position: 'top',
-            status: 'error',
-          });
           console.error('Not claimable by public or merkle proof.');
-          return;
+          throw new Error(
+            `Something went wrong while claiming ${selectedItem.name}.`,
+          );
         }
 
         const transactionhash = await executeAsCharacter(
@@ -274,6 +264,7 @@ export const ClaimItemModal: React.FC = () => {
       selectedItem,
       reloadGame,
       renderError,
+      renderWarning,
       walletClient,
       tree,
       isClaimableByPublic,

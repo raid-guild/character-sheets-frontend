@@ -37,6 +37,7 @@ fragment ClassInfo on Class {
   id
   classId
   uri
+  claimable
   holders {
     id
   }

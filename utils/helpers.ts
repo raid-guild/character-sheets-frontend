@@ -141,6 +141,7 @@ export const formatClass = async (
     name: metadata.name,
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
+    claimable: classEntity.claimable,
     classId: classEntity.classId,
     holders: classEntity.holders,
   };
