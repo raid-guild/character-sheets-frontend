@@ -30,16 +30,17 @@ import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
 import {
+  BACKGROUND_TRAITS,
   BODY_TRAITS,
   CLOTHING_TRAITS,
   EYES_TRAITS,
-  formatFileName,
   getImageUrl,
   HAIR_TRAITS,
   MOUTH_TRAITS,
-  TRAITS,
   TraitType,
 } from './traits';
+
+type Traits = [string, string, string, string, string, string];
 
 type JoinGameModalProps = {
   isOpen: boolean;
@@ -69,13 +70,14 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const [characterDescription, setCharacterDescription] = useState<string>('');
 
   const [showUpload, setShowUpload] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<TraitType>(TraitType.BODY);
-  const [traits, setTraits] = useState<string[]>([
-    '1_Basic_a',
-    '2_Basic_a',
+  const [activeTab, setActiveTab] = useState<TraitType>(TraitType.BACKGROUND);
+  const [traits, setTraits] = useState<Traits>([
+    '0_Clouds_a',
+    '1_Type1_a',
+    '2_Type1_a',
     '3_Bald_a',
-    '4_Villager1_a',
-    '5_Basic_a',
+    '5_Villager1_a',
+    '6_Basic_a',
   ]);
   const [isMerging, setIsMerging] = useState<boolean>(false);
 
@@ -108,13 +110,14 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const resetData = useCallback(() => {
     setStep(0);
     setShowUpload(false);
-    setActiveTab(TraitType.BODY);
+    setActiveTab(TraitType.BACKGROUND);
     setTraits([
-      '1_Basic_a',
-      '2_Basic_a',
+      '0_Clouds_a',
+      '1_Type1_a',
+      '2_Type1_a',
       '3_Bald_a',
-      '4_Villager1_a',
-      '5_Basic_a',
+      '5_Villager1_a',
+      '6_Basic_a',
     ]);
 
     setCharacterName('');
@@ -138,15 +141,17 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const mergeTraitImages = useCallback(async (): Promise<string> => {
     try {
       setIsMerging(true);
-      const [blob1, blob2, blob3, blob4, blob5] = await Promise.all([
-        fetch(getImageUrl(TRAITS[traits[0]])).then(r => r.blob()),
-        fetch(getImageUrl(TRAITS[traits[1]])).then(r => r.blob()),
-        fetch(getImageUrl(TRAITS[traits[2]])).then(r => r.blob()),
-        fetch(getImageUrl(TRAITS[traits[3]])).then(r => r.blob()),
-        fetch(getImageUrl(TRAITS[traits[4]])).then(r => r.blob()),
+      const [blob0, blob1, blob2, blob3, blob4, blob5] = await Promise.all([
+        fetch(getImageUrl(traits[0])).then(r => r.blob()),
+        fetch(getImageUrl(traits[1])).then(r => r.blob()),
+        fetch(getImageUrl(traits[2])).then(r => r.blob()),
+        fetch(getImageUrl(traits[3])).then(r => r.blob()),
+        fetch(getImageUrl(traits[4])).then(r => r.blob()),
+        fetch(getImageUrl(traits[5])).then(r => r.blob()),
       ]);
 
       const formData = new FormData();
+      formData.append('layer0', blob0);
       formData.append('layer1', blob1);
       formData.append('layer2', blob2);
       formData.append('layer3', blob3);
@@ -212,6 +217,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
         const attributes = traits.map((trait, i) => {
           const [, variant, color] = trait.split('_');
           const traitTypes = [
+            TraitType.BACKGROUND,
             TraitType.BODY,
             TraitType.EYES,
             TraitType.HAIR,
@@ -223,10 +229,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
             value: `${variant.toUpperCase()} ${color.toUpperCase()}`,
           };
         });
-        // TODO: For now, we are removing the clothing trait from metadata
-        characterMetadata['attributes'] = attributes.filter(
-          a => a.trait_type !== TraitType.CLOTHING,
-        );
+        characterMetadata['attributes'] = attributes;
       }
 
       setIsCreating(true);
@@ -315,6 +318,9 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
 
     if (step === 1) {
       switch (activeTab) {
+        case TraitType.BACKGROUND:
+          setActiveTab(TraitType.BODY);
+          break;
         case TraitType.BODY:
           setActiveTab(TraitType.EYES);
           break;
@@ -478,12 +484,24 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
             )}
             {!showUpload && (
               <>
-                <SimpleGrid columns={5} spacing={0.5} w="100%">
+                <SimpleGrid columns={6} spacing={0.5} w="100%">
+                  <Button
+                    border="3px solid black"
+                    onClick={() => setActiveTab(TraitType.BACKGROUND)}
+                    p={4}
+                    size="xs"
+                    variant={
+                      activeTab === TraitType.BACKGROUND ? 'solid' : 'outline'
+                    }
+                    w="100%"
+                  >
+                    <Text>Background</Text>
+                  </Button>
                   <Button
                     border="3px solid black"
                     onClick={() => setActiveTab(TraitType.BODY)}
                     p={4}
-                    size="sm"
+                    size="xs"
                     variant={activeTab === TraitType.BODY ? 'solid' : 'outline'}
                     w="100%"
                   >
@@ -493,7 +511,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
                     border="3px solid black"
                     onClick={() => setActiveTab(TraitType.EYES)}
                     p={4}
-                    size="sm"
+                    size="xs"
                     variant={activeTab === TraitType.EYES ? 'solid' : 'outline'}
                     w="100%"
                   >
@@ -503,7 +521,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
                     border="3px solid black"
                     onClick={() => setActiveTab(TraitType.HAIR)}
                     p={4}
-                    size="sm"
+                    size="xs"
                     variant={activeTab === TraitType.HAIR ? 'solid' : 'outline'}
                     w="100%"
                   >
@@ -513,7 +531,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
                     border="3px solid black"
                     onClick={() => setActiveTab(TraitType.CLOTHING)}
                     p={4}
-                    size="sm"
+                    size="xs"
                     variant={
                       activeTab === TraitType.CLOTHING ? 'solid' : 'outline'
                     }
@@ -525,7 +543,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
                     border="3px solid black"
                     onClick={() => setActiveTab(TraitType.MOUTH)}
                     p={4}
-                    size="sm"
+                    size="xs"
                     variant={
                       activeTab === TraitType.MOUTH ? 'solid' : 'outline'
                     }
@@ -557,7 +575,7 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
                         left={0}
                         objectFit="cover"
                         pos="absolute"
-                        src={getImageUrl(TRAITS[trait])}
+                        src={getImageUrl(trait)}
                         top={0}
                         w="100%"
                       />
@@ -645,8 +663,8 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
 
 type TraitVariantControlsProps = {
   activeTab: TraitType;
-  setTraits: (traits: string[]) => void;
-  traits: string[];
+  setTraits: (traits: Traits) => void;
+  traits: Traits;
 };
 
 const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
@@ -656,16 +674,18 @@ const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
 }) => {
   const selectedTrait = useMemo(() => {
     switch (activeTab) {
-      case TraitType.BODY:
+      case TraitType.BACKGROUND:
         return traits[0];
-      case TraitType.EYES:
+      case TraitType.BODY:
         return traits[1];
-      case TraitType.HAIR:
+      case TraitType.EYES:
         return traits[2];
-      case TraitType.CLOTHING:
+      case TraitType.HAIR:
         return traits[3];
-      case TraitType.MOUTH:
+      case TraitType.CLOTHING:
         return traits[4];
+      case TraitType.MOUTH:
+        return traits[5];
       default:
         return traits[0];
     }
@@ -673,6 +693,8 @@ const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
 
   const activeTraits = useMemo(() => {
     switch (activeTab) {
+      case TraitType.BACKGROUND:
+        return BACKGROUND_TRAITS;
       case TraitType.BODY:
         return BODY_TRAITS;
       case TraitType.EYES:
@@ -692,47 +714,39 @@ const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
 
   const onPreviousVariant = useCallback(() => {
     const nameIndex = traits.findIndex(t => t === selectedTrait);
-    const fullTraitIndex = activeTraits.findIndex(
-      t => formatFileName(t) === selectedTrait,
-    );
+    const fullTraitIndex = activeTraits.findIndex(t => t === selectedTrait);
     const previous = activeTraits[fullTraitIndex - 1];
 
     if (!previous) {
       return;
     }
 
-    const newTraits = [...traits];
-    newTraits[nameIndex] = formatFileName(previous);
+    const newTraits = [...traits] as Traits;
+    newTraits[nameIndex] = previous;
     setTraits(newTraits);
   }, [activeTraits, selectedTrait, setTraits, traits]);
 
   const onNextVariant = useCallback(() => {
     const nameIndex = traits.findIndex(t => t === selectedTrait);
-    const fullTraitIndex = activeTraits.findIndex(
-      t => formatFileName(t) === selectedTrait,
-    );
+    const fullTraitIndex = activeTraits.findIndex(t => t === selectedTrait);
     const next = activeTraits[fullTraitIndex + 1];
 
     if (!next) {
       return;
     }
 
-    const newTraits = [...traits];
-    newTraits[nameIndex] = formatFileName(next);
+    const newTraits = [...traits] as Traits;
+    newTraits[nameIndex] = next;
     setTraits(newTraits);
   }, [activeTraits, selectedTrait, setTraits, traits]);
 
   const disablePrevious = useMemo(() => {
-    const fullTraitIndex = activeTraits.findIndex(
-      t => formatFileName(t) === selectedTrait,
-    );
+    const fullTraitIndex = activeTraits.findIndex(t => t === selectedTrait);
     return fullTraitIndex === 0;
   }, [activeTraits, selectedTrait]);
 
   const disableNext = useMemo(() => {
-    const fullTraitIndex = activeTraits.findIndex(
-      t => formatFileName(t) === selectedTrait,
-    );
+    const fullTraitIndex = activeTraits.findIndex(t => t === selectedTrait);
     return fullTraitIndex === activeTraits.length - 1;
   }, [activeTraits, selectedTrait]);
 
