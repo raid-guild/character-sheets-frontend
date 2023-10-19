@@ -20,7 +20,6 @@ import {
   ModalOverlay,
   Text,
   UnorderedList,
-  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -32,6 +31,7 @@ import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
 import { ClaimableItemLeaf, useClaimableTree } from '@/hooks/useClaimableTree';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { useToast } from '@/hooks/useToast';
 import { executeAsCharacter } from '@/utils/account';
 
 export const ClaimItemModal: React.FC = () => {
@@ -40,7 +40,7 @@ export const ClaimItemModal: React.FC = () => {
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const toast = useToast();
+  const { renderError } = useToast();
 
   const [openDetails, setOpenDetails] = useState(-1); // -1 = closed, 0 = open
   const [amount, setAmount] = useState<string>('');
@@ -48,6 +48,7 @@ export const ClaimItemModal: React.FC = () => {
   const [showError, setShowError] = useState<boolean>(false);
   const [isClaiming, setIsClaiming] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
@@ -65,6 +66,7 @@ export const ClaimItemModal: React.FC = () => {
     setAmount('');
     setIsClaiming(false);
     setTxHash(null);
+    setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
   }, []);
@@ -163,52 +165,23 @@ export const ClaimItemModal: React.FC = () => {
 
       if (insufficientClasses) {
         setOpenDetails(0);
-        toast({
-          description: 'You do not have the required classes.',
-          position: 'top',
-          status: 'warning',
-        });
-        return;
+        throw new Error('You do not have the required classes');
       }
 
       if (!walletClient) {
-        toast({
-          description: 'Wallet client is not connected.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Could not find a wallet client.');
-        return;
+        throw new Error('Could not find a wallet client');
       }
 
       if (!game?.itemsAddress) {
-        toast({
-          description: `Could not find the game.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(`Missing game data.`);
-        return;
+        throw new Error('Missing game data');
       }
 
       if (!character) {
-        toast({
-          description: 'Character address not found.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Character address not found.');
-        return;
+        throw new Error('Character address not found');
       }
 
       if (!selectedItem) {
-        toast({
-          description: 'Item not found.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Item not found.');
-        return;
+        throw new Error('Item not found');
       }
 
       setIsClaiming(true);
@@ -265,30 +238,26 @@ export const ClaimItemModal: React.FC = () => {
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
-        const receipt = await client.waitForTransactionReceipt({
+        const { blockNumber, status } = await client.waitForTransactionReceipt({
           hash: transactionhash,
         });
 
+        if (status === 'reverted') {
+          setTxFailed(true);
+          setIsClaiming(false);
+          throw new Error('Transaction failed');
+        }
+
         setIsSyncing(true);
-        const synced = await waitUntilBlock(receipt.blockNumber);
+        const synced = await waitUntilBlock(blockNumber);
 
         if (!synced) {
-          toast({
-            description: 'Something went wrong while syncing.',
-            position: 'top',
-            status: 'warning',
-          });
-          return;
+          throw new Error('Something went wrong while syncing.');
         }
         setIsSynced(true);
         reloadGame();
       } catch (e) {
-        toast({
-          description: `Something went wrong while claiming ${selectedItem.name}.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(e);
+        renderError(e, 'An error occurred while claiming');
       } finally {
         setIsSyncing(false);
         setIsClaiming(false);
@@ -304,7 +273,7 @@ export const ClaimItemModal: React.FC = () => {
       publicClient,
       selectedItem,
       reloadGame,
-      toast,
+      renderError,
       walletClient,
       tree,
       isClaimableByPublic,
@@ -317,6 +286,17 @@ export const ClaimItemModal: React.FC = () => {
   const isDisabled = isLoading;
 
   const content = () => {
+    if (txFailed) {
+      return (
+        <VStack py={10} spacing={4}>
+          <Text>Transaction failed.</Text>
+          <Button onClick={claimItemModal?.onClose} variant="outline">
+            Close
+          </Button>
+        </VStack>
+      );
+    }
+
     if (isSynced && selectedItem) {
       return (
         <VStack py={10} spacing={4}>

@@ -17,7 +17,6 @@ import {
   Text,
   Textarea,
   Tooltip,
-  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
@@ -36,6 +35,7 @@ import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
 import {
@@ -54,7 +54,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
 }) => {
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const toast = useToast();
+  const { renderError } = useToast();
 
   const { game, reload: reloadGame } = useGame();
 
@@ -83,6 +83,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
@@ -169,38 +170,15 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         return;
       }
 
-      if (!walletClient) {
-        toast({
-          description: 'Wallet client is not connected.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Could not find a wallet client.');
-        return;
-      }
-
-      if (!(game && game.itemsAddress)) {
-        toast({
-          description: `Could not find an item factory for the ${walletClient.chain.name} network.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(
-          `Missing item factory address for the ${walletClient.chain.name} network"`,
+      if (!walletClient) throw new Error('Wallet client is not connected');
+      if (!(game && game.itemsAddress))
+        throw new Error(
+          `Missing item factory address for the ${walletClient.chain.name} network`,
         );
-        return;
-      }
 
       const cid = await onUpload();
-
-      if (!cid) {
-        toast({
-          description: 'Something went wrong uploading your item emblem.',
-          position: 'top',
-          status: 'error',
-        });
-        return;
-      }
+      if (!cid)
+        throw new Error('Something went wrong uploading your item emblem');
 
       const itemMetadata = {
         name: itemName,
@@ -215,26 +193,12 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           method: 'POST',
           body: JSON.stringify(itemMetadata),
         });
-
-        if (!res.ok) {
-          toast({
-            description: 'Something went wrong uploading your item metadata.',
-            position: 'top',
-            status: 'error',
-          });
-          return;
-        }
+        if (!res.ok)
+          throw new Error('Something went wrong uploading your item metadata');
 
         const { cid: itemMetadataCid } = await res.json();
-
-        if (!itemMetadataCid) {
-          toast({
-            description: 'Something went wrong uploading your item metadata.',
-            position: 'top',
-            status: 'error',
-          });
-          return;
-        }
+        if (!itemMetadataCid)
+          throw new Error('Something went wrong uploading your item metadata');
 
         let claimable = pad('0x01');
 
@@ -380,30 +344,24 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
-        const receipt = await client.waitForTransactionReceipt({
+        const { blockNumber, status } = await client.waitForTransactionReceipt({
           hash: transactionhash,
         });
 
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(receipt.blockNumber);
-
-        if (!synced) {
-          toast({
-            description: 'Something went wrong while syncing.',
-            position: 'top',
-            status: 'warning',
-          });
-          return;
+        if (status === 'reverted') {
+          setTxFailed(true);
+          setIsCreating(false);
+          throw new Error('Transaction failed');
         }
+
+        setIsSyncing(true);
+        const synced = await waitUntilBlock(blockNumber);
+        if (!synced) throw new Error('Something went wrong while syncing');
+
         setIsSynced(true);
         reloadGame();
       } catch (e) {
-        toast({
-          description: 'Something went wrong creating your item.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error(e);
+        renderError(e, 'Something went wrong creating your item');
       } finally {
         setIsSyncing(false);
         setIsCreating(false);
@@ -420,8 +378,8 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       hasError,
       onUpload,
       publicClient,
+      renderError,
       soulboundToggle,
-      toast,
       walletClient,
       claimableAddressList,
     ],
@@ -431,6 +389,17 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   const isDisabled = isLoading || isUploading;
 
   const content = () => {
+    if (txFailed) {
+      return (
+        <VStack py={10} spacing={4}>
+          <Text>Transaction failed.</Text>
+          <Button onClick={onClose} variant="outline">
+            Close
+          </Button>
+        </VStack>
+      );
+    }
+
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>

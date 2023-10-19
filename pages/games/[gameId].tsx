@@ -24,13 +24,16 @@ import { CharacterCard } from '@/components/CharacterCard';
 import { CharactersPanel } from '@/components/CharactersPanel';
 import { ClassesPanel } from '@/components/ClassesPanel';
 import { ItemsPanel } from '@/components/ItemsPanel';
+import { AddItemRequirementModal } from '@/components/Modals/AddItemRequirementModal';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
+import { ClaimItemModal } from '@/components/Modals/ClaimItemModal';
 import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
 import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
 import { JoinGameModal } from '@/components/Modals/JoinGameModal';
 import { RemoveCharacterModal } from '@/components/Modals/RemoveCharacterModal';
+import { RemoveItemRequirementModal } from '@/components/Modals/RemoveItemRequirementModal';
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
 import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
@@ -38,6 +41,10 @@ import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataM
 import { XPPanel } from '@/components/XPPanel';
 import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
 import { GameProvider, useGame } from '@/contexts/GameContext';
+import {
+  ItemActionsProvider,
+  useItemActions,
+} from '@/contexts/ItemActionsContext';
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress } from '@/utils/helpers';
@@ -61,7 +68,9 @@ export default function GamePageOuter(): JSX.Element {
   return (
     <GameProvider gameId={gameId}>
       <ActionsProvider>
-        <GamePage />
+        <ItemActionsProvider>
+          <GamePage />
+        </ItemActionsProvider>
       </ActionsProvider>
     </GameProvider>
   );
@@ -80,6 +89,8 @@ function GamePage(): JSX.Element {
     renounceCharacterModal,
     revokeClassModal,
   } = useActions();
+  const { addRequirementModal, claimItemModal, removeRequirementModal } =
+    useItemActions();
   const { isConnected } = useAccount();
 
   const joinGameModal = useDisclosure();
@@ -287,6 +298,10 @@ function GamePage(): JSX.Element {
       {removeCharacterModal && <RemoveCharacterModal />}
       {renounceCharacterModal && <RenounceCharacterModal />}
       {revokeClassModal && <RevokeClassModal />}
+
+      {claimItemModal && <ClaimItemModal />}
+      {addRequirementModal && <AddItemRequirementModal />}
+      {removeRequirementModal && <RemoveItemRequirementModal />}
     </>
   );
 }

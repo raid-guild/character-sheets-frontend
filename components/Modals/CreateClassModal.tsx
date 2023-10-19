@@ -14,7 +14,6 @@ import {
   ModalOverlay,
   Text,
   Textarea,
-  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -24,6 +23,7 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
 type CreateClassModalProps = {
@@ -37,7 +37,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
 }) => {
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const toast = useToast();
+  const { renderError } = useToast();
 
   const { game, reload: reloadGame } = useGame();
 
@@ -56,6 +56,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
@@ -78,6 +79,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
 
     setIsCreating(false);
     setTxHash(null);
+    setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
   }, [setClassEmblem]);
@@ -97,38 +99,16 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         return;
       }
 
-      if (!walletClient) {
-        toast({
-          description: 'Wallet client is not connected.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Could not find a wallet client.');
-        return;
-      }
+      if (!walletClient) throw new Error('Could not find a wallet client');
 
-      if (!game?.classesAddress) {
-        toast({
-          description: `Could not find a class factory for the ${walletClient.chain.name} network.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(
-          `Missing class factory address for the ${walletClient.chain.name} network"`,
+      if (!game?.classesAddress)
+        throw new Error(
+          `Missing class factory address for the ${walletClient.chain.name} network`,
         );
-        return;
-      }
 
       const cid = await onUpload();
-
-      if (!cid) {
-        toast({
-          description: 'Something went wrong uploading your class emblem.',
-          position: 'top',
-          status: 'error',
-        });
-        return;
-      }
+      if (!cid)
+        throw new Error('Something went wrong uploading your class emblem');
 
       const classMetadata = {
         name: className,
@@ -143,26 +123,12 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
           method: 'POST',
           body: JSON.stringify(classMetadata),
         });
-
-        if (!res.ok) {
-          toast({
-            description: 'Something went wrong uploading your class metadata.',
-            position: 'top',
-            status: 'error',
-          });
-          return;
-        }
+        if (!res.ok)
+          throw new Error('Something went wrong uploading your class metadata');
 
         const { cid: classMetadataCid } = await res.json();
-
-        if (!classMetadataCid) {
-          toast({
-            description: 'Something went wrong uploading your class metadata.',
-            position: 'top',
-            status: 'error',
-          });
-          return;
-        }
+        if (!classMetadataCid)
+          throw new Error('Something went wrong uploading your class metadata');
 
         const encodedClassCreationData = encodeAbiParameters(
           [
@@ -191,30 +157,24 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
-        const receipt = await client.waitForTransactionReceipt({
+        const { blockNumber, status } = await client.waitForTransactionReceipt({
           hash: transactionhash,
         });
 
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(receipt.blockNumber);
-
-        if (!synced) {
-          toast({
-            description: 'Something went wrong while syncing.',
-            position: 'top',
-            status: 'warning',
-          });
-          return;
+        if (status === 'reverted') {
+          setTxFailed(true);
+          setIsCreating(false);
+          throw new Error('Transaction failed');
         }
+
+        setIsSyncing(true);
+        const synced = await waitUntilBlock(blockNumber);
+        if (!synced) throw new Error('Something went wrong while syncing');
+
         setIsSynced(true);
         reloadGame();
       } catch (e) {
-        toast({
-          description: 'Something went wrong creating your class.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error(e);
+        renderError(e, 'Something went wrong creating your class');
       } finally {
         setIsSyncing(false);
         setIsCreating(false);
@@ -228,7 +188,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
       hasError,
       onUpload,
       publicClient,
-      toast,
+      renderError,
       walletClient,
     ],
   );
@@ -237,6 +197,17 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   const isDisabled = isLoading || isUploading;
 
   const content = () => {
+    if (txFailed) {
+      return (
+        <VStack py={10} spacing={4}>
+          <Text>Transaction failed.</Text>
+          <Button onClick={onClose} variant="outline">
+            Close
+          </Button>
+        </VStack>
+      );
+    }
+
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>

@@ -14,7 +14,6 @@ import {
   ModalOverlay,
   Text,
   useRadioGroup,
-  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -26,6 +25,7 @@ import { TransactionPending } from '@/components/TransactionPending';
 import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { useToast } from '@/hooks/useToast';
 
 export const GiveItemsModal: React.FC = () => {
   const { game, reload: reloadGame, isMaster } = useGame();
@@ -33,7 +33,7 @@ export const GiveItemsModal: React.FC = () => {
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const toast = useToast();
+  const { renderError } = useToast();
 
   const [itemId, setItemId] = useState<string>('0');
   const [amount, setAmount] = useState<string>('');
@@ -41,6 +41,7 @@ export const GiveItemsModal: React.FC = () => {
   const [showError, setShowError] = useState<boolean>(false);
   const [isGiving, setIsGiving] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
@@ -84,6 +85,7 @@ export const GiveItemsModal: React.FC = () => {
     setItemId('0');
     setIsGiving(false);
     setTxHash(null);
+    setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
   }, [setValue]);
@@ -107,55 +109,11 @@ export const GiveItemsModal: React.FC = () => {
         return;
       }
 
-      if (!walletClient) {
-        toast({
-          description: 'Wallet client is not connected.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Could not find a wallet client.');
-        return;
-      }
-
-      if (!selectedCharacter) {
-        toast({
-          description: 'Character address not found.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Character address not found.');
-        return;
-      }
-
-      if (!game?.itemsAddress) {
-        toast({
-          description: `Could not find the game.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(`Missing game data.`);
-        return;
-      }
-
-      if (game?.items.length === 0) {
-        toast({
-          description: `No items found.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(`No items found.`);
-        return;
-      }
-
-      if (!isMaster) {
-        toast({
-          description: `Not the game master.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(`Not the game master.`);
-        return;
-      }
+      if (!walletClient) throw new Error('Wallet client is not connected');
+      if (!selectedCharacter) throw new Error('Character address not found');
+      if (!game?.itemsAddress) throw new Error('Missing game data');
+      if (game?.items.length === 0) throw new Error('No items found');
+      if (!isMaster) throw new Error('Not the game master');
 
       setIsGiving(true);
 
@@ -177,30 +135,27 @@ export const GiveItemsModal: React.FC = () => {
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
-        const receipt = await client.waitForTransactionReceipt({
+        const { blockNumber, status } = await client.waitForTransactionReceipt({
           hash: transactionhash,
         });
 
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(receipt.blockNumber);
-
-        if (!synced) {
-          toast({
-            description: 'Something went wrong while syncing.',
-            position: 'top',
-            status: 'warning',
-          });
-          return;
+        if (status === 'reverted') {
+          setTxFailed(true);
+          setIsGiving(false);
+          throw new Error('Transaction failed');
         }
+
+        setIsSyncing(true);
+        const synced = await waitUntilBlock(blockNumber);
+        if (!synced) throw new Error('Something went wrong while syncing');
+
         setIsSynced(true);
         reloadGame();
       } catch (e) {
-        toast({
-          description: `Something went wrong giving item(s) to ${selectedCharacter.name}.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(e);
+        renderError(
+          e,
+          `Something went wrong giving item(s) to ${selectedCharacter.name}`,
+        );
       } finally {
         setIsSyncing(false);
         setIsGiving(false);
@@ -215,8 +170,8 @@ export const GiveItemsModal: React.FC = () => {
       publicClient,
       game,
       reloadGame,
+      renderError,
       selectedCharacter,
-      toast,
       walletClient,
     ],
   );
@@ -225,6 +180,17 @@ export const GiveItemsModal: React.FC = () => {
   const isDisabled = isLoading || invalidItem;
 
   const content = () => {
+    if (txFailed) {
+      return (
+        <VStack py={10} spacing={4}>
+          <Text>Transaction failed.</Text>
+          <Button onClick={giveItemsModal?.onClose} variant="outline">
+            Close
+          </Button>
+        </VStack>
+      );
+    }
+
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>

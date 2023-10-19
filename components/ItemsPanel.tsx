@@ -9,59 +9,35 @@ import { PropsWithChildren } from 'react';
 import { useChainId } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
-import {
-  ItemActionsProvider,
-  useItemActions,
-} from '@/contexts/ItemActionsContext';
 
 import { SmallItemCard } from './ItemCard';
-import { AddItemRequirementModal } from './Modals/AddItemRequirementModal';
-import { ClaimItemModal } from './Modals/ClaimItemModal';
 import { CreateItemModal } from './Modals/CreateItemModal';
-import { RemoveItemRequirementModal } from './Modals/RemoveItemRequirementModal';
 
 export const ItemsPanel: React.FC<PropsWithChildren> = () => {
   const createItemModal = useDisclosure();
-
-  const { isMaster } = useGame();
-
-  return (
-    <ItemActionsProvider>
-      <VStack pt={10} pb={20} spacing={10} w="100%">
-        {isMaster && (
-          <Button onClick={createItemModal.onOpen}>Create an Item</Button>
-        )}
-        <ItemsPanelInner />
-        <CreateItemModal {...createItemModal} />
-      </VStack>
-    </ItemActionsProvider>
-  );
-};
-
-const ItemsPanelInner: React.FC = () => {
-  const { game } = useGame();
+  const { game, isMaster } = useGame();
   const chainId = useChainId();
-  const { addRequirementModal, claimItemModal, removeRequirementModal } =
-    useItemActions();
-
-  if (!game || game.items.length === 0) {
-    return (
-      <VStack>
-        <Text align="center">No items found.</Text>
-      </VStack>
-    );
-  }
 
   return (
-    <>
-      <SimpleGrid columns={2} spacing={4} w="100%">
-        {game.items.map(c => (
-          <SmallItemCard key={c.id} {...c} chainId={chainId} />
-        ))}
-      </SimpleGrid>
-      {claimItemModal && <ClaimItemModal />}
-      {addRequirementModal && <AddItemRequirementModal />}
-      {removeRequirementModal && <RemoveItemRequirementModal />}
-    </>
+    <VStack pt={10} pb={20} spacing={10} w="100%">
+      {isMaster && (
+        <Button onClick={createItemModal.onOpen}>Create an Item</Button>
+      )}
+      {(!game || game.items.length === 0) && (
+        <VStack>
+          <Text align="center">No items found.</Text>
+        </VStack>
+      )}
+      {game && game.items.length > 0 && (
+        <>
+          <SimpleGrid columns={2} spacing={4} w="100%">
+            {game.items.map(c => (
+              <SmallItemCard key={c.id} {...c} chainId={chainId} />
+            ))}
+          </SimpleGrid>
+        </>
+      )}
+      <CreateItemModal {...createItemModal} />
+    </VStack>
   );
 };

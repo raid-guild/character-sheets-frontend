@@ -15,7 +15,6 @@ import {
   Text,
   Textarea,
   Tooltip,
-  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -26,6 +25,7 @@ import { TransactionPending } from '@/components/TransactionPending';
 import { useGamesContext } from '@/contexts/GamesContext';
 import { useGlobal } from '@/hooks/useGlobal';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { DEFAULT_DAO_ADDRESSES } from '@/utils/constants';
@@ -39,7 +39,7 @@ export const CreateGameModal: React.FC = () => {
   const { gameFactory } = useGlobal(
     walletClient?.chain?.name?.toLowerCase() ?? '',
   );
-  const toast = useToast();
+  const { renderError } = useToast();
   const { createGameModal: { isOpen, onClose } = {}, reload: reloadGames } =
     useGamesContext();
 
@@ -60,6 +60,7 @@ export const CreateGameModal: React.FC = () => {
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
@@ -113,6 +114,7 @@ export const CreateGameModal: React.FC = () => {
 
     setIsCreating(false);
     setTxHash(null);
+    setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
   }, [address, setGameEmblem]);
@@ -132,39 +134,15 @@ export const CreateGameModal: React.FC = () => {
         return;
       }
 
-      if (!walletClient) {
-        toast({
-          description: 'Wallet client is not connected.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Could not find a wallet client.');
-        return;
-      }
-
-      if (!DEFAULT_DAO_ADDRESS) {
-        toast({
-          description: `DEFAULT_DAO_ADDRESS not configured for the chain ${walletClient.chain.name}.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(
-          `DEFAULT_DAO_ADDRESS not configured for the chain ${walletClient.chain.name}.`,
+      if (!walletClient) throw new Error('Could not find a wallet client');
+      if (!DEFAULT_DAO_ADDRESS)
+        throw new Error(
+          `DEFAULT_DAO_ADDRESS not configured for the chain ${walletClient.chain.name}`,
         );
-        return;
-      }
-
-      if (!gameFactory) {
-        toast({
-          description: `Could not find a game factory for the ${walletClient.chain.name} network.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(
-          `Missing game factory address for the ${walletClient.chain.name} network"`,
+      if (!gameFactory)
+        throw new Error(
+          `Missing game factory address for the ${walletClient.chain.name} network`,
         );
-        return;
-      }
 
       const trimmedGameMasterAddresses = gameMasters
         .split(',')
@@ -174,15 +152,8 @@ export const CreateGameModal: React.FC = () => {
         (daoAddress.trim() as Address) || DEFAULT_DAO_ADDRESS;
 
       const cid = await onUpload();
-
-      if (!cid) {
-        toast({
-          description: 'Something went wrong uploading your game emblem.',
-          position: 'top',
-          status: 'error',
-        });
-        return;
-      }
+      if (!cid)
+        throw new Error('Something went wrong uploading your game emblem');
 
       const gameMetadata = {
         name: gameName,
@@ -197,26 +168,12 @@ export const CreateGameModal: React.FC = () => {
           method: 'POST',
           body: JSON.stringify(gameMetadata),
         });
-
-        if (!res.ok) {
-          toast({
-            description: 'Something went wrong uploading your game metadata.',
-            position: 'top',
-            status: 'error',
-          });
-          return;
-        }
+        if (!res.ok)
+          throw new Error('Something went wrong uploading your game metadata');
 
         const { cid: gameMetadataCid } = await res.json();
-
-        if (!gameMetadataCid) {
-          toast({
-            description: 'Something went wrong uploading your game metadata.',
-            position: 'top',
-            status: 'error',
-          });
-          return;
-        }
+        if (!gameMetadataCid)
+          throw new Error('Something went wrong uploading your game metadata');
 
         const encodedGameCreationData = encodeAbiParameters(
           [
@@ -257,30 +214,24 @@ export const CreateGameModal: React.FC = () => {
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
-        const receipt = await client.waitForTransactionReceipt({
+        const { blockNumber, status } = await client.waitForTransactionReceipt({
           hash: transactionhash,
         });
 
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(receipt.blockNumber);
-
-        if (!synced) {
-          toast({
-            description: 'Something went wrong while syncing.',
-            position: 'top',
-            status: 'warning',
-          });
-          return;
+        if (status === 'reverted') {
+          setTxFailed(true);
+          setIsCreating(false);
+          throw new Error('Transaction failed');
         }
+
+        setIsSyncing(true);
+        const synced = await waitUntilBlock(blockNumber);
+        if (!synced) throw new Error('Something went wrong while syncing');
+
         setIsSynced(true);
         reloadGames();
       } catch (e) {
-        toast({
-          description: 'Something went wrong creating your game.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error(e);
+        renderError(e, 'Something went wrong creating your game');
       } finally {
         setIsSyncing(false);
         setIsCreating(false);
@@ -296,7 +247,7 @@ export const CreateGameModal: React.FC = () => {
       onUpload,
       publicClient,
       reloadGames,
-      toast,
+      renderError,
       walletClient,
     ],
   );
@@ -305,6 +256,17 @@ export const CreateGameModal: React.FC = () => {
   const isDisabled = isLoading || isUploading;
 
   const content = () => {
+    if (txFailed) {
+      return (
+        <VStack py={10} spacing={4}>
+          <Text>Transaction failed.</Text>
+          <Button onClick={onClose} variant="outline">
+            Close
+          </Button>
+        </VStack>
+      );
+    }
+
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>
