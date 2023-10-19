@@ -35,6 +35,7 @@ import { JoinGameModal } from '@/components/Modals/JoinGameModal';
 import { RemoveCharacterModal } from '@/components/Modals/RemoveCharacterModal';
 import { RemoveItemRequirementModal } from '@/components/Modals/RemoveItemRequirementModal';
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
+import { RestoreCharacterModal } from '@/components/Modals/RestoreCharacterModal';
 import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
 import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
@@ -95,6 +96,7 @@ function GamePage(): JSX.Element {
 
   const joinGameModal = useDisclosure();
   const updateGameMetadata = useDisclosure();
+  const restoreCharacterModal = useDisclosure();
 
   const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
 
@@ -160,6 +162,11 @@ function GamePage(): JSX.Element {
             {isConnectedAndMounted && !character && (
               <Button onClick={joinGameModal.onOpen}>Join this Game</Button>
             )}
+            {isConnectedAndMounted && character && character.removed && (
+              <Button onClick={restoreCharacterModal.onOpen}>
+                Restore Character
+              </Button>
+            )}
 
             {isMaster && (
               <Button onClick={updateGameMetadata.onOpen} size="sm">
@@ -218,8 +225,11 @@ function GamePage(): JSX.Element {
           {!isConnectedAndMounted && (
             <Text align="center">Connect wallet to play this game.</Text>
           )}
-          {isConnectedAndMounted && character && (
+          {isConnectedAndMounted && character && !character.removed && (
             <CharacterCard chainId={chainId} character={character} />
+          )}
+          {isConnectedAndMounted && character && character.removed && (
+            <Text align="center">Your character has been removed.</Text>
           )}
         </VStack>
 
@@ -288,6 +298,7 @@ function GamePage(): JSX.Element {
       {content()}
       <JoinGameModal {...joinGameModal} />
       <UpdateGameMetadataModal {...updateGameMetadata} />
+      <RestoreCharacterModal {...restoreCharacterModal} />
 
       {assignClassModal && <AssignClassModal />}
       {editCharacterModal && <UpdateCharacterMetadataModal />}

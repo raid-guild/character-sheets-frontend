@@ -7,7 +7,7 @@ import { DEFAULT_CHAIN } from '@/lib/web3';
 export const CharactersPanel: React.FC = () => {
   const { game } = useGame();
 
-  const characters = game?.characters ?? [];
+  const characters = game?.characters.filter(c => !c.removed) ?? [];
 
   if (characters.length > 0) {
     return (

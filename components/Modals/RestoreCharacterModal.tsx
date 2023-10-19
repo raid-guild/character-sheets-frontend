@@ -14,27 +14,33 @@ import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
-import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useToast } from '@/hooks/useToast';
 
-export const RenounceCharacterModal: React.FC = () => {
-  const { game, reload: reloadGame } = useGame();
-  const { selectedCharacter, renounceCharacterModal } = useActions();
+type RestoreCharacterModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+export const RestoreCharacterModal: React.FC<RestoreCharacterModalProps> = ({
+  isOpen,
+  onClose,
+}) => {
+  const { character, game, reload: reloadGame } = useGame();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const { renderError } = useToast();
 
-  const [isRenouncing, setIsRenouncing] = useState<boolean>(false);
+  const [isRestoring, setIsRestoring] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
   const resetData = useCallback(() => {
-    setIsRenouncing(false);
+    setIsRestoring(false);
     setTxHash(null);
     setTxFailed(false);
     setIsSyncing(false);
@@ -42,28 +48,28 @@ export const RenounceCharacterModal: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!renounceCharacterModal?.isOpen) {
+    if (isOpen) {
       resetData();
     }
-  }, [resetData, renounceCharacterModal?.isOpen]);
+  }, [isOpen, resetData]);
 
-  const onRenounceCharacter = useCallback(
+  const onRestoreCharacter = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
       if (!walletClient) throw new Error('Could not find a wallet client');
       if (!game) throw new Error('Missing game data');
-      if (!selectedCharacter) throw new Error('Character not found');
+      if (!character) throw new Error('Character not found');
 
-      setIsRenouncing(true);
+      setIsRestoring(true);
 
       try {
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
           address: game.id as Address,
-          abi: parseAbi(['function renounceSheet() public']),
-          functionName: 'renounceSheet',
+          abi: parseAbi(['function restoreSheet() external']),
+          functionName: 'restoreSheet',
         });
         setTxHash(transactionhash);
 
@@ -74,7 +80,7 @@ export const RenounceCharacterModal: React.FC = () => {
 
         if (status === 'reverted') {
           setTxFailed(true);
-          setIsRenouncing(false);
+          setIsRestoring(false);
           throw new Error('Transaction failed');
         }
 
@@ -87,24 +93,17 @@ export const RenounceCharacterModal: React.FC = () => {
       } catch (e) {
         renderError(
           e,
-          `Something went wrong while renouncing ${selectedCharacter.name}`,
+          `Something went wrong while restoring ${character.name}`,
         );
       } finally {
         setIsSyncing(false);
-        setIsRenouncing(false);
+        setIsRestoring(false);
       }
     },
-    [
-      game,
-      publicClient,
-      reloadGame,
-      renderError,
-      selectedCharacter,
-      walletClient,
-    ],
+    [character, game, publicClient, reloadGame, renderError, walletClient],
   );
 
-  const isLoading = isRenouncing;
+  const isLoading = isRestoring;
   const isDisabled = isLoading;
 
   const content = () => {
@@ -112,7 +111,7 @@ export const RenounceCharacterModal: React.FC = () => {
       return (
         <VStack py={10} spacing={4}>
           <Text>Transaction failed.</Text>
-          <Button onClick={renounceCharacterModal?.onClose} variant="outline">
+          <Button onClick={onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -122,38 +121,37 @@ export const RenounceCharacterModal: React.FC = () => {
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>
-          <Text>Your character has been renounced!</Text>
-          <Button onClick={renounceCharacterModal?.onClose} variant="outline">
+          <Text>Your character has been restored!</Text>
+          <Button onClick={onClose} variant="outline">
             Close
           </Button>
         </VStack>
       );
     }
 
-    if (txHash && selectedCharacter) {
+    if (txHash && character) {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Renouncing your character...`}
+          text="Restoring your character..."
           txHash={txHash}
         />
       );
     }
 
     return (
-      <VStack as="form" onSubmit={onRenounceCharacter} spacing={8}>
+      <VStack as="form" onSubmit={onRestoreCharacter} spacing={8}>
         <Text textAlign="center">
-          Are you sure you want to renounce your character? You will still be
-          able to restore your character in the future.
+          Are you sure you want to restore your character?
         </Text>
         <Button
           autoFocus
           isDisabled={isDisabled}
           isLoading={isLoading}
-          loadingText="Renouncing..."
+          loadingText="Restoring..."
           type="submit"
         >
-          Renounce
+          Restore
         </Button>
       </VStack>
     );
@@ -163,13 +161,13 @@ export const RenounceCharacterModal: React.FC = () => {
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={renounceCharacterModal?.isOpen ?? false}
-      onClose={renounceCharacterModal?.onClose ?? (() => {})}
+      isOpen={isOpen ?? false}
+      onClose={onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Renounce Character</Text>
+          <Text>Restore Character</Text>
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>

@@ -37,6 +37,7 @@ export type Character = Metadata & {
   account: string;
   player: string;
   jailed: boolean;
+  removed: boolean;
   experience: string;
   uri: string;
   classes: Class[];
