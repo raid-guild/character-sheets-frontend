@@ -154,8 +154,8 @@ const ClaimableAddressDisplay: React.FC<DisplayProps> = ({
           transform="translateY(-50%)"
           cursor="pointer"
           transition="0.25s"
-          color="blackAlpha.500"
-          _hover={{ color: 'black' }}
+          color="whiteAlpha.400"
+          _hover={{ color: 'white' }}
           onClick={() => removeClaimableAddress(i)}
         />
       </Grid>
@@ -185,15 +185,16 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
   const [showError, setShowError] = useState<boolean>(false);
 
   const amountInvalid = useMemo(
-    () => !amount || Number.isNaN(Number(amount)),
+    () => !amount || Number.isNaN(Number(amount)) || amount === '0',
     [amount],
   );
 
   const moreThanSupply = useMemo(() => {
     const totalAmount = claimableAddressList.reduce(
-      (acc, curr) => acc + curr.amount,
+      (acc, curr) => BigInt(acc) + BigInt(curr.amount),
       BigInt(0),
     );
+
     if (totalAmount + BigInt(amount) > BigInt(itemSupply)) {
       return true;
     }
@@ -240,6 +241,8 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
           }}
           gridGap={4}
           position="relative"
+          justifyContent="center"
+          alignItems="center"
         >
           <SelectCharacterInput
             characters={characters}
