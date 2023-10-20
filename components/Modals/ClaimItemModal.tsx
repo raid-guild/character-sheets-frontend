@@ -439,7 +439,6 @@ export const ClaimItemModal: React.FC = () => {
       <ModalContent>
         <ModalHeader>
           <Text>Claim {selectedItem?.name ?? 'Item'}</Text>
-          {isSynced && <Text>Success!</Text>}
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>

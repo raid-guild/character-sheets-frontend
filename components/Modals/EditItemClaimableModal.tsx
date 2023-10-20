@@ -40,7 +40,7 @@ import {
 } from '../ClaimableAddressListInput';
 
 export const EditItemClaimableModal: React.FC = () => {
-  const { character, game, reload: reloadGame } = useGame();
+  const { game, reload: reloadGame } = useGame();
   const { selectedItem, editItemClaimableModal } = useItemActions();
 
   const { data: walletClient } = useWalletClient();
@@ -101,6 +101,7 @@ export const EditItemClaimableModal: React.FC = () => {
   useEffect(() => {
     if (!editItemClaimableModal?.isOpen) {
       resetData();
+    } else {
       reloadTree();
     }
   }, [resetData, editItemClaimableModal?.isOpen, reloadTree]);
@@ -157,10 +158,6 @@ export const EditItemClaimableModal: React.FC = () => {
 
         if (!game?.itemsAddress) {
           throw new Error('Missing game data');
-        }
-
-        if (!character) {
-          throw new Error('Character address not found');
         }
 
         if (!selectedItem) {
@@ -266,7 +263,6 @@ export const EditItemClaimableModal: React.FC = () => {
       }
     },
     [
-      character,
       game,
       noSupply,
       publicClient,
@@ -372,8 +368,7 @@ export const EditItemClaimableModal: React.FC = () => {
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Edit Claimability For {selectedItem?.name ?? 'Item'}</Text>
-          {isSynced && <Text>Success!</Text>}
+          <Text>Edit Claimability for {selectedItem?.name ?? 'Item'}</Text>
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>
