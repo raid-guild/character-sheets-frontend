@@ -40,7 +40,7 @@ export const ClaimItemModal: React.FC = () => {
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const { renderError, renderWarning } = useToast();
+  const { renderError } = useToast();
 
   const [openDetails, setOpenDetails] = useState(-1); // -1 = closed, 0 = open
   const [amount, setAmount] = useState<string>('');
@@ -77,8 +77,8 @@ export const ClaimItemModal: React.FC = () => {
 
   const noSupply = useMemo(() => {
     if (!selectedItem) return false;
-    const supply = Number(selectedItem.supply);
-    if (Number.isNaN(supply) || supply <= 0) return true;
+    const supply = BigInt(selectedItem.supply);
+    if (Number.isNaN(Number(supply)) || supply <= 0) return true;
     return false;
   }, [selectedItem]);
 
@@ -148,41 +148,39 @@ export const ClaimItemModal: React.FC = () => {
   const onClaimItem = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
-
-      if (noSupply) {
-        renderWarning('This item has zero supply.');
-        return;
-      }
-
-      if (hasError && isClaimableByPublic) {
-        setShowError(true);
-        return;
-      }
-
-      if (insufficientClasses) {
-        setOpenDetails(0);
-        throw new Error('You do not have the required classes');
-      }
-
-      if (!walletClient) {
-        throw new Error('Could not find a wallet client');
-      }
-
-      if (!game?.itemsAddress) {
-        throw new Error('Missing game data');
-      }
-
-      if (!character) {
-        throw new Error('Character address not found');
-      }
-
-      if (!selectedItem) {
-        throw new Error('Item not found');
-      }
-
-      setIsClaiming(true);
-
       try {
+        if (noSupply) {
+          throw new Error('This item has zero supply.');
+        }
+
+        if (hasError && isClaimableByPublic) {
+          setShowError(true);
+          return;
+        }
+
+        if (insufficientClasses) {
+          setOpenDetails(0);
+          throw new Error('You do not have the required classes');
+        }
+
+        if (!walletClient) {
+          throw new Error('Could not find a wallet client');
+        }
+
+        if (!game?.itemsAddress) {
+          throw new Error('Missing game data');
+        }
+
+        if (!character) {
+          throw new Error('Character address not found');
+        }
+
+        if (!selectedItem) {
+          throw new Error('Item not found');
+        }
+
+        setIsClaiming(true);
+
         if (!isClaimableByPublic && !tree) {
           console.error('Could not find the claimable tree.');
           throw new Error(
@@ -264,7 +262,6 @@ export const ClaimItemModal: React.FC = () => {
       selectedItem,
       reloadGame,
       renderError,
-      renderWarning,
       walletClient,
       tree,
       isClaimableByPublic,
@@ -442,7 +439,6 @@ export const ClaimItemModal: React.FC = () => {
       <ModalContent>
         <ModalHeader>
           <Text>Claim {selectedItem?.name ?? 'Item'}</Text>
-          {isSynced && <Text>Success!</Text>}
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>

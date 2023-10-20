@@ -77,8 +77,17 @@ export const timeout = (ms: number): Promise<void> => {
 };
 
 export const fetchMetadata = async (uri: string): Promise<Metadata> => {
-  const res = await fetch(`${uri}`);
-  return await res.json();
+  try {
+    const res = await fetch(`${uri}`);
+    return await res.json();
+  } catch (e) {
+    console.error(e);
+    return {
+      name: '',
+      description: '',
+      image: '',
+    };
+  }
 };
 
 export const formatCharacter = async (

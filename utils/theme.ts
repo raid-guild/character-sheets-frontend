@@ -12,6 +12,7 @@ export const globalStyles = css`
 
 const Button = {
   baseStyle: {
+    borderRadius: 0,
     _active: {
       background: '#2D3748',
       transform: 'scale(0.98)',
@@ -22,9 +23,6 @@ const Button = {
   },
   defaultProps: {
     variant: 'outline',
-    // _hover: {
-    //   transform: 'scale(1.1)',
-    // },
   },
   sizes: {
     xs: {
@@ -71,12 +69,11 @@ const Button = {
         color: 'accent',
         bg: 'dark',
       },
-      // _active: {
-      //   transform: 'scale(0.98)',
-      //   _disabled: {
-      //     transform: 'scale(1)',
-      //   },
-      // },
+      _active: {
+        borderColor: 'accent',
+        bg: 'accent',
+        color: 'dark',
+      },
     },
     solid: {
       background: 'white',
@@ -85,6 +82,18 @@ const Button = {
       color: 'dark',
       _hover: {
         bg: 'accent',
+      },
+      _active: {
+        color: 'dark',
+      },
+    },
+    ghost: {
+      background: 'transparent',
+      borderRadius: '0',
+      color: 'white',
+      _hover: {
+        bg: 'accent',
+        color: 'dark',
       },
     },
   },
@@ -115,17 +124,17 @@ const Input = {
       field: {
         background: 'dark',
         border: '2px solid',
-        borderColor: 'black',
+        borderColor: 'white',
         borderRadius: 0,
         fontSize: '12px',
 
         _hover: {
           background: 'dark',
-          borderColor: 'black',
+          borderColor: 'white',
         },
         _active: {
           background: 'dark',
-          borderColor: 'black',
+          borderColor: 'white',
         },
       },
     },
@@ -140,6 +149,7 @@ const Input = {
     },
   },
 };
+
 const Link = {
   defaultProps: {
     variant: 'paragraph',
@@ -184,6 +194,7 @@ const Menu = {
     },
   },
 };
+
 const Modal = {
   defaultProps: {
     scrollBehavior: 'inside',
@@ -264,17 +275,17 @@ const Textarea = {
     outline: {
       background: 'dark',
       border: '2px solid',
-      borderColor: 'black',
+      borderColor: 'white',
       borderRadius: 0,
       fontSize: '12px',
 
       _hover: {
         background: 'dark',
-        borderColor: 'black',
+        borderColor: 'white',
       },
       _active: {
         background: 'dark',
-        borderColor: 'black',
+        borderColor: 'white',
       },
     },
   },

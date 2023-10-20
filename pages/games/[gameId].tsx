@@ -29,6 +29,7 @@ import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { ClaimClassModal } from '@/components/Modals/ClaimClassModal';
 import { ClaimItemModal } from '@/components/Modals/ClaimItemModal';
 import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
+import { EditItemClaimableModal } from '@/components/Modals/EditItemClaimableModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
 import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
@@ -92,8 +93,12 @@ function GamePage(): JSX.Element {
     renounceCharacterModal,
     revokeClassModal,
   } = useActions();
-  const { addRequirementModal, claimItemModal, removeRequirementModal } =
-    useItemActions();
+  const {
+    addRequirementModal,
+    claimItemModal,
+    removeRequirementModal,
+    editItemClaimableModal,
+  } = useItemActions();
   const { isConnected } = useAccount();
 
   const joinGameModal = useDisclosure();
@@ -302,6 +307,7 @@ function GamePage(): JSX.Element {
       <UpdateGameMetadataModal {...updateGameMetadata} />
       <RestoreCharacterModal {...restoreCharacterModal} />
 
+      {editItemClaimableModal && <EditItemClaimableModal />}
       {addRequirementModal && <AddItemRequirementModal />}
       {assignClassModal && <AssignClassModal />}
       {claimClassModal && <ClaimClassModal />}

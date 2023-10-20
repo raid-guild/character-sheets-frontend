@@ -20,6 +20,7 @@ export enum GameMasterActions {
   GIVE_ITEM = 'Give item',
   ADD_REQUIREMENT = 'Add requirement',
   REMOVE_REQUIREMENT = 'Remove requirement',
+  EDIT_ITEM_CLAIMABLE = 'Edit item claimable',
 }
 
 type ItemActionsContextType = {
@@ -33,6 +34,7 @@ type ItemActionsContextType = {
   addRequirementModal: ReturnType<typeof useDisclosure> | undefined;
   claimItemModal: ReturnType<typeof useDisclosure> | undefined;
   removeRequirementModal: ReturnType<typeof useDisclosure> | undefined;
+  editItemClaimableModal: ReturnType<typeof useDisclosure> | undefined;
 };
 
 const ItemActionsContext = createContext<ItemActionsContextType>({
@@ -46,6 +48,7 @@ const ItemActionsContext = createContext<ItemActionsContextType>({
   addRequirementModal: undefined,
   claimItemModal: undefined,
   removeRequirementModal: undefined,
+  editItemClaimableModal: undefined,
 });
 
 export const useItemActions = (): ItemActionsContextType =>
@@ -61,6 +64,7 @@ export const ItemActionsProvider: React.FC<{
   const addRequirementModal = useDisclosure();
   const claimItemModal = useDisclosure();
   const removeRequirementModal = useDisclosure();
+  const editItemClaimableModal = useDisclosure();
 
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
@@ -122,11 +126,20 @@ export const ItemActionsProvider: React.FC<{
         case GameMasterActions.REMOVE_REQUIREMENT:
           removeRequirementModal.onOpen();
           break;
+        case GameMasterActions.EDIT_ITEM_CLAIMABLE:
+          editItemClaimableModal.onOpen();
+          break;
         default:
           break;
       }
     },
-    [addRequirementModal, claimItemModal, removeRequirementModal, toast],
+    [
+      addRequirementModal,
+      claimItemModal,
+      removeRequirementModal,
+      editItemClaimableModal,
+      toast,
+    ],
   );
 
   return (
@@ -142,6 +155,7 @@ export const ItemActionsProvider: React.FC<{
         addRequirementModal,
         claimItemModal,
         removeRequirementModal,
+        editItemClaimableModal,
       }}
     >
       {children}
