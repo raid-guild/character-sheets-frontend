@@ -309,6 +309,8 @@ export const theme = extendTheme({
     softgreen: '#79BA87',
     softpurple: '#9087B5',
     softyellow: '#FFEBA4',
+    softblue: '#7B91DD',
+    softorange: '#BA9179',
     // gold: {
     //   100: '#FFFAE2',
     //   400: '#DBB865',

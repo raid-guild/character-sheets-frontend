@@ -1,5 +1,6 @@
-import { HStack, Image, Text } from '@chakra-ui/react';
+import { Box, HStack, Image, Text } from '@chakra-ui/react';
 import { useMemo } from 'react';
+import { hexToNumber, keccak256, toBytes } from 'viem';
 
 import { Class } from '@/utils/types';
 
@@ -55,6 +56,14 @@ const spacingMap = {
   lg: 4,
 };
 
+const colors = [
+  'softgreen',
+  'softpurple',
+  'softblue',
+  'softyellow',
+  'softorange',
+];
+
 const ClassTagInner: React.FC<{
   name: string;
   image: string;
@@ -72,18 +81,29 @@ const ClassTagInner: React.FC<{
     [size],
   );
 
+  const bgColor = useMemo(() => {
+    // TODO take bgColor from classEntity
+    const hexValue = keccak256(toBytes(name));
+    const index = hexToNumber(hexValue) % colors.length;
+    return colors[index];
+  }, [name]);
+
   return (
-    <HStack border="2px solid white" px={px} py={py} spacing={spacing} w="100%">
-      <Image
-        alt="class emblem"
-        h={imageHeight}
-        w={imageWidth}
-        objectFit="cover"
-        src={image}
-      />
-      <Text fontWeight="bold" fontSize={fontSize}>
-        {name}
-      </Text>
+    <HStack spacing={0} p={0} w="100%" align="stretch">
+      <Box bg={bgColor} my={py} w="6px" />
+      <HStack spacing={spacing} bg={bgColor} py={py} px={px}>
+        <Image
+          alt="class emblem"
+          h={imageHeight}
+          w={imageWidth}
+          objectFit="cover"
+          src={image}
+        />
+        <Text color="dark" fontSize={fontSize} fontWeight="bold">
+          {name}
+        </Text>
+      </HStack>
+      <Box bg={bgColor} my={py} w="6px" />
     </HStack>
   );
 };

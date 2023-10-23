@@ -109,13 +109,13 @@ export const CharacterCard: React.FC<{
           </VStack>
         </VStack>
         <VStack align="flex-start" flex={1}>
-          <Text fontSize="lg" fontWeight="bold">
+          <Text fontSize="2xl" fontWeight="bold">
             {name}
           </Text>
           <Text fontSize="sm">{shortenText(description, 130)}</Text>
           <Link
             alignItems="center"
-            color="blue"
+            textDecor="underline"
             display="flex"
             fontSize="sm"
             gap={2}
@@ -124,15 +124,8 @@ export const CharacterCard: React.FC<{
             p={0}
           >
             {shortenAddress(account)}
-            <Image
-              alt="link to new tab"
-              height="14px"
-              src="/icons/new-tab.svg"
-              width="14px"
-            />
           </Link>
           <Box background="black" h="3px" my={4} w={20} />
-          <Text fontSize="sm">Classes:</Text>
           <Wrap>
             <WrapItem>
               <VillagerClassTag />
@@ -236,30 +229,23 @@ export const SmallCharacterCard: React.FC<{
           </VStack>
         </VStack>
         <VStack align="flex-start" flex={1}>
-          <Text fontSize="md" fontWeight="bold">
+          <Text fontSize="lg" fontWeight="bold">
             {name}
           </Text>
           <Text fontSize="xs">{shortenText(description, 130)}</Text>
           <Link
             alignItems="center"
-            color="blue"
             display="flex"
             fontSize="sm"
             gap={2}
             href={`${EXPLORER_URLS[chainId]}/address/${account}`}
             isExternal
             p={0}
+            textDecor="underline"
           >
             {shortenAddress(account)}
-            <Image
-              alt="link to new tab"
-              height="14px"
-              src="/icons/new-tab.svg"
-              width="14px"
-            />
           </Link>
           <Box background="black" h="3px" my={2} w={20} />
-          <Text fontSize="xs">Classes:</Text>
           <Wrap>
             <WrapItem>
               <VillagerClassTag size="sm" />
