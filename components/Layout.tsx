@@ -7,13 +7,21 @@ import {
   Link,
   Spacer,
   Text,
+  VStack,
 } from '@chakra-ui/react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import NextLink from 'next/link';
 
 import { ActiveLink } from '@/components/ActiveLink';
+import { useRouter } from 'next/router';
+
+const FULL_PAGE_ROUTES = ['/'];
 
 export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
+  const { pathname } = useRouter();
+
+  const isFullPage = FULL_PAGE_ROUTES.includes(pathname);
+
   return (
     <Flex direction="column" minH="100vh">
       <Box
@@ -118,7 +126,22 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         </Flex>
         <Box background="white" height="1px" mt={4} />
       </Box>
-      <Box mt="85px">{children}</Box>
+      <VStack
+        align="stretch"
+        as="main"
+        mt={20}
+        spacing={0}
+        w="100%"
+        {...(isFullPage
+          ? {}
+          : {
+              maxW: '100rem',
+              mx: 'auto',
+              py: 20,
+            })}
+      >
+        {children}
+      </VStack>
       <Flex
         align="center"
         as="footer"

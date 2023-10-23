@@ -305,9 +305,11 @@ export const theme = extendTheme({
   config: { initialColorMode: 'light', useSystemColorMode: false },
   colors: {
     dark: '#171922',
+    cardBG: '#11131A',
     accent: '#a9c8eb',
     softgreen: '#79BA87',
     softpurple: '#9087B5',
+    softyellow: '#FFEBA4',
     // gold: {
     //   100: '#FFFAE2',
     //   400: '#DBB865',

@@ -1,4 +1,4 @@
-import { Button, Flex, Spinner, Text, VStack } from '@chakra-ui/react';
+import { Button, Spinner, Text, VStack } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useAccount, useNetwork } from 'wagmi';
 
@@ -24,7 +24,7 @@ export default function MyGames(): JSX.Element {
   const content = () => {
     if (!isConnectedAndMount) {
       return (
-        <VStack as="main" pt={20}>
+        <VStack >
           <Text align="center">Connect wallet to view your games.</Text>
         </VStack>
       );
@@ -32,21 +32,21 @@ export default function MyGames(): JSX.Element {
 
     if (loading) {
       return (
-        <VStack as="main" pt={20}>
+        <VStack >
           <Spinner size="lg" />
         </VStack>
       );
     }
 
     return (
-      <VStack as="main" pt={10} pb={20} spacing={10}>
+      <VStack  spacing={10}>
         <Button onClick={createGameModal?.onOpen}>Create a Game</Button>
         {!myGames || myGames.length === 0 ? (
           <VStack pt={10}>
             <Text>No games found.</Text>
           </VStack>
         ) : (
-          <Flex gap={10} justify="center" w="1200px" wrap="wrap">
+          <VStack spacing={10} >
             {myGames.map(game => (
               <GameCard
                 key={game.id}
@@ -54,7 +54,7 @@ export default function MyGames(): JSX.Element {
                 {...game}
               />
             ))}
-          </Flex>
+          </VStack>
         )}
       </VStack>
     );

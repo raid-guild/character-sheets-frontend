@@ -147,7 +147,7 @@ function GamePage(): JSX.Element {
     const chainId = DEFAULT_CHAIN.id;
 
     return (
-      <VStack as="main" px={6} w="full">
+      <VStack px={6} w="full">
         <HStack align="start" py={16} px={20} w="100%">
           <HStack flex="1">
             <VStack align="start" justify="start" w="100%">
