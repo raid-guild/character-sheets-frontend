@@ -24,7 +24,7 @@ export default function MyGames(): JSX.Element {
   const content = () => {
     if (!isConnectedAndMount) {
       return (
-        <VStack >
+        <VStack>
           <Text align="center">Connect wallet to view your games.</Text>
         </VStack>
       );
@@ -32,21 +32,23 @@ export default function MyGames(): JSX.Element {
 
     if (loading) {
       return (
-        <VStack >
+        <VStack>
           <Spinner size="lg" />
         </VStack>
       );
     }
 
     return (
-      <VStack  spacing={10}>
-        <Button onClick={createGameModal?.onOpen}>Create a Game</Button>
+      <VStack w="100%" spacing={10}>
+        <Button size="lg" onClick={createGameModal?.onOpen}>
+          Create Game
+        </Button>
         {!myGames || myGames.length === 0 ? (
           <VStack pt={10}>
             <Text>No games found.</Text>
           </VStack>
         ) : (
-          <VStack spacing={10} >
+          <VStack spacing={10} w="100%">
             {myGames.map(game => (
               <GameCard
                 key={game.id}

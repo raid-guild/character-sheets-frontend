@@ -1,4 +1,5 @@
 import { HStack, Image, Text, VStack } from '@chakra-ui/react';
+
 import { GameMeta } from '@/utils/types';
 
 type GameTotalsProps = Pick<GameMeta, 'experience' | 'characters' | 'items'>;
@@ -10,11 +11,21 @@ export const GameTotals: React.FC<GameTotalsProps> = ({
 }) => {
   return (
     <VStack align="flex-start" spacing={4}>
-      <Text fontFamily="mono" letterSpacing="1px" fontSize="sm">
-        GAME TOTALS
+      <Text
+        fontFamily="mono"
+        letterSpacing="1px"
+        fontSize="sm"
+        textTransform="uppercase"
+      >
+        Game Totals
       </Text>
       <HStack spacing={0} align="stretch">
-        <Image h="100%" src="/icons/xp-box-left.svg" w="12px" />
+        <Image
+          h="100%"
+          src="/icons/xp-box-left.svg"
+          w="12px"
+          alt="xp-box-left"
+        />
         <HStack
           color="softyellow"
           spacing={4}
@@ -34,6 +45,7 @@ export const GameTotals: React.FC<GameTotalsProps> = ({
           src="/icons/xp-box-left.svg"
           w="12px"
           transform="rotate(180deg)"
+          alt="xp-box-right"
         />
       </HStack>
       <HStack spacing={4}>

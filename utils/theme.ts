@@ -14,7 +14,6 @@ const Button = {
   baseStyle: {
     borderRadius: 0,
     _active: {
-      background: '#2D3748',
       transform: 'scale(0.98)',
       _disabled: {
         transform: 'scale(1)',
@@ -84,7 +83,7 @@ const Button = {
         bg: 'accent',
       },
       _active: {
-        color: 'dark',
+        bg: 'accent',
       },
     },
     ghost: {

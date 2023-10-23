@@ -1,6 +1,8 @@
 import {
+  AspectRatio,
   Button,
   Flex,
+  Grid,
   Heading,
   HStack,
   Image,
@@ -23,6 +25,7 @@ import { useAccount } from 'wagmi';
 import { CharacterCard } from '@/components/CharacterCard';
 import { CharactersPanel } from '@/components/CharactersPanel';
 import { ClassesPanel } from '@/components/ClassesPanel';
+import { GameTotals } from '@/components/GameTotals';
 import { ItemsPanel } from '@/components/ItemsPanel';
 import { AddItemRequirementModal } from '@/components/Modals/AddItemRequirementModal';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
@@ -115,6 +118,8 @@ function GamePage(): JSX.Element {
     }
   }, [isConnected]);
 
+  const { address } = useAccount();
+
   const content = () => {
     if (loading) {
       return (
@@ -147,156 +152,218 @@ function GamePage(): JSX.Element {
     const chainId = DEFAULT_CHAIN.id;
 
     return (
-      <VStack px={6} w="full">
-        <HStack align="start" py={16} px={20} w="100%">
-          <HStack flex="1">
-            <VStack align="start" justify="start" w="100%">
-              <Link
-                fontSize="sm"
-                fontWeight={300}
-                href={`${EXPLORER_URLS[chainId]}/address/${id}`}
-                isExternal
-                mb={2}
-                textDecoration={'underline'}
+      <Grid templateColumns="3fr 1fr" w="full" gridGap="5px">
+        <HStack spacing="5px">
+          <HStack
+            bg="cardBG"
+            p={8}
+            transition="background 0.3s ease"
+            w="100%"
+            spacing={12}
+          >
+            <AspectRatio ratio={1} w="100%" maxW="12rem">
+              <Image
+                alt="game emblem"
+                background="gray.400"
+                objectFit="cover"
+                src={image}
+                w="100%"
+                h="100%"
+              />
+            </AspectRatio>
+            <VStack spacing={4} align="flex-start">
+              <Heading
+                display="inline-block"
+                fontSize="40px"
+                fontWeight="normal"
+                lineHeight="40px"
+                _hover={{
+                  color: 'accent',
+                }}
               >
-                {shortenAddress(id)}
-              </Link>
-              <Heading fontSize="40px" fontWeight="normal" lineHeight="40px">
                 {name}
               </Heading>
-              <Text>{description}</Text>
+              <Text fontSize="xl" fontWeight={200} mb={2}>
+                {description}
+              </Text>
+              <HStack spacing={4}>
+                <Link
+                  fontSize="sm"
+                  href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+                  isExternal
+                  fontWeight={300}
+                  mb={3}
+                  textDecoration={'underline'}
+                >
+                  {shortenAddress(id)}
+                </Link>
+                {isMaster && (
+                  <Button onClick={updateGameMetadata.onOpen} size="sm">
+                    <Flex align="center" gap={2}>
+                      <Image
+                        alt="edit"
+                        height="14px"
+                        src="/icons/edit.svg"
+                        width="14px"
+                      />
+                      Edit
+                    </Flex>
+                  </Button>
+                )}
+              </HStack>
             </VStack>
-            {isConnectedAndMounted && !character && (
-              <Button onClick={joinGameModal.onOpen}>Join this Game</Button>
-            )}
-            {isConnectedAndMounted && character && character.removed && (
-              <Button onClick={restoreCharacterModal.onOpen}>
-                Restore Character
-              </Button>
-            )}
-
-            {isMaster && (
-              <Button onClick={updateGameMetadata.onOpen} size="sm">
-                <Flex align="center" gap={2}>
-                  <Image
-                    alt="edit"
-                    height="14px"
-                    src="/icons/edit.svg"
-                    width="14px"
-                  />
-                  Edit
-                </Flex>
-              </Button>
-            )}
           </HStack>
-          <Image
-            alt="game emblem"
-            background="gray.400"
-            h="140px"
-            objectFit="cover"
-            src={image}
-          />
+          <VStack
+            align="start"
+            spacing={0}
+            h="100%"
+            bg="cardBG"
+            flexShrink={0}
+            p={8}
+          >
+            <GameTotals
+              experience={experience}
+              characters={characters}
+              items={items}
+            />
+          </VStack>
         </HStack>
 
-        <VStack align="start" pb={10} px={14} w="full">
-          <Text fontSize="lg" fontWeight="bold">
-            GameMasters
+        <VStack align="start" spacing={4} p={8} bg="cardBG">
+          <Text
+            fontFamily="mono"
+            letterSpacing="1px"
+            fontSize="sm"
+            textTransform="uppercase"
+          >
+            Game Masters
           </Text>
 
           {masters.map(master => (
             <Link
-              alignItems="center"
-              color="blue"
-              display="flex"
               fontSize="sm"
-              gap={2}
               href={`${EXPLORER_URLS[chainId]}/address/${id}`}
-              isExternal
               key={`gm-${master}`}
+              isExternal
+              bg={master === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
+              textDecor={master !== address?.toLowerCase() ? 'underline' : ''}
+              _hover={{
+                color: 'accent',
+              }}
             >
-              {master}
-              <Image
-                alt="link to new tab"
-                height="14px"
-                src="/icons/new-tab.svg"
-                width="14px"
-              />
+              {master === address?.toLowerCase() ? (
+                <HStack px={1} spacing={3}>
+                  <Text as="span">You</Text>
+                  <Text as="span" textDecor="underline">
+                    ({shortenAddress(master)})
+                  </Text>
+                </HStack>
+              ) : (
+                shortenAddress(master)
+              )}
             </Link>
           ))}
         </VStack>
+        <VStack align="stretch" spacing="5px">
+          {isConnectedAndMounted && (
+            <VStack p={8} bg="cardBG" align="start" spacing={4}>
+              {!character && (
+                <HStack w="100%" spacing={4}>
+                  <Button variant="solid" onClick={joinGameModal.onOpen}>
+                    Join this Game
+                  </Button>
+                  <Text>You don’t have a character sheet in this game.</Text>
+                </HStack>
+              )}
+              {character && character.removed && !character.jailed && (
+                <HStack spacing={4}>
+                  <Button
+                    variant="solid"
+                    onClick={restoreCharacterModal.onOpen}
+                  >
+                    Restore Character
+                  </Button>
+                  <Text>Your character has been removed from this game.</Text>
+                </HStack>
+              )}
+              {character && character.jailed && (
+                <Text>
+                  Your character is in jail. You can’t play until you’re
+                  released.
+                </Text>
+              )}
+              {character && !character.removed && !character.jailed && (
+                <CharacterCard chainId={chainId} character={character} />
+              )}
+            </VStack>
+          )}
 
-        <VStack px={14} w="full" align="start" justify="start">
-          <Text fontSize="lg" fontWeight="bold">
-            Your character
-          </Text>
-          {!isConnectedAndMounted && (
-            <Text align="center">Connect wallet to play this game.</Text>
-          )}
-          {isConnectedAndMounted && character && !character.removed && (
-            <CharacterCard chainId={chainId} character={character} />
-          )}
-          {isConnectedAndMounted && character && character.removed && (
-            <Text align="center">Your character has been removed.</Text>
-          )}
+          <Tabs
+            borderColor="transparent"
+            colorScheme="white"
+            w="full"
+            p={8}
+            bg="cardBG"
+          >
+            <TabList>
+              <Tab gap={2}>
+                <Image
+                  alt="users"
+                  height="20px"
+                  src="/icons/users.svg"
+                  width="20px"
+                />
+                <Text>{characters.length} characters</Text>
+              </Tab>
+              <Tab gap={2}>
+                <Image
+                  alt="xp"
+                  height="20px"
+                  src="/icons/xp.svg"
+                  width="20px"
+                />
+                <Text>{experience} XP</Text>
+              </Tab>
+              <Tab gap={2}>
+                <Image
+                  alt="users"
+                  height="20px"
+                  src="/icons/users.svg"
+                  width="20px"
+                />
+                <Text>{classes.length} classes</Text>
+              </Tab>
+              <Tab gap={2}>
+                <Image
+                  alt="items"
+                  height="20px"
+                  src="/icons/items.svg"
+                  width="20px"
+                />
+                <Text>{items.length} Items</Text>
+              </Tab>
+            </TabList>
+
+            <TabPanels>
+              <TabPanel px={0}>
+                <CharactersPanel />
+              </TabPanel>
+              <TabPanel px={0}>
+                <XPPanel />
+              </TabPanel>
+              <TabPanel px={0}>
+                <ClassesPanel />
+              </TabPanel>
+              <TabPanel px={0}>
+                <ItemsPanel />
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
         </VStack>
-
-        <Tabs
-          borderColor="transparent"
-          colorScheme="white"
-          mt={10}
-          px={14}
-          w="full"
-        >
-          <TabList>
-            <Tab gap={2}>
-              <Image
-                alt="users"
-                height="20px"
-                src="/icons/users.svg"
-                width="20px"
-              />
-              <Text>{characters.length} characters</Text>
-            </Tab>
-            <Tab gap={2}>
-              <Image alt="xp" height="20px" src="/icons/xp.svg" width="20px" />
-              <Text>{experience} XP</Text>
-            </Tab>
-            <Tab gap={2}>
-              <Image
-                alt="users"
-                height="20px"
-                src="/icons/users.svg"
-                width="20px"
-              />
-              <Text>{classes.length} classes</Text>
-            </Tab>
-            <Tab gap={2}>
-              <Image
-                alt="items"
-                height="20px"
-                src="/icons/items.svg"
-                width="20px"
-              />
-              <Text>{items.length} Items</Text>
-            </Tab>
-          </TabList>
-
-          <TabPanels>
-            <TabPanel px={0}>
-              <CharactersPanel />
-            </TabPanel>
-            <TabPanel px={0}>
-              <XPPanel />
-            </TabPanel>
-            <TabPanel px={0}>
-              <ClassesPanel />
-            </TabPanel>
-            <TabPanel px={0}>
-              <ItemsPanel />
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
-      </VStack>
+        <VStack h="100%" bg="cardBG" p={8} align="stretch">
+          <Text>Coming Soon!</Text>
+        </VStack>
+      </Grid>
     );
   };
 

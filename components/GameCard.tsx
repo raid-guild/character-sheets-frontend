@@ -1,7 +1,7 @@
 import {
   AspectRatio,
-  HStack,
   Heading,
+  HStack,
   Image,
   Link,
   Text,
@@ -9,10 +9,10 @@ import {
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 
+import { GameTotals } from '@/components/GameTotals';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
-import { GameTotals } from '@/components/GameTotals';
 
 type GameCardProps = GameMeta & {
   chainId: number;

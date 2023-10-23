@@ -11,9 +11,9 @@ import {
 } from '@chakra-ui/react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import NextLink from 'next/link';
+import { useRouter } from 'next/router';
 
 import { ActiveLink } from '@/components/ActiveLink';
-import { useRouter } from 'next/router';
 
 const FULL_PAGE_ROUTES = ['/'];
 
@@ -137,7 +137,7 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
           : {
               maxW: '100rem',
               mx: 'auto',
-              py: 20,
+              py: 12,
             })}
       >
         {children}
