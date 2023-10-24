@@ -131,6 +131,7 @@ export const CharacterCard: React.FC<{
               width="14px"
             />
           </Link>
+          <Text fontSize="xs">ID: {characterId}</Text>
           <Box background="black" h="3px" my={4} w={20} />
           <Text fontSize="sm">Classes:</Text>
           <Wrap>
@@ -258,6 +259,7 @@ export const SmallCharacterCard: React.FC<{
               width="14px"
             />
           </Link>
+          <Text fontSize="xs">ID: {characterId}</Text>
           <Box background="black" h="3px" my={2} w={20} />
           <Text fontSize="xs">Classes:</Text>
           <Wrap>
