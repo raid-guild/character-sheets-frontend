@@ -1,6 +1,4 @@
 import {
-  Box,
-  Button,
   Flex,
   Heading,
   Image,
@@ -9,11 +7,10 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 
-import { ActiveLink } from '@/components/ActiveLink';
+import { NavMenu } from './NavMenu';
 
 const FULL_PAGE_ROUTES = ['/'];
 
@@ -24,21 +21,29 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
 
   return (
     <Flex direction="column" minH="100vh">
-      <Box
+      <VStack
         as="header"
         background="dark"
         pt={6}
         position="fixed"
-        px={6}
+        px={{ base: 4, lg: 6 }}
         top={0}
-        w="100%"
+        left={0}
+        right={0}
+        align="stretch"
         zIndex={1000}
       >
-        <Flex align="center" h="100%" justify="start" w="100%">
+        <Flex
+          align="center"
+          h="100%"
+          justify="start"
+          borderBottom="1px solid white"
+          pb={4}
+        >
           <Link
             as={NextLink}
             href="/"
-            ml={5}
+            ml={{ base: 2, lg: 4 }}
             _hover={{ color: 'accent', textDecoration: 'none' }}
           >
             <Heading fontSize="22px" textTransform="uppercase">
@@ -46,86 +51,9 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
             </Heading>
           </Link>
           <Spacer />
-
-          <Flex as="nav" gap={4} mr={10}>
-            <ActiveLink href="/my-games">My games</ActiveLink>
-            <ActiveLink href="/all-games">All games</ActiveLink>
-          </Flex>
-          <ConnectButton.Custom>
-            {({
-              account,
-              chain,
-              openAccountModal,
-              openChainModal,
-              openConnectModal,
-              mounted,
-            }) => {
-              const connected = mounted && account && chain;
-
-              return (
-                <Flex
-                  align="center"
-                  cursor="pointer"
-                  gap={3}
-                  _hover={{
-                    p: {
-                      borderBottom: '2px solid black',
-                    },
-                  }}
-                  {...(!mounted && {
-                    'aria-hidden': true,
-                    style: {
-                      opacity: 0,
-                      pointerEvents: 'none',
-                      userSelect: 'none',
-                    },
-                  })}
-                >
-                  {(() => {
-                    if (!connected) {
-                      return (
-                        <Button
-                          onClick={openConnectModal}
-                          size="xs"
-                          type="button"
-                          variant="outline"
-                        >
-                          connect
-                        </Button>
-                      );
-                    }
-
-                    if (chain.unsupported) {
-                      return (
-                        <Button
-                          onClick={openChainModal}
-                          size="xs"
-                          type="button"
-                          variant="outline"
-                        >
-                          wrong network
-                        </Button>
-                      );
-                    }
-
-                    return (
-                      <Button
-                        onClick={openAccountModal}
-                        size="xs"
-                        type="button"
-                        variant="outline"
-                      >
-                        {account.displayName}
-                      </Button>
-                    );
-                  })()}
-                </Flex>
-              );
-            }}
-          </ConnectButton.Custom>
+          <NavMenu />
         </Flex>
-        <Box background="white" height="1px" mt={4} />
-      </Box>
+      </VStack>
       <VStack
         align="stretch"
         as="main"
