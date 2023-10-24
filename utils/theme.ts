@@ -302,6 +302,11 @@ const Tooltip = {
 
 export const theme = extendTheme({
   config: { initialColorMode: 'light', useSystemColorMode: false },
+  fonts: {
+    body: `'Unbounded', sans-serif`,
+    heading: `'Unbounded', sans-serif`,
+    mono: `'Tektur', monospace`,
+  },
   colors: {
     dark: '#171922',
     cardBG: '#11131A',

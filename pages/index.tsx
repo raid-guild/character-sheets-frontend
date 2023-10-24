@@ -1,18 +1,62 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  HStack,
-  Image,
-  Link,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+import { Button, Flex, Heading, Text, VStack } from '@chakra-ui/react';
 import NextLink from 'next/link';
 
+import { CharacterCard } from '@/components/CharacterCard';
 import { CreateGameModal } from '@/components/Modals/CreateGameModal';
 import { useGamesContext } from '@/contexts/GamesContext';
+import { DEFAULT_CHAIN } from '@/lib/web3';
+import { Character, Class, Item } from '@/utils/types';
+
+const createDummyClass = (name: string): Class => ({
+  id: '',
+  classId: '',
+  uri: '',
+  name,
+  description: '',
+  image: '',
+  holders: [],
+  claimable: false,
+});
+
+const createDummyItem = (name: string, image: string): Item => ({
+  id: '',
+  itemId: '',
+  uri: '',
+  name,
+  description: '',
+  image,
+  soulbound: false,
+  supply: BigInt(0),
+  totalSupply: BigInt(0),
+  amount: BigInt(2),
+  requirements: [],
+  holders: [{ id: '1' }],
+  equippers: [{ id: '1' }],
+  merkleRoot: '',
+});
+
+const dummyCharacter: Character = {
+  id: '1',
+  name: 'McLizard the Hizard',
+  description: 'A lizard wizard',
+  image: '/RG_CharacterSheet_CharacterBuild__v3_ex2.png',
+  characterId: '1',
+  account: '0x1234567890123456789012345678901234567890',
+  player: '0x1234567890123456789012345678901234567890',
+  jailed: false,
+  removed: false,
+  experience: '28930',
+  uri: '',
+  heldItems: [
+    createDummyItem('Sword of Undhur', '/sword.png'),
+    createDummyItem('Wooden Staff', '/staff.png'),
+  ],
+  equippedItems: [
+    createDummyItem('Sword of Undhur', '/sword.png'),
+    createDummyItem('Wooden Staff', '/staff.png'),
+  ],
+  classes: [createDummyClass('Wizard'), createDummyClass('Warrior')],
+};
 
 export default function Home(): JSX.Element {
   const { createGameModal } = useGamesContext();
@@ -73,96 +117,11 @@ export default function Home(): JSX.Element {
         </Text>
 
         {/* TODO: This could be Charactercard? */}
-        <HStack
-          align="stretch"
-          border="1px solid white"
-          flexWrap="wrap"
-          maxW="900px"
-          p={5}
-          w="full"
-        >
-          <Image
-            alt="character avatar"
-            h="474px"
-            objectFit="cover"
-            rounded={10}
-            src="/RG_CharacterSheet_CharacterBuild__v3_ex2.png"
-            w="358px"
-            maxW="100%"
-          />
-          <VStack
-            align="start"
-            flex={1}
-            justify="start"
-            pl={10}
-            pr={6}
-            pt={8}
-            spacing={0}
-          >
-            <Heading _hover={{ color: 'accent', cursor: 'pointer' }}>
-              McLizard the Hizard
-            </Heading>
-            <Link fontSize="sm" href="/" isExternal fontWeight={300}>
-              0xaBc...123
-            </Link>
-            <HStack flexWrap="wrap" mt={6} mb={8} spacing={4}>
-              {/* TODO: Maybe this is a Classtag? */}
-              <HStack spacing={0}>
-                <Box bg="softgreen" h="22px" w="6px" />
-                <Text
-                  bg="softgreen"
-                  color="dark"
-                  fontSize="sm"
-                  fontWeight="bold"
-                  py={2}
-                  px={8}
-                >
-                  Wizard
-                </Text>
-                <Box bg="softgreen" h="22px" w="6px" />
-              </HStack>
-              <HStack spacing={0}>
-                <Box bg="softpurple" h="22px" m={0} w="6px" />
-                <Text
-                  bg="softpurple"
-                  color="dark"
-                  fontSize="sm"
-                  fontWeight="bold"
-                  py={2}
-                  px={8}
-                >
-                  Villager
-                </Text>
-                <Box bg="softpurple" h="22px" w="6px" />
-              </HStack>
-            </HStack>
-
-            <VStack spacing={0}>
-              <Flex align="center" direction="row" py={2}>
-                <Image
-                  alt="users"
-                  height="20px"
-                  src="/icons/xp.svg"
-                  width="20px"
-                />
-                <Text fontSize="lg" fontWeight="400" ml="4">
-                  800 XP
-                </Text>
-              </Flex>
-              <Flex align="center" direction="row" py={2}>
-                <Image
-                  alt="users"
-                  height="20px"
-                  src="/icons/items.svg"
-                  width="20px"
-                />
-                <Text fontSize="lg" fontWeight="400" ml="4">
-                  12 items
-                </Text>
-              </Flex>
-            </VStack>
-          </VStack>
-        </HStack>
+        <CharacterCard
+          character={dummyCharacter}
+          chainId={DEFAULT_CHAIN.id}
+          dummy
+        />
       </VStack>
 
       {createGameModal && <CreateGameModal />}

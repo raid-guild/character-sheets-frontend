@@ -66,6 +66,7 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
               maxW: '100rem',
               mx: 'auto',
               py: 12,
+              px: { base: 4, lg: 8 },
             })}
       >
         {children}

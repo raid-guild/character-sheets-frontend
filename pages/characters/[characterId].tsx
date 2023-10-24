@@ -1,6 +1,9 @@
 import {
+  AspectRatio,
   Box,
   Button,
+  GridItem,
+  Heading,
   HStack,
   Image,
   Link,
@@ -18,13 +21,15 @@ import { isAddress } from 'viem';
 import { useAccount, useNetwork } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
-import { ClassTag, VillagerClassTag } from '@/components/ClassTag';
+import { ArrowBackIcon } from '@/components/ArrowBackIcon';
+import { ClassTag } from '@/components/ClassTag';
 import { ItemTag } from '@/components/ItemTag';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
+import { XPDisplay } from '@/components/XPDisplay';
 import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
 import { GameProvider, useGame } from '@/contexts/GameContext';
 import { DEFAULT_CHAIN } from '@/lib/web3';
@@ -116,88 +121,90 @@ function CharacterPage(): JSX.Element {
       experience,
       image,
       name,
+      jailed,
     } = pageCharacter;
 
     return (
-      <VStack as="main" pt={10} pb={20} spacing={10} maxW="2xl" mx="auto">
+      <VStack w="100%" spacing={10}>
         <Link
           alignItems="center"
           alignSelf="flex-start"
           as={NextLink}
           display="flex"
-          gap={2}
+          gap={4}
           href={`/games/${game.id}`}
           size="sm"
           w="auto"
+          _hover={{}}
         >
-          <Image alt="back arrow" h="14px" src="/icons/arrow-back.svg" />
-          View {game.name}
+          <Button variant="ghost">
+            <HStack>
+              <ArrowBackIcon w="1.5rem" h="1.5rem" />
+              <Text as="span">View {game.name}</Text>
+            </HStack>
+          </Button>
         </Link>
-        <HStack w="100%" justify="space-between" spacing={16}>
-          <VStack align="stretch">
-            <Text fontWeight="bold" fontSize="xl">
-              {name}
-            </Text>
-            <Text as="span" fontSize="xs">
-              {description}
-            </Text>
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={10} w="100%">
+          <Box pos="relative" minW="25rem">
+            <AspectRatio ratio={10 / 13} w="full">
+              <Image
+                alt="character avatar"
+                filter={jailed ? 'grayscale(100%)' : 'none'}
+                w="100%"
+                h="100%"
+                borderRadius="lg"
+                objectFit="cover"
+                src={image}
+              />
+            </AspectRatio>
+            {jailed && (
+              <Text
+                bg="black"
+                color="red"
+                fontWeight="bold"
+                left="50%"
+                pos="absolute"
+                top="50%"
+                transform="translate(-50%, -50%)"
+                variant="secondary"
+              >
+                JAILED
+              </Text>
+            )}
+            <HStack pos="absolute" top={4} left={4}>
+              <XPDisplay experience={experience} />
+            </HStack>
+          </Box>
+          <VStack align="start" spacing={4}>
+            <Heading>{name}</Heading>
             <Link
               alignItems="center"
-              color="blue"
               display="flex"
               fontSize="sm"
               gap={2}
               href={`${EXPLORER_URLS[chainId]}/address/${account}`}
               isExternal
+              textDecor="underline"
             >
               {shortenAddress(account)}
-              <Image
-                alt="link to new tab"
-                h="14px"
-                src="/icons/new-tab.svg"
-                w="14px"
-              />
             </Link>
-            {isConnected && (
-              <Box w="100px">
-                <CharacterActionMenu character={pageCharacter} />
-              </Box>
-            )}
-            <Box background="black" h="3px" my={4} w={20} />
-            <Text fontSize="sm">Classes:</Text>
             <Wrap>
-              <WrapItem>
-                <VillagerClassTag />
-              </WrapItem>
               {classes.map(classEntity => (
                 <WrapItem key={classEntity.classId}>
-                  <ClassTag classEntity={classEntity} />
+                  <ClassTag {...classEntity} />
                 </WrapItem>
               ))}
             </Wrap>
+            <Text as="span" fontSize="xs">
+              {description}
+            </Text>
+            {isConnected && (
+              <Box>
+                <CharacterActionMenu character={pageCharacter} />
+              </Box>
+            )}
           </VStack>
-          <Box pos="relative">
-            <Image
-              alt="character avatar"
-              h="240px"
-              minW="160px"
-              objectFit="cover"
-              src={image}
-              w="160px"
-            />
-            <HStack
-              bg="white"
-              border="1px solid black"
-              pos="absolute"
-              right="0"
-              bottom="0"
-              px={1}
-              fontSize="xs"
-            >
-              <Text>{experience} XP</Text>
-            </HStack>
-          </Box>
-        </HStack>
+        </SimpleGrid>
         <SimpleGrid columns={2} spacing={4} w="100%">
           <Button
             border="3px solid black"
@@ -219,15 +226,13 @@ function CharacterPage(): JSX.Element {
           </Button>
         </SimpleGrid>
         {activeTab === 'inventory' && items.length > 0 && (
-          <VStack w="100%" align="stretch" spacing={4}>
-            <Wrap>
-              {items.map(item => (
-                <WrapItem key={item.itemId}>
-                  <ItemTag item={item} holderId={characterId} />
-                </WrapItem>
-              ))}
-            </Wrap>
-          </VStack>
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4} w="100%">
+            {items.map(item => (
+              <GridItem key={item.itemId}>
+                <ItemTag item={item} holderId={characterId} />
+              </GridItem>
+            ))}
+          </SimpleGrid>
         )}
         {activeTab === 'transactions' && <Text>Coming soon!</Text>}
       </VStack>
