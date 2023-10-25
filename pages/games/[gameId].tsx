@@ -40,6 +40,7 @@ import { RemoveItemRequirementModal } from '@/components/Modals/RemoveItemRequir
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
 import { RestoreCharacterModal } from '@/components/Modals/RestoreCharacterModal';
 import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
+import { TransferCharacterModal } from '@/components/Modals/TransferCharacterModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
 import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
 import { XPPanel } from '@/components/XPPanel';
@@ -94,6 +95,7 @@ function GamePage(): JSX.Element {
     removeCharacterModal,
     renounceCharacterModal,
     revokeClassModal,
+    transferCharacterModal,
   } = useActions();
   const {
     addRequirementModal,
@@ -324,6 +326,7 @@ function GamePage(): JSX.Element {
       {removeRequirementModal && <RemoveItemRequirementModal />}
       {renounceCharacterModal && <RenounceCharacterModal />}
       {revokeClassModal && <RevokeClassModal />}
+      {transferCharacterModal && <TransferCharacterModal />}
     </>
   );
 }

@@ -6,6 +6,7 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { zeroAddress } from 'viem';
 import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
@@ -123,6 +124,11 @@ export const ActionsProvider: React.FC<{
     if (game?.classes.filter(c => c.claimable).length === 0) {
       actions = actions.filter(a => a !== PlayerActions.CLAIM_CLASS);
     }
+
+    if (selectedCharacter?.approved !== zeroAddress) {
+      actions = actions.filter(a => a !== PlayerActions.APPROVE_TRANSFER);
+    }
+
     return actions;
   }, [address, game, selectedCharacter]);
 
@@ -151,6 +157,12 @@ export const ActionsProvider: React.FC<{
           a =>
             a !== GameMasterActions.FREE_PLAYER &&
             a !== GameMasterActions.REMOVE_CHARACTER,
+        );
+      }
+
+      if (selectedCharacter?.approved !== address?.toLowerCase()) {
+        actions = actions.filter(
+          a => a !== GameMasterActions.TRANSFER_CHARACTER,
         );
       }
 
