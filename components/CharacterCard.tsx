@@ -14,8 +14,9 @@ import { useMemo } from 'react';
 import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
+import { useGame } from '@/contexts/GameContext';
 import { EXPLORER_URLS } from '@/utils/constants';
-import { shortenAddress, shortenText } from '@/utils/helpers';
+import { formatExperience, shortenAddress, shortenText } from '@/utils/helpers';
 import { Character } from '@/utils/types';
 
 import { ClassTag, VillagerClassTag } from './ClassTag';
@@ -25,7 +26,8 @@ export const CharacterCard: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { isMaster } = useGame();
 
   const {
     id,
@@ -98,14 +100,17 @@ export const CharacterCard: React.FC<{
               px={1}
               fontSize="xs"
             >
-              <Text color="black">{experience} XP</Text>
+              <Text color="black">{formatExperience(experience)} XP</Text>
             </HStack>
           </Box>
           <VStack align="stretch" w="120px">
             <Button as={NextLink} href={`/characters/${id}`} size="sm" w="100%">
               View
             </Button>
-            {isConnected && <CharacterActionMenu character={character} />}
+            {isConnected &&
+              (isMaster || address?.toLowerCase() === character.player) && (
+                <CharacterActionMenu character={character} />
+              )}
           </VStack>
         </VStack>
         <VStack align="flex-start" flex={1}>
@@ -166,7 +171,8 @@ export const SmallCharacterCard: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { isMaster } = useGame();
 
   const {
     id,
@@ -225,14 +231,17 @@ export const SmallCharacterCard: React.FC<{
               px={1}
               fontSize="2xs"
             >
-              <Text color="black">{experience} XP</Text>
+              <Text color="black">{formatExperience(experience)} XP</Text>
             </HStack>
           </Box>
           <VStack align="stretch" w="100px">
             <Button as={NextLink} href={`/characters/${id}`} size="sm" w="100%">
               View
             </Button>
-            {isConnected && <CharacterActionMenu character={character} />}
+            {isConnected &&
+              (isMaster || address?.toLowerCase() === character.player) && (
+                <CharacterActionMenu character={character} />
+              )}
           </VStack>
         </VStack>
         <VStack align="flex-start" flex={1}>
