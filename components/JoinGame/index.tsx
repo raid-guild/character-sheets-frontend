@@ -7,12 +7,6 @@ import {
   FormLabel,
   Image,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
   SimpleGrid,
   Switch,
   Text,
@@ -42,15 +36,7 @@ import {
 
 type Traits = [string, string, string, string, string, string];
 
-type JoinGameModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-};
-
-export const JoinGameModal: React.FC<JoinGameModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export const JoinGame: React.FC = () => {
   const { game, character, reload: reloadGame } = useGame();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -133,10 +119,8 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   }, [setCharacterAvatar]);
 
   useEffect(() => {
-    if (!isOpen) {
-      resetData();
-    }
-  }, [resetData, isOpen]);
+    resetData();
+  }, [resetData]);
 
   const mergeTraitImages = useCallback(async (): Promise<string> => {
     try {
@@ -353,278 +337,240 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const showCreateButton =
     step === 1 && (activeTab === TraitType.MOUTH || showUpload);
 
-  const content = () => {
-    if (txFailed) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Transaction failed.</Text>
-          <Button onClick={onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (isSynced) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Your character was successfully created!</Text>
-          <Button onClick={onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (txHash) {
-      return (
-        <TransactionPending
-          isSyncing={isSyncing}
-          text="Your character is being created."
-          txHash={txHash}
-        />
-      );
-    }
-
+  if (txFailed) {
     return (
-      <VStack as="form" onSubmit={onJoinCharacter} spacing={8}>
-        {step === 0 && (
-          <>
-            <FormControl isInvalid={showError && !characterName}>
-              <FormLabel>Character Name</FormLabel>
-              <Input
-                onChange={e => setCharacterName(e.target.value)}
-                type="text"
-                value={characterName}
-              />
-              {showError && !characterName && (
-                <FormHelperText color="red">
-                  A character name is required
-                </FormHelperText>
-              )}
-            </FormControl>
-            <FormControl isInvalid={showError && !characterDescription}>
-              <FormLabel>Character Description (200 character limit)</FormLabel>
-              <Textarea
-                onChange={e => setCharacterDescription(e.target.value)}
-                value={characterDescription}
-              />
-              {showError && !characterDescription && (
-                <FormHelperText color="red">
-                  A character description is required
-                </FormHelperText>
-              )}
-              {showError && invalidCharacterDescription && (
-                <FormHelperText color="red">
-                  Character description must be less than 200 characters
-                </FormHelperText>
-              )}
-            </FormControl>
-          </>
-        )}
+      <VStack py={10} spacing={4}>
+        <Text>Transaction failed.</Text>
+        <Button onClick={() => undefined} variant="outline">
+          Close
+        </Button>
+      </VStack>
+    );
+  }
 
-        {step === 1 && (
-          <>
-            {step === 1 && (
-              <VStack>
-                <Flex align="center" gap={4}>
-                  <Text>Want to upload your own image avatar?</Text>
-                  <Switch
-                    isChecked={showUpload}
-                    onChange={() => setShowUpload(!showUpload)}
-                  />
-                </Flex>
-                <Text fontSize="12px">
-                  Uploading your own avatar prevents visual rendering of
-                  equipped items in the future.
-                </Text>
-              </VStack>
-            )}
-            {showUpload && (
-              <FormControl isInvalid={showError && !characterAvatar}>
-                <FormLabel>Character Avatar</FormLabel>
-                {!characterAvatar && (
-                  <Input
-                    accept=".png, .jpg, .jpeg, .svg"
-                    disabled={isUploading}
-                    onChange={e =>
-                      setCharacterAvatar(e.target.files?.[0] ?? null)
-                    }
-                    type="file"
-                    variant="file"
-                  />
-                )}
-                {characterAvatar && (
-                  <Flex align="center" gap={10} mt={4}>
-                    <Image
-                      alt="character avatar"
-                      objectFit="contain"
-                      src={URL.createObjectURL(characterAvatar)}
-                      w="300px"
-                    />
-                    <Button
-                      isDisabled={isUploading || isUploaded}
-                      isLoading={isUploading}
-                      loadingText="Uploading..."
-                      mt={4}
-                      onClick={!isUploaded ? onRemove : undefined}
-                      type="button"
-                      variant="outline"
-                    >
-                      {isUploaded ? 'Uploaded' : 'Remove'}
-                    </Button>
-                  </Flex>
-                )}
-                {showError && !characterAvatar && (
-                  <FormHelperText color="red">
-                    A character avatar is required
-                  </FormHelperText>
-                )}
-              </FormControl>
-            )}
-            {!showUpload && (
-              <>
-                <SimpleGrid columns={6} spacing={0.5} w="100%">
-                  <Button
-                    border="3px solid black"
-                    onClick={() => setActiveTab(TraitType.BACKGROUND)}
-                    p={4}
-                    size="xs"
-                    variant={
-                      activeTab === TraitType.BACKGROUND ? 'solid' : 'outline'
-                    }
-                    w="100%"
-                  >
-                    <Text>Background</Text>
-                  </Button>
-                  <Button
-                    border="3px solid black"
-                    onClick={() => setActiveTab(TraitType.BODY)}
-                    p={4}
-                    size="xs"
-                    variant={activeTab === TraitType.BODY ? 'solid' : 'outline'}
-                    w="100%"
-                  >
-                    <Text>Body</Text>
-                  </Button>
-                  <Button
-                    border="3px solid black"
-                    onClick={() => setActiveTab(TraitType.EYES)}
-                    p={4}
-                    size="xs"
-                    variant={activeTab === TraitType.EYES ? 'solid' : 'outline'}
-                    w="100%"
-                  >
-                    <Text>Eyes</Text>
-                  </Button>
-                  <Button
-                    border="3px solid black"
-                    onClick={() => setActiveTab(TraitType.HAIR)}
-                    p={4}
-                    size="xs"
-                    variant={activeTab === TraitType.HAIR ? 'solid' : 'outline'}
-                    w="100%"
-                  >
-                    <Text>Hair</Text>
-                  </Button>
-                  <Button
-                    border="3px solid black"
-                    onClick={() => setActiveTab(TraitType.CLOTHING)}
-                    p={4}
-                    size="xs"
-                    variant={
-                      activeTab === TraitType.CLOTHING ? 'solid' : 'outline'
-                    }
-                    w="100%"
-                  >
-                    <Text>Clothing</Text>
-                  </Button>
-                  <Button
-                    border="3px solid black"
-                    onClick={() => setActiveTab(TraitType.MOUTH)}
-                    p={4}
-                    size="xs"
-                    variant={
-                      activeTab === TraitType.MOUTH ? 'solid' : 'outline'
-                    }
-                    w="100%"
-                  >
-                    <Text>Mouth</Text>
-                  </Button>
-                </SimpleGrid>
+  if (isSynced) {
+    return (
+      <VStack py={10} spacing={4}>
+        <Text>Your character was successfully created!</Text>
+        <Button onClick={() => undefined} variant="outline">
+          Close
+        </Button>
+      </VStack>
+    );
+  }
 
-                <TraitVariantControls
-                  activeTab={activeTab}
-                  setTraits={setTraits}
-                  traits={traits}
+  if (txHash) {
+    return (
+      <TransactionPending
+        isSyncing={isSyncing}
+        text="Your character is being created."
+        txHash={txHash}
+      />
+    );
+  }
+
+  return (
+    <VStack as="form" onSubmit={onJoinCharacter} spacing={8}>
+      {step === 0 && (
+        <>
+          <FormControl isInvalid={showError && !characterName}>
+            <FormLabel>Character Name</FormLabel>
+            <Input
+              onChange={e => setCharacterName(e.target.value)}
+              type="text"
+              value={characterName}
+            />
+            {showError && !characterName && (
+              <FormHelperText color="red">
+                A character name is required
+              </FormHelperText>
+            )}
+          </FormControl>
+          <FormControl isInvalid={showError && !characterDescription}>
+            <FormLabel>Character Description (200 character limit)</FormLabel>
+            <Textarea
+              onChange={e => setCharacterDescription(e.target.value)}
+              value={characterDescription}
+            />
+            {showError && !characterDescription && (
+              <FormHelperText color="red">
+                A character description is required
+              </FormHelperText>
+            )}
+            {showError && invalidCharacterDescription && (
+              <FormHelperText color="red">
+                Character description must be less than 200 characters
+              </FormHelperText>
+            )}
+          </FormControl>
+        </>
+      )}
+
+      {step === 1 && (
+        <>
+          {step === 1 && (
+            <VStack>
+              <Flex align="center" gap={4}>
+                <Text>Want to upload your own image avatar?</Text>
+                <Switch
+                  isChecked={showUpload}
+                  onChange={() => setShowUpload(!showUpload)}
                 />
-
-                <Box
-                  bg="lightgrey"
+              </Flex>
+              <Text fontSize="12px">
+                Uploading your own avatar prevents visual rendering of equipped
+                items in the future.
+              </Text>
+            </VStack>
+          )}
+          {showUpload && (
+            <FormControl isInvalid={showError && !characterAvatar}>
+              <FormLabel>Character Avatar</FormLabel>
+              {!characterAvatar && (
+                <Input
+                  accept=".png, .jpg, .jpeg, .svg"
+                  disabled={isUploading}
+                  onChange={e =>
+                    setCharacterAvatar(e.target.files?.[0] ?? null)
+                  }
+                  type="file"
+                  variant="file"
+                />
+              )}
+              {characterAvatar && (
+                <Flex align="center" gap={10} mt={4}>
+                  <Image
+                    alt="character avatar"
+                    objectFit="contain"
+                    src={URL.createObjectURL(characterAvatar)}
+                    w="300px"
+                  />
+                  <Button
+                    isDisabled={isUploading || isUploaded}
+                    isLoading={isUploading}
+                    loadingText="Uploading..."
+                    mt={4}
+                    onClick={!isUploaded ? onRemove : undefined}
+                    type="button"
+                    variant="outline"
+                  >
+                    {isUploaded ? 'Uploaded' : 'Remove'}
+                  </Button>
+                </Flex>
+              )}
+              {showError && !characterAvatar && (
+                <FormHelperText color="red">
+                  A character avatar is required
+                </FormHelperText>
+              )}
+            </FormControl>
+          )}
+          {!showUpload && (
+            <>
+              <SimpleGrid columns={6} spacing={0.5} w="100%">
+                <Button
                   border="3px solid black"
-                  pos="relative"
-                  h="400px"
-                  w="300px"
+                  onClick={() => setActiveTab(TraitType.BACKGROUND)}
+                  p={4}
+                  size="xs"
+                  variant={
+                    activeTab === TraitType.BACKGROUND ? 'solid' : 'outline'
+                  }
+                  w="100%"
                 >
-                  {traits.map((trait: string) => {
-                    return (
-                      <Image
-                        alt={`${activeTab} trait layer`}
-                        h="100%"
-                        key={`image-${trait}`}
-                        left={0}
-                        objectFit="cover"
-                        pos="absolute"
-                        src={getImageUrl(trait)}
-                        top={0}
-                        w="100%"
-                      />
-                    );
-                  })}
-                </Box>
-              </>
-            )}
-          </>
-        )}
+                  <Text>Background</Text>
+                </Button>
+                <Button
+                  border="3px solid black"
+                  onClick={() => setActiveTab(TraitType.BODY)}
+                  p={4}
+                  size="xs"
+                  variant={activeTab === TraitType.BODY ? 'solid' : 'outline'}
+                  w="100%"
+                >
+                  <Text>Body</Text>
+                </Button>
+                <Button
+                  border="3px solid black"
+                  onClick={() => setActiveTab(TraitType.EYES)}
+                  p={4}
+                  size="xs"
+                  variant={activeTab === TraitType.EYES ? 'solid' : 'outline'}
+                  w="100%"
+                >
+                  <Text>Eyes</Text>
+                </Button>
+                <Button
+                  border="3px solid black"
+                  onClick={() => setActiveTab(TraitType.HAIR)}
+                  p={4}
+                  size="xs"
+                  variant={activeTab === TraitType.HAIR ? 'solid' : 'outline'}
+                  w="100%"
+                >
+                  <Text>Hair</Text>
+                </Button>
+                <Button
+                  border="3px solid black"
+                  onClick={() => setActiveTab(TraitType.CLOTHING)}
+                  p={4}
+                  size="xs"
+                  variant={
+                    activeTab === TraitType.CLOTHING ? 'solid' : 'outline'
+                  }
+                  w="100%"
+                >
+                  <Text>Clothing</Text>
+                </Button>
+                <Button
+                  border="3px solid black"
+                  onClick={() => setActiveTab(TraitType.MOUTH)}
+                  p={4}
+                  size="xs"
+                  variant={activeTab === TraitType.MOUTH ? 'solid' : 'outline'}
+                  w="100%"
+                >
+                  <Text>Mouth</Text>
+                </Button>
+              </SimpleGrid>
 
-        {!showCreateButton && (
-          <Flex gap={4}>
-            {step > 0 && (
-              <Button
-                isDisabled={isDisabled}
-                isLoading={isLoading}
-                loadingText="Back"
-                onClick={onBack}
-                size="sm"
-                type="button"
-                variant="outline"
+              <TraitVariantControls
+                activeTab={activeTab}
+                setTraits={setTraits}
+                traits={traits}
+              />
+
+              <Box
+                bg="lightgrey"
+                border="3px solid black"
+                pos="relative"
+                h="400px"
+                w="300px"
               >
-                Back
-              </Button>
-            )}
-            <Button
-              isDisabled={isDisabled}
-              isLoading={isLoading}
-              loadingText="Next"
-              onClick={onNext}
-              size="sm"
-              type="button"
-            >
-              Next
-            </Button>
-          </Flex>
-        )}
+                {traits.map((trait: string) => {
+                  return (
+                    <Image
+                      alt={`${activeTab} trait layer`}
+                      h="100%"
+                      key={`image-${trait}`}
+                      left={0}
+                      objectFit="cover"
+                      pos="absolute"
+                      src={getImageUrl(trait)}
+                      top={0}
+                      w="100%"
+                    />
+                  );
+                })}
+              </Box>
+            </>
+          )}
+        </>
+      )}
 
-        {showCreateButton && (
-          <Flex alignItems="center" direction="column" gap={4}>
-            <Button
-              isDisabled={isDisabled}
-              isLoading={isLoading}
-              loadingText="Creating..."
-              type="submit"
-            >
-              Create
-            </Button>
+      {!showCreateButton && (
+        <Flex gap={4}>
+          {step > 0 && (
             <Button
               isDisabled={isDisabled}
               isLoading={isLoading}
@@ -636,28 +582,44 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
             >
               Back
             </Button>
-          </Flex>
-        )}
-      </VStack>
-    );
-  };
+          )}
+          <Button
+            isDisabled={isDisabled}
+            isLoading={isLoading}
+            loadingText="Next"
+            onClick={onNext}
+            size="sm"
+            type="button"
+          >
+            Next
+          </Button>
+        </Flex>
+      )}
 
-  return (
-    <Modal
-      closeOnEsc={!isLoading}
-      closeOnOverlayClick={!isLoading}
-      isOpen={isOpen}
-      onClose={onClose}
-    >
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>
-          <Text>Create your Character</Text>
-          <ModalCloseButton size="lg" />
-        </ModalHeader>
-        <ModalBody>{content()}</ModalBody>
-      </ModalContent>
-    </Modal>
+      {showCreateButton && (
+        <Flex alignItems="center" direction="column" gap={4}>
+          <Button
+            isDisabled={isDisabled}
+            isLoading={isLoading}
+            loadingText="Creating..."
+            type="submit"
+          >
+            Create
+          </Button>
+          <Button
+            isDisabled={isDisabled}
+            isLoading={isLoading}
+            loadingText="Back"
+            onClick={onBack}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            Back
+          </Button>
+        </Flex>
+      )}
+    </VStack>
   );
 };
 

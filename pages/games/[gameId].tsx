@@ -27,6 +27,7 @@ import { CharactersPanel } from '@/components/CharactersPanel';
 import { ClassesPanel } from '@/components/ClassesPanel';
 import { GameTotals } from '@/components/GameTotals';
 import { ItemsPanel } from '@/components/ItemsPanel';
+import { JoinGame } from '@/components/JoinGame';
 import { AddItemRequirementModal } from '@/components/Modals/AddItemRequirementModal';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { ClaimClassModal } from '@/components/Modals/ClaimClassModal';
@@ -36,7 +37,6 @@ import { EditItemClaimableModal } from '@/components/Modals/EditItemClaimableMod
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
 import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
-import { JoinGameModal } from '@/components/Modals/JoinGameModal';
 import { RemoveCharacterModal } from '@/components/Modals/RemoveCharacterModal';
 import { RemoveItemRequirementModal } from '@/components/Modals/RemoveItemRequirementModal';
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
@@ -104,11 +104,11 @@ function GamePage(): JSX.Element {
   } = useItemActions();
   const { isConnected } = useAccount();
 
-  const joinGameModal = useDisclosure();
   const updateGameMetadata = useDisclosure();
   const restoreCharacterModal = useDisclosure();
 
   const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
+  const [showJoinGame, setShowJoinGame] = useState(false);
 
   useEffect(() => {
     if (isConnected) {
@@ -267,14 +267,15 @@ function GamePage(): JSX.Element {
         <VStack align="stretch" spacing="5px">
           {isConnectedAndMounted && (
             <VStack p={8} bg="cardBG" align="start" spacing={4}>
-              {!character && (
+              {!character && !showJoinGame && (
                 <HStack w="100%" spacing={4}>
-                  <Button variant="solid" onClick={joinGameModal.onOpen}>
+                  <Button variant="solid" onClick={() => setShowJoinGame(true)}>
                     Join this Game
                   </Button>
                   <Text>You don’t have a character sheet in this game.</Text>
                 </HStack>
               )}
+              {!character && showJoinGame && <JoinGame />}
               {character && character.removed && !character.jailed && (
                 <HStack spacing={4}>
                   <Button
@@ -370,7 +371,6 @@ function GamePage(): JSX.Element {
   return (
     <>
       {content()}
-      <JoinGameModal {...joinGameModal} />
       <UpdateGameMetadataModal {...updateGameMetadata} />
       <RestoreCharacterModal {...restoreCharacterModal} />
 
