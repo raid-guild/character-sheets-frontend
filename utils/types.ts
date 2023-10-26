@@ -13,7 +13,7 @@ export type GameMeta = Metadata & {
   characters: { id: string }[];
   classes: { id: string }[];
   items: { id: string }[];
-  experience: string;
+  experience: bigint;
 };
 
 export type Game = Metadata & {
@@ -27,7 +27,7 @@ export type Game = Metadata & {
   characters: Character[];
   classes: Class[];
   items: Item[];
-  experience: string;
+  experience: bigint;
 };
 
 export type Character = Metadata & {
@@ -38,7 +38,7 @@ export type Character = Metadata & {
   player: string;
   jailed: boolean;
   removed: boolean;
-  experience: string;
+  experience: bigint;
   uri: string;
   classes: Class[];
   heldItems: Item[];

@@ -14,7 +14,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { maxUint256, parseAbi } from 'viem';
+import { maxUint256, parseAbi, parseUnits } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
@@ -43,9 +43,10 @@ export const DropExperienceModal: React.FC = () => {
   const hasError = useMemo(
     () =>
       !amount ||
-      BigInt(amount).toString() === 'NaN' ||
-      BigInt(amount) <= BigInt(0) ||
-      BigInt(amount) > maxUint256,
+      !!amount.split('.')[1] ||
+      parseUnits(amount, 18).toString() === 'NaN' ||
+      parseUnits(amount, 18) <= BigInt(0) ||
+      parseUnits(amount, 18) > maxUint256,
     [amount],
   );
 
@@ -87,7 +88,7 @@ export const DropExperienceModal: React.FC = () => {
       setIsDropping(true);
 
       const character = selectedCharacter.account as Address;
-      const amountBG = BigInt(amount);
+      const amountBG = parseUnits(amount, 18);
 
       try {
         const transactionhash = await walletClient.writeContract({
@@ -180,6 +181,9 @@ export const DropExperienceModal: React.FC = () => {
 
     return (
       <VStack as="form" onSubmit={onDropExp} spacing={8}>
+        <Text textAlign="center">
+          Amount must be a whole number greater than 0.
+        </Text>
         <FormControl isInvalid={showError}>
           <FormLabel>Amount</FormLabel>
           <Input

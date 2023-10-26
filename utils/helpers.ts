@@ -1,3 +1,5 @@
+import { formatUnits } from 'viem';
+
 import {
   CharacterInfoFragment,
   ClassInfoFragment,
@@ -90,6 +92,25 @@ export const fetchMetadata = async (uri: string): Promise<Metadata> => {
   }
 };
 
+export const formatExperience = (experience: bigint): string => {
+  const experienceAsNumber = Number(formatUnits(experience, 18));
+  if (experienceAsNumber < 0.01) {
+    return '< 0.01';
+  }
+
+  if (experienceAsNumber > 1000000) {
+    return `${(experienceAsNumber / 1000000).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}M`;
+  }
+
+  return experienceAsNumber.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 export const formatCharacter = async (
   character: CharacterInfoFragment,
   classes: Class[],
@@ -127,7 +148,7 @@ export const formatCharacter = async (
     name: metadata.name,
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
-    experience: character.experience,
+    experience: BigInt(character.experience),
     characterId: character.characterId,
     account: character.account,
     player: character.player,
@@ -205,7 +226,7 @@ export const formatGameMeta = async (
     characters: game.characters,
     classes: game.classes,
     items: game.items,
-    experience: game.experience,
+    experience: BigInt(game.experience),
   };
 };
 
@@ -230,6 +251,6 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
     ),
     classes,
     items,
-    experience: game.experience,
+    experience: BigInt(game.experience),
   };
 };

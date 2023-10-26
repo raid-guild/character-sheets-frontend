@@ -16,6 +16,7 @@ import NextLink from 'next/link';
 import { useMemo } from 'react';
 
 import { useGame } from '@/contexts/GameContext';
+import { formatExperience } from '@/utils/helpers';
 
 export const XPPanel: React.FC = () => {
   const { game } = useGame();
@@ -69,7 +70,7 @@ export const XPPanel: React.FC = () => {
                     <Text>{c.name}</Text>
                   </Flex>
                 </Td>
-                <Td>{c.experience}</Td>
+                <Td>{formatExperience(c.experience)}</Td>
               </Tr>
             ))}
           </Tbody>

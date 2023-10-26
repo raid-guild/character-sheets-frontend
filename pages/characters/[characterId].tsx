@@ -29,7 +29,7 @@ import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
 import { GameProvider, useGame } from '@/contexts/GameContext';
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { EXPLORER_URLS } from '@/utils/constants';
-import { shortenAddress } from '@/utils/helpers';
+import { formatExperience, shortenAddress } from '@/utils/helpers';
 
 export default function CharacterPageOuter(): JSX.Element {
   const {
@@ -194,7 +194,7 @@ function CharacterPage(): JSX.Element {
               px={1}
               fontSize="xs"
             >
-              <Text>{experience} XP</Text>
+              <Text>{formatExperience(experience)} XP</Text>
             </HStack>
           </Box>
         </HStack>

@@ -50,7 +50,7 @@ import {
 } from '@/contexts/ItemActionsContext';
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { EXPLORER_URLS } from '@/utils/constants';
-import { shortenAddress } from '@/utils/helpers';
+import { formatExperience, shortenAddress } from '@/utils/helpers';
 
 export default function GamePageOuter(): JSX.Element {
   const {
@@ -259,7 +259,7 @@ function GamePage(): JSX.Element {
             </Tab>
             <Tab gap={2}>
               <Image alt="xp" height="20px" src="/icons/xp.svg" width="20px" />
-              <Text>{experience} XP</Text>
+              <Text>{formatExperience(experience)} XP</Text>
             </Tab>
             <Tab gap={2}>
               <Image

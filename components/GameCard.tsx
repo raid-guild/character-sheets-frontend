@@ -10,8 +10,9 @@ import {
 import NextLink from 'next/link';
 
 import { EXPLORER_URLS } from '@/utils/constants';
-import { shortenAddress, shortenText } from '@/utils/helpers';
+import { formatExperience, shortenAddress, shortenText } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
+
 type GameCardProps = GameMeta & {
   chainId: number;
 };
@@ -72,7 +73,7 @@ export const GameCard: React.FC<GameCardProps> = ({
       <Flex align="center" direction="row" py={1}>
         <Image alt="users" height="20px" src="/icons/xp.svg" width="20px" />
         <Text fontSize="lg" fontWeight="400" ml="4">
-          {experience} XP
+          {formatExperience(experience)} XP
         </Text>
       </Flex>
       <Flex align="center" direction="row" py={1}>
