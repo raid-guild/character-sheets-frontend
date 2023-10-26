@@ -141,26 +141,12 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
   const mergeTraitImages = useCallback(async (): Promise<string> => {
     try {
       setIsMerging(true);
-      const [blob0, blob1, blob2, blob3, blob4, blob5] = await Promise.all([
-        fetch(getImageUrl(traits[0])).then(r => r.blob()),
-        fetch(getImageUrl(traits[1])).then(r => r.blob()),
-        fetch(getImageUrl(traits[2])).then(r => r.blob()),
-        fetch(getImageUrl(traits[3])).then(r => r.blob()),
-        fetch(getImageUrl(traits[4])).then(r => r.blob()),
-        fetch(getImageUrl(traits[5])).then(r => r.blob()),
-      ]);
-
-      const formData = new FormData();
-      formData.append('layer0', blob0);
-      formData.append('layer1', blob1);
-      formData.append('layer2', blob2);
-      formData.append('layer3', blob3);
-      formData.append('layer4', blob4);
-      formData.append('layer5', blob5);
 
       const response = await fetch(`/api/uploadTraits`, {
         method: 'POST',
-        body: formData,
+        body: JSON.stringify({
+          traits,
+        }),
       });
 
       if (!response.ok)
@@ -184,57 +170,59 @@ export const JoinGameModal: React.FC<JoinGameModalProps> = ({
         return;
       }
 
-      if (!walletClient) throw new Error('Could not find a wallet client');
-      if (!game) throw new Error('Missing game data');
-      if (character) throw new Error('Character already exists');
-
-      let cid = '';
-
-      if (showUpload) {
-        cid = await onUpload();
-      } else {
-        cid = await mergeTraitImages();
-      }
-
-      if (!cid)
-        throw new Error('Something went wrong uploading your character avatar');
-
-      const characterMetadata: {
-        name: string;
-        description: string;
-        image: string;
-        attributes?: {
-          trait_type: string;
-          value: string;
-        }[];
-      } = {
-        name: characterName,
-        description: characterDescription,
-        image: `ipfs://${cid}`,
-      };
-
-      if (!showUpload) {
-        const attributes = traits.map((trait, i) => {
-          const [, variant, color] = trait.split('_');
-          const traitTypes = [
-            TraitType.BACKGROUND,
-            TraitType.BODY,
-            TraitType.EYES,
-            TraitType.HAIR,
-            TraitType.CLOTHING,
-            TraitType.MOUTH,
-          ];
-          return {
-            trait_type: traitTypes[Number(i)],
-            value: `${variant.toUpperCase()} ${color.toUpperCase()}`,
-          };
-        });
-        characterMetadata['attributes'] = attributes;
-      }
-
-      setIsCreating(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!game) throw new Error('Missing game data');
+        if (character) throw new Error('Character already exists');
+
+        let cid = '';
+
+        if (showUpload) {
+          cid = await onUpload();
+        } else {
+          cid = await mergeTraitImages();
+        }
+
+        if (!cid)
+          throw new Error(
+            'Something went wrong uploading your character avatar',
+          );
+
+        const characterMetadata: {
+          name: string;
+          description: string;
+          image: string;
+          attributes?: {
+            trait_type: string;
+            value: string;
+          }[];
+        } = {
+          name: characterName,
+          description: characterDescription,
+          image: `ipfs://${cid}`,
+        };
+
+        if (!showUpload) {
+          const attributes = traits.map((trait, i) => {
+            const [, variant, color] = trait.split('_');
+            const traitTypes = [
+              TraitType.BACKGROUND,
+              TraitType.BODY,
+              TraitType.EYES,
+              TraitType.HAIR,
+              TraitType.CLOTHING,
+              TraitType.MOUTH,
+            ];
+            return {
+              trait_type: traitTypes[Number(i)],
+              value: `${variant.toUpperCase()} ${color.toUpperCase()}`,
+            };
+          });
+          characterMetadata['attributes'] = attributes;
+        }
+
+        setIsCreating(true);
+
         const res = await fetch(
           '/api/uploadMetadata?name=characterMetadata.json',
           {
