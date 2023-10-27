@@ -421,22 +421,34 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
       )}
 
       {step === 1 && (
-        <>
-          {step === 1 && (
-            <VStack>
-              <Flex align="center" gap={4}>
-                <Text>Want to upload your own image avatar?</Text>
-                <Switch
-                  isChecked={showUpload}
-                  onChange={() => setShowUpload(!showUpload)}
-                />
-              </Flex>
-              <Text fontSize="12px">
-                Uploading your own avatar prevents visual rendering of equipped
-                items in the future.
+        <VStack pl={6} pr={20} spacing={8} w="100%">
+          <VStack alignItems="flex-start" w="100%">
+            <Text>Want to upload your own avatar image?</Text>
+            <Text fontSize="xs">
+              Uploading your own avatar prevents visual rendering of equipped
+              items in the future.
+            </Text>
+            <Flex align="center" gap={4} mt={4}>
+              <Text
+                color={showUpload ? 'white' : 'accent'}
+                fontSize="sm"
+                fontWeight="500"
+              >
+                No
               </Text>
-            </VStack>
-          )}
+              <Switch
+                isChecked={showUpload}
+                onChange={() => setShowUpload(!showUpload)}
+              />
+              <Text
+                color={showUpload ? 'accent' : 'white'}
+                fontSize="sm"
+                fontWeight="500"
+              >
+                Yes
+              </Text>
+            </Flex>
+          </VStack>
           {showUpload && (
             <FormControl isInvalid={showError && !characterAvatar}>
               <FormLabel>Character Avatar</FormLabel>
@@ -579,7 +591,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
               </Box>
             </>
           )}
-        </>
+        </VStack>
       )}
 
       {step === 0 && (

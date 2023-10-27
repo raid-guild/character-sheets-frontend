@@ -233,20 +233,25 @@ const Modal = {
 const Switch = {
   baseStyle: {
     track: {
-      background: 'gray.400',
-      borderRadius: '10%',
-      height: '14px',
+      alignItems: 'center',
+      background: 'cardBG',
+      border: '1px solid white',
+      borderRadius: '50px',
+      h: '14px',
+      w: '40px',
 
       _checked: {
-        background: 'black',
+        background: 'cardBG',
       },
     },
     thumb: {
-      height: '100%',
-      w: '40%',
+      background: 'accent',
+      h: '11px',
+      ml: '3px',
+      w: '11px',
 
       _checked: {
-        transform: 'translateX(18px)',
+        transform: 'translateX(23px)',
       },
     },
   },
