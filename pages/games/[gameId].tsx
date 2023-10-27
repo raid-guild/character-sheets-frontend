@@ -1,5 +1,6 @@
 import {
   AspectRatio,
+  Box,
   Button,
   Flex,
   Grid,
@@ -18,7 +19,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { isAddress } from 'viem';
 import { useAccount } from 'wagmi';
 
@@ -109,6 +110,8 @@ function GamePage(): JSX.Element {
 
   const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
   const [showJoinGame, setShowJoinGame] = useState(false);
+
+  const topOfCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isConnected) {
@@ -264,7 +267,13 @@ function GamePage(): JSX.Element {
             </Link>
           ))}
         </VStack>
-        <VStack align="stretch" spacing="5px">
+        <VStack
+          align="stretch"
+          position="relative"
+          ref={topOfCardRef}
+          spacing="5px"
+        >
+          <Box ref={topOfCardRef} position="absolute" top="-80px" />
           {isConnectedAndMounted && (
             <VStack p={8} bg="cardBG" align="start" spacing={4}>
               {!character && !showJoinGame && (
@@ -278,7 +287,10 @@ function GamePage(): JSX.Element {
                 </HStack>
               )}
               {!character && showJoinGame && (
-                <JoinGame onClose={() => setShowJoinGame(false)} />
+                <JoinGame
+                  onClose={() => setShowJoinGame(false)}
+                  topOfCardRef={topOfCardRef}
+                />
               )}
               {character && character.removed && !character.jailed && (
                 <HStack spacing={4}>

@@ -6,8 +6,11 @@ import {
   FormControl,
   FormHelperText,
   FormLabel,
+  Heading,
+  HStack,
   Image,
   Input,
+  SimpleGrid,
   Switch,
   Text,
   Textarea,
@@ -18,10 +21,12 @@ import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
+import { XPDisplay } from '@/components/XPDisplay';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import { shortenText } from '@/utils/helpers';
 
 import { getImageUrl, TRAITS, Traits, TraitType } from './traits';
 import { TraitVariantControls } from './TraitVariantControls';
@@ -37,9 +42,13 @@ const DEFAULT_TRAITS: Traits = [
 
 type JoinGameProps = {
   onClose: () => void;
+  topOfCardRef: React.RefObject<HTMLDivElement>;
 };
 
-export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
+export const JoinGame: React.FC<JoinGameProps> = ({
+  onClose,
+  topOfCardRef,
+}) => {
   const { game, character, reload: reloadGame } = useGame();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -280,20 +289,23 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
     ],
   );
 
-  const onNext = useCallback(() => {
-    if (hasError) {
-      setShowError(true);
-      return;
-    }
-    setShowError(false);
-    setStep(1);
-  }, [hasError]);
+  const onSetStep = useCallback(
+    (newStep: number) => {
+      if (newStep === 1) {
+        if (hasError) {
+          setShowError(true);
+          return;
+        }
+        setShowError(false);
+      }
 
-  const onBack = useCallback(() => {
-    setStep(0);
-    setShowError(false);
-    setShowUpload(false);
-  }, []);
+      setStep(newStep);
+      topOfCardRef?.current?.scrollIntoView({
+        behavior: 'smooth',
+      });
+    },
+    [hasError, topOfCardRef],
+  );
 
   const isLoading = isCreating || isMerging;
   const isDisabled = isLoading || isUploading;
@@ -334,7 +346,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
     <VStack as="form" onSubmit={onJoinCharacter} spacing={8} w="100%">
       <Flex justify="space-between" w="100%">
         <Text fontSize="sm" textTransform="uppercase">
-          Character creation - step {step + 1} / 2
+          Character creation - {step === 2 ? 'preview' : `${step + 1} / 2`}
         </Text>
         <Button onClick={onClose} size="sm" variant="ghost">
           cancel
@@ -450,25 +462,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
           )}
           {!showUpload && (
             <Flex gap={12} w="100%">
-              <AspectRatio ratio={10 / 13} w="100%">
-                <Box bg="accent" borderRadius="10px" pos="relative">
-                  {traits.map((trait: string) => {
-                    return (
-                      <Image
-                        alt={`${trait.split('_')[1]} trait layer`}
-                        h="100%"
-                        key={`image-${trait}`}
-                        left={0}
-                        objectFit="cover"
-                        pos="absolute"
-                        src={getImageUrl(trait)}
-                        top={0}
-                        w="100%"
-                      />
-                    );
-                  })}
-                </Box>
-              </AspectRatio>
+              <CompositeCharacterImage traits={traits} />
               <VStack w="100%">
                 {traits.map((trait: string, i: number) => (
                   <TraitVariantControls
@@ -485,13 +479,54 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
         </VStack>
       )}
 
+      {step === 2 && (
+        <SimpleGrid
+          border="1px solid white"
+          columns={{ base: 1, md: 2 }}
+          maxW="72rem"
+          p={6}
+          spacing={10}
+          w="100%"
+        >
+          <Box pos="relative">
+            <CompositeCharacterImage traits={traits} />
+            <HStack left={4} pos="absolute" top={4}>
+              <XPDisplay experience={'0'} />
+            </HStack>
+          </Box>
+          <VStack align="flex-start" spacing={6}>
+            <Heading _hover={{ color: 'accent', cursor: 'pointer' }}>
+              {characterName}
+            </Heading>
+            <Text fontSize="sm" fontWeight={300} lineHeight={5}>
+              {shortenText(characterDescription, 100)}
+            </Text>
+            <HStack justify="space-between" w="full">
+              <HStack spacing={4} align="center">
+                <Image
+                  alt="users"
+                  height="20px"
+                  src="/icons/items.svg"
+                  width="20px"
+                />
+                <Text
+                  fontSize="2xs"
+                  letterSpacing="3px"
+                  textTransform="uppercase"
+                >
+                  Inventory (0)
+                </Text>
+              </HStack>
+            </HStack>
+          </VStack>
+        </SimpleGrid>
+      )}
+
       {step === 0 && (
         <Flex justify="flex-end" w="100%">
           <Button
-            isDisabled={isDisabled}
-            isLoading={isLoading}
             mr={8}
-            onClick={onNext}
+            onClick={() => onSetStep(1)}
             size="sm"
             type="button"
             variant="solid"
@@ -506,7 +541,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
           <Button
             isDisabled={isDisabled}
             isLoading={isLoading}
-            onClick={onBack}
+            onClick={() => onSetStep(0)}
             size="sm"
             type="button"
             variant="outline"
@@ -517,7 +552,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
             <Button
               isDisabled={isDisabled}
               isLoading={isLoading}
-              onClick={() => undefined}
+              onClick={() => onSetStep(2)}
               size="sm"
               type="button"
               variant="outline"
@@ -537,6 +572,67 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
           </Flex>
         </Flex>
       )}
+
+      {step === 2 && (
+        <Flex justify="space-between" w="100%">
+          <Flex gap={4}>
+            <Button
+              isDisabled={isDisabled}
+              isLoading={isLoading}
+              onClick={() => onSetStep(0)}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              Change info
+            </Button>
+            <Button
+              isDisabled={isDisabled}
+              isLoading={isLoading}
+              onClick={() => onSetStep(1)}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              Change appearance
+            </Button>
+          </Flex>
+          <Button
+            isDisabled={isDisabled}
+            isLoading={isLoading}
+            loadingText="Creating..."
+            size="sm"
+            type="submit"
+            variant="solid"
+          >
+            Create
+          </Button>
+        </Flex>
+      )}
     </VStack>
+  );
+};
+
+const CompositeCharacterImage: React.FC<{ traits: Traits }> = ({ traits }) => {
+  return (
+    <AspectRatio ratio={10 / 13} w="full">
+      <Box bg="accent" borderRadius="10px" pos="relative">
+        {traits.map((trait: string) => {
+          return (
+            <Image
+              alt={`${trait.split('_')[1]} trait layer`}
+              h="100%"
+              key={`image-${trait}`}
+              left={0}
+              objectFit="cover"
+              pos="absolute"
+              src={getImageUrl(trait)}
+              top={0}
+              w="100%"
+            />
+          );
+        })}
+      </Box>
+    </AspectRatio>
   );
 };
