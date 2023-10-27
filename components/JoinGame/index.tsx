@@ -312,10 +312,10 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 
   if (txFailed) {
     return (
-      <VStack py={10} spacing={4}>
+      <VStack py={10} spacing={4} w="100%">
         <Text>Transaction failed.</Text>
-        <Button onClick={onClose} variant="outline">
-          Close
+        <Button onClick={onClose} variant="ghost">
+          continue
         </Button>
       </VStack>
     );
@@ -323,10 +323,10 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 
   if (isSynced) {
     return (
-      <VStack py={10} spacing={4}>
+      <VStack py={10} spacing={4} w="100%">
         <Text>Your character was successfully created!</Text>
-        <Button onClick={onClose} variant="outline">
-          Close
+        <Button onClick={onClose} variant="ghost">
+          continue
         </Button>
       </VStack>
     );
@@ -334,11 +334,13 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 
   if (txHash) {
     return (
-      <TransactionPending
-        isSyncing={isSyncing}
-        text="Your character is being created."
-        txHash={txHash}
-      />
+      <VStack py={10} w="100%">
+        <TransactionPending
+          isSyncing={isSyncing}
+          text="Your character is being created."
+          txHash={txHash}
+        />
+      </VStack>
     );
   }
 
