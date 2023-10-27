@@ -7,7 +7,6 @@ import {
   FormLabel,
   Image,
   Input,
-  SimpleGrid,
   Switch,
   Text,
   Textarea,
@@ -23,18 +22,8 @@ import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
-import {
-  BACKGROUND_TRAITS,
-  BODY_TRAITS,
-  CLOTHING_TRAITS,
-  EYES_TRAITS,
-  getImageUrl,
-  HAIR_TRAITS,
-  MOUTH_TRAITS,
-  TraitType,
-} from './traits';
-
-type Traits = [string, string, string, string, string, string];
+import { getImageUrl, TRAITS, Traits, TraitType } from './traits';
+import { TraitVariantControls } from './TraitVariantControls';
 
 type JoinGameProps = {
   onClose: () => void;
@@ -60,7 +49,6 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
   const [characterDescription, setCharacterDescription] = useState<string>('');
 
   const [showUpload, setShowUpload] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<TraitType>(TraitType.BACKGROUND);
   const [traits, setTraits] = useState<Traits>([
     '0_Clouds_a',
     '1_Type1_a',
@@ -100,7 +88,6 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
   const resetData = useCallback(() => {
     setStep(0);
     setShowUpload(false);
-    setActiveTab(TraitType.BACKGROUND);
     setTraits([
       '0_Clouds_a',
       '1_Type1_a',
@@ -303,32 +290,8 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
       return;
     }
     setShowError(false);
-
-    if (step === 1) {
-      switch (activeTab) {
-        case TraitType.BACKGROUND:
-          setActiveTab(TraitType.BODY);
-          break;
-        case TraitType.BODY:
-          setActiveTab(TraitType.EYES);
-          break;
-        case TraitType.EYES:
-          setActiveTab(TraitType.HAIR);
-          break;
-        case TraitType.HAIR:
-          setActiveTab(TraitType.CLOTHING);
-          break;
-        case TraitType.CLOTHING:
-          setActiveTab(TraitType.MOUTH);
-          break;
-        default:
-          setActiveTab(TraitType.BODY);
-          break;
-      }
-    } else {
-      setStep(1);
-    }
-  }, [activeTab, hasError, step]);
+    setStep(1);
+  }, [hasError]);
 
   const onBack = useCallback(() => {
     setStep(0);
@@ -338,8 +301,6 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
 
   const isLoading = isCreating || isMerging;
   const isDisabled = isLoading || isUploading;
-  const showCreateButton =
-    step === 1 && (activeTab === TraitType.MOUTH || showUpload);
 
   if (txFailed) {
     return (
@@ -492,80 +453,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
             </FormControl>
           )}
           {!showUpload && (
-            <>
-              <SimpleGrid columns={6} spacing={0.5} w="100%">
-                <Button
-                  border="3px solid black"
-                  onClick={() => setActiveTab(TraitType.BACKGROUND)}
-                  p={4}
-                  size="xs"
-                  variant={
-                    activeTab === TraitType.BACKGROUND ? 'solid' : 'outline'
-                  }
-                  w="100%"
-                >
-                  <Text>Background</Text>
-                </Button>
-                <Button
-                  border="3px solid black"
-                  onClick={() => setActiveTab(TraitType.BODY)}
-                  p={4}
-                  size="xs"
-                  variant={activeTab === TraitType.BODY ? 'solid' : 'outline'}
-                  w="100%"
-                >
-                  <Text>Body</Text>
-                </Button>
-                <Button
-                  border="3px solid black"
-                  onClick={() => setActiveTab(TraitType.EYES)}
-                  p={4}
-                  size="xs"
-                  variant={activeTab === TraitType.EYES ? 'solid' : 'outline'}
-                  w="100%"
-                >
-                  <Text>Eyes</Text>
-                </Button>
-                <Button
-                  border="3px solid black"
-                  onClick={() => setActiveTab(TraitType.HAIR)}
-                  p={4}
-                  size="xs"
-                  variant={activeTab === TraitType.HAIR ? 'solid' : 'outline'}
-                  w="100%"
-                >
-                  <Text>Hair</Text>
-                </Button>
-                <Button
-                  border="3px solid black"
-                  onClick={() => setActiveTab(TraitType.CLOTHING)}
-                  p={4}
-                  size="xs"
-                  variant={
-                    activeTab === TraitType.CLOTHING ? 'solid' : 'outline'
-                  }
-                  w="100%"
-                >
-                  <Text>Clothing</Text>
-                </Button>
-                <Button
-                  border="3px solid black"
-                  onClick={() => setActiveTab(TraitType.MOUTH)}
-                  p={4}
-                  size="xs"
-                  variant={activeTab === TraitType.MOUTH ? 'solid' : 'outline'}
-                  w="100%"
-                >
-                  <Text>Mouth</Text>
-                </Button>
-              </SimpleGrid>
-
-              <TraitVariantControls
-                activeTab={activeTab}
-                setTraits={setTraits}
-                traits={traits}
-              />
-
+            <Flex gap={4}>
               <Box
                 bg="lightgrey"
                 border="3px solid black"
@@ -576,7 +464,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
                 {traits.map((trait: string) => {
                   return (
                     <Image
-                      alt={`${activeTab} trait layer`}
+                      alt={`${trait.split('_')[1]} trait layer`}
                       h="100%"
                       key={`image-${trait}`}
                       left={0}
@@ -589,7 +477,18 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
                   );
                 })}
               </Box>
-            </>
+              <VStack>
+                {traits.map((trait: string, i: number) => (
+                  <TraitVariantControls
+                    index={i}
+                    key={`trait-controls-${trait}`}
+                    traits={traits}
+                    setTraits={setTraits}
+                    traitsByType={TRAITS[i]}
+                  />
+                ))}
+              </VStack>
+            </Flex>
           )}
         </VStack>
       )}
@@ -646,138 +545,6 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
           </Flex>
         </Flex>
       )}
-
-      {showCreateButton && (
-        <Flex alignItems="center" direction="column" gap={4}>
-          <Button
-            isDisabled={isDisabled}
-            isLoading={isLoading}
-            loadingText="Creating..."
-            type="submit"
-          >
-            Create
-          </Button>
-          <Button
-            isDisabled={isDisabled}
-            isLoading={isLoading}
-            loadingText="Back"
-            onClick={onBack}
-            size="sm"
-            type="button"
-            variant="outline"
-          >
-            Back
-          </Button>
-        </Flex>
-      )}
     </VStack>
-  );
-};
-
-type TraitVariantControlsProps = {
-  activeTab: TraitType;
-  setTraits: (traits: Traits) => void;
-  traits: Traits;
-};
-
-const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
-  activeTab,
-  setTraits,
-  traits,
-}) => {
-  const selectedTrait = useMemo(() => {
-    switch (activeTab) {
-      case TraitType.BACKGROUND:
-        return traits[0];
-      case TraitType.BODY:
-        return traits[1];
-      case TraitType.EYES:
-        return traits[2];
-      case TraitType.HAIR:
-        return traits[3];
-      case TraitType.CLOTHING:
-        return traits[4];
-      case TraitType.MOUTH:
-        return traits[5];
-      default:
-        return traits[0];
-    }
-  }, [activeTab, traits]);
-
-  const activeTraits = useMemo(() => {
-    switch (activeTab) {
-      case TraitType.BACKGROUND:
-        return BACKGROUND_TRAITS;
-      case TraitType.BODY:
-        return BODY_TRAITS;
-      case TraitType.EYES:
-        return EYES_TRAITS;
-      case TraitType.HAIR:
-        return HAIR_TRAITS;
-      case TraitType.CLOTHING:
-        return CLOTHING_TRAITS;
-      case TraitType.MOUTH:
-        return MOUTH_TRAITS;
-      default:
-        return [];
-    }
-  }, [activeTab]);
-
-  const [, variant, color] = selectedTrait.split('_');
-
-  const onPreviousVariant = useCallback(() => {
-    const nameIndex = traits.findIndex(t => t === selectedTrait);
-    const fullTraitIndex = activeTraits.findIndex(t => t === selectedTrait);
-    const previous = activeTraits[fullTraitIndex - 1];
-
-    if (!previous) {
-      return;
-    }
-
-    const newTraits = [...traits] as Traits;
-    newTraits[nameIndex] = previous;
-    setTraits(newTraits);
-  }, [activeTraits, selectedTrait, setTraits, traits]);
-
-  const onNextVariant = useCallback(() => {
-    const nameIndex = traits.findIndex(t => t === selectedTrait);
-    const fullTraitIndex = activeTraits.findIndex(t => t === selectedTrait);
-    const next = activeTraits[fullTraitIndex + 1];
-
-    if (!next) {
-      return;
-    }
-
-    const newTraits = [...traits] as Traits;
-    newTraits[nameIndex] = next;
-    setTraits(newTraits);
-  }, [activeTraits, selectedTrait, setTraits, traits]);
-
-  const disablePrevious = useMemo(() => {
-    const fullTraitIndex = activeTraits.findIndex(t => t === selectedTrait);
-    return fullTraitIndex === 0;
-  }, [activeTraits, selectedTrait]);
-
-  const disableNext = useMemo(() => {
-    const fullTraitIndex = activeTraits.findIndex(t => t === selectedTrait);
-    return fullTraitIndex === activeTraits.length - 1;
-  }, [activeTraits, selectedTrait]);
-
-  return (
-    <Flex justify="space-between" w="250px">
-      <Button
-        isDisabled={disablePrevious}
-        onClick={onPreviousVariant}
-        size="xs"
-      >
-        &#8592;
-      </Button>
-      <Text>
-        {variant} {color.toUpperCase()}
-      </Text>
-      <Button isDisabled={disableNext} onClick={onNextVariant} size="xs">
-        &#8594;
-      </Button>
-    </Flex>
   );
 };
