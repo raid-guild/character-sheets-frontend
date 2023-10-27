@@ -3,6 +3,16 @@ import '@fontsource/unbounded/200.css';
 import '@fontsource/unbounded/300.css';
 import '@fontsource/unbounded/400.css';
 import '@fontsource/unbounded/500.css';
+import '@fontsource/unbounded/600.css';
+import '@fontsource/unbounded/700.css';
+import '@fontsource/unbounded/800.css';
+import '@fontsource/unbounded/900.css';
+import '@fontsource/tektur/400.css';
+import '@fontsource/tektur/500.css';
+import '@fontsource/tektur/600.css';
+import '@fontsource/tektur/700.css';
+import '@fontsource/tektur/800.css';
+import '@fontsource/tektur/900.css';
 
 import { ChakraProvider } from '@chakra-ui/react';
 import { Global } from '@emotion/react';
