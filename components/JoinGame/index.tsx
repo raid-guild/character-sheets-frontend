@@ -26,6 +26,15 @@ import { useUploadFile } from '@/hooks/useUploadFile';
 import { getImageUrl, TRAITS, Traits, TraitType } from './traits';
 import { TraitVariantControls } from './TraitVariantControls';
 
+const DEFAULT_TRAITS: Traits = [
+  '0_Clouds_a_64485b',
+  '1_Type1_a_ccb5aa',
+  '2_Type1_a_80a86c',
+  '3_Bald_a_c5c3bb',
+  '5_Villager1_a_796e68',
+  '6_Basic_a',
+];
+
 type JoinGameProps = {
   onClose: () => void;
 };
@@ -50,14 +59,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
   const [characterDescription, setCharacterDescription] = useState<string>('');
 
   const [showUpload, setShowUpload] = useState<boolean>(false);
-  const [traits, setTraits] = useState<Traits>([
-    '0_Clouds_a',
-    '1_Type1_a',
-    '2_Type1_a',
-    '3_Bald_a',
-    '5_Villager1_a',
-    '6_Basic_a',
-  ]);
+  const [traits, setTraits] = useState<Traits>(DEFAULT_TRAITS);
   const [isMerging, setIsMerging] = useState<boolean>(false);
 
   const [showError, setShowError] = useState<boolean>(false);
@@ -89,14 +91,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
   const resetData = useCallback(() => {
     setStep(0);
     setShowUpload(false);
-    setTraits([
-      '0_Clouds_a',
-      '1_Type1_a',
-      '2_Type1_a',
-      '3_Bald_a',
-      '5_Villager1_a',
-      '6_Basic_a',
-    ]);
+    setTraits(DEFAULT_TRAITS);
 
     setCharacterName('');
     setCharacterDescription('');
