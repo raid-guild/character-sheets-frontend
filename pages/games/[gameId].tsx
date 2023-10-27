@@ -1,7 +1,6 @@
 import {
   AspectRatio,
   Button,
-  Flex,
   Grid,
   Heading,
   HStack,
@@ -16,6 +15,7 @@ import {
   Text,
   useDisclosure,
   VStack,
+  Wrap,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -142,6 +142,7 @@ function GamePage(): JSX.Element {
       experience,
       image,
       name,
+      owners,
       id,
       characters,
       classes,
@@ -177,9 +178,6 @@ function GamePage(): JSX.Element {
                 fontSize="40px"
                 fontWeight="normal"
                 lineHeight="40px"
-                _hover={{
-                  color: 'accent',
-                }}
               >
                 {name}
               </Heading>
@@ -199,15 +197,7 @@ function GamePage(): JSX.Element {
                 </Link>
                 {isMaster && (
                   <Button onClick={updateGameMetadata.onOpen} size="sm">
-                    <Flex align="center" gap={2}>
-                      <Image
-                        alt="edit"
-                        height="14px"
-                        src="/icons/edit.svg"
-                        width="14px"
-                      />
-                      Edit
-                    </Flex>
+                    edit
                   </Button>
                 )}
               </HStack>
@@ -236,33 +226,73 @@ function GamePage(): JSX.Element {
             fontSize="sm"
             textTransform="uppercase"
           >
-            Game Masters
+            Owners
           </Text>
-
-          {masters.map(master => (
+          {owners.map(owner => (
             <Link
               fontSize="sm"
               href={`${EXPLORER_URLS[chainId]}/address/${id}`}
-              key={`gm-${master}`}
+              key={`gm-${owner}`}
               isExternal
-              bg={master === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
-              textDecor={master !== address?.toLowerCase() ? 'underline' : ''}
+              bg={owner === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
+              textDecor={owner !== address?.toLowerCase() ? 'underline' : ''}
               _hover={{
                 color: 'accent',
               }}
             >
-              {master === address?.toLowerCase() ? (
+              {owner === address?.toLowerCase() ? (
                 <HStack px={1} spacing={3}>
                   <Text as="span">You</Text>
                   <Text as="span" textDecor="underline">
-                    ({shortenAddress(master)})
+                    ({shortenAddress(owner)})
                   </Text>
                 </HStack>
               ) : (
-                shortenAddress(master)
+                shortenAddress(owner)
               )}
             </Link>
           ))}
+
+          <Text
+            fontFamily="mono"
+            letterSpacing="1px"
+            fontSize="sm"
+            mt={4}
+            textTransform="uppercase"
+          >
+            Game Masters
+          </Text>
+          <Wrap spacingX={1}>
+            {masters.map((master, i) => (
+              <>
+                <Link
+                  fontSize="sm"
+                  href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+                  key={`gm-${master}`}
+                  isExternal
+                  bg={master === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
+                  textDecor={
+                    master !== address?.toLowerCase() ? 'underline' : ''
+                  }
+                  _hover={{
+                    color: 'accent',
+                  }}
+                >
+                  {master === address?.toLowerCase() ? (
+                    <HStack px={1} spacing={3}>
+                      <Text as="span">You</Text>
+                      <Text as="span" textDecor="underline">
+                        ({shortenAddress(master)})
+                      </Text>
+                    </HStack>
+                  ) : (
+                    shortenAddress(master)
+                  )}
+                </Link>
+                {i !== masters.length - 1 && <Text as="span">, </Text>}
+              </>
+            ))}
+          </Wrap>
         </VStack>
         <VStack align="stretch" spacing="5px">
           {isConnectedAndMounted && (

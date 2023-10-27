@@ -39,7 +39,7 @@ export default function MyGames(): JSX.Element {
     }
 
     return (
-      <VStack w="100%" spacing={10}>
+      <VStack spacing={10}>
         <Button size="lg" onClick={createGameModal?.onOpen}>
           Create Game
         </Button>
