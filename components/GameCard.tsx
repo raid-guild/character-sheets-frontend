@@ -1,7 +1,7 @@
 import {
-  Box,
-  Flex,
+  AspectRatio,
   Heading,
+  HStack,
   Image,
   Link,
   Text,
@@ -9,8 +9,9 @@ import {
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 
+import { GameTotals } from '@/components/GameTotals';
 import { EXPLORER_URLS } from '@/utils/constants';
-import { formatExperience, shortenAddress, shortenText } from '@/utils/helpers';
+import { shortenAddress, shortenText } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
 
 type GameCardProps = GameMeta & {
@@ -28,24 +29,27 @@ export const GameCard: React.FC<GameCardProps> = ({
   description,
 }) => {
   return (
-    <VStack
-      align="Start"
-      borderBottom="5px solid rgba(255,255,255,0.2)"
-      pb={5}
+    <HStack
+      bg="cardBG"
+      justify="space-between"
+      p={8}
       transition="background 0.3s ease"
-      w="450px"
+      w="100%"
+      spacing={12}
     >
-      <VStack align="align" mb={2} transition="background 0.3s ease">
-        <Link
-          fontSize="sm"
-          href={`${EXPLORER_URLS[chainId]}/address/${id}`}
-          isExternal
-          fontWeight={300}
-          mb={3}
-          textDecoration={'underline'}
-        >
-          {shortenAddress(id)}
-        </Link>
+      <AspectRatio ratio={1} w="100%" maxW="12rem">
+        <NextLink href={`/games/[gameId]`} as={`/games/${id}`}>
+          <Image
+            alt="game emblem"
+            background="gray.400"
+            objectFit="cover"
+            src={image}
+            w="100%"
+            h="100%"
+          />
+        </NextLink>
+      </AspectRatio>
+      <VStack spacing={4} align="flex-start" flex={1}>
         <NextLink as={`/games/${id}`} href={`/games/[gameId]`}>
           <Heading
             display="inline-block"
@@ -62,39 +66,22 @@ export const GameCard: React.FC<GameCardProps> = ({
         <Text fontSize="xl" fontWeight={200} mb={2}>
           {shortenText(description, 60)}
         </Text>
+        <Link
+          fontSize="sm"
+          href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+          isExternal
+          fontWeight={300}
+          mb={3}
+          textDecoration={'underline'}
+        >
+          {shortenAddress(id)}
+        </Link>
       </VStack>
-
-      <Flex align="center" direction="row" py={1}>
-        <Image alt="users" height="20px" src="/icons/users.svg" width="20px" />
-        <Text fontSize="lg" fontWeight="400" ml="4">
-          {characters.length} characters
-        </Text>
-      </Flex>
-      <Flex align="center" direction="row" py={1}>
-        <Image alt="users" height="20px" src="/icons/xp.svg" width="20px" />
-        <Text fontSize="lg" fontWeight="400" ml="4">
-          {formatExperience(experience)} XP
-        </Text>
-      </Flex>
-      <Flex align="center" direction="row" py={1}>
-        <Image alt="users" height="20px" src="/icons/items.svg" width="20px" />
-        <Text fontSize="lg" fontWeight="400" ml="4">
-          {items.length} items
-        </Text>
-      </Flex>
-
-      <Box mt="8" w="full">
-        <NextLink href={`/games/[gameId]`} as={`/games/${id}`}>
-          <Image
-            alt="game emblem"
-            background="gray.400"
-            h="120px"
-            objectFit="cover"
-            src={image}
-            w="100%"
-          />
-        </NextLink>
-      </Box>
-    </VStack>
+      <GameTotals
+        experience={experience}
+        characters={characters}
+        items={items}
+      />
+    </HStack>
   );
 };

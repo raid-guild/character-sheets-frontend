@@ -1,17 +1,16 @@
-import { HStack, Image, Text } from '@chakra-ui/react';
+import { Box, HStack, Image, Text } from '@chakra-ui/react';
 import { useMemo } from 'react';
-
-import { Class } from '@/utils/types';
+import { hexToNumber, keccak256, toBytes } from 'viem';
 
 type Size = 'sm' | 'md' | 'lg';
 
 type ClassTagProps = {
-  classEntity: Class;
+  name: string;
+  image: string;
   size?: Size;
 };
 
-export const ClassTag: React.FC<ClassTagProps> = ({ size, classEntity }) => {
-  const { name, image } = classEntity;
+export const ClassTag: React.FC<ClassTagProps> = ({ size, name, image }) => {
   return <ClassTagInner name={name} image={image} size={size} />;
 };
 
@@ -26,21 +25,21 @@ const fontSizeMap = {
 };
 
 const imageWidthMap = {
-  sm: '1.25rem',
-  md: '1.5rem',
-  lg: '2rem',
+  sm: '1rem',
+  md: '1.25rem',
+  lg: '1.5rem',
 };
 
 const imageHeightMap = {
-  sm: '2rem',
-  md: '2.5rem',
-  lg: '3rem',
+  sm: '1.5rem',
+  md: '2rem',
+  lg: '2.5rem',
 };
 
 const pxMap = {
-  sm: 2,
-  md: 4,
-  lg: 6,
+  sm: 4,
+  md: 8,
+  lg: 12,
 };
 
 const pyMap = {
@@ -54,6 +53,14 @@ const spacingMap = {
   md: 3,
   lg: 4,
 };
+
+const colors = [
+  'softgreen',
+  'softpurple',
+  'softblue',
+  'softyellow',
+  'softorange',
+];
 
 const ClassTagInner: React.FC<{
   name: string;
@@ -72,18 +79,31 @@ const ClassTagInner: React.FC<{
     [size],
   );
 
+  const bgColor = useMemo(() => {
+    // TODO take bgColor from classEntity
+    const hexValue = keccak256(toBytes(name));
+    const index = hexToNumber(hexValue) % colors.length;
+    return colors[index];
+  }, [name]);
+
   return (
-    <HStack border="2px solid white" px={px} py={py} spacing={spacing} w="100%">
-      <Image
-        alt="class emblem"
-        h={imageHeight}
-        w={imageWidth}
-        objectFit="cover"
-        src={image}
-      />
-      <Text fontWeight="bold" fontSize={fontSize}>
-        {name}
-      </Text>
+    <HStack spacing={0} p={0} w="100%" align="stretch">
+      <Box bg={bgColor} my={py} w="6px" />
+      <HStack spacing={spacing} bg={bgColor} py={py} px={px}>
+        {image && (
+          <Image
+            alt="class emblem"
+            h={imageHeight}
+            w={imageWidth}
+            objectFit="cover"
+            src={image}
+          />
+        )}
+        <Text color="dark" fontSize={fontSize} fontWeight="bold">
+          {name}
+        </Text>
+      </HStack>
+      <Box bg={bgColor} my={py} w="6px" />
     </HStack>
   );
 };

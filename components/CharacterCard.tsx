@@ -1,15 +1,18 @@
 import {
+  AspectRatio,
   Box,
   Button,
+  GridItem,
+  Heading,
   HStack,
   Image,
   Link,
+  SimpleGrid,
   Text,
   VStack,
   Wrap,
   WrapItem,
 } from '@chakra-ui/react';
-import NextLink from 'next/link';
 import { useMemo } from 'react';
 import { useAccount } from 'wagmi';
 
@@ -19,18 +22,19 @@ import { EXPLORER_URLS } from '@/utils/constants';
 import { formatExperience, shortenAddress, shortenText } from '@/utils/helpers';
 import { Character } from '@/utils/types';
 
-import { ClassTag, VillagerClassTag } from './ClassTag';
+import { ClassTag } from './ClassTag';
 import { ItemTag } from './ItemTag';
+import { XPDisplay } from './XPDisplay';
 
 export const CharacterCard: React.FC<{
   chainId: number;
   character: Character;
-}> = ({ chainId, character }) => {
+  dummy?: boolean;
+}> = ({ chainId, character, dummy }) => {
   const { address, isConnected } = useAccount();
   const { isMaster } = useGame();
 
   const {
-    id,
     characterId,
     account,
     classes,
@@ -55,245 +59,113 @@ export const CharacterCard: React.FC<{
     return items;
   }, [equippedItems, heldItems]);
 
+  const itemTotal = useMemo(() => {
+    return items
+      .reduce((total, item) => total + BigInt(item.amount), BigInt(0))
+      .toString();
+  }, [items]);
+
   return (
-    <VStack
-      border="3px solid black"
-      borderBottom="5px solid black"
-      borderRight="5px solid black"
-      transition="background 0.3s ease"
-      py={4}
-      px={8}
-      spacing={4}
+    <SimpleGrid
+      columns={{ base: 1, md: 2 }}
+      spacing={10}
       w="100%"
+      border="1px solid white"
+      p={6}
+      maxW="72rem"
     >
-      <HStack spacing={6} w="100%">
-        <VStack>
-          <Box pos="relative">
-            <Image
-              alt="character avatar"
-              filter={jailed ? 'grayscale(100%)' : 'none'}
-              w="120px"
-              h="180px"
-              objectFit="cover"
-              src={image}
-            />
-            {jailed && (
-              <Text
-                bg="black"
-                color="red"
-                fontWeight="bold"
-                left="50%"
-                pos="absolute"
-                top="50%"
-                transform="translate(-50%, -50%)"
-                variant="secondary"
-              >
-                JAILED
-              </Text>
-            )}
-            <HStack
-              bg="white"
-              border="1px solid black"
-              pos="absolute"
-              right="0"
-              bottom="0"
-              px={1}
-              fontSize="xs"
-            >
-              <Text color="black">{formatExperience(experience)} XP</Text>
-            </HStack>
-          </Box>
-          <VStack align="stretch" w="120px">
-            <Button as={NextLink} href={`/characters/${id}`} size="sm" w="100%">
-              View
-            </Button>
-            {isConnected &&
-              (isMaster || address?.toLowerCase() === character.player) && (
-                <CharacterActionMenu character={character} />
-              )}
-          </VStack>
-        </VStack>
-        <VStack align="flex-start" flex={1}>
-          <Text fontSize="lg" fontWeight="bold">
-            {name}
-          </Text>
-          <Text fontSize="sm">{shortenText(description, 130)}</Text>
-          <Link
-            alignItems="center"
-            color="blue"
-            display="flex"
-            fontSize="sm"
-            gap={2}
-            href={`${EXPLORER_URLS[chainId]}/address/${account}`}
-            isExternal
-            p={0}
+      <Box pos="relative">
+        <AspectRatio ratio={10 / 13} w="full">
+          <Image
+            alt="character avatar"
+            filter={jailed ? 'grayscale(100%)' : 'none'}
+            w="100%"
+            h="100%"
+            borderRadius="lg"
+            objectFit="cover"
+            src={image}
+          />
+        </AspectRatio>
+        {jailed && (
+          <Text
+            bg="black"
+            color="red"
+            fontWeight="bold"
+            left="50%"
+            pos="absolute"
+            top="50%"
+            transform="translate(-50%, -50%)"
+            variant="secondary"
           >
-            {shortenAddress(account)}
-            <Image
-              alt="link to new tab"
-              height="14px"
-              src="/icons/new-tab.svg"
-              width="14px"
-            />
-          </Link>
-          <Box background="black" h="3px" my={4} w={20} />
-          <Text fontSize="sm">Classes:</Text>
-          <Wrap>
-            <WrapItem>
-              <VillagerClassTag />
+            JAILED
+          </Text>
+        )}
+        <HStack pos="absolute" top={4} left={4}>
+          <XPDisplay experience={formatExperience(experience)} />
+        </HStack>
+      </Box>
+      <VStack align="flex-start" spacing={6}>
+        <Heading>{name}</Heading>
+        <Link
+          alignItems="center"
+          textDecor="underline"
+          display="flex"
+          fontSize="sm"
+          gap={2}
+          href={dummy ? '/' : `${EXPLORER_URLS[chainId]}/address/${account}`}
+          isExternal
+          p={0}
+        >
+          {shortenAddress(account)}
+        </Link>
+        <Wrap spacing={4}>
+          {classes.map(classEntity => (
+            <WrapItem key={classEntity.classId + classEntity.name}>
+              <ClassTag {...classEntity} />
             </WrapItem>
-            {classes.map(classEntity => (
-              <WrapItem key={classEntity.classId}>
-                <ClassTag classEntity={classEntity} />
-              </WrapItem>
-            ))}
-          </Wrap>
-        </VStack>
-      </HStack>
-      {items.length > 0 && (
-        <VStack w="100%" align="stretch" spacing={4}>
-          <Box background="black" h="3px" my={4} w="50%" />
-          <Text fontSize="sm">Inventory:</Text>
-          <Wrap>
-            {items.map(item => (
-              <WrapItem key={item.itemId}>
-                <ItemTag item={item} holderId={characterId} />
-              </WrapItem>
-            ))}
-          </Wrap>
-        </VStack>
-      )}
-    </VStack>
+          ))}
+        </Wrap>
+        <Text fontSize="sm" fontWeight={300} lineHeight={5}>
+          {shortenText(description, 100)}
+        </Text>
+        {isConnected &&
+          (isMaster || address?.toLowerCase() === character.player) && (
+            <CharacterActionMenu character={character} />
+          )}
+        {items.length > 0 && (
+          <>
+            <HStack justify="space-between" w="full">
+              <HStack spacing={4} align="center">
+                <Image
+                  alt="users"
+                  height="20px"
+                  src="/icons/items.svg"
+                  width="20px"
+                />
+                <Text
+                  letterSpacing="3px"
+                  fontSize="2xs"
+                  textTransform="uppercase"
+                >
+                  Inventory ({itemTotal})
+                </Text>
+              </HStack>
+              <Button variant="ghost" size="xs">
+                show all
+              </Button>
+            </HStack>
+            <SimpleGrid columns={2} spacing={4} w="full">
+              {items.map(item => (
+                <GridItem key={item.itemId + item.name}>
+                  <ItemTag item={item} holderId={characterId} />
+                </GridItem>
+              ))}
+            </SimpleGrid>
+          </>
+        )}
+      </VStack>
+    </SimpleGrid>
   );
 };
 
-export const SmallCharacterCard: React.FC<{
-  chainId: number;
-  character: Character;
-}> = ({ chainId, character }) => {
-  const { address, isConnected } = useAccount();
-  const { isMaster } = useGame();
-
-  const {
-    id,
-    account,
-    classes,
-    characterId,
-    description,
-    equippedItems: items,
-    experience,
-    image,
-    jailed,
-    name,
-  } = character;
-
-  return (
-    <VStack
-      border="3px solid black"
-      borderBottom="5px solid black"
-      borderRight="5px solid black"
-      transition="background 0.3s ease"
-      p={4}
-      spacing={5}
-      w="100%"
-    >
-      <HStack spacing={5} w="100%">
-        <VStack align="stretch" h="100%">
-          <Box pos="relative">
-            <Image
-              alt="character avatar"
-              filter={jailed ? 'grayscale(100%)' : 'none'}
-              w="100px"
-              h="150px"
-              objectFit="cover"
-              src={image}
-            />
-            {jailed && (
-              <Text
-                bg="black"
-                color="red"
-                fontWeight="bold"
-                left="50%"
-                pos="absolute"
-                top="50%"
-                transform="translate(-50%, -50%)"
-                variant="secondary"
-              >
-                JAILED
-              </Text>
-            )}
-            <HStack
-              bg="white"
-              border="1px solid black"
-              pos="absolute"
-              right="0"
-              bottom="0"
-              px={1}
-              fontSize="2xs"
-            >
-              <Text color="black">{formatExperience(experience)} XP</Text>
-            </HStack>
-          </Box>
-          <VStack align="stretch" w="100px">
-            <Button as={NextLink} href={`/characters/${id}`} size="sm" w="100%">
-              View
-            </Button>
-            {isConnected &&
-              (isMaster || address?.toLowerCase() === character.player) && (
-                <CharacterActionMenu character={character} />
-              )}
-          </VStack>
-        </VStack>
-        <VStack align="flex-start" flex={1}>
-          <Text fontSize="md" fontWeight="bold">
-            {name}
-          </Text>
-          <Text fontSize="xs">{shortenText(description, 130)}</Text>
-          <Link
-            alignItems="center"
-            color="blue"
-            display="flex"
-            fontSize="sm"
-            gap={2}
-            href={`${EXPLORER_URLS[chainId]}/address/${account}`}
-            isExternal
-            p={0}
-          >
-            {shortenAddress(account)}
-            <Image
-              alt="link to new tab"
-              height="14px"
-              src="/icons/new-tab.svg"
-              width="14px"
-            />
-          </Link>
-          <Box background="black" h="3px" my={2} w={20} />
-          <Text fontSize="xs">Classes:</Text>
-          <Wrap>
-            <WrapItem>
-              <VillagerClassTag size="sm" />
-            </WrapItem>
-            {classes.map(classEntity => (
-              <WrapItem key={classEntity.classId}>
-                <ClassTag classEntity={classEntity} size="sm" />
-              </WrapItem>
-            ))}
-          </Wrap>
-        </VStack>
-      </HStack>
-      {items.length > 0 && (
-        <VStack w="100%" align="stretch" spacing={4}>
-          <Box background="black" h="3px" my={2} w="50%" />
-          <Text fontSize="xs">Equipped items:</Text>
-          <Wrap>
-            {items.map(item => (
-              <WrapItem key={item.itemId}>
-                <ItemTag holderId={characterId} item={item} size="sm" />
-              </WrapItem>
-            ))}
-          </Wrap>
-        </VStack>
-      )}
-    </VStack>
-  );
-};
+export const SmallCharacterCard = CharacterCard;

@@ -10,9 +10,9 @@ import {
   Th,
   Thead,
   Tr,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
-import NextLink from 'next/link';
 import { useMemo } from 'react';
 
 import { useGame } from '@/contexts/GameContext';
@@ -20,6 +20,7 @@ import { formatExperience } from '@/utils/helpers';
 
 export const XPPanel: React.FC = () => {
   const { game } = useGame();
+  const toast = useToast();
 
   const sortedCharacters = useMemo(
     () =>
@@ -55,7 +56,16 @@ export const XPPanel: React.FC = () => {
             {sortedCharacters.map(c => (
               <Tr key={`xp-panel-${c.id}`}>
                 <Td alignItems="center" display="flex" gap={2}>
-                  <Button as={NextLink} href={`/characters/${c.id}`} size="sm">
+                  <Button
+                    onClick={() =>
+                      toast({
+                        title: 'Coming soon!',
+                        position: 'top',
+                        status: 'warning',
+                      })
+                    }
+                    size="sm"
+                  >
                     View
                   </Button>
                   <Flex alignItems="center" gap={2}>

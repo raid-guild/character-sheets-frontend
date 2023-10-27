@@ -14,7 +14,6 @@ const Button = {
   baseStyle: {
     borderRadius: 0,
     _active: {
-      background: '#2D3748',
       transform: 'scale(0.98)',
       _disabled: {
         transform: 'scale(1)',
@@ -84,7 +83,7 @@ const Button = {
         bg: 'accent',
       },
       _active: {
-        color: 'dark',
+        bg: 'accent',
       },
     },
     ghost: {
@@ -303,11 +302,20 @@ const Tooltip = {
 
 export const theme = extendTheme({
   config: { initialColorMode: 'light', useSystemColorMode: false },
+  fonts: {
+    body: `'Unbounded', sans-serif`,
+    heading: `'Unbounded', sans-serif`,
+    mono: `'Tektur', monospace`,
+  },
   colors: {
     dark: '#171922',
+    cardBG: '#11131A',
     accent: '#a9c8eb',
     softgreen: '#79BA87',
     softpurple: '#9087B5',
+    softyellow: '#FFEBA4',
+    softblue: '#7B91DD',
+    softorange: '#BA9179',
     // gold: {
     //   100: '#FFFAE2',
     //   400: '#DBB865',
