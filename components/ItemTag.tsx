@@ -1,4 +1,12 @@
-import { Button, Image, Text, VStack } from '@chakra-ui/react';
+import { CheckIcon } from '@chakra-ui/icons';
+import {
+  AspectRatio,
+  Button,
+  Flex,
+  Image,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
 import { useMemo } from 'react';
 
 import { PlayerActions, useActions } from '@/contexts/ActionsContext';
@@ -9,18 +17,6 @@ const fontSizeMap = {
   sm: 'xs',
   md: 'sm',
   lg: 'md',
-};
-
-const smallFontSizeMap = {
-  sm: '2xs',
-  md: 'xs',
-  lg: 'sm',
-};
-
-const widthMap = {
-  sm: '6rem',
-  md: '8rem',
-  lg: '10rem',
 };
 
 const paddingMap = {
@@ -48,11 +44,9 @@ export const ItemTag: React.FC<ItemTagProps> = ({
   item,
   holderId,
 }) => {
-  const { fontSize, smallFontSize, width, padding, spacing } = useMemo(
+  const { fontSize, padding, spacing } = useMemo(
     () => ({
       fontSize: fontSizeMap[size],
-      smallFontSize: smallFontSizeMap[size],
-      width: widthMap[size],
       padding: paddingMap[size],
       spacing: spacingMap[size],
     }),
@@ -88,43 +82,58 @@ export const ItemTag: React.FC<ItemTagProps> = ({
     <VStack
       p={padding}
       spacing={spacing}
-      w={width}
-      bg={isEquipped ? 'gold.100' : 'transparent'}
-      borderColor={isEquipped ? 'gold.400' : 'black'}
-      borderWidth={isEquipped ? '3px' : '2px'}
+      w="auto"
       h="100%"
       justify="space-between"
+      bg="whiteAlpha.100"
+      borderRadius="lg"
+      pos="relative"
     >
-      <Image
-        alt={`${name} item image`}
-        h="60%"
-        objectFit="contain"
-        src={image}
-        w="100%"
-      />
-      <VStack spacing={0} w="100%">
-        <Text textAlign="center" fontWeight="bold" fontSize={fontSize}>
-          {name}
-        </Text>
-        <Text fontSize={smallFontSize}>
-          {amount.toString()} {amount > 1 ? 'items' : 'item'}
-        </Text>
-      </VStack>
-      {showActions && (
-        <Button
-          onClick={() => {
-            selectItem(item);
-            if (character) {
-              selectCharacter(character);
-            }
-            openActionModal(PlayerActions.EQUIP_ITEM);
-          }}
-          size="sm"
-          w="100%"
+      {isEquipped && (
+        <Flex
+          borderRadius="50%"
+          pos="absolute"
+          w="1.675rem"
+          h="1.675rem"
+          top={2}
+          right={2}
+          bg="dark"
+          justify="center"
+          align="center"
         >
-          {isEquipped ? 'Unequip' : 'Equip'}
-        </Button>
+          <CheckIcon color="white" w="0.875rem" />
+        </Flex>
       )}
+      <AspectRatio ratio={1} w="100%">
+        <Image
+          alt={name}
+          w="100%"
+          style={{
+            objectFit: 'contain',
+          }}
+          src={image}
+        />
+      </AspectRatio>
+      <VStack w="100%">
+        <Text textAlign="center" fontSize={fontSize}>
+          {name} ({amount.toString()})
+        </Text>
+        {showActions && (
+          <Button
+            onClick={() => {
+              selectItem(item);
+              if (character) {
+                selectCharacter(character);
+              }
+              openActionModal(PlayerActions.EQUIP_ITEM);
+            }}
+            size="sm"
+            w="100%"
+          >
+            {isEquipped ? 'Unequip' : 'Equip'}
+          </Button>
+        )}
+      </VStack>
     </VStack>
   );
 };

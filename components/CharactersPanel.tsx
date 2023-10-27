@@ -11,7 +11,7 @@ export const CharactersPanel: React.FC = () => {
 
   if (characters.length > 0) {
     return (
-      <SimpleGrid columns={2} spacing={4} w="100%">
+      <SimpleGrid columns={1} spacing={8} w="100%">
         {characters.map(c => (
           <SmallCharacterCard
             key={c.id}

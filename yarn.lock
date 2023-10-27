@@ -1691,6 +1691,11 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
+"@fontsource/tektur@^5.0.3":
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/@fontsource/tektur/-/tektur-5.0.3.tgz#caeef71da5d882f59ba1b749540aaf7c01914153"
+  integrity sha512-vKLkh3sbaOc70VhpbBFthxdgCvKY+Y39F2KACsD5v9CULJ+0bx5UvxiOeJ4rD70DH6ytnVdLfUxt5xT2HSbhhQ==
+
 "@fontsource/unbounded@^5.0.15":
   version "5.0.15"
   resolved "https://registry.yarnpkg.com/@fontsource/unbounded/-/unbounded-5.0.15.tgz#36838486a70e1d270a483b07980492ee91a17d51"
