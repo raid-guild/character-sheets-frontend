@@ -1,4 +1,5 @@
 import {
+  AspectRatio,
   Box,
   Button,
   Flex,
@@ -382,7 +383,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
       )}
 
       {step === 1 && (
-        <VStack pl={6} pr={20} spacing={8} w="100%">
+        <VStack pl={6} pr={8} spacing={8} w="100%">
           <VStack alignItems="flex-start" w="100%">
             <Text>Want to upload your own avatar image?</Text>
             <Text fontSize="xs">
@@ -453,31 +454,27 @@ export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
             </FormControl>
           )}
           {!showUpload && (
-            <Flex gap={4}>
-              <Box
-                bg="lightgrey"
-                border="3px solid black"
-                pos="relative"
-                h="400px"
-                w="300px"
-              >
-                {traits.map((trait: string) => {
-                  return (
-                    <Image
-                      alt={`${trait.split('_')[1]} trait layer`}
-                      h="100%"
-                      key={`image-${trait}`}
-                      left={0}
-                      objectFit="cover"
-                      pos="absolute"
-                      src={getImageUrl(trait)}
-                      top={0}
-                      w="100%"
-                    />
-                  );
-                })}
-              </Box>
-              <VStack>
+            <Flex gap={12} w="100%">
+              <AspectRatio ratio={10 / 13} w="100%">
+                <Box bg="accent" borderRadius="10px" pos="relative">
+                  {traits.map((trait: string) => {
+                    return (
+                      <Image
+                        alt={`${trait.split('_')[1]} trait layer`}
+                        h="100%"
+                        key={`image-${trait}`}
+                        left={0}
+                        objectFit="cover"
+                        pos="absolute"
+                        src={getImageUrl(trait)}
+                        top={0}
+                        w="100%"
+                      />
+                    );
+                  })}
+                </Box>
+              </AspectRatio>
+              <VStack w="100%">
                 {traits.map((trait: string, i: number) => (
                   <TraitVariantControls
                     index={i}
