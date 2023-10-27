@@ -45,7 +45,7 @@ const dummyCharacter: Character = {
   player: '0x1234567890123456789012345678901234567890',
   jailed: false,
   removed: false,
-  experience: '28930',
+  experience: BigInt('28930'),
   uri: '',
   heldItems: [
     createDummyItem('Sword of Undhur', '/sword.png'),
