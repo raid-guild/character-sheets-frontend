@@ -272,10 +272,14 @@ function GamePage(): JSX.Element {
                   <Button variant="solid" onClick={() => setShowJoinGame(true)}>
                     Join this Game
                   </Button>
-                  <Text>You don’t have a character sheet in this game.</Text>
+                  <Text fontSize="sm">
+                    You don’t have a character sheet in this game.
+                  </Text>
                 </HStack>
               )}
-              {!character && showJoinGame && <JoinGame />}
+              {!character && showJoinGame && (
+                <JoinGame onClose={() => setShowJoinGame(false)} />
+              )}
               {character && character.removed && !character.jailed && (
                 <HStack spacing={4}>
                   <Button

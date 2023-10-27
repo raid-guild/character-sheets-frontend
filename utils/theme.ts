@@ -99,7 +99,8 @@ const Button = {
 };
 const FormLabel = {
   baseStyle: {
-    fontWeight: 300,
+    fontWeight: 500,
+    fontSize: 'sm',
   },
 };
 
@@ -121,19 +122,18 @@ const Input = {
   variants: {
     outline: {
       field: {
-        background: 'dark',
-        border: '2px solid',
+        background: 'cardBG',
+        border: '1px solid',
+        borderRadius: '6px',
         borderColor: 'white',
-        borderRadius: 0,
-        fontSize: '12px',
+        height: '50px',
 
         _hover: {
-          background: 'dark',
-          borderColor: 'white',
+          borderColor: 'accent',
         },
+
         _active: {
-          background: 'dark',
-          borderColor: 'white',
+          borderColor: 'accent',
         },
       },
     },
@@ -272,19 +272,18 @@ const Text = {
 const Textarea = {
   variants: {
     outline: {
-      background: 'dark',
-      border: '2px solid',
+      background: 'cardBG',
+      border: '1px solid',
+      borderRadius: '6px',
       borderColor: 'white',
-      borderRadius: 0,
-      fontSize: '12px',
+      height: '150px',
 
       _hover: {
-        background: 'dark',
-        borderColor: 'white',
+        borderColor: 'accent',
       },
+
       _active: {
-        background: 'dark',
-        borderColor: 'white',
+        borderColor: 'accent',
       },
     },
   },

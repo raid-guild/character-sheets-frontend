@@ -36,7 +36,11 @@ import {
 
 type Traits = [string, string, string, string, string, string];
 
-export const JoinGame: React.FC = () => {
+type JoinGameProps = {
+  onClose: () => void;
+};
+
+export const JoinGame: React.FC<JoinGameProps> = ({ onClose }) => {
   const { game, character, reload: reloadGame } = useGame();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -341,7 +345,7 @@ export const JoinGame: React.FC = () => {
     return (
       <VStack py={10} spacing={4}>
         <Text>Transaction failed.</Text>
-        <Button onClick={() => undefined} variant="outline">
+        <Button onClick={onClose} variant="outline">
           Close
         </Button>
       </VStack>
@@ -352,7 +356,7 @@ export const JoinGame: React.FC = () => {
     return (
       <VStack py={10} spacing={4}>
         <Text>Your character was successfully created!</Text>
-        <Button onClick={() => undefined} variant="outline">
+        <Button onClick={onClose} variant="outline">
           Close
         </Button>
       </VStack>
@@ -370,11 +374,19 @@ export const JoinGame: React.FC = () => {
   }
 
   return (
-    <VStack as="form" onSubmit={onJoinCharacter} spacing={8}>
+    <VStack as="form" onSubmit={onJoinCharacter} spacing={8} w="100%">
+      <Flex justify="space-between" w="100%">
+        <Text fontSize="sm" textTransform="uppercase">
+          Character creation - step {step + 1} / 2
+        </Text>
+        <Button onClick={onClose} size="sm" variant="ghost">
+          cancel
+        </Button>
+      </Flex>
       {step === 0 && (
-        <>
+        <VStack pl={6} pr={20} spacing={8} w="100%">
           <FormControl isInvalid={showError && !characterName}>
-            <FormLabel>Character Name</FormLabel>
+            <FormLabel>Choose a name for your character</FormLabel>
             <Input
               onChange={e => setCharacterName(e.target.value)}
               type="text"
@@ -387,7 +399,9 @@ export const JoinGame: React.FC = () => {
             )}
           </FormControl>
           <FormControl isInvalid={showError && !characterDescription}>
-            <FormLabel>Character Description (200 character limit)</FormLabel>
+            <FormLabel>
+              Write a description for your character (200 character limit)
+            </FormLabel>
             <Textarea
               onChange={e => setCharacterDescription(e.target.value)}
               value={characterDescription}
@@ -403,7 +417,7 @@ export const JoinGame: React.FC = () => {
               </FormHelperText>
             )}
           </FormControl>
-        </>
+        </VStack>
       )}
 
       {step === 1 && (
@@ -568,31 +582,56 @@ export const JoinGame: React.FC = () => {
         </>
       )}
 
-      {!showCreateButton && (
-        <Flex gap={4}>
-          {step > 0 && (
+      {step === 0 && (
+        <Flex justify="flex-end" w="100%">
+          <Button
+            isDisabled={isDisabled}
+            isLoading={isLoading}
+            mr={8}
+            onClick={onNext}
+            size="sm"
+            type="button"
+            variant="solid"
+          >
+            {'>'} Next step
+          </Button>
+        </Flex>
+      )}
+
+      {step === 1 && (
+        <Flex justify="space-between" w="100%">
+          <Button
+            isDisabled={isDisabled}
+            isLoading={isLoading}
+            onClick={onBack}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            Back to step 1
+          </Button>
+          <Flex gap={4}>
             <Button
               isDisabled={isDisabled}
               isLoading={isLoading}
-              loadingText="Back"
-              onClick={onBack}
+              onClick={() => undefined}
               size="sm"
               type="button"
               variant="outline"
             >
-              Back
+              Preview
             </Button>
-          )}
-          <Button
-            isDisabled={isDisabled}
-            isLoading={isLoading}
-            loadingText="Next"
-            onClick={onNext}
-            size="sm"
-            type="button"
-          >
-            Next
-          </Button>
+            <Button
+              isDisabled={isDisabled}
+              isLoading={isLoading}
+              loadingText="Creating..."
+              size="sm"
+              type="submit"
+              variant="solid"
+            >
+              Create
+            </Button>
+          </Flex>
         </Flex>
       )}
 
