@@ -8,9 +8,13 @@ import {
   HStack,
   Image,
   Link,
+  Modal,
+  ModalContent,
+  ModalOverlay,
   SimpleGrid,
   Text,
   Tooltip,
+  useDisclosure,
   VStack,
   Wrap,
   WrapItem,
@@ -168,8 +172,9 @@ export const CharacterCard: React.FC<{
 export const CharacterCardSmall: React.FC<{
   chainId: number;
   character: Character;
-}> = ({ character }) => {
+}> = ({ chainId, character }) => {
   const { isConnected } = useAccount();
+  const { isOpen, onClose, onOpen } = useDisclosure();
 
   const { classes, experience, heldItems, image, jailed, name } = character;
 
@@ -184,6 +189,7 @@ export const CharacterCardSmall: React.FC<{
       <Box
         border="1px solid white"
         h="375px"
+        onClick={onOpen}
         overflow="hidden"
         p={3}
         transition="transform 0.3s"
@@ -264,6 +270,17 @@ export const CharacterCardSmall: React.FC<{
       {isConnected && (
         <CharacterActionMenu character={character} variant="solid" />
       )}
+      <Modal
+        autoFocus={false}
+        isOpen={isOpen}
+        onClose={onClose}
+        returnFocusOnClose={false}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <CharacterCard chainId={chainId} character={character} />
+        </ModalContent>
+      </Modal>
     </VStack>
   );
 };
