@@ -74,6 +74,20 @@ const Button = {
         color: 'dark',
       },
     },
+    play: {
+      bg: 'softyellow',
+      borderColor: 'softyellow',
+      borderRadius: '0',
+      color: 'dark',
+      w: '200px',
+      _hover: {
+        bg: 'linear-gradient(45deg, #FFEBA4 0%, #DBB865 100%)',
+        animation: 'shine 1.5s ease-in-out infinite',
+      },
+      _active: {
+        bg: 'linear-gradient(45deg, #FFEBA4 0%, #DBB865 100%)',
+      },
+    },
     solid: {
       background: 'white',
       borderColor: 'white',

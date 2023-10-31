@@ -1,5 +1,6 @@
 import {
   AspectRatio,
+  Button,
   Heading,
   HStack,
   Image,
@@ -38,44 +39,42 @@ export const GameCard: React.FC<GameCardProps> = ({
       spacing={12}
     >
       <AspectRatio ratio={1} w="100%" maxW="12rem">
-        <NextLink href={`/games/[gameId]`} as={`/games/${id}`}>
-          <Image
-            alt="game emblem"
-            background="gray.400"
-            objectFit="cover"
-            src={image}
-            w="100%"
-            h="100%"
-          />
-        </NextLink>
+        <Image
+          alt="game emblem"
+          background="gray.400"
+          objectFit="cover"
+          src={image}
+          w="100%"
+          h="100%"
+        />
       </AspectRatio>
       <VStack spacing={4} align="flex-start" flex={1}>
-        <NextLink as={`/games/${id}`} href={`/games/[gameId]`}>
-          <Heading
-            display="inline-block"
-            fontSize="40px"
-            fontWeight="normal"
-            lineHeight="40px"
-            _hover={{
-              color: 'accent',
-            }}
-          >
-            {name}
-          </Heading>
-        </NextLink>
-        <Text fontSize="xl" fontWeight={200} mb={2}>
-          {shortenText(description, 60)}
-        </Text>
-        <Link
-          fontSize="sm"
-          href={`${EXPLORER_URLS[chainId]}/address/${id}`}
-          isExternal
-          fontWeight={300}
-          mb={3}
-          textDecoration={'underline'}
+        <Heading
+          display="inline-block"
+          fontSize="40px"
+          fontWeight="normal"
+          lineHeight="40px"
         >
-          {shortenAddress(id)}
-        </Link>
+          {name}
+        </Heading>
+        <VStack spacing={2} align="flex-start">
+          <Text fontWeight={200} mb={2}>
+            {shortenText(description, 60)}
+          </Text>
+          <Link
+            fontSize="sm"
+            href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+            isExternal
+            fontWeight={300}
+            mb={3}
+            textDecoration={'underline'}
+          >
+            {shortenAddress(id)}
+          </Link>
+        </VStack>
+        <NextLink as={`/games/${id}`} href={`/games/[gameId]`}>
+          <Button variant="play">play</Button>
+        </NextLink>
       </VStack>
 
       <GameTotals
