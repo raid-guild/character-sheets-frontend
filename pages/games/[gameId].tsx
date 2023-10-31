@@ -234,7 +234,7 @@ function GamePage(): JSX.Element {
           {owners.map(owner => (
             <Link
               fontSize="sm"
-              href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+              href={`${EXPLORER_URLS[chainId]}/address/${owner}`}
               key={`gm-${owner}`}
               isExternal
               bg={owner === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
@@ -270,7 +270,7 @@ function GamePage(): JSX.Element {
               <>
                 <Link
                   fontSize="sm"
-                  href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+                  href={`${EXPLORER_URLS[chainId]}/address/${master}`}
                   key={`gm-${master}`}
                   isExternal
                   bg={master === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
