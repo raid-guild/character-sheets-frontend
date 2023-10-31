@@ -13,7 +13,6 @@ import {
   Wrap,
   WrapItem,
 } from '@chakra-ui/react';
-import NextLink from 'next/link';
 import { useMemo } from 'react';
 import { useAccount } from 'wagmi';
 
@@ -34,7 +33,6 @@ export const CharacterCard: React.FC<{
   const { isConnected } = useAccount();
 
   const {
-    id,
     characterId,
     account,
     classes,
@@ -105,11 +103,7 @@ export const CharacterCard: React.FC<{
         </HStack>
       </Box>
       <VStack align="flex-start" spacing={6}>
-        <NextLink href={dummy ? '/' : `/characters/${id}`}>
-          <Heading _hover={{ color: 'accent', cursor: 'pointer' }}>
-            {name}
-          </Heading>
-        </NextLink>
+        <Heading>{name}</Heading>
         <Link
           alignItems="center"
           textDecor="underline"
