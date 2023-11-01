@@ -12,7 +12,6 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Switch,
   Text,
   Textarea,
   VStack,
@@ -21,6 +20,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { encodeAbiParameters, parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
+import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
@@ -269,7 +269,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
           <FormLabel>Allow any character to claim this class?</FormLabel>
           <Switch
             isChecked={isClaimable}
-            onChange={e => setIsClaimable(e.target.checked)}
+            onChange={() => setIsClaimable(!isClaimable)}
           />
         </FormControl>
         <FormControl isInvalid={showError && !classEmblem}>

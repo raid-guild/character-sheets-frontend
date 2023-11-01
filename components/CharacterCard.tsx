@@ -124,6 +124,9 @@ export const CharacterCard: React.FC<{
           {shortenAddress(account)}
         </Link>
         <Wrap spacing={4}>
+          {classes.length === 0 && (
+            <Text fontSize="xs">No classes claimed</Text>
+          )}
           {classes.map(classEntity => (
             <WrapItem key={classEntity.classId + classEntity.name}>
               <ClassTag {...classEntity} />

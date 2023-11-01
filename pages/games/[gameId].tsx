@@ -165,6 +165,7 @@ function GamePage(): JSX.Element {
         <HStack spacing="5px">
           <HStack
             bg="cardBG"
+            h="100%"
             p={8}
             transition="background 0.3s ease"
             w="100%"

@@ -13,7 +13,6 @@ import {
   ModalHeader,
   ModalOverlay,
   SimpleGrid,
-  Switch,
   Text,
   Textarea,
   Tooltip,
@@ -31,6 +30,7 @@ import {
 } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
+import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
@@ -478,7 +478,9 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           </Flex>
           <Switch
             isChecked={classRequirementsToggle}
-            onChange={e => setClassRequirementsToggle(e.target.checked)}
+            onChange={() =>
+              setClassRequirementsToggle(!classRequirementsToggle)
+            }
           />
         </FormControl>
 
@@ -547,7 +549,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           </Flex>
           <Switch
             isChecked={soulboundToggle}
-            onChange={e => setSoulboundToggle(e.target.checked)}
+            onChange={() => setSoulboundToggle(!soulboundToggle)}
           />
         </FormControl>
         <FormControl isInvalid={showError && !itemSupply}>
@@ -565,7 +567,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           </Flex>
           <Switch
             isChecked={claimableToggle}
-            onChange={e => setClaimableToggle(e.target.checked)}
+            onChange={() => setClaimableToggle(!claimableToggle)}
           />
         </FormControl>
         {claimableToggle && (
