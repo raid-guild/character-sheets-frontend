@@ -197,17 +197,85 @@ export const CreateGameModal: React.FC = () => {
           [`ipfs://${gameMetadataCid}`, 'ipfs://', 'ipfs://', 'ipfs://'],
         );
 
+        const encodedHatsData = encodeAbiParameters(
+          [
+            {
+              name: 'hatsImgUri',
+              type: 'string',
+            },
+            { name: 'topHatDescription', type: 'string' },
+            {
+              name: 'adminHatUri',
+              type: 'string',
+            },
+            {
+              name: 'adminHatDescription',
+              type: 'string',
+            },
+            {
+              name: 'gameHatUri',
+              type: 'string',
+            },
+            {
+              name: 'gameHatDescription',
+              type: 'string',
+            },
+            {
+              name: 'playerHatUri',
+              type: 'string',
+            },
+            {
+              name: 'playerHatDescription',
+              type: 'string',
+            },
+            {
+              name: 'characterHatUri',
+              type: 'string',
+            },
+            {
+              name: 'characterHatDescription',
+              type: 'string',
+            },
+          ],
+          [
+            gameMetadata.image,
+            'Top Hat',
+            'ipfs://',
+            'Admin Hat',
+            'ipfs://',
+            'Game Hat',
+            'ipfs://',
+            'Player Hat',
+            'ipfs://',
+            'Character Hat',
+          ],
+        );
+
+        const adminAddresses = [walletClient.account?.address as Address];
+
+        const args = [
+          trimmedDaoAddress,
+          adminAddresses,
+          trimmedGameMasterAddresses,
+          encodedHatsData,
+          encodedGameCreationData,
+        ];
+
+        console.log(args);
+
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
           address: gameFactory as Address,
           abi: parseAbi([
-            'function create(address[], address, bytes calldata) external returns (address, address, address, address)',
+            'function createAndInitialize(address dao,address[] calldata admins,address[] calldata dungeonMasters,bytes calldata encodedHatsStrings,bytes calldata sheetsStrings) public returns (address)',
           ]),
-          functionName: 'create',
+          functionName: 'createAndInitialize',
           args: [
-            trimmedGameMasterAddresses,
             trimmedDaoAddress,
+            adminAddresses,
+            trimmedGameMasterAddresses,
+            encodedHatsData,
             encodedGameCreationData,
           ],
         });

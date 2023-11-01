@@ -5,7 +5,7 @@ query GetGlobal($id: ID!) {
 }
 
 query GetGames($limit: Int, $skip: Int) {
-  games(first: $limit, skip: $skip, orderBy: createdAt, orderDirection: desc) {
+  games(first: $limit, skip: $skip, orderBy: startedAt, orderDirection: desc) {
     ...GameMetaInfo
   }
 }
@@ -16,14 +16,14 @@ query GetGame($gameId: ID!) {
   }
 }
 
-query GetGamesByOwner($owner: Bytes!, $limit: Int, $skip: Int) {
-  games(where: { owners_contains: [$owner] }, first: $limit, skip: $skip) {
-    ...GameMetaInfo
-  }
-}
+# query GetGamesByOwner($owner: Bytes!, $limit: Int, $skip: Int) {
+#   games(where: { owners_contains: [$owner] }, first: $limit, skip: $skip) {
+#     ...GameMetaInfo
+#   }
+# }
 
-query GetGamesByMaster($master: Bytes!, $limit: Int, $skip: Int) {
-  games(where: { masters_contains: [$master] }, first: $limit, skip: $skip) {
-    ...GameMetaInfo
-  }
-}
+# query GetGamesByMaster($master: Bytes!, $limit: Int, $skip: Int) {
+#   games(where: { masters_contains: [$master] }, first: $limit, skip: $skip) {
+#     ...GameMetaInfo
+#   }
+# }
