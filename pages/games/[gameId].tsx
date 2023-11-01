@@ -149,12 +149,13 @@ function GamePage(): JSX.Element {
       experience,
       image,
       name,
-      owners,
+      owner,
+      admins,
+      masters,
       id,
       characters,
       classes,
       items,
-      masters,
     } = game;
 
     const chainId = DEFAULT_CHAIN.id;
@@ -227,44 +228,68 @@ function GamePage(): JSX.Element {
         </HStack>
 
         <VStack align="start" spacing={4} p={8} bg="cardBG">
-          <Text
-            fontFamily="mono"
-            letterSpacing="1px"
-            fontSize="sm"
-            textTransform="uppercase"
-          >
-            Owners
+          <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
+            Owner
           </Text>
-          {owners.map(owner => (
+          <Link
+            fontSize="sm"
+            href={`${EXPLORER_URLS[chainId]}/address/${owner}`}
+            key={`gm-${owner}`}
+            isExternal
+            bg={owner === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
+            textDecor={owner !== address?.toLowerCase() ? 'underline' : ''}
+            _hover={{
+              color: 'accent',
+            }}
+          >
+            {owner === address?.toLowerCase() ? (
+              <HStack px={1} spacing={3}>
+                <Text as="span">You</Text>
+                <Text as="span" textDecor="underline">
+                  ({shortenAddress(owner)})
+                </Text>
+              </HStack>
+            ) : (
+              shortenAddress(owner)
+            )}
+          </Link>
+          <Text
+            letterSpacing="3px"
+            fontSize="2xs"
+            textTransform="uppercase"
+            mt={2}
+          >
+            Admins
+          </Text>
+          {admins.map(admin => (
             <Link
               fontSize="sm"
-              href={`${EXPLORER_URLS[chainId]}/address/${owner}`}
-              key={`gm-${owner}`}
+              href={`${EXPLORER_URLS[chainId]}/address/${admin}`}
+              key={`gm-${admin}`}
               isExternal
-              bg={owner === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
-              textDecor={owner !== address?.toLowerCase() ? 'underline' : ''}
+              bg={admin === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
+              textDecor={admin !== address?.toLowerCase() ? 'underline' : ''}
               _hover={{
                 color: 'accent',
               }}
             >
-              {owner === address?.toLowerCase() ? (
+              {admin === address?.toLowerCase() ? (
                 <HStack px={1} spacing={3}>
                   <Text as="span">You</Text>
                   <Text as="span" textDecor="underline">
-                    ({shortenAddress(owner)})
+                    ({shortenAddress(admin)})
                   </Text>
                 </HStack>
               ) : (
-                shortenAddress(owner)
+                shortenAddress(admin)
               )}
             </Link>
           ))}
 
           <Text
-            fontFamily="mono"
-            letterSpacing="1px"
-            fontSize="sm"
-            mt={4}
+            letterSpacing="3px"
+            fontSize="2xs"
+            mt={2}
             textTransform="uppercase"
           >
             Game Masters

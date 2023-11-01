@@ -52,7 +52,7 @@ export const ApproveTransferModal: React.FC = () => {
 
   const gameOwner = useMemo(() => {
     if (!game) return null;
-    return game?.owners[0] as Address | undefined;
+    return game.owner as Address;
   }, [game]);
 
   const onApproveTransfer = useCallback(

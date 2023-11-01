@@ -253,16 +253,6 @@ export const CreateGameModal: React.FC = () => {
 
         const adminAddresses = [walletClient.account?.address as Address];
 
-        const args = [
-          trimmedDaoAddress,
-          adminAddresses,
-          trimmedGameMasterAddresses,
-          encodedHatsData,
-          encodedGameCreationData,
-        ];
-
-        console.log(args);
-
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
