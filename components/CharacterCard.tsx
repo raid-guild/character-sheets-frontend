@@ -23,6 +23,7 @@ import { useMemo } from 'react';
 import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
+import { useGame } from '@/contexts/GameContext';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character } from '@/utils/types';
@@ -36,7 +37,8 @@ export const CharacterCard: React.FC<{
   character: Character;
   dummy?: boolean;
 }> = ({ chainId, character, dummy }) => {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { isMaster } = useGame();
 
   const {
     characterId,
@@ -136,7 +138,10 @@ export const CharacterCard: React.FC<{
         <Text fontSize="sm" fontWeight={300} lineHeight={5}>
           {shortenText(description, 100)}
         </Text>
-        {isConnected && !dummy && <CharacterActionMenu character={character} />}
+        {isConnected &&
+          (isMaster || address?.toLowerCase() === character.player) && (
+            <CharacterActionMenu character={character} />
+          )}
         {items.length > 0 && (
           <>
             <HStack justify="space-between" w="full">
@@ -177,7 +182,8 @@ export const CharacterCardSmall: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { isMaster } = useGame();
   const { isOpen, onClose, onOpen } = useDisclosure();
 
   const { classes, experience, heldItems, image, jailed, name } = character;
@@ -271,9 +277,10 @@ export const CharacterCardSmall: React.FC<{
           </HStack>
         </VStack>
       </Box>
-      {isConnected && (
-        <CharacterActionMenu character={character} variant="solid" />
-      )}
+      {isConnected &&
+        (isMaster || address?.toLowerCase() === character.player) && (
+          <CharacterActionMenu character={character} variant="solid" />
+        )}
       <Modal
         autoFocus={false}
         isOpen={isOpen}
