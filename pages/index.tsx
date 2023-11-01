@@ -1,5 +1,6 @@
 import { Button, Flex, Heading, Text, VStack } from '@chakra-ui/react';
 import NextLink from 'next/link';
+import { zeroAddress } from 'viem';
 
 import { CharacterCard } from '@/components/CharacterCard';
 import { CreateGameModal } from '@/components/Modals/CreateGameModal';
@@ -45,6 +46,7 @@ const dummyCharacter: Character = {
   player: '0x1234567890123456789012345678901234567890',
   jailed: false,
   removed: false,
+  approved: zeroAddress,
   experience: '28930',
   uri: '',
   heldItems: [

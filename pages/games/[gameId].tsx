@@ -28,6 +28,7 @@ import { ClassesPanel } from '@/components/ClassesPanel';
 import { GameTotals } from '@/components/GameTotals';
 import { ItemsPanel } from '@/components/ItemsPanel';
 import { AddItemRequirementModal } from '@/components/Modals/AddItemRequirementModal';
+import { ApproveTransferModal } from '@/components/Modals/ApproveTransferModal';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { ClaimClassModal } from '@/components/Modals/ClaimClassModal';
 import { ClaimItemModal } from '@/components/Modals/ClaimItemModal';
@@ -42,6 +43,7 @@ import { RemoveItemRequirementModal } from '@/components/Modals/RemoveItemRequir
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
 import { RestoreCharacterModal } from '@/components/Modals/RestoreCharacterModal';
 import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
+import { TransferCharacterModal } from '@/components/Modals/TransferCharacterModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
 import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
 import { XPPanel } from '@/components/XPPanel';
@@ -86,6 +88,7 @@ function GamePage(): JSX.Element {
   const { game, character, isMaster, loading } = useGame();
   const {
     assignClassModal,
+    approveTransferModal,
     claimClassModal,
     editCharacterModal,
     equipItemModal,
@@ -95,6 +98,7 @@ function GamePage(): JSX.Element {
     removeCharacterModal,
     renounceCharacterModal,
     revokeClassModal,
+    transferCharacterModal,
   } = useActions();
   const {
     addRequirementModal,
@@ -404,12 +408,13 @@ function GamePage(): JSX.Element {
       <UpdateGameMetadataModal {...updateGameMetadata} />
       <RestoreCharacterModal {...restoreCharacterModal} />
 
-      {editItemClaimableModal && <EditItemClaimableModal />}
       {addRequirementModal && <AddItemRequirementModal />}
+      {approveTransferModal && <ApproveTransferModal />}
       {assignClassModal && <AssignClassModal />}
       {claimClassModal && <ClaimClassModal />}
       {claimItemModal && <ClaimItemModal />}
       {editCharacterModal && <UpdateCharacterMetadataModal />}
+      {editItemClaimableModal && <EditItemClaimableModal />}
       {equipItemModal && <EquipItemModal />}
       {giveExpModal && <DropExperienceModal />}
       {giveItemsModal && <GiveItemsModal />}
@@ -418,6 +423,7 @@ function GamePage(): JSX.Element {
       {removeRequirementModal && <RemoveItemRequirementModal />}
       {renounceCharacterModal && <RenounceCharacterModal />}
       {revokeClassModal && <RevokeClassModal />}
+      {transferCharacterModal && <TransferCharacterModal />}
     </>
   );
 }
