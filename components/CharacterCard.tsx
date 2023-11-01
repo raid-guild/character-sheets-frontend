@@ -104,6 +104,7 @@ export const CharacterCard: React.FC<{
       </Box>
       <VStack align="flex-start" spacing={6}>
         <Heading>{name}</Heading>
+        <Text fontSize="xs">Character ID: {characterId}</Text>
         <Link
           alignItems="center"
           textDecor="underline"
