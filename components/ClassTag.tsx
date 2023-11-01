@@ -1,4 +1,4 @@
-import { Box, HStack, Image, Text } from '@chakra-ui/react';
+import { Box, HStack, Image, Text, Tooltip } from '@chakra-ui/react';
 import { useMemo } from 'react';
 import { hexToNumber, keccak256, toBytes } from 'viem';
 
@@ -7,10 +7,13 @@ type Size = 'sm' | 'md' | 'lg';
 type ClassTagProps = {
   name: string;
   image: string;
-  size?: Size;
+  size?: Size | 'xs';
 };
 
 export const ClassTag: React.FC<ClassTagProps> = ({ size, name, image }) => {
+  if (size === 'xs') {
+    return <ClassTagInnerExtraSmall name={name} image={image} />;
+  }
   return <ClassTagInner name={name} image={image} size={size} />;
 };
 
@@ -105,5 +108,33 @@ const ClassTagInner: React.FC<{
       </HStack>
       <Box bg={bgColor} my={py} w="6px" />
     </HStack>
+  );
+};
+
+const ClassTagInnerExtraSmall: React.FC<{
+  name: string;
+  image: string;
+}> = ({ name, image }) => {
+  const bgColor = useMemo(() => {
+    // TODO take bgColor from classEntity
+    const hexValue = keccak256(toBytes(name));
+    const index = hexToNumber(hexValue) % colors.length;
+    return colors[index];
+  }, [name]);
+
+  return (
+    <Tooltip aria-label={name} label={name}>
+      <Box bg={bgColor} borderRadius="50%" p={1.5}>
+        {image && (
+          <Image
+            alt="class emblem"
+            h="16px"
+            objectFit="contain"
+            src={image}
+            w="16px"
+          />
+        )}
+      </Box>
+    </Tooltip>
   );
 };
