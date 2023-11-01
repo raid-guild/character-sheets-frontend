@@ -13,6 +13,7 @@ import '@fontsource/tektur/600.css';
 import '@fontsource/tektur/700.css';
 import '@fontsource/tektur/800.css';
 import '@fontsource/tektur/900.css';
+import '@/styles.css';
 
 import { ChakraProvider } from '@chakra-ui/react';
 import { Global } from '@emotion/react';
