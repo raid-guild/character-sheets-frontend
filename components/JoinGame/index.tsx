@@ -203,13 +203,13 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 
         setIsCreating(true);
 
-        const res = await fetch(
-          '/api/uploadMetadata?name=characterMetadata.json',
-          {
-            method: 'POST',
-            body: JSON.stringify(characterMetadata),
-          },
-        );
+        const res = await fetch('/api/setCharacterMetadata', {
+          method: 'POST',
+          body: JSON.stringify({
+            characterId: `${game.id}-character-${game.characters.length + 1}}`,
+            metadata: characterMetadata,
+          }),
+        });
 
         if (!res.ok)
           throw new Error(

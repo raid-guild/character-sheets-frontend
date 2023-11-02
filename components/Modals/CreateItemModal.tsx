@@ -69,6 +69,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
 
   const [itemName, setItemName] = useState<string>('');
   const [itemDescription, setItemDescription] = useState<string>('');
+  const [itemZIndex, setItemZIndex] = useState<number>(0);
   const [itemSupply, setItemSupply] = useState<string>('');
   const [classRequirementsToggle, setClassRequirementsToggle] =
     useState<boolean>(false);
@@ -123,6 +124,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       !itemName ||
       invalidItemDescription ||
       !itemSupply ||
+      !itemZIndex ||
       invalidItemSupply ||
       invalidClaimableAddressList
     );
@@ -130,6 +132,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     itemDescription,
     itemEmblem,
     itemName,
+    itemZIndex,
     invalidClaimableAddressList,
     invalidItemDescription,
     itemSupply,
@@ -185,6 +188,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           name: itemName,
           description: itemDescription,
           image: `ipfs://${cid}`,
+          zIndex: itemZIndex,
         };
 
         setIsCreating(true);
@@ -375,6 +379,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       itemName,
       itemDescription,
       itemSupply,
+      itemZIndex,
       game,
       reloadGame,
       hasError,
@@ -452,6 +457,19 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           {showError && invalidItemDescription && (
             <FormHelperText color="red">
               Item description must be less than 200 characters
+            </FormHelperText>
+          )}
+        </FormControl>
+        <FormControl isInvalid={showError && !itemZIndex}>
+          <FormLabel>Item Z-Index</FormLabel>
+          <Input
+            onChange={e => setItemZIndex(parseInt(e.target.value))}
+            type="number"
+            value={itemZIndex}
+          />
+          {showError && !itemZIndex && (
+            <FormHelperText color="red">
+              An item Z-Index is required
             </FormHelperText>
           )}
         </FormControl>

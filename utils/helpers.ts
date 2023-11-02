@@ -176,6 +176,7 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     uri: item.uri,
     name: metadata.name,
     description: metadata.description,
+    zIndex: metadata.zIndex ? Number(metadata.zIndex) : undefined,
     image: uriToHttp(metadata.image)[0],
     itemId: item.itemId,
     soulbound: item.soulbound,
