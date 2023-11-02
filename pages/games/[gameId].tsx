@@ -20,8 +20,8 @@ import {
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
-import { Hex, isAddress } from 'viem';
-import { useAccount, useEnsName } from 'wagmi';
+import { isAddress } from 'viem';
+import { useAccount } from 'wagmi';
 
 import { CharacterCard } from '@/components/CharacterCard';
 import { CharactersPanel } from '@/components/CharactersPanel';
@@ -48,6 +48,7 @@ import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
 import { TransferCharacterModal } from '@/components/Modals/TransferCharacterModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
 import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
+import { UserLink } from '@/components/UserLink';
 import { XPPanel } from '@/components/XPPanel';
 import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
 import { GameProvider, useGame } from '@/contexts/GameContext';
@@ -58,42 +59,6 @@ import {
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress } from '@/utils/helpers';
-
-const UserLink = ({
-  chainId,
-  user,
-  isCurrentUser,
-}: {
-  chainId: number;
-  user: string;
-  isCurrentUser: boolean;
-}) => {
-  const { data: ensName } = useEnsName({ address: user as Hex, chainId: 1 });
-
-  return (
-    <Link
-      fontSize="sm"
-      href={`${EXPLORER_URLS[chainId]}/address/${user}`}
-      isExternal
-      bg={isCurrentUser ? 'whiteAlpha.300' : ''}
-      textDecor={!isCurrentUser ? 'underline' : ''}
-      _hover={{
-        color: 'accent',
-      }}
-    >
-      {isCurrentUser ? (
-        <HStack px={1} spacing={3}>
-          <Text as="span">You</Text>
-          <Text as="span" textDecor="underline">
-            ({ensName || shortenAddress(user)})
-          </Text>
-        </HStack>
-      ) : (
-        ensName || shortenAddress(user)
-      )}
-    </Link>
-  );
-};
 
 export default function GamePageOuter(): JSX.Element {
   const {
@@ -163,8 +128,6 @@ function GamePage(): JSX.Element {
       setIsConnectedAndMounted(false);
     }
   }, [isConnected]);
-
-  const { address } = useAccount();
 
   const content = () => {
     if (loading) {
@@ -271,11 +234,7 @@ function GamePage(): JSX.Element {
           <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
             Owner
           </Text>
-          <UserLink
-            chainId={chainId}
-            user={owner}
-            isCurrentUser={owner.toLowerCase() === owner}
-          />
+          <UserLink user={owner} />
 
           <Text
             letterSpacing="3px"
@@ -286,12 +245,7 @@ function GamePage(): JSX.Element {
             Admins
           </Text>
           {admins.map(admin => (
-            <UserLink
-              key={`gm-${admin}`}
-              chainId={chainId}
-              user={admin}
-              isCurrentUser={admin === address?.toLowerCase()}
-            />
+            <UserLink key={`gm-${admin}`} user={admin} />
           ))}
 
           <Text
@@ -306,12 +260,7 @@ function GamePage(): JSX.Element {
             {masters.map((master, i) => {
               return (
                 <>
-                  <UserLink
-                    key={`gm-${master}`}
-                    chainId={chainId}
-                    user={master}
-                    isCurrentUser={master === address?.toLowerCase()}
-                  />
+                  <UserLink key={`gm-${master}`} user={master} />
                   {i !== masters.length - 1 && <Text as="span">, </Text>}
                 </>
               );
