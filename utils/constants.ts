@@ -11,3 +11,6 @@ export const SUBGRAPH_URLS: { [key: number]: string } = {
 
 export const HOSTNAME =
   typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+
+export const RAIDGUILD_HOSTNAME =
+  'character-sheets-git-configure-for-raidguild-game-raidguild.vercel.app';
