@@ -112,26 +112,41 @@ export const ClaimItemModal: React.FC = () => {
   const claimableLeaves: Array<ClaimableItemLeaf> = useMemo(() => {
     if (!tree) return [];
     return tree.dump().values.map(leaf => {
-      const [itemId, claimer, amount] = leaf.value;
-      return [BigInt(itemId), getAddress(claimer), BigInt(amount)];
+      const [itemId, claimer, nonce, amount] = leaf.value;
+      return [
+        BigInt(itemId),
+        getAddress(claimer),
+        BigInt(nonce),
+        BigInt(amount),
+      ];
     });
   }, [tree]);
 
-  const claimableAmount: bigint = useMemo(() => {
-    if (!character) return BigInt(0);
-    if (!selectedItem) return BigInt(0);
-    if (!tree) return BigInt(0);
+  const claimableLeaf: ClaimableItemLeaf | null = useMemo(() => {
+    if (!character) return null;
+    if (!selectedItem) return null;
+    if (!tree) return null;
     if (tree.root.toLowerCase() !== selectedItem.merkleRoot.toLowerCase())
-      return BigInt(0);
-    if (!claimableLeaves.length) return BigInt(0);
+      return null;
+    if (!claimableLeaves.length) return null;
     const claimableLeaf = claimableLeaves.find(
       leaf =>
         leaf[1] === getAddress(character.account) &&
         leaf[0] === BigInt(selectedItem.itemId),
     );
-    if (!claimableLeaf) return BigInt(0);
-    return claimableLeaf[2];
+    if (!claimableLeaf) return null;
+    return [
+      BigInt(claimableLeaf[0]),
+      getAddress(claimableLeaf[1]),
+      BigInt(claimableLeaf[2]),
+      BigInt(claimableLeaf[3]),
+    ];
   }, [character, selectedItem, tree, claimableLeaves]);
+
+  const claimableAmount: bigint = useMemo(() => {
+    if (!claimableLeaf) return BigInt(0);
+    return claimableLeaf[3];
+  }, [claimableLeaf]);
 
   const isClaimableByPublic = useMemo(() => {
     if (!selectedItem) return false;
@@ -193,14 +208,13 @@ export const ClaimItemModal: React.FC = () => {
         let proof: string[] = [];
         let claimingAmount = BigInt(amount);
 
-        if (isClaimableByMerkleProof && tree && claimableAmount > BigInt(0)) {
-          const leaf: ClaimableItemLeaf = [
-            itemId,
-            getAddress(character.account),
-            BigInt(claimableAmount),
-          ];
-
-          proof = tree.getProof(leaf);
+        if (
+          isClaimableByMerkleProof &&
+          tree &&
+          claimableAmount > BigInt(0) &&
+          claimableLeaf
+        ) {
+          proof = tree.getProof(claimableLeaf);
           claimingAmount = claimableAmount;
         } else if (!isClaimableByPublic) {
           console.error('Not claimable by public or merkle proof.');
@@ -266,6 +280,7 @@ export const ClaimItemModal: React.FC = () => {
       tree,
       isClaimableByPublic,
       claimableAmount,
+      claimableLeaf,
       isClaimableByMerkleProof,
     ],
   );

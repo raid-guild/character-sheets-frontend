@@ -206,11 +206,13 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           if (claimableAddressList.length === 0) {
             claimable = pad('0x00');
           } else {
+            const itemId = BigInt(game.items.length);
             const leaves: ClaimableItemLeaf[] = claimableAddressList.map(
               ({ address, amount }) => {
                 return [
-                  BigInt(game.items.length),
+                  BigInt(itemId),
                   getAddress(address),
+                  BigInt(0),
                   BigInt(amount),
                 ];
               },
@@ -220,7 +222,9 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               'uint256',
               'address',
               'uint256',
+              'uint256',
             ]);
+
             claimable = tree.root as `0x${string}`;
 
             const jsonTree = JSON.stringify(tree.dump());
@@ -326,7 +330,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
             false,
             soulboundToggle,
             claimable,
-            BigInt(1),
+            BigInt(itemSupply), // refers to max amount a single character can hold
             BigInt(itemSupply),
             itemMetadataCid,
             requiredAssetsBytes,

@@ -39,6 +39,24 @@ import {
   ClaimableAddressListInput,
 } from '../ClaimableAddressListInput';
 
+const getClaimNonce = async (
+  publicClient: ReturnType<typeof usePublicClient>,
+  itemsAddress: Address,
+  itemId: bigint,
+  account: Address,
+) => {
+  const nonce = (await publicClient.readContract({
+    address: itemsAddress,
+    abi: parseAbi([
+      'function getClaimNonce(uint256 itemId, address character) public view returns (uint256)',
+    ]),
+    functionName: 'getClaimNonce',
+    args: [itemId, account],
+  })) as bigint;
+
+  return nonce;
+};
+
 export const EditItemClaimableModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
   const { selectedItem, editItemClaimableModal } = useItemActions();
@@ -174,15 +192,27 @@ export const EditItemClaimableModal: React.FC = () => {
           if (claimableAddressList.length === 0) {
             claimable = pad('0x00');
           } else {
-            const leaves: ClaimableItemLeaf[] = claimableAddressList.map(
-              ({ address, amount }) => {
-                return [BigInt(itemId), getAddress(address), BigInt(amount)];
-              },
+            const leaves: ClaimableItemLeaf[] = await Promise.all(
+              claimableAddressList.map(async ({ address, amount }) => {
+                const nonce = await getClaimNonce(
+                  publicClient,
+                  game.itemsAddress as Address,
+                  itemId,
+                  address,
+                );
+                return [
+                  BigInt(itemId),
+                  getAddress(address),
+                  nonce,
+                  BigInt(amount),
+                ];
+              }),
             );
 
             const tree = StandardMerkleTree.of(leaves, [
               'uint256',
               'address',
+              'uint256',
               'uint256',
             ]);
             claimable = tree.root as `0x${string}`;
@@ -234,10 +264,10 @@ export const EditItemClaimableModal: React.FC = () => {
           account: walletClient.account?.address as Address,
           address: game.itemsAddress as Address,
           abi: parseAbi([
-            'function updateItemClaimable(uint256 itemId, bytes32 merkleRoot) external',
+            'function updateItemClaimable(uint256 itemId, bytes32 merkleRoot, uint256 newDistribution) external',
           ]),
           functionName: 'updateItemClaimable',
-          args: [itemId, claimable],
+          args: [itemId, claimable, BigInt(selectedItem.supply)],
         });
         setTxHash(transactionhash);
 
