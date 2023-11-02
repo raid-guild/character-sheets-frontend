@@ -1,12 +1,40 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getAddress, parseAbi } from 'viem';
+import { getAddress } from 'viem';
 
+import {
+  FullGameInfoFragment,
+  GetGameWithMastersDocument,
+} from '@/graphql/autogen/types';
+import { client } from '@/graphql/client';
 import { withAuth } from '@/lib/auth';
 import { dbPromise } from '@/lib/mongodb';
-import { readClient } from '@/lib/web3';
 
-const DUNGEON_MASTER_ROLE =
-  '0x9f5957e014b94f6c4458eb946e74e5d7e489dfaff6e0bddd07dd7d48100ca913';
+const verifyGameMaster = async (
+  gameAddress: `0x${string}`,
+  account: `0x${string}`,
+) => {
+  const { data, error } = await client.query(GetGameWithMastersDocument, {
+    gameId: gameAddress.toLowerCase(),
+  });
+
+  if (error) {
+    console.error('Error getting game masters', error);
+    return false;
+  }
+
+  const game = data?.game as Pick<FullGameInfoFragment, 'masters'> | null;
+
+  if (!game) {
+    console.error('Game not found');
+    return false;
+  }
+
+  const isGameMaster = game.masters.some(
+    master => master.address.toLowerCase() === account.toLowerCase(),
+  );
+
+  return isGameMaster;
+};
 
 const setTree = async (
   account: `0x${string}`,
@@ -33,15 +61,7 @@ const setTree = async (
   }
 
   try {
-    const isGameMaster = await readClient.readContract({
-      address: gameAddress,
-      abi: parseAbi([
-        'function hasRole(bytes32 role, address account) public view returns (bool)',
-      ]),
-      functionName: 'hasRole',
-      args: [DUNGEON_MASTER_ROLE, account],
-    });
-
+    const isGameMaster = await verifyGameMaster(gameAddress, account);
     if (!isGameMaster) {
       return res.status(403).json({ error: 'Not dungeon master' });
     }

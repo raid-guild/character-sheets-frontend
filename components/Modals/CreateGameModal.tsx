@@ -18,7 +18,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { encodeAbiParameters, isAddress, parseAbi } from 'viem';
+import { encodeAbiParameters, isAddress, parseAbi, zeroAddress } from 'viem';
 import { Address, useAccount, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
@@ -27,10 +27,6 @@ import { useGlobal } from '@/hooks/useGlobal';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
-import { DEFAULT_CHAIN } from '@/lib/web3';
-import { DEFAULT_DAO_ADDRESSES } from '@/utils/constants';
-
-const DEFAULT_DAO_ADDRESS = DEFAULT_DAO_ADDRESSES[DEFAULT_CHAIN.id];
 
 export const CreateGameModal: React.FC = () => {
   const { address } = useAccount();
@@ -109,7 +105,7 @@ export const CreateGameModal: React.FC = () => {
     setGameDescription('');
     setGameEmblem(null);
     setGameMasters(address ?? '');
-    setDaoAddress(DEFAULT_DAO_ADDRESS ?? '');
+    setDaoAddress('');
     setShowError(false);
 
     setIsCreating(false);
@@ -136,10 +132,6 @@ export const CreateGameModal: React.FC = () => {
 
       try {
         if (!walletClient) throw new Error('Could not find a wallet client');
-        if (!DEFAULT_DAO_ADDRESS)
-          throw new Error(
-            `DEFAULT_DAO_ADDRESS not configured for the chain ${walletClient.chain.name}`,
-          );
         if (!gameFactory)
           throw new Error(
             `Missing game factory address for the ${walletClient.chain.name} network`,
@@ -149,8 +141,7 @@ export const CreateGameModal: React.FC = () => {
           .split(',')
           .map(address => address.trim()) as Address[];
 
-        const trimmedDaoAddress =
-          (daoAddress.trim() as Address) || DEFAULT_DAO_ADDRESS;
+        const trimmedDaoAddress = (daoAddress.trim() as Address) || zeroAddress;
 
         const cid = await onUpload();
         if (!cid)
@@ -448,7 +439,7 @@ export const CreateGameModal: React.FC = () => {
         <FormControl isInvalid={showError && invalidDaoAddress}>
           <Flex align="center">
             <FormLabel>DAO Address (optional)</FormLabel>
-            <Tooltip label="By adding a DAO address, you restrict who can create characters to only members of that DAO. If you do not provide a DAO address, anyone can create a character by joining an open DAO that we provide.">
+            <Tooltip label="By adding a DAO address, you restrict who can create characters to only members of that DAO. If you do not provide a DAO address, anyone can create a character.">
               <Image
                 alt="down arrow"
                 height="14px"

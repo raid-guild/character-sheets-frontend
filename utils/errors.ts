@@ -5,6 +5,10 @@ export const getErrorMessage = (
   defaultError: string = 'Unknown error',
 ): string => {
   console.error(error);
+  if (typeof error === 'string') {
+    return error;
+  }
+
   if ((error as Error)?.message?.toLowerCase().includes('user denied')) {
     return USER_ERRORS[0];
   }
