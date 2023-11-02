@@ -87,7 +87,8 @@ export default function GamePageOuter(): JSX.Element {
 }
 
 function GamePage(): JSX.Element {
-  const { game, character, isMaster, loading } = useGame();
+  const { game, character, isMaster, loading, isEligibleForCharacter } =
+    useGame();
   const {
     assignClassModal,
     approveTransferModal,
@@ -338,7 +339,7 @@ function GamePage(): JSX.Element {
           <Box ref={topOfCardRef} position="absolute" top="-80px" />
           {isConnectedAndMounted && (
             <VStack p={8} bg="cardBG" align="start" spacing={4}>
-              {!character && !showJoinGame && (
+              {!character && !showJoinGame && isEligibleForCharacter && (
                 <HStack w="100%" spacing={4}>
                   <Button variant="solid" onClick={() => setShowJoinGame(true)}>
                     Join this Game
@@ -348,23 +349,33 @@ function GamePage(): JSX.Element {
                   </Text>
                 </HStack>
               )}
-              {!character && showJoinGame && (
+              {!character && showJoinGame && isEligibleForCharacter && (
                 <JoinGame
                   onClose={() => setShowJoinGame(false)}
                   topOfCardRef={topOfCardRef}
                 />
               )}
-              {character && character.removed && !character.jailed && (
-                <HStack spacing={4}>
-                  <Button
-                    variant="solid"
-                    onClick={restoreCharacterModal.onOpen}
-                  >
-                    Restore Character
-                  </Button>
-                  <Text>Your character has been removed from this game.</Text>
+              {!character && !isEligibleForCharacter && (
+                <HStack w="100%" spacing={4}>
+                  <Text fontSize="sm">
+                    You are not eligible to join this game.
+                  </Text>
                 </HStack>
               )}
+              {character &&
+                character.removed &&
+                !character.jailed &&
+                isEligibleForCharacter && (
+                  <HStack spacing={4}>
+                    <Button
+                      variant="solid"
+                      onClick={restoreCharacterModal.onOpen}
+                    >
+                      Restore Character
+                    </Button>
+                    <Text>Your character has been removed from this game.</Text>
+                  </HStack>
+                )}
               {character && character.jailed && (
                 <Text>
                   Your character is in jail. You can’t play until you’re

@@ -22,6 +22,7 @@ export type Game = Metadata & {
   experienceAddress: string;
   itemsAddress: string;
   classesAddress: string;
+  characterEligibilityAdaptor: string;
   uri: string;
   owner: string;
   admins: string[];

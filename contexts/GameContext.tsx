@@ -12,12 +12,14 @@ import { useAccount } from 'wagmi';
 import { useGetGameQuery } from '@/graphql/autogen/types';
 import { formatGame } from '@/utils/helpers';
 import { Character, Game } from '@/utils/types';
+import { useIsEligible } from '@/hooks/useIsEligible';
 
 type GameContextType = {
   game: Game | null;
   character: Character | null;
   pageCharacter: Character | null;
   isMaster: boolean;
+  isEligibleForCharacter: boolean;
   loading: boolean;
   error: CombinedError | undefined;
   reload: () => void;
@@ -28,6 +30,7 @@ const GameContext = createContext<GameContextType>({
   character: null,
   pageCharacter: null,
   isMaster: false,
+  isEligibleForCharacter: false,
   loading: false,
   error: undefined,
   reload: () => {},
@@ -100,6 +103,8 @@ export const GameProvider: React.FC<{
     [game, address],
   );
 
+  const { isEligible: isEligibleForCharacter } = useIsEligible(game, address);
+
   return (
     <GameContext.Provider
       value={{
@@ -107,6 +112,7 @@ export const GameProvider: React.FC<{
         character,
         pageCharacter,
         isMaster,
+        isEligibleForCharacter,
         loading: fetching || isFormatting || isRefetching,
         error,
         reload: refetch,
