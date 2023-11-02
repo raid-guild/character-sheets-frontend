@@ -18,7 +18,7 @@ export enum PlayerActions {
   EDIT_CHARACTER = 'Edit character',
   EQUIP_ITEM = 'Equip/Unequip item',
   RENOUNCE_CHARACTER = 'Renounce character',
-  REVOKE_CLASS = 'Revoke class',
+  RENOUNCE_CLASS = 'Renounce class',
 }
 
 export enum GameMasterActions {
@@ -53,6 +53,7 @@ type ActionsContextType = {
   jailPlayerModal: ReturnType<typeof useDisclosure> | undefined;
   removeCharacterModal: ReturnType<typeof useDisclosure> | undefined;
   renounceCharacterModal: ReturnType<typeof useDisclosure> | undefined;
+  renounceClassModal: ReturnType<typeof useDisclosure> | undefined;
   revokeClassModal: ReturnType<typeof useDisclosure> | undefined;
   transferCharacterModal: ReturnType<typeof useDisclosure> | undefined;
 };
@@ -78,6 +79,7 @@ const ActionsContext = createContext<ActionsContextType>({
   jailPlayerModal: undefined,
   removeCharacterModal: undefined,
   renounceCharacterModal: undefined,
+  renounceClassModal: undefined,
   revokeClassModal: undefined,
   transferCharacterModal: undefined,
 });
@@ -100,6 +102,7 @@ export const ActionsProvider: React.FC<{
   const jailPlayerModal = useDisclosure();
   const removeCharacterModal = useDisclosure();
   const renounceCharacterModal = useDisclosure();
+  const renounceClassModal = useDisclosure();
   const revokeClassModal = useDisclosure();
   const transferCharacterModal = useDisclosure();
 
@@ -118,7 +121,7 @@ export const ActionsProvider: React.FC<{
       key => PlayerActions[key as keyof typeof PlayerActions],
     );
     if (selectedCharacter?.classes.length === 0) {
-      actions = actions.filter(a => a !== PlayerActions.REVOKE_CLASS);
+      actions = actions.filter(a => a !== PlayerActions.RENOUNCE_CLASS);
     }
 
     if (game?.classes.filter(c => c.claimable).length === 0) {
@@ -143,10 +146,6 @@ export const ActionsProvider: React.FC<{
       }
 
       if (selectedCharacter?.classes.length === 0) {
-        actions = actions.filter(a => a !== GameMasterActions.REVOKE_CLASS);
-      }
-
-      if (selectedCharacter?.player === address?.toLowerCase()) {
         actions = actions.filter(a => a !== GameMasterActions.REVOKE_CLASS);
       }
 
@@ -192,6 +191,9 @@ export const ActionsProvider: React.FC<{
         case GameMasterActions.REMOVE_CHARACTER:
           removeCharacterModal.onOpen();
           break;
+        case GameMasterActions.REVOKE_CLASS:
+          revokeClassModal.onOpen();
+          break;
         case GameMasterActions.TRANSFER_CHARACTER:
           transferCharacterModal.onOpen();
           break;
@@ -210,8 +212,8 @@ export const ActionsProvider: React.FC<{
         case PlayerActions.RENOUNCE_CHARACTER:
           renounceCharacterModal.onOpen();
           break;
-        case PlayerActions.REVOKE_CLASS:
-          revokeClassModal.onOpen();
+        case PlayerActions.RENOUNCE_CLASS:
+          renounceClassModal.onOpen();
           break;
         default:
           break;
@@ -228,6 +230,7 @@ export const ActionsProvider: React.FC<{
       jailPlayerModal,
       removeCharacterModal,
       renounceCharacterModal,
+      renounceClassModal,
       revokeClassModal,
       transferCharacterModal,
     ],
@@ -256,6 +259,7 @@ export const ActionsProvider: React.FC<{
         jailPlayerModal,
         removeCharacterModal,
         renounceCharacterModal,
+        renounceClassModal,
         revokeClassModal,
         transferCharacterModal,
       }}

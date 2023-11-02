@@ -22,10 +22,11 @@ import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useToast } from '@/hooks/useToast';
+import { executeAsCharacter } from '@/utils/account';
 
-export const RevokeClassModal: React.FC = () => {
-  const { game, isMaster, reload: reloadGame } = useGame();
-  const { selectedCharacter, revokeClassModal } = useActions();
+export const RenounceClassModal: React.FC = () => {
+  const { character, game, reload: reloadGame } = useGame();
+  const { renounceClassModal, selectedCharacter } = useActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -33,7 +34,7 @@ export const RevokeClassModal: React.FC = () => {
 
   const [classId, setClassId] = useState<string>('1');
 
-  const [isRevoking, setIsRevoking] = useState<boolean>(false);
+  const [isRenouncing, setIsRenouncing] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -53,7 +54,7 @@ export const RevokeClassModal: React.FC = () => {
   const resetData = useCallback(() => {
     setValue(options[0]);
     setClassId(options[0]);
-    setIsRevoking(false);
+    setIsRenouncing(false);
     setTxHash(null);
     setTxFailed(false);
     setIsSyncing(false);
@@ -61,36 +62,37 @@ export const RevokeClassModal: React.FC = () => {
   }, [options, setValue]);
 
   useEffect(() => {
-    if (!revokeClassModal?.isOpen) {
+    if (!renounceClassModal?.isOpen) {
       resetData();
     }
-  }, [resetData, revokeClassModal?.isOpen]);
+  }, [resetData, renounceClassModal?.isOpen]);
 
-  const onRevokeClass = useCallback(
+  const onRenounceClass = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
       try {
         if (!walletClient) throw new Error('Could not find a wallet client');
-        if (!selectedCharacter) throw new Error('Character address not found');
+        if (!selectedCharacter || selectedCharacter.id !== character?.id)
+          throw new Error('Character address not found');
         if (!game?.classesAddress) throw new Error('Missing game data');
         if (selectedCharacter?.classes.length === 0)
           throw new Error('No classes found');
-        if (!isMaster) throw new Error('Only a GameMaster can revoke classes');
 
-        setIsRevoking(true);
+        setIsRenouncing(true);
 
-        const { account } = selectedCharacter;
-        const transactionhash = await walletClient.writeContract({
-          chain: walletClient.chain,
-          account: walletClient.account?.address as Address,
-          address: game.classesAddress as Address,
-          abi: parseAbi([
-            'function revokeClass(address character, uint256 classId) public',
-          ]),
-          functionName: 'revokeClass',
-          args: [account as `0x${string}`, BigInt(classId)],
-        });
+        const transactionhash = await executeAsCharacter(
+          character,
+          walletClient,
+          {
+            chain: walletClient.chain,
+            account: walletClient.account?.address as Address,
+            address: game.classesAddress as Address,
+            abi: parseAbi(['function renounceClass(uint256 classId) public']),
+            functionName: 'renounceClass',
+            args: [BigInt(classId)],
+          },
+        );
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
@@ -100,7 +102,7 @@ export const RevokeClassModal: React.FC = () => {
 
         if (status === 'reverted') {
           setTxFailed(true);
-          setIsRevoking(false);
+          setIsRenouncing(false);
           throw new Error('Transaction failed');
         }
 
@@ -111,17 +113,17 @@ export const RevokeClassModal: React.FC = () => {
         setIsSynced(true);
         reloadGame();
       } catch (e) {
-        renderError(e, 'Something went wrong revoking class');
+        renderError(e, 'Something went wrong renouncing class');
       } finally {
         setIsSyncing(false);
-        setIsRevoking(false);
+        setIsRenouncing(false);
       }
     },
     [
+      character,
       classId,
-      game,
-      isMaster,
       publicClient,
+      game,
       reloadGame,
       renderError,
       selectedCharacter,
@@ -129,7 +131,7 @@ export const RevokeClassModal: React.FC = () => {
     ],
   );
 
-  const isLoading = isRevoking;
+  const isLoading = isRenouncing;
   const isDisabled = isLoading;
 
   const content = () => {
@@ -137,7 +139,7 @@ export const RevokeClassModal: React.FC = () => {
       return (
         <VStack py={10} spacing={4}>
           <Text>Transaction failed.</Text>
-          <Button onClick={revokeClassModal?.onClose} variant="outline">
+          <Button onClick={renounceClassModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -147,8 +149,8 @@ export const RevokeClassModal: React.FC = () => {
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>
-          <Text>Class successfully revoked!</Text>
-          <Button onClick={revokeClassModal?.onClose} variant="outline">
+          <Text>Class successfully renounced!</Text>
+          <Button onClick={renounceClassModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -159,14 +161,14 @@ export const RevokeClassModal: React.FC = () => {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Revoking class...`}
+          text={`Renouncing class...`}
           txHash={txHash}
         />
       );
     }
 
     return (
-      <VStack as="form" onSubmit={onRevokeClass} spacing={8}>
+      <VStack as="form" onSubmit={onRenounceClass} spacing={8}>
         <Flex {...group} wrap="wrap" gap={4}>
           {options.map(value => {
             const radio = getRadioProps({ value });
@@ -192,10 +194,10 @@ export const RevokeClassModal: React.FC = () => {
         <Button
           isDisabled={isDisabled}
           isLoading={isLoading}
-          loadingText="Revoking..."
+          loadingText="Renouncing..."
           type="submit"
         >
-          Revoke
+          Renounce
         </Button>
       </VStack>
     );
@@ -205,13 +207,13 @@ export const RevokeClassModal: React.FC = () => {
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={revokeClassModal?.isOpen ?? false}
-      onClose={revokeClassModal?.onClose ?? (() => {})}
+      isOpen={renounceClassModal?.isOpen ?? false}
+      onClose={renounceClassModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Revoke a Class</Text>
+          <Text>Renounce a Class</Text>
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>

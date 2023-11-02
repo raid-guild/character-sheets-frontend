@@ -81,7 +81,7 @@ export const CharacterCard: React.FC<{
       maxW="72rem"
     >
       <Box pos="relative">
-        <AspectRatio ratio={10 / 13} w="full">
+        <AspectRatio ratio={10 / 13} h="100%" w="full">
           <Image
             alt="character avatar"
             filter={jailed ? 'grayscale(100%)' : 'none'}

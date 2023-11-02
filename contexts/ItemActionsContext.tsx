@@ -18,8 +18,9 @@ export enum PlayerActions {
 export enum GameMasterActions {
   EDIT_ITEM = 'Edit item',
   GIVE_ITEM = 'Give item',
-  ADD_REQUIREMENT = 'Add requirement',
-  REMOVE_REQUIREMENT = 'Remove requirement',
+  // TODO: Remove these (and their modals) completetely once we are positive we don't need them
+  // ADD_REQUIREMENT = 'Add requirement',
+  // REMOVE_REQUIREMENT = 'Remove requirement',
   EDIT_ITEM_CLAIMABLE = 'Edit item claimable',
 }
 
@@ -58,7 +59,7 @@ export const ItemActionsProvider: React.FC<{
   children: JSX.Element;
 }> = ({ children }) => {
   const { address } = useAccount();
-  const { character, game, isMaster } = useGame();
+  const { character, isMaster } = useGame();
   const toast = useToast();
 
   const addRequirementModal = useDisclosure();
@@ -80,25 +81,25 @@ export const ItemActionsProvider: React.FC<{
 
   const gmActions = useMemo(() => {
     if (isMaster) {
-      let actions = Object.keys(GameMasterActions).map(
+      const actions = Object.keys(GameMasterActions).map(
         key => GameMasterActions[key as keyof typeof GameMasterActions],
       );
 
       // TODO: For now we are only adding/checking class requirements
-      if (selectedItem?.requirements.length === game?.classes.length) {
-        actions = actions.filter(a => a !== GameMasterActions.ADD_REQUIREMENT);
-      }
+      // if (selectedItem?.requirements.length === game?.classes.length) {
+      //   actions = actions.filter(a => a !== GameMasterActions.ADD_REQUIREMENT);
+      // }
 
-      if (selectedItem?.requirements.length === 0) {
-        actions = actions.filter(
-          a => a !== GameMasterActions.REMOVE_REQUIREMENT,
-        );
-      }
+      // if (selectedItem?.requirements.length === 0) {
+      //   actions = actions.filter(
+      //     a => a !== GameMasterActions.REMOVE_REQUIREMENT,
+      //   );
+      // }
 
       return actions;
     }
     return [];
-  }, [game, isMaster, selectedItem]);
+  }, [isMaster]);
 
   const openActionModal = useCallback(
     (action: PlayerActions | GameMasterActions) => {
@@ -120,12 +121,12 @@ export const ItemActionsProvider: React.FC<{
             status: 'warning',
           });
           break;
-        case GameMasterActions.ADD_REQUIREMENT:
-          addRequirementModal.onOpen();
-          break;
-        case GameMasterActions.REMOVE_REQUIREMENT:
-          removeRequirementModal.onOpen();
-          break;
+        // case GameMasterActions.ADD_REQUIREMENT:
+        //   addRequirementModal.onOpen();
+        //   break;
+        // case GameMasterActions.REMOVE_REQUIREMENT:
+        //   removeRequirementModal.onOpen();
+        //   break;
         case GameMasterActions.EDIT_ITEM_CLAIMABLE:
           editItemClaimableModal.onOpen();
           break;
@@ -133,13 +134,7 @@ export const ItemActionsProvider: React.FC<{
           break;
       }
     },
-    [
-      addRequirementModal,
-      claimItemModal,
-      removeRequirementModal,
-      editItemClaimableModal,
-      toast,
-    ],
+    [claimItemModal, editItemClaimableModal, toast],
   );
 
   return (

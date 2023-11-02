@@ -179,8 +179,10 @@ export const UpdateGameMetadataModal: React.FC<
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
           address: game.id as Address,
-          abi: parseAbi(['function setMetadataUri(string memory _uri) public']),
-          functionName: 'setMetadataUri',
+          abi: parseAbi([
+            'function updateMetadataUri(string memory _uri) public',
+          ]),
+          functionName: 'updateMetadataUri',
           args: [`ipfs://${newCid}`],
         });
         setTxHash(transactionhash);

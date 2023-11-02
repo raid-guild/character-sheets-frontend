@@ -33,7 +33,7 @@ const setTree = async (
   }
 
   try {
-    const isDungeonMaster = await readClient.readContract({
+    const isGameMaster = await readClient.readContract({
       address: gameAddress,
       abi: parseAbi([
         'function hasRole(bytes32 role, address account) public view returns (bool)',
@@ -42,7 +42,7 @@ const setTree = async (
       args: [DUNGEON_MASTER_ROLE, account],
     });
 
-    if (!isDungeonMaster) {
+    if (!isGameMaster) {
       return res.status(403).json({ error: 'Not dungeon master' });
     }
   } catch (error) {

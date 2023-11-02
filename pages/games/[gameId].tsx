@@ -42,6 +42,7 @@ import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
 import { RemoveCharacterModal } from '@/components/Modals/RemoveCharacterModal';
 import { RemoveItemRequirementModal } from '@/components/Modals/RemoveItemRequirementModal';
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
+import { RenounceClassModal } from '@/components/Modals/RenounceClassModal';
 import { RestoreCharacterModal } from '@/components/Modals/RestoreCharacterModal';
 import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
 import { TransferCharacterModal } from '@/components/Modals/TransferCharacterModal';
@@ -98,6 +99,7 @@ function GamePage(): JSX.Element {
     jailPlayerModal,
     removeCharacterModal,
     renounceCharacterModal,
+    renounceClassModal,
     revokeClassModal,
     transferCharacterModal,
   } = useActions();
@@ -464,6 +466,7 @@ function GamePage(): JSX.Element {
       {removeCharacterModal && <RemoveCharacterModal />}
       {removeRequirementModal && <RemoveItemRequirementModal />}
       {renounceCharacterModal && <RenounceCharacterModal />}
+      {renounceClassModal && <RenounceClassModal />}
       {revokeClassModal && <RevokeClassModal />}
       {transferCharacterModal && <TransferCharacterModal />}
     </>

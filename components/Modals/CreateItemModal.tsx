@@ -306,6 +306,10 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               type: 'bytes32',
             },
             {
+              name: 'distribution',
+              type: 'uint256',
+            },
+            {
               name: 'supply',
               type: 'uint256',
             },
@@ -322,6 +326,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
             false,
             soulboundToggle,
             claimable,
+            BigInt(1),
             BigInt(itemSupply),
             itemMetadataCid,
             requiredAssetsBytes,
