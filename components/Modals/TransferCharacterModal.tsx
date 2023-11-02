@@ -92,15 +92,15 @@ export const TransferCharacterModal: React.FC = () => {
         return;
       }
 
-      if (!walletClient) throw new Error('Could not find a wallet client');
-      if (!game) throw new Error('Missing game data');
-      if (!selectedCharacter) throw new Error('Character not found');
-
-      if (!gameOwner) throw new Error('Game owner not found');
-
-      setIsTransferring(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!game) throw new Error('Missing game data');
+        if (!selectedCharacter) throw new Error('Character not found');
+
+        if (!gameOwner) throw new Error('Game owner not found');
+
+        setIsTransferring(true);
+
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,

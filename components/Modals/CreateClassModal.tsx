@@ -102,26 +102,26 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
         return;
       }
 
-      if (!walletClient) throw new Error('Could not find a wallet client');
-
-      if (!game?.classesAddress)
-        throw new Error(
-          `Missing class factory address for the ${walletClient.chain.name} network`,
-        );
-
-      const cid = await onUpload();
-      if (!cid)
-        throw new Error('Something went wrong uploading your class emblem');
-
-      const classMetadata = {
-        name: className,
-        description: classDescription,
-        image: `ipfs://${cid}`,
-      };
-
-      setIsCreating(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+
+        if (!game?.classesAddress)
+          throw new Error(
+            `Missing class factory address for the ${walletClient.chain.name} network`,
+          );
+
+        const cid = await onUpload();
+        if (!cid)
+          throw new Error('Something went wrong uploading your class emblem');
+
+        const classMetadata = {
+          name: className,
+          description: classDescription,
+          image: `ipfs://${cid}`,
+        };
+
+        setIsCreating(true);
+
         const res = await fetch('/api/uploadMetadata?name=classMetadata.json', {
           method: 'POST',
           body: JSON.stringify(classMetadata),

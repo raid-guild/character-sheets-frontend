@@ -51,15 +51,15 @@ export const RemoveCharacterModal: React.FC = () => {
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
-      if (!walletClient) throw new Error('Could not find a wallet client');
-      if (!game) throw new Error('Missing game data');
-      if (!selectedCharacter) throw new Error('Character not found');
-      if (!selectedCharacter.jailed)
-        throw new Error('Player must be jailed be sheet is removed');
-
-      setIsRemoving(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!game) throw new Error('Missing game data');
+        if (!selectedCharacter) throw new Error('Character not found');
+        if (!selectedCharacter.jailed)
+          throw new Error('Player must be jailed be sheet is removed');
+
+        setIsRemoving(true);
+
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
@@ -90,7 +90,7 @@ export const RemoveCharacterModal: React.FC = () => {
       } catch (e) {
         renderError(
           e,
-          `Something went wrong while removing ${selectedCharacter.name}`,
+          `Something went wrong while removing ${selectedCharacter?.name}`,
         );
       } finally {
         setIsSyncing(false);

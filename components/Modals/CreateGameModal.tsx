@@ -134,36 +134,36 @@ export const CreateGameModal: React.FC = () => {
         return;
       }
 
-      if (!walletClient) throw new Error('Could not find a wallet client');
-      if (!DEFAULT_DAO_ADDRESS)
-        throw new Error(
-          `DEFAULT_DAO_ADDRESS not configured for the chain ${walletClient.chain.name}`,
-        );
-      if (!gameFactory)
-        throw new Error(
-          `Missing game factory address for the ${walletClient.chain.name} network`,
-        );
-
-      const trimmedGameMasterAddresses = gameMasters
-        .split(',')
-        .map(address => address.trim()) as Address[];
-
-      const trimmedDaoAddress =
-        (daoAddress.trim() as Address) || DEFAULT_DAO_ADDRESS;
-
-      const cid = await onUpload();
-      if (!cid)
-        throw new Error('Something went wrong uploading your game emblem');
-
-      const gameMetadata = {
-        name: gameName,
-        description: gameDescription,
-        image: `ipfs://${cid}`,
-      };
-
-      setIsCreating(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!DEFAULT_DAO_ADDRESS)
+          throw new Error(
+            `DEFAULT_DAO_ADDRESS not configured for the chain ${walletClient.chain.name}`,
+          );
+        if (!gameFactory)
+          throw new Error(
+            `Missing game factory address for the ${walletClient.chain.name} network`,
+          );
+
+        const trimmedGameMasterAddresses = gameMasters
+          .split(',')
+          .map(address => address.trim()) as Address[];
+
+        const trimmedDaoAddress =
+          (daoAddress.trim() as Address) || DEFAULT_DAO_ADDRESS;
+
+        const cid = await onUpload();
+        if (!cid)
+          throw new Error('Something went wrong uploading your game emblem');
+
+        const gameMetadata = {
+          name: gameName,
+          description: gameDescription,
+          image: `ipfs://${cid}`,
+        };
+
+        setIsCreating(true);
+
         const res = await fetch('/api/uploadMetadata?name=gameMetadata.json', {
           method: 'POST',
           body: JSON.stringify(gameMetadata),

@@ -57,13 +57,13 @@ export const RestoreCharacterModal: React.FC<RestoreCharacterModalProps> = ({
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
-      if (!walletClient) throw new Error('Could not find a wallet client');
-      if (!game) throw new Error('Missing game data');
-      if (!character) throw new Error('Character not found');
-
-      setIsRestoring(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!game) throw new Error('Missing game data');
+        if (!character) throw new Error('Character not found');
+
+        setIsRestoring(true);
+
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
@@ -93,7 +93,7 @@ export const RestoreCharacterModal: React.FC<RestoreCharacterModalProps> = ({
       } catch (e) {
         renderError(
           e,
-          `Something went wrong while restoring ${character.name}`,
+          `Something went wrong while restoring ${character?.name}`,
         );
       } finally {
         setIsSyncing(false);

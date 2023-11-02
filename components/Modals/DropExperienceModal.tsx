@@ -79,17 +79,18 @@ export const DropExperienceModal: React.FC = () => {
         return;
       }
 
-      if (!walletClient) throw new Error('Wallet client is not connected');
-      if (!selectedCharacter) throw new Error('Character address not found');
-      if (!game?.experienceAddress) throw new Error('Could not find the game');
-      if (!isMaster) throw new Error('Not the game master');
-
-      setIsDropping(true);
-
-      const character = selectedCharacter.account as Address;
-      const amountBG = BigInt(amount);
-
       try {
+        if (!walletClient) throw new Error('Wallet client is not connected');
+        if (!selectedCharacter) throw new Error('Character address not found');
+        if (!game?.experienceAddress)
+          throw new Error('Could not find the game');
+        if (!isMaster) throw new Error('Not the game master');
+
+        setIsDropping(true);
+
+        const character = selectedCharacter.account as Address;
+        const amountBG = BigInt(amount);
+
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
@@ -122,7 +123,7 @@ export const DropExperienceModal: React.FC = () => {
       } catch (e) {
         renderError(
           e,
-          `Something went wrong giving XP to ${selectedCharacter.name}`,
+          `Something went wrong giving XP to ${selectedCharacter?.name}`,
         );
       } finally {
         setIsSyncing(false);

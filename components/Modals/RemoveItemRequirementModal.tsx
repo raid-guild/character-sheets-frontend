@@ -72,14 +72,14 @@ export const RemoveItemRequirementModal: React.FC = () => {
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
-      if (!walletClient) throw new Error('Could not find a wallet client');
-      if (!game?.itemsAddress) throw new Error('Missing game data');
-      if (!character) throw new Error('Character address not found');
-      if (!selectedItem) throw new Error('Item not found');
-
-      setIsRemoving(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!game?.itemsAddress) throw new Error('Missing game data');
+        if (!character) throw new Error('Character address not found');
+        if (!selectedItem) throw new Error('Item not found');
+
+        setIsRemoving(true);
+
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,

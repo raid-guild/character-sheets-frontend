@@ -51,13 +51,13 @@ export const RenounceCharacterModal: React.FC = () => {
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
-      if (!walletClient) throw new Error('Could not find a wallet client');
-      if (!game) throw new Error('Missing game data');
-      if (!selectedCharacter) throw new Error('Character not found');
-
-      setIsRenouncing(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!game) throw new Error('Missing game data');
+        if (!selectedCharacter) throw new Error('Character not found');
+
+        setIsRenouncing(true);
+
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
@@ -87,7 +87,7 @@ export const RenounceCharacterModal: React.FC = () => {
       } catch (e) {
         renderError(
           e,
-          `Something went wrong while renouncing ${selectedCharacter.name}`,
+          `Something went wrong while renouncing ${selectedCharacter?.name}`,
         );
       } finally {
         setIsSyncing(false);

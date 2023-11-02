@@ -143,21 +143,21 @@ export const UpdateGameMetadataModal: React.FC<
         return;
       }
 
-      if (!walletClient) throw new Error('Wallet client is not connected');
-      if (!game) throw new Error('Missing game data');
-
-      const cid = newGameEmblemFile
-        ? await onUpload()
-        : game?.image
-            .split('/')
-            .filter(s => !!s)
-            .pop();
-      if (!cid)
-        throw new Error('Something went wrong uploading your game emblem');
-
-      setIsUpdating(true);
-
       try {
+        if (!walletClient) throw new Error('Wallet client is not connected');
+        if (!game) throw new Error('Missing game data');
+
+        const cid = newGameEmblemFile
+          ? await onUpload()
+          : game?.image
+              .split('/')
+              .filter(s => !!s)
+              .pop();
+        if (!cid)
+          throw new Error('Something went wrong uploading your game emblem');
+
+        setIsUpdating(true);
+
         const gameMetadata = {
           name: newGameName,
           description: newGameDescription,

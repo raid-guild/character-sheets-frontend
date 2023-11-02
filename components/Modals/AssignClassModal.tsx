@@ -77,18 +77,18 @@ export const AssignClassModal: React.FC = () => {
         return;
       }
 
-      if (!walletClient) throw new Error('Could not find a wallet client');
-
-      if (!selectedCharacter) throw new Error('Character address not found');
-
-      if (!game?.classesAddress) throw new Error('Missing game data');
-
-      if (game?.classes.length === 0) throw new Error('No classes found');
-      if (!isMaster) throw new Error('Not the game master');
-
-      setIsAssigning(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+
+        if (!selectedCharacter) throw new Error('Character address not found');
+
+        if (!game?.classesAddress) throw new Error('Missing game data');
+
+        if (game?.classes.length === 0) throw new Error('No classes found');
+        if (!isMaster) throw new Error('Not the game master');
+
+        setIsAssigning(true);
+
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
@@ -122,7 +122,7 @@ export const AssignClassModal: React.FC = () => {
       } catch (e) {
         renderError(
           e,
-          `Something went wrong assigning class to ${selectedCharacter.name}.`,
+          `Something went wrong assigning class to ${selectedCharacter?.name}.`,
         );
       } finally {
         setIsSyncing(false);

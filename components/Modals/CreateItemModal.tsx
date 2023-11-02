@@ -170,25 +170,25 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         return;
       }
 
-      if (!walletClient) throw new Error('Wallet client is not connected');
-      if (!(game && game.itemsAddress))
-        throw new Error(
-          `Missing item factory address for the ${walletClient.chain.name} network`,
-        );
-
-      const cid = await onUpload();
-      if (!cid)
-        throw new Error('Something went wrong uploading your item emblem');
-
-      const itemMetadata = {
-        name: itemName,
-        description: itemDescription,
-        image: `ipfs://${cid}`,
-      };
-
-      setIsCreating(true);
-
       try {
+        if (!walletClient) throw new Error('Wallet client is not connected');
+        if (!(game && game.itemsAddress))
+          throw new Error(
+            `Missing item factory address for the ${walletClient.chain.name} network`,
+          );
+
+        const cid = await onUpload();
+        if (!cid)
+          throw new Error('Something went wrong uploading your item emblem');
+
+        const itemMetadata = {
+          name: itemName,
+          description: itemDescription,
+          image: `ipfs://${cid}`,
+        };
+
+        setIsCreating(true);
+
         const res = await fetch('/api/uploadMetadata?name=itemMetadata.json', {
           method: 'POST',
           body: JSON.stringify(itemMetadata),
