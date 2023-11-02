@@ -48,6 +48,7 @@ import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
 import { TransferCharacterModal } from '@/components/Modals/TransferCharacterModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
 import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
+import { UserLink } from '@/components/UserLink';
 import { XPPanel } from '@/components/XPPanel';
 import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
 import { GameProvider, useGame } from '@/contexts/GameContext';
@@ -127,8 +128,6 @@ function GamePage(): JSX.Element {
       setIsConnectedAndMounted(false);
     }
   }, [isConnected]);
-
-  const { address } = useAccount();
 
   const content = () => {
     if (loading) {
@@ -235,28 +234,8 @@ function GamePage(): JSX.Element {
           <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
             Owner
           </Text>
-          <Link
-            fontSize="sm"
-            href={`${EXPLORER_URLS[chainId]}/address/${owner}`}
-            key={`gm-${owner}`}
-            isExternal
-            bg={owner === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
-            textDecor={owner !== address?.toLowerCase() ? 'underline' : ''}
-            _hover={{
-              color: 'accent',
-            }}
-          >
-            {owner === address?.toLowerCase() ? (
-              <HStack px={1} spacing={3}>
-                <Text as="span">You</Text>
-                <Text as="span" textDecor="underline">
-                  ({shortenAddress(owner)})
-                </Text>
-              </HStack>
-            ) : (
-              shortenAddress(owner)
-            )}
-          </Link>
+          <UserLink user={owner} />
+
           <Text
             letterSpacing="3px"
             fontSize="2xs"
@@ -266,28 +245,7 @@ function GamePage(): JSX.Element {
             Admins
           </Text>
           {admins.map(admin => (
-            <Link
-              fontSize="sm"
-              href={`${EXPLORER_URLS[chainId]}/address/${admin}`}
-              key={`gm-${admin}`}
-              isExternal
-              bg={admin === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
-              textDecor={admin !== address?.toLowerCase() ? 'underline' : ''}
-              _hover={{
-                color: 'accent',
-              }}
-            >
-              {admin === address?.toLowerCase() ? (
-                <HStack px={1} spacing={3}>
-                  <Text as="span">You</Text>
-                  <Text as="span" textDecor="underline">
-                    ({shortenAddress(admin)})
-                  </Text>
-                </HStack>
-              ) : (
-                shortenAddress(admin)
-              )}
-            </Link>
+            <UserLink key={`gm-${admin}`} user={admin} />
           ))}
 
           <Text
@@ -299,35 +257,14 @@ function GamePage(): JSX.Element {
             Game Masters
           </Text>
           <Wrap spacingX={1}>
-            {masters.map((master, i) => (
-              <>
-                <Link
-                  fontSize="sm"
-                  href={`${EXPLORER_URLS[chainId]}/address/${master}`}
-                  key={`gm-${master}`}
-                  isExternal
-                  bg={master === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
-                  textDecor={
-                    master !== address?.toLowerCase() ? 'underline' : ''
-                  }
-                  _hover={{
-                    color: 'accent',
-                  }}
-                >
-                  {master === address?.toLowerCase() ? (
-                    <HStack px={1} spacing={3}>
-                      <Text as="span">You</Text>
-                      <Text as="span" textDecor="underline">
-                        ({shortenAddress(master)})
-                      </Text>
-                    </HStack>
-                  ) : (
-                    shortenAddress(master)
-                  )}
-                </Link>
-                {i !== masters.length - 1 && <Text as="span">, </Text>}
-              </>
-            ))}
+            {masters.map((master, i) => {
+              return (
+                <>
+                  <UserLink key={`gm-${master}`} user={master} />
+                  {i !== masters.length - 1 && <Text as="span">, </Text>}
+                </>
+              );
+            })}
           </Wrap>
         </VStack>
         <VStack
