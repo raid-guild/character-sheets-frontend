@@ -7,7 +7,8 @@ export type Metadata = {
 export type GameMeta = Metadata & {
   id: string;
   uri: string;
-  owners: string[];
+  owner: string;
+  admins: string[];
   masters: string[];
   players: string[];
   characters: { id: string }[];
@@ -21,8 +22,10 @@ export type Game = Metadata & {
   experienceAddress: string;
   itemsAddress: string;
   classesAddress: string;
+  characterEligibilityAdaptor: string;
   uri: string;
-  owners: string[];
+  owner: string;
+  admins: string[];
   masters: string[];
   characters: Character[];
   classes: Class[];
@@ -37,6 +40,8 @@ export type Character = Metadata & {
   account: string;
   player: string;
   jailed: boolean;
+  approved: string;
+  removed: boolean;
   experience: string;
   uri: string;
   classes: Class[];
@@ -48,7 +53,7 @@ export type Class = Metadata & {
   id: string;
   classId: string;
   uri: string;
-  name: string;
+  claimable: boolean;
   holders: { id: string }[];
 };
 
@@ -62,7 +67,6 @@ export type ItemRequirement = {
 export type Item = Metadata & {
   id: string;
   itemId: string;
-  name: string;
   uri: string;
   soulbound: boolean;
   supply: bigint;

@@ -15,7 +15,6 @@ import {
   ModalOverlay,
   Text,
   Textarea,
-  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -26,6 +25,7 @@ import { TransactionPending } from '@/components/TransactionPending';
 import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
 export const UpdateCharacterMetadataModal: React.FC = () => {
@@ -34,7 +34,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const toast = useToast();
+  const { renderError } = useToast();
 
   const {
     file: newAvatarFile,
@@ -52,6 +52,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
   const [showError, setShowError] = useState<boolean>(false);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
@@ -106,6 +107,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
 
     setIsUpdating(false);
     setTxHash(null);
+    setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
   }, [selectedCharacter, onRemove]);
@@ -136,55 +138,24 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
         return;
       }
 
-      if (!walletClient) {
-        toast({
-          description: 'Wallet client is not connected.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Could not find a wallet client.');
-        return;
-      }
-
-      if (!game) {
-        toast({
-          description: `Could not find the game.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(`Missing game data.`);
-        return;
-      }
-
-      if (!selectedCharacter) {
-        toast({
-          description: 'Character not found.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Character not found.');
-        return;
-      }
-
-      const cid = newAvatarFile
-        ? await onUpload()
-        : selectedCharacter?.image
-            .split('/')
-            .filter(s => !!s)
-            .pop();
-
-      if (!cid) {
-        toast({
-          description: 'Something went wrong uploading your character avatar.',
-          position: 'top',
-          status: 'error',
-        });
-        return;
-      }
-
-      setIsUpdating(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!game) throw new Error('Missing game data');
+        if (!selectedCharacter) throw new Error('Character not found');
+
+        const cid = newAvatarFile
+          ? await onUpload()
+          : selectedCharacter?.image
+              .split('/')
+              .filter(s => !!s)
+              .pop();
+        if (!cid)
+          throw new Error(
+            'Something went wrong uploading your character avatar',
+          );
+
+        setIsUpdating(true);
+
         const characterMetadata = {
           name: newName,
           description: newDescription,
@@ -198,28 +169,16 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
             body: JSON.stringify(characterMetadata),
           },
         );
-
-        if (!res.ok) {
-          toast({
-            description:
-              "Something went wrong uploading your character's metadata.",
-            position: 'top',
-            status: 'error',
-          });
-          return;
-        }
+        if (!res.ok)
+          throw new Error(
+            "Something went wrong uploading your character's metadata",
+          );
 
         const { cid: newCid } = await res.json();
-
-        if (!newCid) {
-          toast({
-            description:
-              'Something went wrong uploading your character metadata.',
-            position: 'top',
-            status: 'error',
-          });
-          return;
-        }
+        if (!newCid)
+          throw new Error(
+            'Something went wrong uploading your character metadata',
+          );
 
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
@@ -234,30 +193,27 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
-        const receipt = await client.waitForTransactionReceipt({
+        const { blockNumber, status } = await client.waitForTransactionReceipt({
           hash: transactionhash,
         });
 
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(receipt.blockNumber);
-
-        if (!synced) {
-          toast({
-            description: 'Something went wrong while syncing.',
-            position: 'top',
-            status: 'warning',
-          });
-          return;
+        if (status === 'reverted') {
+          setTxFailed(true);
+          setIsUpdating(false);
+          throw new Error('Transaction failed');
         }
+
+        setIsSyncing(true);
+        const synced = await waitUntilBlock(blockNumber);
+        if (!synced) throw new Error('Something went wrong while syncing');
+
         setIsSynced(true);
         reloadGame();
       } catch (e) {
-        toast({
-          description: `Something went wrong updating ${selectedCharacter.name}'s metadata.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(e);
+        renderError(
+          e,
+          `Something went wrong updating ${selectedCharacter?.name}'s metadata`,
+        );
       } finally {
         setIsSyncing(false);
         setIsUpdating(false);
@@ -272,8 +228,8 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       onUpload,
       publicClient,
       reloadGame,
+      renderError,
       selectedCharacter,
-      toast,
       walletClient,
     ],
   );
@@ -286,6 +242,17 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
   }, [sameName, sameDescription, sameAvatar]);
 
   const content = () => {
+    if (txFailed) {
+      return (
+        <VStack py={10} spacing={4}>
+          <Text>Transaction failed.</Text>
+          <Button onClick={editCharacterModal?.onClose} variant="outline">
+            Close
+          </Button>
+        </VStack>
+      );
+    }
+
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>

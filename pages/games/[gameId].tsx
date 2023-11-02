@@ -1,6 +1,8 @@
 import {
+  AspectRatio,
+  Box,
   Button,
-  Flex,
+  Grid,
   Heading,
   HStack,
   Image,
@@ -14,30 +16,45 @@ import {
   Text,
   useDisclosure,
   VStack,
+  Wrap,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { isAddress } from 'viem';
 import { useAccount } from 'wagmi';
 
 import { CharacterCard } from '@/components/CharacterCard';
 import { CharactersPanel } from '@/components/CharactersPanel';
 import { ClassesPanel } from '@/components/ClassesPanel';
+import { GameTotals } from '@/components/GameTotals';
 import { ItemsPanel } from '@/components/ItemsPanel';
+import { JoinGame } from '@/components/JoinGame';
+import { AddItemRequirementModal } from '@/components/Modals/AddItemRequirementModal';
+import { ApproveTransferModal } from '@/components/Modals/ApproveTransferModal';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
+import { ClaimClassModal } from '@/components/Modals/ClaimClassModal';
+import { ClaimItemModal } from '@/components/Modals/ClaimItemModal';
 import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
+import { EditItemClaimableModal } from '@/components/Modals/EditItemClaimableModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
 import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
-import { JoinGameModal } from '@/components/Modals/JoinGameModal';
 import { RemoveCharacterModal } from '@/components/Modals/RemoveCharacterModal';
+import { RemoveItemRequirementModal } from '@/components/Modals/RemoveItemRequirementModal';
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
+import { RenounceClassModal } from '@/components/Modals/RenounceClassModal';
+import { RestoreCharacterModal } from '@/components/Modals/RestoreCharacterModal';
 import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
+import { TransferCharacterModal } from '@/components/Modals/TransferCharacterModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
 import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
 import { XPPanel } from '@/components/XPPanel';
 import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
 import { GameProvider, useGame } from '@/contexts/GameContext';
+import {
+  ItemActionsProvider,
+  useItemActions,
+} from '@/contexts/ItemActionsContext';
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress } from '@/utils/helpers';
@@ -61,16 +78,21 @@ export default function GamePageOuter(): JSX.Element {
   return (
     <GameProvider gameId={gameId}>
       <ActionsProvider>
-        <GamePage />
+        <ItemActionsProvider>
+          <GamePage />
+        </ItemActionsProvider>
       </ActionsProvider>
     </GameProvider>
   );
 }
 
 function GamePage(): JSX.Element {
-  const { game, character, isMaster, loading } = useGame();
+  const { game, character, isMaster, loading, isEligibleForCharacter } =
+    useGame();
   const {
     assignClassModal,
+    approveTransferModal,
+    claimClassModal,
     editCharacterModal,
     equipItemModal,
     giveExpModal,
@@ -78,14 +100,25 @@ function GamePage(): JSX.Element {
     jailPlayerModal,
     removeCharacterModal,
     renounceCharacterModal,
+    renounceClassModal,
     revokeClassModal,
+    transferCharacterModal,
   } = useActions();
+  const {
+    addRequirementModal,
+    claimItemModal,
+    removeRequirementModal,
+    editItemClaimableModal,
+  } = useItemActions();
   const { isConnected } = useAccount();
 
-  const joinGameModal = useDisclosure();
   const updateGameMetadata = useDisclosure();
+  const restoreCharacterModal = useDisclosure();
 
   const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
+  const [showJoinGame, setShowJoinGame] = useState(false);
+
+  const topOfCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isConnected) {
@@ -94,6 +127,8 @@ function GamePage(): JSX.Element {
       setIsConnectedAndMounted(false);
     }
   }, [isConnected]);
+
+  const { address } = useAccount();
 
   const content = () => {
     if (loading) {
@@ -117,176 +152,334 @@ function GamePage(): JSX.Element {
       experience,
       image,
       name,
+      owner,
+      admins,
+      masters,
       id,
       characters,
       classes,
       items,
-      masters,
     } = game;
 
     const chainId = DEFAULT_CHAIN.id;
 
     return (
-      <VStack as="main" px={6} w="full">
-        <HStack align="start" py={16} px={20} w="100%">
-          <HStack flex="1">
-            <VStack align="start" justify="start" w="100%">
-              <Link
-                fontSize="sm"
-                fontWeight={300}
-                href={`${EXPLORER_URLS[chainId]}/address/${id}`}
-                isExternal
-                mb={2}
-                textDecoration={'underline'}
+      <Grid templateColumns="3fr 1fr" w="full" gridGap="5px">
+        <HStack spacing="5px">
+          <HStack
+            bg="cardBG"
+            h="100%"
+            p={8}
+            transition="background 0.3s ease"
+            w="100%"
+            spacing={12}
+          >
+            <AspectRatio ratio={1} w="100%" maxW="12rem">
+              <Image
+                alt="game emblem"
+                background="gray.400"
+                objectFit="cover"
+                src={image}
+                w="100%"
+                h="100%"
+              />
+            </AspectRatio>
+            <VStack spacing={4} align="flex-start">
+              <Heading
+                display="inline-block"
+                fontSize="40px"
+                fontWeight="normal"
+                lineHeight="40px"
               >
-                {shortenAddress(id)}
-              </Link>
-              <Heading fontSize="40px" fontWeight="normal" lineHeight="40px">
                 {name}
               </Heading>
-              <Text>{description}</Text>
+              <Text fontSize="xl" fontWeight={200} mb={2}>
+                {description}
+              </Text>
+              <HStack spacing={4}>
+                <Link
+                  fontSize="sm"
+                  href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+                  isExternal
+                  fontWeight={300}
+                  mb={3}
+                  textDecoration={'underline'}
+                >
+                  {shortenAddress(id)}
+                </Link>
+                {isMaster && (
+                  <Button onClick={updateGameMetadata.onOpen} size="sm">
+                    edit
+                  </Button>
+                )}
+              </HStack>
             </VStack>
-            {isConnectedAndMounted && !character && (
-              <Button onClick={joinGameModal.onOpen}>Join this Game</Button>
-            )}
-
-            {isMaster && (
-              <Button onClick={updateGameMetadata.onOpen} size="sm">
-                <Flex align="center" gap={2}>
-                  <Image
-                    alt="edit"
-                    height="14px"
-                    src="/icons/edit.svg"
-                    width="14px"
-                  />
-                  Edit
-                </Flex>
-              </Button>
-            )}
           </HStack>
-          <Image
-            alt="game emblem"
-            background="gray.400"
-            h="140px"
-            objectFit="cover"
-            src={image}
-          />
+          <VStack
+            align="start"
+            spacing={0}
+            h="100%"
+            bg="cardBG"
+            flexShrink={0}
+            p={8}
+          >
+            <GameTotals
+              experience={experience}
+              characters={characters}
+              items={items}
+            />
+          </VStack>
         </HStack>
 
-        <VStack align="start" pb={10} px={14} w="full">
-          <Text fontSize="lg" fontWeight="bold">
-            GameMasters
+        <VStack align="start" spacing={4} p={8} bg="cardBG">
+          <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
+            Owner
           </Text>
-
-          {masters.map(master => (
+          <Link
+            fontSize="sm"
+            href={`${EXPLORER_URLS[chainId]}/address/${owner}`}
+            key={`gm-${owner}`}
+            isExternal
+            bg={owner === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
+            textDecor={owner !== address?.toLowerCase() ? 'underline' : ''}
+            _hover={{
+              color: 'accent',
+            }}
+          >
+            {owner === address?.toLowerCase() ? (
+              <HStack px={1} spacing={3}>
+                <Text as="span">You</Text>
+                <Text as="span" textDecor="underline">
+                  ({shortenAddress(owner)})
+                </Text>
+              </HStack>
+            ) : (
+              shortenAddress(owner)
+            )}
+          </Link>
+          <Text
+            letterSpacing="3px"
+            fontSize="2xs"
+            textTransform="uppercase"
+            mt={2}
+          >
+            Admins
+          </Text>
+          {admins.map(admin => (
             <Link
-              alignItems="center"
-              color="blue"
-              display="flex"
               fontSize="sm"
-              gap={2}
-              href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+              href={`${EXPLORER_URLS[chainId]}/address/${admin}`}
+              key={`gm-${admin}`}
               isExternal
-              key={`gm-${master}`}
+              bg={admin === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
+              textDecor={admin !== address?.toLowerCase() ? 'underline' : ''}
+              _hover={{
+                color: 'accent',
+              }}
             >
-              {master}
-              <Image
-                alt="link to new tab"
-                height="14px"
-                src="/icons/new-tab.svg"
-                width="14px"
-              />
+              {admin === address?.toLowerCase() ? (
+                <HStack px={1} spacing={3}>
+                  <Text as="span">You</Text>
+                  <Text as="span" textDecor="underline">
+                    ({shortenAddress(admin)})
+                  </Text>
+                </HStack>
+              ) : (
+                shortenAddress(admin)
+              )}
             </Link>
           ))}
-        </VStack>
 
-        <VStack px={14} w="full" align="start" justify="start">
-          <Text fontSize="lg" fontWeight="bold">
-            Your character
+          <Text
+            letterSpacing="3px"
+            fontSize="2xs"
+            mt={2}
+            textTransform="uppercase"
+          >
+            Game Masters
           </Text>
-          {!isConnectedAndMounted && (
-            <Text align="center">Connect wallet to play this game.</Text>
-          )}
-          {isConnectedAndMounted && character && (
-            <CharacterCard chainId={chainId} character={character} />
-          )}
+          <Wrap spacingX={1}>
+            {masters.map((master, i) => (
+              <>
+                <Link
+                  fontSize="sm"
+                  href={`${EXPLORER_URLS[chainId]}/address/${master}`}
+                  key={`gm-${master}`}
+                  isExternal
+                  bg={master === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
+                  textDecor={
+                    master !== address?.toLowerCase() ? 'underline' : ''
+                  }
+                  _hover={{
+                    color: 'accent',
+                  }}
+                >
+                  {master === address?.toLowerCase() ? (
+                    <HStack px={1} spacing={3}>
+                      <Text as="span">You</Text>
+                      <Text as="span" textDecor="underline">
+                        ({shortenAddress(master)})
+                      </Text>
+                    </HStack>
+                  ) : (
+                    shortenAddress(master)
+                  )}
+                </Link>
+                {i !== masters.length - 1 && <Text as="span">, </Text>}
+              </>
+            ))}
+          </Wrap>
         </VStack>
-
-        <Tabs
-          borderColor="transparent"
-          colorScheme="white"
-          mt={10}
-          px={14}
-          w="full"
+        <VStack
+          align="stretch"
+          position="relative"
+          ref={topOfCardRef}
+          spacing="5px"
         >
-          <TabList>
-            <Tab gap={2}>
-              <Image
-                alt="users"
-                height="20px"
-                src="/icons/users.svg"
-                width="20px"
-              />
-              <Text>{characters.length} characters</Text>
-            </Tab>
-            <Tab gap={2}>
-              <Image alt="xp" height="20px" src="/icons/xp.svg" width="20px" />
-              <Text>{experience} XP</Text>
-            </Tab>
-            <Tab gap={2}>
-              <Image
-                alt="users"
-                height="20px"
-                src="/icons/users.svg"
-                width="20px"
-              />
-              <Text>{classes.length} classes</Text>
-            </Tab>
-            <Tab gap={2}>
-              <Image
-                alt="items"
-                height="20px"
-                src="/icons/items.svg"
-                width="20px"
-              />
-              <Text>{items.length} Items</Text>
-            </Tab>
-          </TabList>
+          <Box ref={topOfCardRef} position="absolute" top="-80px" />
+          {isConnectedAndMounted && (
+            <VStack p={8} bg="cardBG" align="start" spacing={4}>
+              {!character && !showJoinGame && isEligibleForCharacter && (
+                <HStack w="100%" spacing={4}>
+                  <Button variant="solid" onClick={() => setShowJoinGame(true)}>
+                    Join this Game
+                  </Button>
+                  <Text fontSize="sm">
+                    You don’t have a character sheet in this game.
+                  </Text>
+                </HStack>
+              )}
+              {!character && showJoinGame && isEligibleForCharacter && (
+                <JoinGame
+                  onClose={() => setShowJoinGame(false)}
+                  topOfCardRef={topOfCardRef}
+                />
+              )}
+              {!character && !isEligibleForCharacter && (
+                <HStack w="100%" spacing={4}>
+                  <Text fontSize="sm">
+                    You are not eligible to join this game.
+                  </Text>
+                </HStack>
+              )}
+              {character &&
+                character.removed &&
+                !character.jailed &&
+                isEligibleForCharacter && (
+                  <HStack spacing={4}>
+                    <Button
+                      variant="solid"
+                      onClick={restoreCharacterModal.onOpen}
+                    >
+                      Restore Character
+                    </Button>
+                    <Text>Your character has been removed from this game.</Text>
+                  </HStack>
+                )}
+              {character && character.jailed && (
+                <Text>
+                  Your character is in jail. You can’t play until you’re
+                  released.
+                </Text>
+              )}
+              {character && !character.removed && !character.jailed && (
+                <CharacterCard chainId={chainId} character={character} />
+              )}
+            </VStack>
+          )}
 
-          <TabPanels>
-            <TabPanel px={0}>
-              <CharactersPanel />
-            </TabPanel>
-            <TabPanel px={0}>
-              <XPPanel />
-            </TabPanel>
-            <TabPanel px={0}>
-              <ClassesPanel />
-            </TabPanel>
-            <TabPanel px={0}>
-              <ItemsPanel />
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
-      </VStack>
+          <Tabs
+            borderColor="transparent"
+            colorScheme="white"
+            w="full"
+            p={8}
+            bg="cardBG"
+          >
+            <TabList>
+              <Tab gap={2}>
+                <Image
+                  alt="users"
+                  height="20px"
+                  src="/icons/users.svg"
+                  width="20px"
+                />
+                <Text>{characters.length} characters</Text>
+              </Tab>
+              <Tab gap={2}>
+                <Image
+                  alt="xp"
+                  height="20px"
+                  src="/icons/xp.svg"
+                  width="20px"
+                />
+                <Text>{experience} XP</Text>
+              </Tab>
+              <Tab gap={2}>
+                <Image
+                  alt="users"
+                  height="20px"
+                  src="/icons/users.svg"
+                  width="20px"
+                />
+                <Text>{classes.length} classes</Text>
+              </Tab>
+              <Tab gap={2}>
+                <Image
+                  alt="items"
+                  height="20px"
+                  src="/icons/items.svg"
+                  width="20px"
+                />
+                <Text>{items.length} Items</Text>
+              </Tab>
+            </TabList>
+
+            <TabPanels>
+              <TabPanel px={0}>
+                <CharactersPanel />
+              </TabPanel>
+              <TabPanel px={0}>
+                <XPPanel />
+              </TabPanel>
+              <TabPanel px={0}>
+                <ClassesPanel />
+              </TabPanel>
+              <TabPanel px={0}>
+                <ItemsPanel />
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </VStack>
+        <VStack h="100%" bg="cardBG" p={8} align="stretch">
+          <Text>Coming Soon!</Text>
+        </VStack>
+      </Grid>
     );
   };
 
   return (
     <>
       {content()}
-      <JoinGameModal {...joinGameModal} />
       <UpdateGameMetadataModal {...updateGameMetadata} />
+      <RestoreCharacterModal {...restoreCharacterModal} />
 
+      {addRequirementModal && <AddItemRequirementModal />}
+      {approveTransferModal && <ApproveTransferModal />}
       {assignClassModal && <AssignClassModal />}
+      {claimClassModal && <ClaimClassModal />}
+      {claimItemModal && <ClaimItemModal />}
       {editCharacterModal && <UpdateCharacterMetadataModal />}
+      {editItemClaimableModal && <EditItemClaimableModal />}
       {equipItemModal && <EquipItemModal />}
       {giveExpModal && <DropExperienceModal />}
       {giveItemsModal && <GiveItemsModal />}
       {jailPlayerModal && <JailPlayerModal />}
       {removeCharacterModal && <RemoveCharacterModal />}
+      {removeRequirementModal && <RemoveItemRequirementModal />}
       {renounceCharacterModal && <RenounceCharacterModal />}
+      {renounceClassModal && <RenounceClassModal />}
       {revokeClassModal && <RevokeClassModal />}
+      {transferCharacterModal && <TransferCharacterModal />}
     </>
   );
 }

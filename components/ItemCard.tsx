@@ -53,9 +53,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
 
   return (
     <HStack
-      border="3px solid black"
-      borderBottom="5px solid black"
-      borderRight="5px solid black"
+      border="3px solid white"
+      borderBottom="5px solid white"
+      borderRight="5px solid white"
       h="300px"
       transition="background 0.3s ease"
       p={4}
@@ -102,7 +102,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
           </Text>
         </Text>
 
-        <Box background="black" h="3px" my={4} w={20} />
+        <Box background="white" h="3px" my={4} w={20} />
         <Text>
           Supply: {supply.toString()} / {totalSupply.toString()}
         </Text>
@@ -148,9 +148,9 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
 
   return (
     <HStack
-      border="3px solid black"
-      borderBottom="5px solid black"
-      borderRight="5px solid black"
+      border="3px solid white"
+      borderBottom="5px solid white"
+      borderRight="5px solid white"
       transition="background 0.3s ease"
       p={4}
       spacing={8}
@@ -187,7 +187,7 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
           </Text>
         </Text>
 
-        <Box background="black" h="3px" my={4} w={20} />
+        <Box background="white" h="3px" my={4} w={20} />
         <Text fontSize="xs">
           Supply: {supply.toString()} / {totalSupply.toString()}
         </Text>

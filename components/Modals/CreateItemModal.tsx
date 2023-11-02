@@ -13,11 +13,9 @@ import {
   ModalHeader,
   ModalOverlay,
   SimpleGrid,
-  Switch,
   Text,
   Textarea,
   Tooltip,
-  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
@@ -32,10 +30,12 @@ import {
 } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
+import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
 import {
@@ -54,7 +54,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
 }) => {
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const toast = useToast();
+  const { renderError } = useToast();
 
   const { game, reload: reloadGame } = useGame();
 
@@ -83,6 +83,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
@@ -169,72 +170,35 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         return;
       }
 
-      if (!walletClient) {
-        toast({
-          description: 'Wallet client is not connected.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Could not find a wallet client.');
-        return;
-      }
-
-      if (!(game && game.itemsAddress)) {
-        toast({
-          description: `Could not find an item factory for the ${walletClient.chain.name} network.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(
-          `Missing item factory address for the ${walletClient.chain.name} network"`,
-        );
-        return;
-      }
-
-      const cid = await onUpload();
-
-      if (!cid) {
-        toast({
-          description: 'Something went wrong uploading your item emblem.',
-          position: 'top',
-          status: 'error',
-        });
-        return;
-      }
-
-      const itemMetadata = {
-        name: itemName,
-        description: itemDescription,
-        image: `ipfs://${cid}`,
-      };
-
-      setIsCreating(true);
-
       try {
+        if (!walletClient) throw new Error('Wallet client is not connected');
+        if (!(game && game.itemsAddress))
+          throw new Error(
+            `Missing item factory address for the ${walletClient.chain.name} network`,
+          );
+
+        const cid = await onUpload();
+        if (!cid)
+          throw new Error('Something went wrong uploading your item emblem');
+
+        const itemMetadata = {
+          name: itemName,
+          description: itemDescription,
+          image: `ipfs://${cid}`,
+        };
+
+        setIsCreating(true);
+
         const res = await fetch('/api/uploadMetadata?name=itemMetadata.json', {
           method: 'POST',
           body: JSON.stringify(itemMetadata),
         });
-
-        if (!res.ok) {
-          toast({
-            description: 'Something went wrong uploading your item metadata.',
-            position: 'top',
-            status: 'error',
-          });
-          return;
-        }
+        if (!res.ok)
+          throw new Error('Something went wrong uploading your item metadata');
 
         const { cid: itemMetadataCid } = await res.json();
-
-        if (!itemMetadataCid) {
-          toast({
-            description: 'Something went wrong uploading your item metadata.',
-            position: 'top',
-            status: 'error',
-          });
-          return;
-        }
+        if (!itemMetadataCid)
+          throw new Error('Something went wrong uploading your item metadata');
 
         let claimable = pad('0x01');
 
@@ -242,11 +206,13 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           if (claimableAddressList.length === 0) {
             claimable = pad('0x00');
           } else {
+            const itemId = BigInt(game.items.length);
             const leaves: ClaimableItemLeaf[] = claimableAddressList.map(
               ({ address, amount }) => {
                 return [
-                  BigInt(game.items.length),
+                  BigInt(itemId),
                   getAddress(address),
+                  BigInt(0),
                   BigInt(amount),
                 ];
               },
@@ -256,7 +222,9 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               'uint256',
               'address',
               'uint256',
+              'uint256',
             ]);
+
             claimable = tree.root as `0x${string}`;
 
             const jsonTree = JSON.stringify(tree.dump());
@@ -284,12 +252,9 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               console.error(
                 'Something went wrong uploading your claimable tree.',
               );
-              toast({
-                description: 'Something went wrong while creating item.',
-                position: 'top',
-                status: 'error',
-              });
-              return;
+              throw new Error(
+                'Something went wrong uploading your claimable tree',
+              );
             }
           }
         }
@@ -345,6 +310,10 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               type: 'bytes32',
             },
             {
+              name: 'distribution',
+              type: 'uint256',
+            },
+            {
               name: 'supply',
               type: 'uint256',
             },
@@ -361,6 +330,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
             false,
             soulboundToggle,
             claimable,
+            BigInt(itemSupply), // refers to max amount a single character can hold
             BigInt(itemSupply),
             itemMetadataCid,
             requiredAssetsBytes,
@@ -380,30 +350,24 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
-        const receipt = await client.waitForTransactionReceipt({
+        const { blockNumber, status } = await client.waitForTransactionReceipt({
           hash: transactionhash,
         });
 
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(receipt.blockNumber);
-
-        if (!synced) {
-          toast({
-            description: 'Something went wrong while syncing.',
-            position: 'top',
-            status: 'warning',
-          });
-          return;
+        if (status === 'reverted') {
+          setTxFailed(true);
+          setIsCreating(false);
+          throw new Error('Transaction failed');
         }
+
+        setIsSyncing(true);
+        const synced = await waitUntilBlock(blockNumber);
+        if (!synced) throw new Error('Something went wrong while syncing');
+
         setIsSynced(true);
         reloadGame();
       } catch (e) {
-        toast({
-          description: 'Something went wrong creating your item.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error(e);
+        renderError(e, 'Something went wrong creating your item');
       } finally {
         setIsSyncing(false);
         setIsCreating(false);
@@ -420,8 +384,8 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       hasError,
       onUpload,
       publicClient,
+      renderError,
       soulboundToggle,
-      toast,
       walletClient,
       claimableAddressList,
     ],
@@ -431,6 +395,17 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   const isDisabled = isLoading || isUploading;
 
   const content = () => {
+    if (txFailed) {
+      return (
+        <VStack py={10} spacing={4}>
+          <Text>Transaction failed.</Text>
+          <Button onClick={onClose} variant="outline">
+            Close
+          </Button>
+        </VStack>
+      );
+    }
+
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>
@@ -512,7 +487,9 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           </Flex>
           <Switch
             isChecked={classRequirementsToggle}
-            onChange={e => setClassRequirementsToggle(e.target.checked)}
+            onChange={() =>
+              setClassRequirementsToggle(!classRequirementsToggle)
+            }
           />
         </FormControl>
 
@@ -581,7 +558,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           </Flex>
           <Switch
             isChecked={soulboundToggle}
-            onChange={e => setSoulboundToggle(e.target.checked)}
+            onChange={() => setSoulboundToggle(!soulboundToggle)}
           />
         </FormControl>
         <FormControl isInvalid={showError && !itemSupply}>
@@ -599,7 +576,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           </Flex>
           <Switch
             isChecked={claimableToggle}
-            onChange={e => setClaimableToggle(e.target.checked)}
+            onChange={() => setClaimableToggle(!claimableToggle)}
           />
         </FormControl>
         {claimableToggle && (

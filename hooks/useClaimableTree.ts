@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import useSWR from 'swr';
 import { zeroAddress } from 'viem';
 
-export type ClaimableItemLeaf = [bigint, `0x${string}`, bigint];
+export type ClaimableItemLeaf = [bigint, `0x${string}`, bigint, bigint]; // itemId, address, nonce, amount
 
 type FetcherInput = [`0x${string}`, bigint];
 
@@ -48,11 +48,15 @@ export const useClaimableTree = (
     Error,
     FetcherInput
   >(input, fetcher, {
-    isPaused: () => !gameAddress || !itemId || gameAddress === zeroAddress,
+    isPaused: () =>
+      !gameAddress ||
+      itemId == undefined ||
+      itemId == null ||
+      gameAddress === zeroAddress,
   });
 
   return {
-    loading: isLoading || isValidating || data === undefined,
+    loading: isLoading || isValidating,
     tree: data || null,
     error: error || null,
     reload: mutate,

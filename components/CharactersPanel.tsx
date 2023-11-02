@@ -1,25 +1,23 @@
-import { SimpleGrid, Text, VStack } from '@chakra-ui/react';
+import { Text, VStack, Wrap, WrapItem } from '@chakra-ui/react';
 
-import { SmallCharacterCard } from '@/components/CharacterCard';
+import { CharacterCardSmall } from '@/components/CharacterCard';
 import { useGame } from '@/contexts/GameContext';
 import { DEFAULT_CHAIN } from '@/lib/web3';
 
 export const CharactersPanel: React.FC = () => {
   const { game } = useGame();
 
-  const characters = game?.characters ?? [];
+  const characters = game?.characters.filter(c => !c.removed) ?? [];
 
   if (characters.length > 0) {
     return (
-      <SimpleGrid columns={2} spacing={4} w="100%">
+      <Wrap spacing={6} w="100%">
         {characters.map(c => (
-          <SmallCharacterCard
-            key={c.id}
-            chainId={DEFAULT_CHAIN.id}
-            character={c}
-          />
+          <WrapItem key={c.id}>
+            <CharacterCardSmall chainId={DEFAULT_CHAIN.id} character={c} />
+          </WrapItem>
         ))}
-      </SimpleGrid>
+      </Wrap>
     );
   }
   return (

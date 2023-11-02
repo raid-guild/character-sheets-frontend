@@ -12,10 +12,12 @@ import { Character } from '@/utils/types';
 
 type CharacterActionMenuProps = {
   character: Character;
+  variant?: 'outline' | 'solid' | 'ghost';
 };
 
 export const CharacterActionMenu: React.FC<CharacterActionMenuProps> = ({
   character,
+  variant = 'outline',
 }) => {
   const { selectCharacter, playerActions, gmActions, openActionModal } =
     useActions();
@@ -23,7 +25,7 @@ export const CharacterActionMenu: React.FC<CharacterActionMenuProps> = ({
   return (
     <>
       <Menu onOpen={() => selectCharacter(character)}>
-        <MenuButton as={Button} size="sm" w="100%">
+        <MenuButton as={Button} size="sm" variant={variant} w="100%">
           Actions
         </MenuButton>
         <MenuList>

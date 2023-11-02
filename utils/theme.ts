@@ -12,8 +12,8 @@ export const globalStyles = css`
 
 const Button = {
   baseStyle: {
+    borderRadius: 0,
     _active: {
-      background: '#2D3748',
       transform: 'scale(0.98)',
       _disabled: {
         transform: 'scale(1)',
@@ -22,9 +22,6 @@ const Button = {
   },
   defaultProps: {
     variant: 'outline',
-    // _hover: {
-    //   transform: 'scale(1.1)',
-    // },
   },
   sizes: {
     xs: {
@@ -71,12 +68,25 @@ const Button = {
         color: 'accent',
         bg: 'dark',
       },
-      // _active: {
-      //   transform: 'scale(0.98)',
-      //   _disabled: {
-      //     transform: 'scale(1)',
-      //   },
-      // },
+      _active: {
+        borderColor: 'accent',
+        bg: 'accent',
+        color: 'dark',
+      },
+    },
+    play: {
+      bg: 'softyellow',
+      borderColor: 'softyellow',
+      borderRadius: '0',
+      color: 'dark',
+      w: '200px',
+      _hover: {
+        bg: 'linear-gradient(45deg, #FFEBA4 0%, #DBB865 100%)',
+        animation: 'shine 1.5s ease-in-out infinite',
+      },
+      _active: {
+        bg: 'linear-gradient(45deg, #FFEBA4 0%, #DBB865 100%)',
+      },
     },
     solid: {
       background: 'white',
@@ -86,12 +96,25 @@ const Button = {
       _hover: {
         bg: 'accent',
       },
+      _active: {
+        bg: 'accent',
+      },
+    },
+    ghost: {
+      background: 'transparent',
+      borderRadius: '0',
+      color: 'white',
+      _hover: {
+        bg: 'accent',
+        color: 'dark',
+      },
     },
   },
 };
 const FormLabel = {
   baseStyle: {
-    fontWeight: 300,
+    fontWeight: 500,
+    fontSize: 'sm',
   },
 };
 
@@ -113,19 +136,18 @@ const Input = {
   variants: {
     outline: {
       field: {
-        background: 'dark',
-        border: '2px solid',
-        borderColor: 'black',
-        borderRadius: 0,
-        fontSize: '12px',
+        background: 'cardBG',
+        border: '1px solid',
+        borderRadius: '6px',
+        borderColor: 'white',
+        height: '50px',
 
         _hover: {
-          background: 'dark',
-          borderColor: 'black',
+          borderColor: 'accent',
         },
+
         _active: {
-          background: 'dark',
-          borderColor: 'black',
+          borderColor: 'accent',
         },
       },
     },
@@ -140,6 +162,7 @@ const Input = {
     },
   },
 };
+
 const Link = {
   defaultProps: {
     variant: 'paragraph',
@@ -184,6 +207,7 @@ const Menu = {
     },
   },
 };
+
 const Modal = {
   defaultProps: {
     scrollBehavior: 'inside',
@@ -223,20 +247,25 @@ const Modal = {
 const Switch = {
   baseStyle: {
     track: {
-      background: 'gray.400',
-      borderRadius: '10%',
-      height: '14px',
+      alignItems: 'center',
+      background: 'cardBG',
+      border: '1px solid white',
+      borderRadius: '50px',
+      h: '14px',
+      w: '40px',
 
       _checked: {
-        background: 'black',
+        background: 'cardBG',
       },
     },
     thumb: {
-      height: '100%',
-      w: '40%',
+      background: 'accent',
+      h: '11px',
+      ml: '3px',
+      w: '11px',
 
       _checked: {
-        transform: 'translateX(18px)',
+        transform: 'translateX(23px)',
       },
     },
   },
@@ -262,19 +291,18 @@ const Text = {
 const Textarea = {
   variants: {
     outline: {
-      background: 'dark',
-      border: '2px solid',
-      borderColor: 'black',
-      borderRadius: 0,
-      fontSize: '12px',
+      background: 'cardBG',
+      border: '1px solid',
+      borderRadius: '6px',
+      borderColor: 'white',
+      height: '150px',
 
       _hover: {
-        background: 'dark',
-        borderColor: 'black',
+        borderColor: 'accent',
       },
+
       _active: {
-        background: 'dark',
-        borderColor: 'black',
+        borderColor: 'accent',
       },
     },
   },
@@ -292,11 +320,20 @@ const Tooltip = {
 
 export const theme = extendTheme({
   config: { initialColorMode: 'light', useSystemColorMode: false },
+  fonts: {
+    body: `'Unbounded', sans-serif`,
+    heading: `'Unbounded', sans-serif`,
+    mono: `'Tektur', monospace`,
+  },
   colors: {
     dark: '#171922',
+    cardBG: '#11131A',
     accent: '#a9c8eb',
     softgreen: '#79BA87',
     softpurple: '#9087B5',
+    softyellow: '#FFEBA4',
+    softblue: '#7B91DD',
+    softorange: '#BA9179',
     // gold: {
     //   100: '#FFFAE2',
     //   400: '#DBB865',

@@ -31,9 +31,9 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 
   return (
     <HStack
-      border="3px solid black"
-      borderBottom="5px solid black"
-      borderRight="5px solid black"
+      border="3px solid white"
+      borderBottom="5px solid white"
+      borderRight="5px solid white"
       h="300px"
       transition="background 0.3s ease"
       p={4}
@@ -78,7 +78,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
           </Text>
         </Text>
 
-        <Box background="black" h="3px" my={4} w={20} />
+        <Box background="white" h="3px" my={4} w={20} />
         <Text>Held By: {holders.length}</Text>
       </VStack>
     </HStack>
@@ -92,12 +92,12 @@ export const SmallClassCard: React.FC<ClassCardProps> = ({
   const toast = useToast();
   const { isConnected } = useAccount();
 
-  const { classId, name, description, image, holders } = classEntity;
+  const { claimable, classId, name, description, image, holders } = classEntity;
   return (
     <HStack
-      border="3px solid black"
-      borderBottom="5px solid black"
-      borderRight="5px solid black"
+      border="3px solid white"
+      borderBottom="5px solid white"
+      borderRight="5px solid white"
       transition="background 0.3s ease"
       p={4}
       spacing={8}
@@ -131,8 +131,16 @@ export const SmallClassCard: React.FC<ClassCardProps> = ({
           </Text>
         </Text>
 
-        <Box background="black" h="3px" my={4} w={20} />
+        <Box background="white" h="3px" my={4} w={20} />
         <Text fontSize="xs">Held By: {holders.length}</Text>
+        <Box background="white" h="3px" my={4} w={20} />
+        {!claimable ? (
+          <Text fontSize="xs">
+            This class can only be assigned by the GameMaster.
+          </Text>
+        ) : (
+          <Text fontSize="xs">Anyone can claim this class.</Text>
+        )}
       </VStack>
     </HStack>
   );
@@ -170,7 +178,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ isMaster }) => {
             });
           }}
         >
-          Equip
+          Claim
         </MenuItem>
         {isMaster && (
           <>

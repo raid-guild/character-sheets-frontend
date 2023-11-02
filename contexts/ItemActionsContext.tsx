@@ -18,8 +18,10 @@ export enum PlayerActions {
 export enum GameMasterActions {
   EDIT_ITEM = 'Edit item',
   GIVE_ITEM = 'Give item',
-  ADD_REQUIREMENT = 'Add requirement',
-  REMOVE_REQUIREMENT = 'Remove requirement',
+  // TODO: Remove these (and their modals) completetely once we are positive we don't need them
+  // ADD_REQUIREMENT = 'Add requirement',
+  // REMOVE_REQUIREMENT = 'Remove requirement',
+  EDIT_ITEM_CLAIMABLE = 'Edit item claimable',
 }
 
 type ItemActionsContextType = {
@@ -33,6 +35,7 @@ type ItemActionsContextType = {
   addRequirementModal: ReturnType<typeof useDisclosure> | undefined;
   claimItemModal: ReturnType<typeof useDisclosure> | undefined;
   removeRequirementModal: ReturnType<typeof useDisclosure> | undefined;
+  editItemClaimableModal: ReturnType<typeof useDisclosure> | undefined;
 };
 
 const ItemActionsContext = createContext<ItemActionsContextType>({
@@ -46,6 +49,7 @@ const ItemActionsContext = createContext<ItemActionsContextType>({
   addRequirementModal: undefined,
   claimItemModal: undefined,
   removeRequirementModal: undefined,
+  editItemClaimableModal: undefined,
 });
 
 export const useItemActions = (): ItemActionsContextType =>
@@ -55,12 +59,13 @@ export const ItemActionsProvider: React.FC<{
   children: JSX.Element;
 }> = ({ children }) => {
   const { address } = useAccount();
-  const { character, game, isMaster } = useGame();
+  const { character, isMaster } = useGame();
   const toast = useToast();
 
   const addRequirementModal = useDisclosure();
   const claimItemModal = useDisclosure();
   const removeRequirementModal = useDisclosure();
+  const editItemClaimableModal = useDisclosure();
 
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
@@ -76,25 +81,25 @@ export const ItemActionsProvider: React.FC<{
 
   const gmActions = useMemo(() => {
     if (isMaster) {
-      let actions = Object.keys(GameMasterActions).map(
+      const actions = Object.keys(GameMasterActions).map(
         key => GameMasterActions[key as keyof typeof GameMasterActions],
       );
 
       // TODO: For now we are only adding/checking class requirements
-      if (selectedItem?.requirements.length === game?.classes.length) {
-        actions = actions.filter(a => a !== GameMasterActions.ADD_REQUIREMENT);
-      }
+      // if (selectedItem?.requirements.length === game?.classes.length) {
+      //   actions = actions.filter(a => a !== GameMasterActions.ADD_REQUIREMENT);
+      // }
 
-      if (selectedItem?.requirements.length === 0) {
-        actions = actions.filter(
-          a => a !== GameMasterActions.REMOVE_REQUIREMENT,
-        );
-      }
+      // if (selectedItem?.requirements.length === 0) {
+      //   actions = actions.filter(
+      //     a => a !== GameMasterActions.REMOVE_REQUIREMENT,
+      //   );
+      // }
 
       return actions;
     }
     return [];
-  }, [game, isMaster, selectedItem]);
+  }, [isMaster]);
 
   const openActionModal = useCallback(
     (action: PlayerActions | GameMasterActions) => {
@@ -116,17 +121,20 @@ export const ItemActionsProvider: React.FC<{
             status: 'warning',
           });
           break;
-        case GameMasterActions.ADD_REQUIREMENT:
-          addRequirementModal.onOpen();
-          break;
-        case GameMasterActions.REMOVE_REQUIREMENT:
-          removeRequirementModal.onOpen();
+        // case GameMasterActions.ADD_REQUIREMENT:
+        //   addRequirementModal.onOpen();
+        //   break;
+        // case GameMasterActions.REMOVE_REQUIREMENT:
+        //   removeRequirementModal.onOpen();
+        //   break;
+        case GameMasterActions.EDIT_ITEM_CLAIMABLE:
+          editItemClaimableModal.onOpen();
           break;
         default:
           break;
       }
     },
-    [addRequirementModal, claimItemModal, removeRequirementModal, toast],
+    [claimItemModal, editItemClaimableModal, toast],
   );
 
   return (
@@ -142,6 +150,7 @@ export const ItemActionsProvider: React.FC<{
         addRequirementModal,
         claimItemModal,
         removeRequirementModal,
+        editItemClaimableModal,
       }}
     >
       {children}

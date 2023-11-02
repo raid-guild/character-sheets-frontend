@@ -10,7 +10,6 @@ import {
   ModalOverlay,
   Text,
   useRadioGroup,
-  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -22,6 +21,7 @@ import { TransactionPending } from '@/components/TransactionPending';
 import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { useToast } from '@/hooks/useToast';
 
 export const AssignClassModal: React.FC = () => {
   const { game, reload: reloadGame, isMaster } = useGame();
@@ -29,12 +29,13 @@ export const AssignClassModal: React.FC = () => {
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const toast = useToast();
+  const { renderError } = useToast();
 
   const [classId, setClassId] = useState<string>('0');
 
   const [isAssigning, setIsAssigning] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
@@ -57,6 +58,7 @@ export const AssignClassModal: React.FC = () => {
     setClassId('0');
     setIsAssigning(false);
     setTxHash(null);
+    setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
   }, [setValue]);
@@ -75,59 +77,18 @@ export const AssignClassModal: React.FC = () => {
         return;
       }
 
-      if (!walletClient) {
-        toast({
-          description: 'Wallet client is not connected.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Could not find a wallet client.');
-        return;
-      }
-
-      if (!selectedCharacter) {
-        toast({
-          description: 'Character address not found.',
-          position: 'top',
-          status: 'error',
-        });
-        console.error('Character address not found.');
-        return;
-      }
-
-      if (!game?.classesAddress) {
-        toast({
-          description: `Could not find the game.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(`Missing game data.`);
-        return;
-      }
-
-      if (game?.classes.length === 0) {
-        toast({
-          description: `No classes found.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(`No classes found.`);
-        return;
-      }
-
-      if (!isMaster) {
-        toast({
-          description: `Not the game master.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(`Not the game master.`);
-        return;
-      }
-
-      setIsAssigning(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+
+        if (!selectedCharacter) throw new Error('Character address not found');
+
+        if (!game?.classesAddress) throw new Error('Missing game data');
+
+        if (game?.classes.length === 0) throw new Error('No classes found');
+        if (!isMaster) throw new Error('Not the game master');
+
+        setIsAssigning(true);
+
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
@@ -142,30 +103,27 @@ export const AssignClassModal: React.FC = () => {
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
-        const receipt = await client.waitForTransactionReceipt({
+        const { blockNumber, status } = await client.waitForTransactionReceipt({
           hash: transactionhash,
         });
 
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(receipt.blockNumber);
-
-        if (!synced) {
-          toast({
-            description: 'Something went wrong while syncing.',
-            position: 'top',
-            status: 'warning',
-          });
-          return;
+        if (status === 'reverted') {
+          setTxFailed(true);
+          setIsAssigning(false);
+          throw new Error('Transaction failed');
         }
+
+        setIsSyncing(true);
+        const synced = await waitUntilBlock(blockNumber);
+        if (!synced) throw new Error('Something went wrong while syncing');
+
         setIsSynced(true);
         reloadGame();
       } catch (e) {
-        toast({
-          description: `Something went wrong assigning class to ${selectedCharacter.name}.`,
-          position: 'top',
-          status: 'error',
-        });
-        console.error(e);
+        renderError(
+          e,
+          `Something went wrong assigning class to ${selectedCharacter?.name}.`,
+        );
       } finally {
         setIsSyncing(false);
         setIsAssigning(false);
@@ -178,8 +136,8 @@ export const AssignClassModal: React.FC = () => {
       publicClient,
       game,
       reloadGame,
+      renderError,
       selectedCharacter,
-      toast,
       walletClient,
     ],
   );
@@ -188,6 +146,17 @@ export const AssignClassModal: React.FC = () => {
   const isDisabled = isLoading || invalidClass;
 
   const content = () => {
+    if (txFailed) {
+      return (
+        <VStack py={10} spacing={4}>
+          <Text>Transaction failed.</Text>
+          <Button onClick={assignClassModal?.onClose} variant="outline">
+            Close
+          </Button>
+        </VStack>
+      );
+    }
+
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>

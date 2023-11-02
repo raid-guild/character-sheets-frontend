@@ -77,8 +77,17 @@ export const timeout = (ms: number): Promise<void> => {
 };
 
 export const fetchMetadata = async (uri: string): Promise<Metadata> => {
-  const res = await fetch(`${uri}`);
-  return await res.json();
+  try {
+    const res = await fetch(`${uri}`);
+    return await res.json();
+  } catch (e) {
+    console.error(e);
+    return {
+      name: '',
+      description: '',
+      image: '',
+    };
+  }
 };
 
 export const formatCharacter = async (
@@ -123,6 +132,8 @@ export const formatCharacter = async (
     account: character.account,
     player: character.player,
     jailed: character.jailed,
+    approved: character.approved,
+    removed: character.removed,
     classes: characterClasses,
     heldItems,
     equippedItems,
@@ -140,6 +151,7 @@ export const formatClass = async (
     name: metadata.name,
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
+    claimable: classEntity.claimable,
     classId: classEntity.classId,
     holders: classEntity.holders,
   };
@@ -185,8 +197,9 @@ export const formatGameMeta = async (
   return {
     id: game.id,
     uri: game.uri,
-    owners: game.owners,
-    masters: game.masters,
+    owner: game.owner.address,
+    admins: game.admins.map(a => a.address),
+    masters: game.masters.map(m => m.address),
     players: game.characters.map(c => c.player),
     name: metadata.name,
     description: metadata.description,
@@ -208,9 +221,11 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
     classesAddress: game.classesAddress,
     itemsAddress: game.itemsAddress,
     experienceAddress: game.experienceAddress,
+    characterEligibilityAdaptor: game.characterEligibilityAdaptor,
     uri: game.uri,
-    owners: game.owners,
-    masters: game.masters,
+    owner: game.owner.address,
+    admins: game.admins.map(a => a.address),
+    masters: game.masters.map(m => m.address),
     name: metadata.name,
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
