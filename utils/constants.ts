@@ -1,17 +1,5 @@
-if (!process.env.NEXT_PUBLIC_RAIDGUILD_HOSTNAME) {
-  throw new Error(
-    `Invalid/Missing environment variable: "NEXT_PUBLIC_RAIDGUILD_HOSTNAME"`,
-  );
-}
-
-if (!process.env.NEXT_PUBLIC_RAIDGUILD_GAME_ADDRESS) {
-  throw new Error(
-    `Invalid/Missing environment variable: "NEXT_PUBLIC_RAIDGUILD_GAME_ADDRESS"`,
-  );
-}
-
 export const EXPLORER_URLS: { [key: number]: string } = {
-  [100]: 'https://gnosisscan.io/',
+  [100]: 'https://gnosisscan.io',
   [5]: 'https://goerli.etherscan.io',
 };
 
