@@ -8,3 +8,6 @@ export const SUBGRAPH_URLS: { [key: number]: string } = {
   //   'https://api.studio.thegraph.com/query/3024/character-sheets-sepolia/version/latest',
   [5]: 'https://api.thegraph.com/subgraphs/name/dan13ram/character-sheets-goerli',
 };
+
+export const HOSTNAME =
+  typeof window !== 'undefined' ? window.location.hostname : 'localhost';

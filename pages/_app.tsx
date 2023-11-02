@@ -21,6 +21,8 @@ import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { Analytics } from '@vercel/analytics/react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 import { Provider } from 'urql';
 import { WagmiConfig } from 'wagmi';
 
@@ -29,6 +31,7 @@ import { GamesProvider } from '@/contexts/GamesContext';
 import { client } from '@/graphql/client';
 import { useGraphHealth } from '@/hooks/useGraphHealth';
 import { DEFAULT_CHAIN, wagmiConfig } from '@/lib/web3';
+import { HOSTNAME } from '@/utils/constants';
 import { globalStyles, theme } from '@/utils/theme';
 
 const TITLE = 'CharacterSheets';
@@ -44,6 +47,14 @@ export default function App({
   pageProps: AppProps['pageProps'];
 }): JSX.Element {
   useGraphHealth();
+  const { push, pathname } = useRouter();
+
+  useEffect(() => {
+    if (HOSTNAME === 'localhost' && pathname === '/') {
+      push('games/0x137f532a39463c9ee9c17a5a680c8892554fc2fc');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
