@@ -13,7 +13,6 @@ import {
   ModalHeader,
   ModalOverlay,
   SimpleGrid,
-  Switch,
   Text,
   Textarea,
   Tooltip,
@@ -31,6 +30,7 @@ import {
 } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
+import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
@@ -170,25 +170,25 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         return;
       }
 
-      if (!walletClient) throw new Error('Wallet client is not connected');
-      if (!(game && game.itemsAddress))
-        throw new Error(
-          `Missing item factory address for the ${walletClient.chain.name} network`,
-        );
-
-      const cid = await onUpload();
-      if (!cid)
-        throw new Error('Something went wrong uploading your item emblem');
-
-      const itemMetadata = {
-        name: itemName,
-        description: itemDescription,
-        image: `ipfs://${cid}`,
-      };
-
-      setIsCreating(true);
-
       try {
+        if (!walletClient) throw new Error('Wallet client is not connected');
+        if (!(game && game.itemsAddress))
+          throw new Error(
+            `Missing item factory address for the ${walletClient.chain.name} network`,
+          );
+
+        const cid = await onUpload();
+        if (!cid)
+          throw new Error('Something went wrong uploading your item emblem');
+
+        const itemMetadata = {
+          name: itemName,
+          description: itemDescription,
+          image: `ipfs://${cid}`,
+        };
+
+        setIsCreating(true);
+
         const res = await fetch('/api/uploadMetadata?name=itemMetadata.json', {
           method: 'POST',
           body: JSON.stringify(itemMetadata),
@@ -306,6 +306,10 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               type: 'bytes32',
             },
             {
+              name: 'distribution',
+              type: 'uint256',
+            },
+            {
               name: 'supply',
               type: 'uint256',
             },
@@ -322,6 +326,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
             false,
             soulboundToggle,
             claimable,
+            BigInt(1),
             BigInt(itemSupply),
             itemMetadataCid,
             requiredAssetsBytes,
@@ -478,7 +483,9 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           </Flex>
           <Switch
             isChecked={classRequirementsToggle}
-            onChange={e => setClassRequirementsToggle(e.target.checked)}
+            onChange={() =>
+              setClassRequirementsToggle(!classRequirementsToggle)
+            }
           />
         </FormControl>
 
@@ -547,7 +554,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           </Flex>
           <Switch
             isChecked={soulboundToggle}
-            onChange={e => setSoulboundToggle(e.target.checked)}
+            onChange={() => setSoulboundToggle(!soulboundToggle)}
           />
         </FormControl>
         <FormControl isInvalid={showError && !itemSupply}>
@@ -565,7 +572,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           </Flex>
           <Switch
             isChecked={claimableToggle}
-            onChange={e => setClaimableToggle(e.target.checked)}
+            onChange={() => setClaimableToggle(!claimableToggle)}
           />
         </FormControl>
         {claimableToggle && (

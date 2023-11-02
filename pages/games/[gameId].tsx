@@ -42,6 +42,7 @@ import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
 import { RemoveCharacterModal } from '@/components/Modals/RemoveCharacterModal';
 import { RemoveItemRequirementModal } from '@/components/Modals/RemoveItemRequirementModal';
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
+import { RenounceClassModal } from '@/components/Modals/RenounceClassModal';
 import { RestoreCharacterModal } from '@/components/Modals/RestoreCharacterModal';
 import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
 import { TransferCharacterModal } from '@/components/Modals/TransferCharacterModal';
@@ -86,7 +87,8 @@ export default function GamePageOuter(): JSX.Element {
 }
 
 function GamePage(): JSX.Element {
-  const { game, character, isMaster, loading } = useGame();
+  const { game, character, isMaster, loading, isEligibleForCharacter } =
+    useGame();
   const {
     assignClassModal,
     approveTransferModal,
@@ -98,6 +100,7 @@ function GamePage(): JSX.Element {
     jailPlayerModal,
     removeCharacterModal,
     renounceCharacterModal,
+    renounceClassModal,
     revokeClassModal,
     transferCharacterModal,
   } = useActions();
@@ -149,12 +152,13 @@ function GamePage(): JSX.Element {
       experience,
       image,
       name,
-      owners,
+      owner,
+      admins,
+      masters,
       id,
       characters,
       classes,
       items,
-      masters,
     } = game;
 
     const chainId = DEFAULT_CHAIN.id;
@@ -164,6 +168,7 @@ function GamePage(): JSX.Element {
         <HStack spacing="5px">
           <HStack
             bg="cardBG"
+            h="100%"
             p={8}
             transition="background 0.3s ease"
             w="100%"
@@ -227,44 +232,68 @@ function GamePage(): JSX.Element {
         </HStack>
 
         <VStack align="start" spacing={4} p={8} bg="cardBG">
-          <Text
-            fontFamily="mono"
-            letterSpacing="1px"
-            fontSize="sm"
-            textTransform="uppercase"
-          >
-            Owners
+          <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
+            Owner
           </Text>
-          {owners.map(owner => (
+          <Link
+            fontSize="sm"
+            href={`${EXPLORER_URLS[chainId]}/address/${owner}`}
+            key={`gm-${owner}`}
+            isExternal
+            bg={owner === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
+            textDecor={owner !== address?.toLowerCase() ? 'underline' : ''}
+            _hover={{
+              color: 'accent',
+            }}
+          >
+            {owner === address?.toLowerCase() ? (
+              <HStack px={1} spacing={3}>
+                <Text as="span">You</Text>
+                <Text as="span" textDecor="underline">
+                  ({shortenAddress(owner)})
+                </Text>
+              </HStack>
+            ) : (
+              shortenAddress(owner)
+            )}
+          </Link>
+          <Text
+            letterSpacing="3px"
+            fontSize="2xs"
+            textTransform="uppercase"
+            mt={2}
+          >
+            Admins
+          </Text>
+          {admins.map(admin => (
             <Link
               fontSize="sm"
-              href={`${EXPLORER_URLS[chainId]}/address/${owner}`}
-              key={`gm-${owner}`}
+              href={`${EXPLORER_URLS[chainId]}/address/${admin}`}
+              key={`gm-${admin}`}
               isExternal
-              bg={owner === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
-              textDecor={owner !== address?.toLowerCase() ? 'underline' : ''}
+              bg={admin === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
+              textDecor={admin !== address?.toLowerCase() ? 'underline' : ''}
               _hover={{
                 color: 'accent',
               }}
             >
-              {owner === address?.toLowerCase() ? (
+              {admin === address?.toLowerCase() ? (
                 <HStack px={1} spacing={3}>
                   <Text as="span">You</Text>
                   <Text as="span" textDecor="underline">
-                    ({shortenAddress(owner)})
+                    ({shortenAddress(admin)})
                   </Text>
                 </HStack>
               ) : (
-                shortenAddress(owner)
+                shortenAddress(admin)
               )}
             </Link>
           ))}
 
           <Text
-            fontFamily="mono"
-            letterSpacing="1px"
-            fontSize="sm"
-            mt={4}
+            letterSpacing="3px"
+            fontSize="2xs"
+            mt={2}
             textTransform="uppercase"
           >
             Game Masters
@@ -310,7 +339,7 @@ function GamePage(): JSX.Element {
           <Box ref={topOfCardRef} position="absolute" top="-80px" />
           {isConnectedAndMounted && (
             <VStack p={8} bg="cardBG" align="start" spacing={4}>
-              {!character && !showJoinGame && (
+              {!character && !showJoinGame && isEligibleForCharacter && (
                 <HStack w="100%" spacing={4}>
                   <Button variant="solid" onClick={() => setShowJoinGame(true)}>
                     Join this Game
@@ -320,23 +349,33 @@ function GamePage(): JSX.Element {
                   </Text>
                 </HStack>
               )}
-              {!character && showJoinGame && (
+              {!character && showJoinGame && isEligibleForCharacter && (
                 <JoinGame
                   onClose={() => setShowJoinGame(false)}
                   topOfCardRef={topOfCardRef}
                 />
               )}
-              {character && character.removed && !character.jailed && (
-                <HStack spacing={4}>
-                  <Button
-                    variant="solid"
-                    onClick={restoreCharacterModal.onOpen}
-                  >
-                    Restore Character
-                  </Button>
-                  <Text>Your character has been removed from this game.</Text>
+              {!character && !isEligibleForCharacter && (
+                <HStack w="100%" spacing={4}>
+                  <Text fontSize="sm">
+                    You are not eligible to join this game.
+                  </Text>
                 </HStack>
               )}
+              {character &&
+                character.removed &&
+                !character.jailed &&
+                isEligibleForCharacter && (
+                  <HStack spacing={4}>
+                    <Button
+                      variant="solid"
+                      onClick={restoreCharacterModal.onOpen}
+                    >
+                      Restore Character
+                    </Button>
+                    <Text>Your character has been removed from this game.</Text>
+                  </HStack>
+                )}
               {character && character.jailed && (
                 <Text>
                   Your character is in jail. You can’t play until you’re
@@ -438,6 +477,7 @@ function GamePage(): JSX.Element {
       {removeCharacterModal && <RemoveCharacterModal />}
       {removeRequirementModal && <RemoveItemRequirementModal />}
       {renounceCharacterModal && <RenounceCharacterModal />}
+      {renounceClassModal && <RenounceClassModal />}
       {revokeClassModal && <RevokeClassModal />}
       {transferCharacterModal && <TransferCharacterModal />}
     </>

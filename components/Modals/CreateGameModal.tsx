@@ -18,7 +18,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { encodeAbiParameters, isAddress, parseAbi } from 'viem';
+import { encodeAbiParameters, isAddress, parseAbi, zeroAddress } from 'viem';
 import { Address, useAccount, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
@@ -27,10 +27,6 @@ import { useGlobal } from '@/hooks/useGlobal';
 import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
-import { DEFAULT_CHAIN } from '@/lib/web3';
-import { DEFAULT_DAO_ADDRESSES } from '@/utils/constants';
-
-const DEFAULT_DAO_ADDRESS = DEFAULT_DAO_ADDRESSES[DEFAULT_CHAIN.id];
 
 export const CreateGameModal: React.FC = () => {
   const { address } = useAccount();
@@ -109,7 +105,7 @@ export const CreateGameModal: React.FC = () => {
     setGameDescription('');
     setGameEmblem(null);
     setGameMasters(address ?? '');
-    setDaoAddress(DEFAULT_DAO_ADDRESS ?? '');
+    setDaoAddress('');
     setShowError(false);
 
     setIsCreating(false);
@@ -134,36 +130,31 @@ export const CreateGameModal: React.FC = () => {
         return;
       }
 
-      if (!walletClient) throw new Error('Could not find a wallet client');
-      if (!DEFAULT_DAO_ADDRESS)
-        throw new Error(
-          `DEFAULT_DAO_ADDRESS not configured for the chain ${walletClient.chain.name}`,
-        );
-      if (!gameFactory)
-        throw new Error(
-          `Missing game factory address for the ${walletClient.chain.name} network`,
-        );
-
-      const trimmedGameMasterAddresses = gameMasters
-        .split(',')
-        .map(address => address.trim()) as Address[];
-
-      const trimmedDaoAddress =
-        (daoAddress.trim() as Address) || DEFAULT_DAO_ADDRESS;
-
-      const cid = await onUpload();
-      if (!cid)
-        throw new Error('Something went wrong uploading your game emblem');
-
-      const gameMetadata = {
-        name: gameName,
-        description: gameDescription,
-        image: `ipfs://${cid}`,
-      };
-
-      setIsCreating(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!gameFactory)
+          throw new Error(
+            `Missing game factory address for the ${walletClient.chain.name} network`,
+          );
+
+        const trimmedGameMasterAddresses = gameMasters
+          .split(',')
+          .map(address => address.trim()) as Address[];
+
+        const trimmedDaoAddress = (daoAddress.trim() as Address) || zeroAddress;
+
+        const cid = await onUpload();
+        if (!cid)
+          throw new Error('Something went wrong uploading your game emblem');
+
+        const gameMetadata = {
+          name: gameName,
+          description: gameDescription,
+          image: `ipfs://${cid}`,
+        };
+
+        setIsCreating(true);
+
         const res = await fetch('/api/uploadMetadata?name=gameMetadata.json', {
           method: 'POST',
           body: JSON.stringify(gameMetadata),
@@ -197,17 +188,75 @@ export const CreateGameModal: React.FC = () => {
           [`ipfs://${gameMetadataCid}`, 'ipfs://', 'ipfs://', 'ipfs://'],
         );
 
+        const encodedHatsData = encodeAbiParameters(
+          [
+            {
+              name: 'hatsImgUri',
+              type: 'string',
+            },
+            { name: 'topHatDescription', type: 'string' },
+            {
+              name: 'adminHatUri',
+              type: 'string',
+            },
+            {
+              name: 'adminHatDescription',
+              type: 'string',
+            },
+            {
+              name: 'gameHatUri',
+              type: 'string',
+            },
+            {
+              name: 'gameHatDescription',
+              type: 'string',
+            },
+            {
+              name: 'playerHatUri',
+              type: 'string',
+            },
+            {
+              name: 'playerHatDescription',
+              type: 'string',
+            },
+            {
+              name: 'characterHatUri',
+              type: 'string',
+            },
+            {
+              name: 'characterHatDescription',
+              type: 'string',
+            },
+          ],
+          [
+            gameMetadata.image,
+            'Top Hat',
+            'ipfs://',
+            'Admin Hat',
+            'ipfs://',
+            'Game Hat',
+            'ipfs://',
+            'Player Hat',
+            'ipfs://',
+            'Character Hat',
+          ],
+        );
+
+        const adminAddresses = [walletClient.account?.address as Address];
+
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
           address: gameFactory as Address,
           abi: parseAbi([
-            'function create(address[], address, bytes calldata) external returns (address, address, address, address)',
+            'function createAndInitialize(address dao,address[] calldata admins,address[] calldata dungeonMasters,bytes calldata encodedHatsStrings,bytes calldata sheetsStrings) public returns (address)',
           ]),
-          functionName: 'create',
+          functionName: 'createAndInitialize',
           args: [
-            trimmedGameMasterAddresses,
             trimmedDaoAddress,
+            adminAddresses,
+            trimmedGameMasterAddresses,
+            encodedHatsData,
             encodedGameCreationData,
           ],
         });
@@ -390,7 +439,7 @@ export const CreateGameModal: React.FC = () => {
         <FormControl isInvalid={showError && invalidDaoAddress}>
           <Flex align="center">
             <FormLabel>DAO Address (optional)</FormLabel>
-            <Tooltip label="By adding a DAO address, you restrict who can create characters to only members of that DAO. If you do not provide a DAO address, anyone can create a character by joining an open DAO that we provide.">
+            <Tooltip label="By adding a DAO address, you restrict who can create characters to only members of that DAO. If you do not provide a DAO address, anyone can create a character.">
               <Image
                 alt="down arrow"
                 height="14px"

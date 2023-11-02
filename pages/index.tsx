@@ -1,10 +1,12 @@
 import { Button, Flex, Heading, Text, VStack } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { zeroAddress } from 'viem';
+import { useAccount } from 'wagmi';
 
 import { CharacterCard } from '@/components/CharacterCard';
 import { CreateGameModal } from '@/components/Modals/CreateGameModal';
 import { useGamesContext } from '@/contexts/GamesContext';
+import { useToast } from '@/hooks/useToast';
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { Character, Class, Item } from '@/utils/types';
 
@@ -62,6 +64,8 @@ const dummyCharacter: Character = {
 
 export default function Home(): JSX.Element {
   const { createGameModal } = useGamesContext();
+  const { address } = useAccount();
+  const { renderError } = useToast();
 
   return (
     <Flex
@@ -101,7 +105,13 @@ export default function Home(): JSX.Element {
             Browse games
           </Button>
           <Button
-            onClick={createGameModal?.onOpen}
+            onClick={() => {
+              if (!address) {
+                renderError('Please connect your wallet first');
+                return;
+              }
+              createGameModal?.onOpen();
+            }}
             size="lg"
             mt={{ base: '10px', lg: '0' }}
           >

@@ -109,15 +109,15 @@ export const GiveItemsModal: React.FC = () => {
         return;
       }
 
-      if (!walletClient) throw new Error('Wallet client is not connected');
-      if (!selectedCharacter) throw new Error('Character address not found');
-      if (!game?.itemsAddress) throw new Error('Missing game data');
-      if (game?.items.length === 0) throw new Error('No items found');
-      if (!isMaster) throw new Error('Not the game master');
-
-      setIsGiving(true);
-
       try {
+        if (!walletClient) throw new Error('Wallet client is not connected');
+        if (!selectedCharacter) throw new Error('Character address not found');
+        if (!game?.itemsAddress) throw new Error('Missing game data');
+        if (game?.items.length === 0) throw new Error('No items found');
+        if (!isMaster) throw new Error('Not the game master');
+
+        setIsGiving(true);
+
         const characters = [selectedCharacter.account as Address];
         const itemIds = [[BigInt(itemId)]];
         const amounts = [[BigInt(amount)]];
@@ -154,7 +154,7 @@ export const GiveItemsModal: React.FC = () => {
       } catch (e) {
         renderError(
           e,
-          `Something went wrong giving item(s) to ${selectedCharacter.name}`,
+          `Something went wrong giving item(s) to ${selectedCharacter?.name}`,
         );
       } finally {
         setIsSyncing(false);

@@ -143,21 +143,21 @@ export const UpdateGameMetadataModal: React.FC<
         return;
       }
 
-      if (!walletClient) throw new Error('Wallet client is not connected');
-      if (!game) throw new Error('Missing game data');
-
-      const cid = newGameEmblemFile
-        ? await onUpload()
-        : game?.image
-            .split('/')
-            .filter(s => !!s)
-            .pop();
-      if (!cid)
-        throw new Error('Something went wrong uploading your game emblem');
-
-      setIsUpdating(true);
-
       try {
+        if (!walletClient) throw new Error('Wallet client is not connected');
+        if (!game) throw new Error('Missing game data');
+
+        const cid = newGameEmblemFile
+          ? await onUpload()
+          : game?.image
+              .split('/')
+              .filter(s => !!s)
+              .pop();
+        if (!cid)
+          throw new Error('Something went wrong uploading your game emblem');
+
+        setIsUpdating(true);
+
         const gameMetadata = {
           name: newGameName,
           description: newGameDescription,
@@ -179,8 +179,10 @@ export const UpdateGameMetadataModal: React.FC<
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
           address: game.id as Address,
-          abi: parseAbi(['function setMetadataUri(string memory _uri) public']),
-          functionName: 'setMetadataUri',
+          abi: parseAbi([
+            'function updateMetadataUri(string memory _uri) public',
+          ]),
+          functionName: 'updateMetadataUri',
           args: [`ipfs://${newCid}`],
         });
         setTxHash(transactionhash);

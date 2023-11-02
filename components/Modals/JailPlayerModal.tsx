@@ -53,13 +53,13 @@ export const JailPlayerModal: React.FC = () => {
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
-      if (!walletClient) throw new Error('Could not find a wallet client');
-      if (!game) throw new Error('Missing game data');
-      if (!selectedCharacter) throw new Error('Character not found');
-
-      setIsJailing(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!game) throw new Error('Missing game data');
+        if (!selectedCharacter) throw new Error('Character not found');
+
+        setIsJailing(true);
+
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
@@ -92,7 +92,7 @@ export const JailPlayerModal: React.FC = () => {
       } catch (e) {
         renderError(
           e,
-          `Something went wrong while jailing ${selectedCharacter.name}'s player`,
+          `Something went wrong while jailing ${selectedCharacter?.name}'s player`,
         );
       } finally {
         setIsSyncing(false);

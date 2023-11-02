@@ -25,7 +25,7 @@ import { useToast } from '@/hooks/useToast';
 import { executeAsCharacter } from '@/utils/account';
 
 export const ClaimClassModal: React.FC = () => {
-  const { character, game, reload: reloadGame, isMaster } = useGame();
+  const { character, game, reload: reloadGame } = useGame();
   const { claimClassModal } = useActions();
 
   const { data: walletClient } = useWalletClient();
@@ -82,18 +82,17 @@ export const ClaimClassModal: React.FC = () => {
         return;
       }
 
-      if (!walletClient) throw new Error('Could not find a wallet client');
-
-      if (!character) throw new Error('Character address not found');
-
-      if (!game?.classesAddress) throw new Error('Missing game data');
-
-      if (game?.classes.length === 0) throw new Error('No classes found');
-      if (!isMaster) throw new Error('Not the game master');
-
-      setIsClaiming(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+
+        if (!character) throw new Error('Character address not found');
+
+        if (!game?.classesAddress) throw new Error('Missing game data');
+
+        if (game?.classes.length === 0) throw new Error('No classes found');
+
+        setIsClaiming(true);
+
         const transactionhash = await executeAsCharacter(
           character,
           walletClient,
@@ -129,7 +128,7 @@ export const ClaimClassModal: React.FC = () => {
       } catch (e) {
         renderError(
           e,
-          `Something went wrong claiming ${character.name} class.`,
+          `Something went wrong claiming ${character?.name} class.`,
         );
       } finally {
         setIsSyncing(false);
@@ -139,7 +138,6 @@ export const ClaimClassModal: React.FC = () => {
     [
       character,
       classId,
-      isMaster,
       invalidClass,
       publicClient,
       game,

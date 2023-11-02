@@ -67,17 +67,17 @@ export const EquipItemModal: React.FC = () => {
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
-      if (!walletClient) throw new Error('Wallet client is not connected');
-      if (!character || !selectedCharacter)
-        throw new Error('Character address not found');
-      if (character.characterId !== selectedCharacter.characterId)
-        throw new Error('Character address does not match');
-      if (!selectedItem) throw new Error('Item not found');
-      if (!game?.id) throw new Error(`Missing game data`);
-
-      setIsLoading(true);
-
       try {
+        if (!walletClient) throw new Error('Wallet client is not connected');
+        if (!character || !selectedCharacter)
+          throw new Error('Character address not found');
+        if (character.characterId !== selectedCharacter.characterId)
+          throw new Error('Character address does not match');
+        if (!selectedItem) throw new Error('Item not found');
+        if (!game?.id) throw new Error(`Missing game data`);
+
+        setIsLoading(true);
+
         const transactionhash = await executeAsCharacter(
           character,
           walletClient,

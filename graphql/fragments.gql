@@ -73,8 +73,15 @@ fragment ItemInfo on Item {
 fragment GameMetaInfo on Game {
   id
   uri
-  owners
-  masters
+  owner {
+    address
+  }
+  admins {
+    address
+  }
+  masters {
+    address
+  }
   experience
   characters {
     id
@@ -93,9 +100,17 @@ fragment FullGameInfo on Game {
   classesAddress
   itemsAddress
   experienceAddress
+  characterEligibilityAdaptor
   uri
-  owners
-  masters
+  owner {
+    address
+  }
+  admins {
+    address
+  }
+  masters {
+    address
+  }
   experience
   characters {
     ...CharacterInfo

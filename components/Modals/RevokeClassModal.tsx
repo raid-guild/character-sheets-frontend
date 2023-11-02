@@ -24,7 +24,7 @@ import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useToast } from '@/hooks/useToast';
 
 export const RevokeClassModal: React.FC = () => {
-  const { game, reload: reloadGame } = useGame();
+  const { game, isMaster, reload: reloadGame } = useGame();
   const { selectedCharacter, revokeClassModal } = useActions();
 
   const { data: walletClient } = useWalletClient();
@@ -70,15 +70,16 @@ export const RevokeClassModal: React.FC = () => {
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
-      if (!walletClient) throw new Error('Could not find a wallet client');
-      if (!selectedCharacter) throw new Error('Character address not found');
-      if (!game?.classesAddress) throw new Error('Missing game data');
-      if (selectedCharacter?.classes.length === 0)
-        throw new Error('No classes found');
-
-      setIsRevoking(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!selectedCharacter) throw new Error('Character address not found');
+        if (!game?.classesAddress) throw new Error('Missing game data');
+        if (selectedCharacter?.classes.length === 0)
+          throw new Error('No classes found');
+        if (!isMaster) throw new Error('Only a GameMaster can revoke classes');
+
+        setIsRevoking(true);
+
         const { account } = selectedCharacter;
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
@@ -118,8 +119,9 @@ export const RevokeClassModal: React.FC = () => {
     },
     [
       classId,
-      publicClient,
       game,
+      isMaster,
+      publicClient,
       reloadGame,
       renderError,
       selectedCharacter,

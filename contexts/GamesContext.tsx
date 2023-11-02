@@ -78,6 +78,8 @@ export const GamesProvider: React.FC<{
     if (!allGames || !address) return null;
     return allGames.filter(
       g =>
+        g.owner === address.toLowerCase() ||
+        g.admins.includes(address.toLowerCase()) ||
         g.masters.includes(address.toLowerCase()) ||
         g.players.includes(address.toLowerCase()),
     );

@@ -11,7 +11,6 @@ import {
   Image,
   Input,
   SimpleGrid,
-  Switch,
   Text,
   Textarea,
   VStack,
@@ -20,6 +19,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
+import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
 import { XPDisplay } from '@/components/XPDisplay';
 import { useGame } from '@/contexts/GameContext';
@@ -387,26 +387,10 @@ export const JoinGame: React.FC<JoinGameProps> = ({
               Uploading your own avatar prevents visual rendering of equipped
               items in the future.
             </Text>
-            <Flex align="center" gap={4} mt={4}>
-              <Text
-                color={showUpload ? 'white' : 'accent'}
-                fontSize="sm"
-                fontWeight="500"
-              >
-                No
-              </Text>
-              <Switch
-                isChecked={showUpload}
-                onChange={() => setShowUpload(!showUpload)}
-              />
-              <Text
-                color={showUpload ? 'accent' : 'white'}
-                fontSize="sm"
-                fontWeight="500"
-              >
-                Yes
-              </Text>
-            </Flex>
+            <Switch
+              isChecked={showUpload}
+              onChange={() => setShowUpload(!showUpload)}
+            />
           </VStack>
           {showUpload && (
             <FormControl isInvalid={showError && !characterAvatar}>

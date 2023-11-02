@@ -138,22 +138,24 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
         return;
       }
 
-      if (!walletClient) throw new Error('Could not find a wallet client');
-      if (!game) throw new Error('Missing game data');
-      if (!selectedCharacter) throw new Error('Character not found');
-
-      const cid = newAvatarFile
-        ? await onUpload()
-        : selectedCharacter?.image
-            .split('/')
-            .filter(s => !!s)
-            .pop();
-      if (!cid)
-        throw new Error('Something went wrong uploading your character avatar');
-
-      setIsUpdating(true);
-
       try {
+        if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!game) throw new Error('Missing game data');
+        if (!selectedCharacter) throw new Error('Character not found');
+
+        const cid = newAvatarFile
+          ? await onUpload()
+          : selectedCharacter?.image
+              .split('/')
+              .filter(s => !!s)
+              .pop();
+        if (!cid)
+          throw new Error(
+            'Something went wrong uploading your character avatar',
+          );
+
+        setIsUpdating(true);
+
         const characterMetadata = {
           name: newName,
           description: newDescription,
@@ -210,7 +212,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       } catch (e) {
         renderError(
           e,
-          `Something went wrong updating ${selectedCharacter.name}'s metadata`,
+          `Something went wrong updating ${selectedCharacter?.name}'s metadata`,
         );
       } finally {
         setIsSyncing(false);
