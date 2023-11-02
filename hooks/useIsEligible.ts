@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import { usePublicClient } from 'wagmi';
 
 import { Game } from '@/utils/types';
-import { zeroAddress } from 'viem';
+import { parseAbi, zeroAddress } from 'viem';
 
 export const useIsEligible = (
   game: Game | null | undefined,
@@ -27,7 +27,7 @@ export const useIsEligible = (
       try {
         const eligible = (await publicClient.readContract({
           address: adaptor,
-          abi: ['function isEligible(address) view returns (bool)'],
+          abi: parseAbi(['function isEligible(address) view returns (bool)']),
           functionName: 'isEligible',
           args: [addr],
         })) as boolean;
