@@ -20,8 +20,8 @@ import {
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
-import { isAddress } from 'viem';
-import { useAccount } from 'wagmi';
+import { Hex, isAddress } from 'viem';
+import { useAccount, useEnsName } from 'wagmi';
 
 import { CharacterCard } from '@/components/CharacterCard';
 import { CharactersPanel } from '@/components/CharactersPanel';
@@ -58,6 +58,42 @@ import {
 import { DEFAULT_CHAIN } from '@/lib/web3';
 import { EXPLORER_URLS } from '@/utils/constants';
 import { shortenAddress } from '@/utils/helpers';
+
+const UserLink = ({
+  chainId,
+  user,
+  isCurrentUser,
+}: {
+  chainId: number;
+  user: string;
+  isCurrentUser: boolean;
+}) => {
+  const { data: ensName } = useEnsName({ address: user as Hex, chainId: 1 });
+
+  return (
+    <Link
+      fontSize="sm"
+      href={`${EXPLORER_URLS[chainId]}/address/${user}`}
+      isExternal
+      bg={isCurrentUser ? 'whiteAlpha.300' : ''}
+      textDecor={!isCurrentUser ? 'underline' : ''}
+      _hover={{
+        color: 'accent',
+      }}
+    >
+      {isCurrentUser ? (
+        <HStack px={1} spacing={3}>
+          <Text as="span">You</Text>
+          <Text as="span" textDecor="underline">
+            ({ensName || shortenAddress(user)})
+          </Text>
+        </HStack>
+      ) : (
+        ensName || shortenAddress(user)
+      )}
+    </Link>
+  );
+};
 
 export default function GamePageOuter(): JSX.Element {
   const {
@@ -235,28 +271,12 @@ function GamePage(): JSX.Element {
           <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
             Owner
           </Text>
-          <Link
-            fontSize="sm"
-            href={`${EXPLORER_URLS[chainId]}/address/${owner}`}
-            key={`gm-${owner}`}
-            isExternal
-            bg={owner === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
-            textDecor={owner !== address?.toLowerCase() ? 'underline' : ''}
-            _hover={{
-              color: 'accent',
-            }}
-          >
-            {owner === address?.toLowerCase() ? (
-              <HStack px={1} spacing={3}>
-                <Text as="span">You</Text>
-                <Text as="span" textDecor="underline">
-                  ({shortenAddress(owner)})
-                </Text>
-              </HStack>
-            ) : (
-              shortenAddress(owner)
-            )}
-          </Link>
+          <UserLink
+            chainId={chainId}
+            user={owner}
+            isCurrentUser={owner.toLowerCase() === owner}
+          />
+
           <Text
             letterSpacing="3px"
             fontSize="2xs"
@@ -266,28 +286,12 @@ function GamePage(): JSX.Element {
             Admins
           </Text>
           {admins.map(admin => (
-            <Link
-              fontSize="sm"
-              href={`${EXPLORER_URLS[chainId]}/address/${admin}`}
+            <UserLink
               key={`gm-${admin}`}
-              isExternal
-              bg={admin === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
-              textDecor={admin !== address?.toLowerCase() ? 'underline' : ''}
-              _hover={{
-                color: 'accent',
-              }}
-            >
-              {admin === address?.toLowerCase() ? (
-                <HStack px={1} spacing={3}>
-                  <Text as="span">You</Text>
-                  <Text as="span" textDecor="underline">
-                    ({shortenAddress(admin)})
-                  </Text>
-                </HStack>
-              ) : (
-                shortenAddress(admin)
-              )}
-            </Link>
+              chainId={chainId}
+              user={admin}
+              isCurrentUser={admin === address?.toLowerCase()}
+            />
           ))}
 
           <Text
@@ -299,35 +303,19 @@ function GamePage(): JSX.Element {
             Game Masters
           </Text>
           <Wrap spacingX={1}>
-            {masters.map((master, i) => (
-              <>
-                <Link
-                  fontSize="sm"
-                  href={`${EXPLORER_URLS[chainId]}/address/${master}`}
-                  key={`gm-${master}`}
-                  isExternal
-                  bg={master === address?.toLowerCase() ? 'whiteAlpha.300' : ''}
-                  textDecor={
-                    master !== address?.toLowerCase() ? 'underline' : ''
-                  }
-                  _hover={{
-                    color: 'accent',
-                  }}
-                >
-                  {master === address?.toLowerCase() ? (
-                    <HStack px={1} spacing={3}>
-                      <Text as="span">You</Text>
-                      <Text as="span" textDecor="underline">
-                        ({shortenAddress(master)})
-                      </Text>
-                    </HStack>
-                  ) : (
-                    shortenAddress(master)
-                  )}
-                </Link>
-                {i !== masters.length - 1 && <Text as="span">, </Text>}
-              </>
-            ))}
+            {masters.map((master, i) => {
+              return (
+                <>
+                  <UserLink
+                    key={`gm-${master}`}
+                    chainId={chainId}
+                    user={master}
+                    isCurrentUser={master === address?.toLowerCase()}
+                  />
+                  {i !== masters.length - 1 && <Text as="span">, </Text>}
+                </>
+              );
+            })}
           </Wrap>
         </VStack>
         <VStack
