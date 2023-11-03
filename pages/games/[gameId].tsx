@@ -177,7 +177,6 @@ function GamePage(): JSX.Element {
             <AspectRatio ratio={1} w="100%" maxW="12rem">
               <Image
                 alt="game emblem"
-                background="gray.400"
                 objectFit="cover"
                 src={image}
                 w="100%"

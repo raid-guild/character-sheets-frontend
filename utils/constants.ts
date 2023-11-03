@@ -11,7 +11,7 @@ if (!process.env.NEXT_PUBLIC_RAIDGUILD_GAME_ADDRESS) {
 }
 
 export const EXPLORER_URLS: { [key: number]: string } = {
-  [100]: 'https://gnosisscan.io/',
+  [100]: 'https://rpc.gnosis.gateway.fm',
   [5]: 'https://goerli.etherscan.io',
 };
 
