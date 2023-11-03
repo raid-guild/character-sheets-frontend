@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb';
+
 export type Metadata = {
   name: string;
   description: string;
@@ -76,4 +78,14 @@ export type Item = Metadata & {
   holders: { id: string }[];
   equippers: { id: string }[];
   merkleRoot: string;
+};
+
+export type ClaimableTreeDB = {
+  _id: ObjectId;
+  gameAddress: string;
+  itemId: string;
+  tree: string;
+  updatedAt: Date;
+  updatedBy: string;
+  createdAt: Date;
 };

@@ -7,7 +7,7 @@ import {
 } from '@/graphql/autogen/types';
 import { client } from '@/graphql/client';
 import { withAuth } from '@/lib/auth';
-import { dbPromise } from '@/lib/mongodb';
+import { updateClaimableTreeInDB } from '@/lib/claimableTree';
 
 const verifyGameMaster = async (
   gameAddress: `0x${string}`,
@@ -71,26 +71,11 @@ const setTree = async (
   }
 
   try {
-    const client = await dbPromise;
-
-    const result = await client.collection('claimableTrees').findOneAndUpdate(
-      {
-        gameAddress,
-        itemId,
-      },
-      {
-        $set: {
-          tree,
-        },
-        $setOnInsert: {
-          gameAddress,
-          itemId,
-        },
-      },
-      {
-        upsert: true,
-        returnDocument: 'after',
-      },
+    const result = await updateClaimableTreeInDB(
+      gameAddress,
+      itemId,
+      tree,
+      account,
     );
 
     if (!result) {
@@ -98,7 +83,7 @@ const setTree = async (
       return res.status(500).json({ error: 'Could not set tree' });
     }
 
-    return res.status(200).json({ id: result._id });
+    return res.status(200).json(result);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error });

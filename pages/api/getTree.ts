@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
-import { getClaimableTree } from '@/lib/claimableTree';
+import { getClaimableTreeFromDB } from '@/lib/claimableTree';
 
 export default async function getTree(
   req: NextApiRequest,
@@ -20,13 +20,13 @@ export default async function getTree(
   }
 
   try {
-    const tree = await getClaimableTree(gameAddress, Number(itemId));
+    const tree = await getClaimableTreeFromDB(gameAddress, Number(itemId));
 
     if (!tree) {
       return res.status(404).end();
     }
 
-    return res.status(200).json({ tree });
+    return res.status(200).json(tree);
   } catch (error) {
     return res.status(500).json({ error });
   }

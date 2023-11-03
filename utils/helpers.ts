@@ -78,7 +78,7 @@ export const timeout = (ms: number): Promise<void> => {
 
 export const fetchMetadata = async (uri: string): Promise<Metadata> => {
   try {
-    const res = await fetch(`${uri}`);
+    const res = await fetch(uri);
     return await res.json();
   } catch (e) {
     console.error(e);
