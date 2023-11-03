@@ -3,6 +3,14 @@ fragment GlobalInfo on Global {
   gameFactory
 }
 
+fragment CharacterMetaInfo on Character {
+  id
+  characterId
+  account
+  player
+  uri
+}
+
 fragment CharacterInfo on Character {
   id
   characterId

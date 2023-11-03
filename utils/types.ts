@@ -93,3 +93,14 @@ export type ClaimableTreeDB = {
   updatedBy: string;
   createdAt: Date;
 };
+
+export type CharacterMetaDB = Metadata & {
+  _id: ObjectId;
+  gameAddress: string;
+  characterId: string;
+  account: string;
+  player: string;
+  uri: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
