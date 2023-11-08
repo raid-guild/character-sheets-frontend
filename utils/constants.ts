@@ -1,14 +1,3 @@
-export const EXPLORER_URLS: { [key: number]: string } = {
-  [100]: 'https://gnosisscan.io',
-  [5]: 'https://goerli.etherscan.io',
-};
-
-export const SUBGRAPH_URLS: { [key: number]: string } = {
-  [100]:
-    'https://api.thegraph.com/subgraphs/name/dan13ram/character-sheets-gnosis',
-  [5]: 'https://api.thegraph.com/subgraphs/name/dan13ram/character-sheets-goerli',
-};
-
 export const HOSTNAME =
   typeof window !== 'undefined' ? window.location.hostname : 'localhost';
 

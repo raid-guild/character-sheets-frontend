@@ -5,7 +5,6 @@ import {
   useDisclosure,
   VStack,
 } from '@chakra-ui/react';
-import { useChainId } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 
@@ -16,7 +15,6 @@ export const ClassesPanel: React.FC = () => {
   const createClassModal = useDisclosure();
 
   const { game, isMaster } = useGame();
-  const chainId = useChainId();
 
   function content() {
     if (!game || game.classes.length === 0) {
@@ -33,7 +31,7 @@ export const ClassesPanel: React.FC = () => {
           <SmallClassCard
             key={c.id}
             {...c}
-            chainId={chainId}
+            chainId={game.chainId}
             isMaster={isMaster}
           />
         ))}

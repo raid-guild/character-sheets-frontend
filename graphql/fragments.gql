@@ -72,6 +72,7 @@ fragment ItemInfo on Item {
 
 fragment GameMetaInfo on Game {
   id
+  chainId
   uri
   owner {
     address
@@ -97,6 +98,7 @@ fragment GameMetaInfo on Game {
 
 fragment FullGameInfo on Game {
   id
+  chainId
   classesAddress
   itemsAddress
   experienceAddress

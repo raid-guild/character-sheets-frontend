@@ -16,7 +16,7 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
 export const RenounceCharacterModal: React.FC = () => {
@@ -79,7 +79,7 @@ export const RenounceCharacterModal: React.FC = () => {
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -136,6 +136,7 @@ export const RenounceCharacterModal: React.FC = () => {
           isSyncing={isSyncing}
           text={`Renouncing your character...`}
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }

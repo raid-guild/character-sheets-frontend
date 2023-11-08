@@ -56,28 +56,33 @@ import {
   ItemActionsProvider,
   useItemActions,
 } from '@/contexts/ItemActionsContext';
-import { DEFAULT_CHAIN } from '@/lib/web3';
-import { EXPLORER_URLS } from '@/utils/constants';
+import { getAddressUrl, getChainIdFromLabel } from '@/lib/web3';
 import { shortenAddress } from '@/utils/helpers';
 
 export default function GamePageOuter(): JSX.Element {
   const {
-    query: { gameId },
+    query: { gameId, chainLabel },
     push,
     isReady,
   } = useRouter();
 
+  const chainId = getChainIdFromLabel(chainLabel as string);
+
   useEffect(() => {
     if (
       isReady &&
-      (!gameId || typeof gameId !== 'string' || !isAddress(gameId))
+      (!gameId || typeof gameId !== 'string' || !isAddress(gameId) || !chainId)
     ) {
       push('/');
     }
-  }, [gameId, isReady, push]);
+  }, [gameId, chainId, isReady, push]);
+
+  if (!gameId || !chainId) {
+    return <></>;
+  }
 
   return (
-    <GameProvider gameId={gameId}>
+    <GameProvider chainId={chainId} gameId={gameId.toString()}>
       <ActionsProvider>
         <ItemActionsProvider>
           <GamePage />
@@ -158,9 +163,8 @@ function GamePage(): JSX.Element {
       characters,
       classes,
       items,
+      chainId,
     } = game;
-
-    const chainId = DEFAULT_CHAIN.id;
 
     return (
       <Grid templateColumns="3fr 1fr" w="full" gridGap="5px">
@@ -197,7 +201,7 @@ function GamePage(): JSX.Element {
               <HStack spacing={4}>
                 <Link
                   fontSize="sm"
-                  href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+                  href={getAddressUrl(chainId, id)}
                   isExternal
                   fontWeight={300}
                   mb={3}

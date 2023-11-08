@@ -17,10 +17,9 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
-import { DEFAULT_CHAIN } from '@/lib/web3';
-import { EXPLORER_URLS } from '@/utils/constants';
+import { getAddressUrl } from '@/lib/web3';
 
 export const ApproveTransferModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
@@ -92,7 +91,7 @@ export const ApproveTransferModal: React.FC = () => {
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -120,7 +119,6 @@ export const ApproveTransferModal: React.FC = () => {
 
   const isLoading = isApproving;
   const isDisabled = isLoading;
-  const chainId = DEFAULT_CHAIN.id;
 
   const content = () => {
     if (txFailed) {
@@ -151,6 +149,7 @@ export const ApproveTransferModal: React.FC = () => {
           isSyncing={isSyncing}
           text="Approving the transfer of your character..."
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }
@@ -163,7 +162,9 @@ export const ApproveTransferModal: React.FC = () => {
             alignItems="center"
             color="blue"
             fontSize="sm"
-            href={`${EXPLORER_URLS[chainId]}/address/${gameOwner}`}
+            href={
+              game && gameOwner ? getAddressUrl(game.chainId, gameOwner) : ''
+            }
             isExternal
           >
             {gameOwner}

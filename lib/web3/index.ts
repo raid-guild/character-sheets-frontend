@@ -1,17 +1,8 @@
 import { getDefaultWallets } from '@rainbow-me/rainbowkit';
-import { createPublicClient, http } from 'viem';
 import { createConfig } from 'wagmi';
-import { mainnet } from 'wagmi/chains';
 
-import {
-  chains,
-  DEFAULT_CHAIN,
-  INFURA_KEY,
-  PROJECT_ID,
-  publicClient,
-  RPC_URL,
-  webSocketPublicClient,
-} from './config';
+import { chains, publicClient, webSocketPublicClient } from './config';
+import { WALLET_CONNECT_PROJECT_ID } from './constants';
 
 // Required for BigInt serialization
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -22,7 +13,7 @@ BigInt.prototype.toJSON = function () {
 
 const { connectors } = getDefaultWallets({
   appName: 'CharacterSheets',
-  projectId: PROJECT_ID,
+  projectId: WALLET_CONNECT_PROJECT_ID,
   chains,
 });
 
@@ -33,16 +24,7 @@ export const wagmiConfig = createConfig({
   webSocketPublicClient,
 });
 
-export { DEFAULT_CHAIN } from './config';
-
-export const readClient = createPublicClient({
-  chain: DEFAULT_CHAIN,
-  transport: http(RPC_URL),
-});
-
-const MAINNET_RPC_URL = `https://mainnet.infura.io/v3/${INFURA_KEY}`;
-
-export const mainnetReadClient = createPublicClient({
-  chain: mainnet,
-  transport: http(MAINNET_RPC_URL),
-});
+export * from './config';
+export { SUPPORTED_CHAINS } from './constants';
+export * from './helpers';
+export * from './readClients';

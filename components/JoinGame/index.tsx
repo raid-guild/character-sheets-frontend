@@ -23,7 +23,7 @@ import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
 import { XPDisplay } from '@/components/XPDisplay';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { shortenText } from '@/utils/helpers';
@@ -247,7 +247,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
 
         if (!synced) throw new Error('Something went wrong while syncing');
 
@@ -327,6 +327,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
           isSyncing={isSyncing}
           text="Your character is being created."
           txHash={txHash}
+          chainId={game?.chainId}
         />
       </VStack>
     );

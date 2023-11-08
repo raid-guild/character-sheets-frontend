@@ -6,7 +6,6 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { PropsWithChildren } from 'react';
-import { useChainId } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 
@@ -16,7 +15,6 @@ import { CreateItemModal } from './Modals/CreateItemModal';
 export const ItemsPanel: React.FC<PropsWithChildren> = () => {
   const createItemModal = useDisclosure();
   const { game, isMaster } = useGame();
-  const chainId = useChainId();
 
   return (
     <VStack pt={10} pb={20} spacing={10} w="100%">
@@ -32,7 +30,7 @@ export const ItemsPanel: React.FC<PropsWithChildren> = () => {
         <>
           <SimpleGrid columns={2} spacing={4} w="100%">
             {game.items.map(c => (
-              <SmallItemCard key={c.id} {...c} chainId={chainId} />
+              <SmallItemCard key={c.id} {...c} chainId={game.chainId} />
             ))}
           </SimpleGrid>
         </>

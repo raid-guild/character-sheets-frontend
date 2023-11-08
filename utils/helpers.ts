@@ -196,6 +196,7 @@ export const formatGameMeta = async (
 
   return {
     id: game.id,
+    chainId: Number(game.chainId),
     uri: game.uri,
     owner: game.owner.address,
     admins: game.admins.map(a => a.address),
@@ -218,6 +219,7 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
 
   return {
     id: game.id,
+    chainId: Number(game.chainId),
     classesAddress: game.classesAddress,
     itemsAddress: game.itemsAddress,
     experienceAddress: game.experienceAddress,

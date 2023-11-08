@@ -1,6 +1,6 @@
 import { Button, Spinner, Text, VStack } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
-import { useAccount, useNetwork } from 'wagmi';
+import { useAccount } from 'wagmi';
 
 import { GameCard } from '@/components/GameCard';
 import { CreateGameModal } from '@/components/Modals/CreateGameModal';
@@ -9,7 +9,6 @@ import { useGamesContext } from '@/contexts/GamesContext';
 export default function MyGames(): JSX.Element {
   const { isConnected } = useAccount();
   const { createGameModal, loading, myGames } = useGamesContext();
-  const { chain } = useNetwork();
 
   const [isConnectedAndMount, setIsConnectedAndMounted] = useState(false);
 
@@ -50,11 +49,7 @@ export default function MyGames(): JSX.Element {
         ) : (
           <VStack spacing={10} w="100%">
             {myGames.map(game => (
-              <GameCard
-                key={game.id}
-                chainId={chain?.id ?? 11155111}
-                {...game}
-              />
+              <GameCard key={game.id} {...game} />
             ))}
           </VStack>
         )}

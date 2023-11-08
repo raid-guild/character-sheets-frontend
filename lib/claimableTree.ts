@@ -3,18 +3,25 @@ import { getAddress } from 'viem';
 import { dbPromise } from '@/lib/mongodb';
 import { ClaimableTreeDB } from '@/utils/types';
 
-import { DEFAULT_CHAIN } from './web3';
+import { isSupportedChain } from './web3';
 
 export const getClaimableTreeFromDB = async (
   gameAddress: string,
   itemId: string | number | bigint,
+  chainId: string | number | bigint,
 ): Promise<null | ClaimableTreeDB> => {
   try {
+    if (!isSupportedChain(Number(chainId))) {
+      console.error(
+        `Error in getClaimableTreeFromDB: chainId not supported: ${chainId}`,
+      );
+      return null;
+    }
     const client = await dbPromise;
     const result = await client.collection('claimableTrees').findOne({
       gameAddress: getAddress(gameAddress),
       itemId: BigInt(itemId).toString(),
-      chainId: DEFAULT_CHAIN.id.toString(),
+      chainId: BigInt(chainId).toString(),
     });
     return result ? (result as ClaimableTreeDB) : null;
   } catch (error) {
@@ -28,14 +35,21 @@ export const updateClaimableTreeInDB = async (
   itemId: string | number | bigint,
   tree: string,
   updatedBy: `0x${string}`,
+  chainId: string | number | bigint,
 ): Promise<null | ClaimableTreeDB> => {
   try {
+    if (!isSupportedChain(Number(chainId))) {
+      console.error(
+        `Error in updateClaimableTreeInDB: chainId not supported: ${chainId}`,
+      );
+      return null;
+    }
     const client = await dbPromise;
     const result = await client.collection('claimableTrees').findOneAndUpdate(
       {
         gameAddress: getAddress(gameAddress),
         itemId: BigInt(itemId).toString(),
-        chainId: DEFAULT_CHAIN.id.toString(),
+        chainId: BigInt(chainId).toString(),
       },
       {
         $set: {
@@ -46,7 +60,7 @@ export const updateClaimableTreeInDB = async (
         $setOnInsert: {
           gameAddress: getAddress(gameAddress),
           itemId: BigInt(itemId).toString(),
-          chainId: DEFAULT_CHAIN.id.toString(),
+          chainId: BigInt(chainId).toString(),
           createdAt: new Date(),
         },
       },

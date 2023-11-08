@@ -33,8 +33,8 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
+import { waitUntilBlock } from '@/graphql/health';
 import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
@@ -361,7 +361,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -423,6 +423,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           isSyncing={isSyncing}
           text="Your item is being created."
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }

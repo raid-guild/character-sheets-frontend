@@ -20,7 +20,7 @@ import { RadioCard } from '@/components/RadioCard';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
 export const AssignClassModal: React.FC = () => {
@@ -114,7 +114,7 @@ export const AssignClassModal: React.FC = () => {
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -174,6 +174,7 @@ export const AssignClassModal: React.FC = () => {
           isSyncing={isSyncing}
           text={`Assigning the class to ${selectedCharacter.name}...`}
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }

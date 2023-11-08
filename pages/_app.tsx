@@ -30,7 +30,7 @@ import { Layout } from '@/components/Layout';
 import { GamesProvider } from '@/contexts/GamesContext';
 import { client } from '@/graphql/client';
 import { useGraphHealth } from '@/hooks/useGraphHealth';
-import { DEFAULT_CHAIN, wagmiConfig } from '@/lib/web3';
+import { SUPPORTED_CHAINS, wagmiConfig } from '@/lib/web3';
 import {
   HOSTNAME,
   RAIDGUILD_GAME_ADDRESS,
@@ -88,7 +88,7 @@ export default function App({
         <Global styles={globalStyles} />
         <Provider value={client}>
           <WagmiConfig config={wagmiConfig}>
-            <RainbowKitProvider chains={[DEFAULT_CHAIN]} theme={darkTheme()}>
+            <RainbowKitProvider chains={SUPPORTED_CHAINS} theme={darkTheme()}>
               <Analytics />
               <GamesProvider>
                 <Layout>

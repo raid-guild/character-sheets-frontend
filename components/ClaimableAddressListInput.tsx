@@ -13,18 +13,14 @@ import {
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getAddress } from 'viem';
+import { useChainId } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
-import { DEFAULT_CHAIN } from '@/lib/web3';
-import { EXPLORER_URLS } from '@/utils/constants';
+import { getAddressUrl } from '@/lib/web3';
 import { shortenAddress } from '@/utils/helpers';
 import { Character } from '@/utils/types';
 
 import { SelectCharacterInput } from './SelectCharacterInput';
-
-const getExplorerUrl = (address: string) => {
-  return `${EXPLORER_URLS[DEFAULT_CHAIN.id]}/address/${address}`;
-};
 
 export type ClaimableAddress = {
   address: `0x${string}`;
@@ -46,7 +42,12 @@ export const ClaimableAddressListInput: React.FC<Props> = ({
 }) => {
   const { game } = useGame();
 
-  const { characters } = game || { characters: [] };
+  const currentChainId = useChainId();
+
+  const { characters, chainId } = game || {
+    characters: [],
+    chainId: currentChainId,
+  };
 
   const characterMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -91,6 +92,7 @@ export const ClaimableAddressListInput: React.FC<Props> = ({
               )}
               removeClaimableAddress={removeClaimableAddress}
               index={i}
+              chainId={chainId}
             />
           ))}
       </VStack>
@@ -103,6 +105,7 @@ type DisplayProps = {
   characterName: string | undefined;
   removeClaimableAddress: (index: number) => void;
   index: number;
+  chainId: number;
 };
 
 const ClaimableAddressDisplay: React.FC<DisplayProps> = ({
@@ -110,6 +113,7 @@ const ClaimableAddressDisplay: React.FC<DisplayProps> = ({
   characterName,
   removeClaimableAddress,
   index: i,
+  chainId,
 }) => {
   const { address, amount } = claimableAddress;
 
@@ -133,7 +137,7 @@ const ClaimableAddressDisplay: React.FC<DisplayProps> = ({
             display="flex"
             fontSize="sm"
             gap={2}
-            href={getExplorerUrl(address)}
+            href={getAddressUrl(chainId, address)}
             isExternal
             p={0}
           >

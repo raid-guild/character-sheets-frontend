@@ -30,8 +30,8 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
+import { waitUntilBlock } from '@/graphql/health';
 import { ClaimableItemLeaf, useClaimableTree } from '@/hooks/useClaimableTree';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useToast } from '@/hooks/useToast';
 
 import {
@@ -69,6 +69,7 @@ export const EditItemClaimableModal: React.FC = () => {
   const [txHash, setTxHash] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
+  const [txFailed, setTxFailed] = useState<boolean>(false);
 
   const [claimableToggle, setClaimableToggle] = useState<boolean>(false);
 
@@ -79,6 +80,7 @@ export const EditItemClaimableModal: React.FC = () => {
   const resetData = useCallback(() => {
     setIsUpdating(false);
     setTxHash(null);
+    setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
   }, []);
@@ -272,16 +274,20 @@ export const EditItemClaimableModal: React.FC = () => {
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
-        const receipt = await client.waitForTransactionReceipt({
+
+        const { blockNumber, status } = await client.waitForTransactionReceipt({
           hash: transactionhash,
         });
 
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(receipt.blockNumber);
-
-        if (!synced) {
-          throw new Error('Something went wrong while syncing.');
+        if (status === 'reverted') {
+          setTxFailed(true);
+          setIsUpdating(false);
+          throw new Error('Transaction failed');
         }
+
+        setIsSyncing(true);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
+        if (!synced) throw new Error('Something went wrong while syncing');
         setIsSynced(true);
         reloadGame();
       } catch (e) {
@@ -310,6 +316,17 @@ export const EditItemClaimableModal: React.FC = () => {
   const isDisabled = isLoading;
 
   const content = () => {
+    if (txFailed) {
+      return (
+        <VStack py={10} spacing={4}>
+          <Text>Transaction failed.</Text>
+          <Button onClick={editItemClaimableModal?.onClose} variant="outline">
+            Close
+          </Button>
+        </VStack>
+      );
+    }
+
     if (isSynced && selectedItem) {
       return (
         <VStack py={10} spacing={4}>
@@ -327,6 +344,7 @@ export const EditItemClaimableModal: React.FC = () => {
           isSyncing={isSyncing}
           text={`Updating ${selectedItem.name}...`}
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }

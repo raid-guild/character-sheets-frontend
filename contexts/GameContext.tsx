@@ -40,7 +40,8 @@ export const useGame = (): GameContextType => useContext(GameContext);
 
 export const GameProvider: React.FC<{
   children: JSX.Element;
-  gameId?: string | null | undefined | string[];
+  chainId: number;
+  gameId: string;
   characterId?: string | null | undefined | string[];
 }> = ({ children, gameId, characterId }) => {
   const { address } = useAccount();
@@ -51,7 +52,7 @@ export const GameProvider: React.FC<{
 
   const queryVariables = useMemo(
     () => ({
-      gameId: gameId?.toString().toLowerCase() ?? '',
+      gameId: gameId.toString().toLowerCase(),
     }),
     [gameId],
   );

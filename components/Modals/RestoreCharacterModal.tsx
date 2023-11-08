@@ -15,7 +15,7 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
 type RestoreCharacterModalProps = {
@@ -85,7 +85,7 @@ export const RestoreCharacterModal: React.FC<RestoreCharacterModalProps> = ({
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -135,6 +135,7 @@ export const RestoreCharacterModal: React.FC<RestoreCharacterModalProps> = ({
           isSyncing={isSyncing}
           text="Restoring your character..."
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }

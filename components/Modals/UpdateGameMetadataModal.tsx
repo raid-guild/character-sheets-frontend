@@ -23,7 +23,7 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
@@ -199,7 +199,7 @@ export const UpdateGameMetadataModal: React.FC<
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -261,6 +261,7 @@ export const UpdateGameMetadataModal: React.FC<
           isSyncing={isSyncing}
           text={`Updating your game...`}
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }

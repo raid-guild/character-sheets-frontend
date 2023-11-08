@@ -8,6 +8,7 @@ export type Metadata = {
 
 export type GameMeta = Metadata & {
   id: string;
+  chainId: number;
   uri: string;
   owner: string;
   admins: string[];
@@ -21,6 +22,7 @@ export type GameMeta = Metadata & {
 
 export type Game = Metadata & {
   id: string;
+  chainId: number;
   experienceAddress: string;
   itemsAddress: string;
   classesAddress: string;

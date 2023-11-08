@@ -11,7 +11,7 @@ import {
 import NextLink from 'next/link';
 
 import { GameTotals } from '@/components/GameTotals';
-import { EXPLORER_URLS } from '@/utils/constants';
+import { getAddressUrl } from '@/lib/web3';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
 
@@ -62,7 +62,7 @@ export const GameCard: React.FC<GameCardProps> = ({
           </Text>
           <Link
             fontSize="sm"
-            href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+            href={getAddressUrl(chainId, id)}
             isExternal
             fontWeight={300}
             mb={3}

@@ -1,20 +1,21 @@
-import { createClient, fetchExchange } from 'urql';
+import { createClient, Client, fetchExchange } from 'urql';
 
-import { DEFAULT_CHAIN } from '@/lib/web3';
-import { SUBGRAPH_URLS } from '@/utils/constants';
+import { SUPPORTED_CHAINS, getSubgraphUrl, isSupportedChain } from '@/lib/web3';
 
-const SUBGRAPH_URL = SUBGRAPH_URLS[DEFAULT_CHAIN.id];
-
-if (!SUBGRAPH_URL) {
-  throw new Error(`No subgraph configured for chain ${DEFAULT_CHAIN.network}`);
-}
-
-export const SUBGRAPH_NAME = SUBGRAPH_URL.replace(
-  'https://api.thegraph.com/subgraphs/name/',
-  '',
+const GRAPH_CLIENTS: Record<number, Client> = SUPPORTED_CHAINS.reduce(
+  (clients, chain) => ({
+    ...clients,
+    [chain.id]: createClient({
+      url: getSubgraphUrl(chain.id),
+      exchanges: [fetchExchange],
+    }),
+  }),
+  {},
 );
 
-export const client = createClient({
-  url: SUBGRAPH_URL,
-  exchanges: [fetchExchange],
-});
+export const getGraphClient = (chainId: number): Client => {
+  if (!isSupportedChain(chainId)) {
+    throw new Error(`No graph client for chain ${chainId}`);
+  }
+  return GRAPH_CLIENTS[chainId];
+};
