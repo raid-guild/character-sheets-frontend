@@ -243,6 +243,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               headers: {
                 'x-account-address': walletClient.account?.address as Address,
                 'x-account-signature': signature,
+                'x-account-chain-id': walletClient.chain.id.toString(),
               },
               method: 'POST',
               body: JSON.stringify(data),
