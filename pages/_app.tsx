@@ -27,13 +27,8 @@ import { WagmiConfig } from 'wagmi';
 
 import { Layout } from '@/components/Layout';
 import { GamesProvider } from '@/contexts/GamesContext';
-import { useGraphHealth } from '@/hooks/useGraphHealth';
 import { SUPPORTED_CHAINS, wagmiConfig } from '@/lib/web3';
-import {
-  HOSTNAME,
-  RAIDGUILD_GAME_ADDRESS,
-  RAIDGUILD_HOSTNAME,
-} from '@/utils/constants';
+import { RAIDGUILD_GAME_URL } from '@/utils/constants';
 import { globalStyles, theme } from '@/utils/theme';
 
 const TITLE = 'CharacterSheets';
@@ -48,12 +43,11 @@ export default function App({
   Component: AppProps['Component'];
   pageProps: AppProps['pageProps'];
 }): JSX.Element {
-  useGraphHealth();
   const { push, pathname } = useRouter();
 
   useEffect(() => {
-    if (HOSTNAME === RAIDGUILD_HOSTNAME && pathname === '/') {
-      push(`games/${RAIDGUILD_GAME_ADDRESS}`);
+    if (RAIDGUILD_GAME_URL && pathname === '/') {
+      push(RAIDGUILD_GAME_URL);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

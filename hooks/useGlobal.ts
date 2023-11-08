@@ -18,7 +18,7 @@ const fetchGlobalForChainId = async (
     );
 
     return {
-      data: data?.global ?? undefined,
+      data: data?.globals[0] ?? undefined,
       error,
       chainId,
     };
