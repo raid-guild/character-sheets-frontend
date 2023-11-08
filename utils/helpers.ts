@@ -64,7 +64,14 @@ export const shortenAddress = (address: string, chars = 4): string => {
   )}`;
 };
 
-export const shortenText = (text: string, length: number): string => {
+export const shortenText = (
+  text: string | undefined,
+  length: number,
+): string => {
+  if (!text) {
+    return '';
+  }
+
   if (text.length <= length) {
     return text;
   }
@@ -196,6 +203,7 @@ export const formatGameMeta = async (
 
   return {
     id: game.id,
+    startedAt: new Date(Number(game.startedAt) * 1000),
     chainId: Number(game.chainId),
     uri: game.uri,
     owner: game.owner.address,
@@ -219,6 +227,7 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
 
   return {
     id: game.id,
+    startedAt: new Date(Number(game.startedAt) * 1000),
     chainId: Number(game.chainId),
     classesAddress: game.classesAddress,
     itemsAddress: game.itemsAddress,

@@ -1,4 +1,8 @@
-import { createClient, Client, fetchExchange } from 'urql';
+import {
+  createClient,
+  Client,
+  fetchExchange,
+} from 'urql';
 
 import { SUPPORTED_CHAINS, getSubgraphUrl, isSupportedChain } from '@/lib/web3';
 
@@ -19,3 +23,5 @@ export const getGraphClient = (chainId: number): Client => {
   }
   return GRAPH_CLIENTS[chainId];
 };
+
+export const defaultClient = getGraphClient(SUPPORTED_CHAINS[0].id);

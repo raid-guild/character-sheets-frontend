@@ -1,6 +1,7 @@
 import { isAddress, isHash, PublicClient } from 'viem';
 
 import {
+  CHAIN_ID_TO_LABEL,
   CHAIN_LABEL_TO_ID,
   EXPLORER_URLS,
   RPC_URLS,
@@ -12,11 +13,20 @@ import { READ_CLIENTS } from './readClients';
 export const isSupportedChain = (chainId: number | string | bigint): boolean =>
   SUPPORTED_CHAINS.find(c => c.id === Number(chainId)) !== undefined;
 
-export const getChainIdFromLabel = (chainLabel: string): number | undefined => {
-  if (!chainLabel || !isSupportedChain(chainLabel)) {
+export const getChainIdFromLabel = (chainLabel: string): number => {
+  const chainId = CHAIN_LABEL_TO_ID[chainLabel];
+  if (!chainId || !isSupportedChain(chainId)) {
+    throw new Error(`ChainLabel ${chainLabel} is not supported`);
+  }
+  return chainId;
+};
+
+export const getChainLabelFromId = (chainId: number): string | undefined => {
+  if (!chainId || !isSupportedChain(chainId)) {
     return undefined;
   }
-  return CHAIN_LABEL_TO_ID[chainLabel];
+
+  return CHAIN_ID_TO_LABEL[chainId];
 };
 
 export const getRPCUrl = (chainId: number): string => {

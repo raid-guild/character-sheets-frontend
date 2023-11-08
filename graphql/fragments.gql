@@ -72,6 +72,7 @@ fragment ItemInfo on Item {
 
 fragment GameMetaInfo on Game {
   id
+  startedAt
   chainId
   uri
   owner {
@@ -98,6 +99,7 @@ fragment GameMetaInfo on Game {
 
 fragment FullGameInfo on Game {
   id
+  startedAt
   chainId
   classesAddress
   itemsAddress

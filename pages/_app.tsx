@@ -23,12 +23,10 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
-import { Provider } from 'urql';
 import { WagmiConfig } from 'wagmi';
 
 import { Layout } from '@/components/Layout';
 import { GamesProvider } from '@/contexts/GamesContext';
-import { client } from '@/graphql/client';
 import { useGraphHealth } from '@/hooks/useGraphHealth';
 import { SUPPORTED_CHAINS, wagmiConfig } from '@/lib/web3';
 import {
@@ -86,18 +84,16 @@ export default function App({
       </Head>
       <ChakraProvider resetCSS theme={theme}>
         <Global styles={globalStyles} />
-        <Provider value={client}>
-          <WagmiConfig config={wagmiConfig}>
-            <RainbowKitProvider chains={SUPPORTED_CHAINS} theme={darkTheme()}>
-              <Analytics />
-              <GamesProvider>
-                <Layout>
-                  <Component {...pageProps} />
-                </Layout>
-              </GamesProvider>
-            </RainbowKitProvider>
-          </WagmiConfig>
-        </Provider>
+        <WagmiConfig config={wagmiConfig}>
+          <RainbowKitProvider chains={SUPPORTED_CHAINS} theme={darkTheme()}>
+            <Analytics />
+            <GamesProvider>
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+            </GamesProvider>
+          </RainbowKitProvider>
+        </WagmiConfig>
       </ChakraProvider>
     </>
   );

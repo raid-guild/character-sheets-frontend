@@ -11,15 +11,11 @@ import {
 import NextLink from 'next/link';
 
 import { GameTotals } from '@/components/GameTotals';
-import { getAddressUrl } from '@/lib/web3';
+import { getAddressUrl, getChainLabelFromId } from '@/lib/web3';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
 
-type GameCardProps = GameMeta & {
-  chainId: number;
-};
-
-export const GameCard: React.FC<GameCardProps> = ({
+export const GameCard: React.FC<GameMeta> = ({
   chainId,
   characters,
   experience,
@@ -71,7 +67,10 @@ export const GameCard: React.FC<GameCardProps> = ({
             {shortenAddress(id)}
           </Link>
         </VStack>
-        <NextLink as={`/games/${id}`} href={`/games/[gameId]`}>
+        <NextLink
+          as={`/games/${getChainLabelFromId(chainId)}/${id}`}
+          href={`/games/[chainLabel]/[gameId]`}
+        >
           <Button variant="play">play</Button>
         </NextLink>
       </VStack>

@@ -1,24 +1,15 @@
 import { useDisclosure } from '@chakra-ui/react';
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-import { CombinedError } from 'urql';
+import { createContext, useContext, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 
-import { useGetGamesQuery } from '@/graphql/autogen/types';
-import { formatGameMeta } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
+import { useGames } from '@/hooks/useGames';
 
 type GamesContextType = {
   allGames: GameMeta[] | null;
   myGames: GameMeta[] | null;
   loading: boolean;
-  error: CombinedError | undefined;
+  error: Error | undefined;
   reload: () => void;
   createGameModal: ReturnType<typeof useDisclosure> | undefined;
 };
@@ -34,45 +25,14 @@ const GamesContext = createContext<GamesContextType>({
 
 export const useGamesContext = (): GamesContextType => useContext(GamesContext);
 
-export const GamesProvider: React.FC<{
-  children: JSX.Element;
-}> = ({ children }) => {
+export const GamesProvider: React.FC<React.PropsWithChildren> = ({
+  children,
+}) => {
   const { address } = useAccount();
 
   const createGameModal = useDisclosure();
 
-  const [allGames, setAllGames] = useState<GameMeta[] | null>(null);
-  const [isFormatting, setIsFormatting] = useState(false);
-  const [isRefetching, setIsRefetching] = useState(false);
-
-  const [{ data, fetching, error }, reload] = useGetGamesQuery({
-    requestPolicy: 'cache-and-network',
-    variables: {
-      limit: 100,
-      skip: 0,
-    },
-  });
-
-  const formatGames = useCallback(async () => {
-    setIsFormatting(true);
-    const formattedGames = await Promise.all(
-      data?.games.map(g => formatGameMeta(g)) ?? [],
-    );
-    setAllGames(formattedGames);
-    setIsFormatting(false);
-    setIsRefetching(false);
-  }, [data]);
-
-  const refetch = useCallback(async () => {
-    setIsRefetching(true);
-    reload();
-  }, [reload]);
-
-  useEffect(() => {
-    if (data?.games) {
-      formatGames();
-    }
-  }, [data, formatGames]);
+  const { games: allGames, error, loading, reload } = useGames();
 
   const myGames = useMemo(() => {
     if (!allGames || !address) return null;
@@ -90,9 +50,9 @@ export const GamesProvider: React.FC<{
       value={{
         allGames,
         myGames,
-        loading: fetching || isFormatting || isRefetching,
+        loading,
         error,
-        reload: refetch,
+        reload,
         createGameModal,
       }}
     >

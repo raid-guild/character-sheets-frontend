@@ -1,50 +1,99 @@
 import { useCallback, useEffect, useState } from 'react';
-import { CombinedError } from 'urql';
 
 import {
-  useGetGamesQuery,
+  GameMetaInfoFragment,
+  GetGamesDocument,
 } from '@/graphql/autogen/types';
 import { formatGameMeta } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
+import { SUPPORTED_CHAINS } from '@/lib/web3';
+import { getGraphClient } from '@/graphql/client';
+
+const fetchGamesForChainId = async (
+  chainId: number,
+): Promise<{
+  games: GameMeta[];
+  error: Error | undefined;
+}> => {
+  try {
+    const { data, error } = await getGraphClient(chainId).query(
+      GetGamesDocument,
+      {},
+    );
+
+    const games = await Promise.all(
+      data?.games.map((game: GameMetaInfoFragment) => formatGameMeta(game)),
+    );
+
+    return {
+      games: games || [],
+      error,
+    };
+  } catch (e) {
+    console.error('Error fetching games for chainId', chainId, e);
+    return {
+      games: [],
+      error: e as Error,
+    };
+  }
+};
 
 export const useGames = (): {
   games: GameMeta[] | null;
   loading: boolean;
-  error: CombinedError | undefined;
+  error: Error | undefined;
   reload: () => void;
 } => {
   const [games, setGames] = useState<GameMeta[] | null>(null);
-  const [isFormatting, setIsFormatting] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<Error | undefined>(undefined);
+  const [refreshCount, setRefreshCount] = useState<number>(0);
 
-  const [{ data, fetching, error }, reload] = useGetGamesQuery({
-    variables: {
-      limit: 100,
-      skip: 0,
-    },
-  });
+  const reload = useCallback(() => {
+    setRefreshCount(count => count + 1);
+  }, []);
 
-  const formatGames = useCallback(async () => {
-    setIsFormatting(true);
-    const formattedGames = await Promise.all(
-      data?.games.map(g => formatGameMeta(g)) ?? [],
+  const fetchGames = useCallback(async () => {
+    setLoading(true);
+
+    const results = await Promise.all(
+      SUPPORTED_CHAINS.map(chain => fetchGamesForChainId(chain.id)),
     );
-    setGames(formattedGames);
-    setIsFormatting(false);
-  }, [data]);
+
+    const { games: _games, error: _error } = results.reduce(
+      (acc, result) => {
+        acc.games.push(...result.games);
+        acc.error = acc.error || result.error;
+        return acc;
+      },
+      { games: [], error: undefined },
+    );
+
+    const sortedGames = _games.sort((a, b) => {
+      const startDateA = new Date(a.startedAt).getTime();
+      const startDateB = new Date(b.startedAt).getTime();
+
+      if (startDateA < startDateB) {
+        return 1;
+      } else if (startDateA > startDateB) {
+        return -1;
+      } else {
+        return 0;
+      }
+    });
+
+    setGames(sortedGames);
+    setError(_error);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    if (data?.games) {
-      formatGames();
-    }
-  }, [data, formatGames]);
-
-  if (!data?.games) {
-    return { games: null, loading: fetching, error, reload };
-  }
+    fetchGames();
+  }, [refreshCount]);
 
   return {
     games,
-    loading: fetching || isFormatting,
+    loading,
     error,
     reload,
   };

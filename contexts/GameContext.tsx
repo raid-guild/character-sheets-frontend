@@ -6,13 +6,14 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { CombinedError } from 'urql';
+import { CombinedError, Provider } from 'urql';
 import { useAccount } from 'wagmi';
 
 import { useGetGameQuery } from '@/graphql/autogen/types';
 import { formatGame } from '@/utils/helpers';
 import { Character, Game } from '@/utils/types';
 import { useIsEligible } from '@/hooks/useIsEligible';
+import { getGraphClient } from '@/graphql/client';
 
 type GameContextType = {
   game: Game | null;
@@ -39,8 +40,24 @@ const GameContext = createContext<GameContextType>({
 export const useGame = (): GameContextType => useContext(GameContext);
 
 export const GameProvider: React.FC<{
-  children: JSX.Element;
   chainId: number;
+  children: JSX.Element;
+  gameId: string;
+  characterId?: string | null | undefined | string[];
+}> = ({ chainId, children, gameId, characterId }) => {
+  const client = useMemo(() => getGraphClient(chainId), [chainId]);
+
+  return (
+    <Provider value={client}>
+      <GameProviderInner gameId={gameId} characterId={characterId}>
+        {children}
+      </GameProviderInner>
+    </Provider>
+  );
+};
+
+const GameProviderInner: React.FC<{
+  children: JSX.Element;
   gameId: string;
   characterId?: string | null | undefined | string[];
 }> = ({ children, gameId, characterId }) => {

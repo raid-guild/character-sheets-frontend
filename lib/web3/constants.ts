@@ -5,8 +5,6 @@ export const INFURA_KEY: string = process.env.NEXT_PUBLIC_INFURA_KEY!;
 export const WALLET_CONNECT_PROJECT_ID: string =
   process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID!;
 
-export const IS_PROD = process.env.NODE_ENV === 'production';
-
 export const EXPLORER_URLS: { [key: number]: string } = {
   [100]: 'https://gnosisscan.io',
   [5]: 'https://goerli.etherscan.io',
@@ -35,13 +33,25 @@ export const CHAIN_LABEL_TO_ID: { [key: string]: number } = {
   goerli: 5,
 };
 
-const PROD_SUPPORTED_CHAINS: Chain[] = [gnosis];
+export const CHAIN_ID_TO_LABEL: { [key: number]: string } = {
+  100: 'gnosis',
+  5: 'goerli',
+};
 
-const DEV_SUPPORTED_CHAINS: Chain[] = [goerli];
+const ALL_SUPPORTED_CHAINS: Chain[] = [gnosis, goerli];
 
-export const SUPPORTED_CHAINS: Chain[] = IS_PROD
-  ? PROD_SUPPORTED_CHAINS
-  : DEV_SUPPORTED_CHAINS;
+export const SUPPORTED_CHAINS: Chain[] = (() => {
+  switch (process.env.NEXT_PUBLIC_ENVIRONMENT) {
+    case 'main':
+      return ALL_SUPPORTED_CHAINS.filter(chain => chain.testnet === false);
+    case 'dev':
+      return ALL_SUPPORTED_CHAINS.filter(chain => chain.testnet === true);
+    case 'local':
+      return ALL_SUPPORTED_CHAINS;
+    default:
+      throw new Error('NEXT_PUBLIC_ENVIRONMENT is not set');
+  }
+})();
 
 const validateConfig = () => {
   if (!INFURA_KEY) {
@@ -63,6 +73,21 @@ const validateConfig = () => {
 
     if (!SUBGRAPH_URLS[chain.id]) {
       throw new Error(`SUBGRAPH_URLS[${chain.id}] is not set`);
+    }
+
+    if (!CHAIN_ID_TO_LABEL[chain.id]) {
+      throw new Error(`CHAIN_ID_TO_LABEL[${chain.id}] is not set`);
+    }
+
+    if (
+      !CHAIN_LABEL_TO_ID[CHAIN_ID_TO_LABEL[chain.id]] ||
+      CHAIN_LABEL_TO_ID[CHAIN_ID_TO_LABEL[chain.id]] !== chain.id
+    ) {
+      throw new Error(
+        `CHAIN_LABEL_TO_ID[${
+          CHAIN_ID_TO_LABEL[chain.id]
+        }] is not set or does not match ${chain.id}`,
+      );
     }
   });
 };

@@ -24,7 +24,7 @@ import { Address, useAccount, usePublicClient, useWalletClient } from 'wagmi';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGamesContext } from '@/contexts/GamesContext';
 import { waitUntilBlock } from '@/graphql/health';
-import { useGlobal } from '@/hooks/useGlobal';
+import { useGlobalForChain } from '@/hooks/useGlobal';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
@@ -32,9 +32,8 @@ export const CreateGameModal: React.FC = () => {
   const { address } = useAccount();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const { gameFactory } = useGlobal(
-    walletClient?.chain?.name?.toLowerCase() ?? '',
-  );
+  const { data: globalInfo } = useGlobalForChain();
+  const { gameFactory } = globalInfo || {};
   const { renderError } = useToast();
   const { createGameModal: { isOpen, onClose } = {}, reload: reloadGames } =
     useGamesContext();
