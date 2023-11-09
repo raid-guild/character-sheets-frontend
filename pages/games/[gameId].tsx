@@ -2,6 +2,7 @@ import {
   AspectRatio,
   Box,
   Button,
+  Flex,
   Grid,
   Heading,
   HStack,
@@ -29,6 +30,7 @@ import { ClassesPanel } from '@/components/ClassesPanel';
 import { GameTotals } from '@/components/GameTotals';
 import { ItemsPanel } from '@/components/ItemsPanel';
 import { JoinGame } from '@/components/JoinGame';
+import { AddGameMasterModal } from '@/components/Modals/AddGameMasterModal';
 import { AddItemRequirementModal } from '@/components/Modals/AddItemRequirementModal';
 import { ApproveTransferModal } from '@/components/Modals/ApproveTransferModal';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
@@ -88,8 +90,14 @@ export default function GamePageOuter(): JSX.Element {
 }
 
 function GamePage(): JSX.Element {
-  const { game, character, isMaster, loading, isEligibleForCharacter } =
-    useGame();
+  const {
+    game,
+    character,
+    isAdmin,
+    isMaster,
+    loading,
+    isEligibleForCharacter,
+  } = useGame();
   const {
     assignClassModal,
     approveTransferModal,
@@ -113,7 +121,8 @@ function GamePage(): JSX.Element {
   } = useItemActions();
   const { isConnected } = useAccount();
 
-  const updateGameMetadata = useDisclosure();
+  const updateGameMetadataModal = useDisclosure();
+  const addGameMasterModal = useDisclosure();
   const restoreCharacterModal = useDisclosure();
 
   const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
@@ -205,8 +214,8 @@ function GamePage(): JSX.Element {
                 >
                   {shortenAddress(id)}
                 </Link>
-                {isMaster && (
-                  <Button onClick={updateGameMetadata.onOpen} size="sm">
+                {(isAdmin || isMaster) && (
+                  <Button onClick={updateGameMetadataModal.onOpen} size="sm">
                     edit
                   </Button>
                 )}
@@ -247,14 +256,16 @@ function GamePage(): JSX.Element {
             <UserLink key={`gm-${admin}`} user={admin} />
           ))}
 
-          <Text
-            letterSpacing="3px"
-            fontSize="2xs"
-            mt={2}
-            textTransform="uppercase"
-          >
-            Game Masters
-          </Text>
+          <Flex align="center" mt={2}>
+            <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
+              Game Masters
+            </Text>
+            {isAdmin && (
+              <Button onClick={addGameMasterModal.onOpen} variant="unstyled">
+                +
+              </Button>
+            )}
+          </Flex>
           <Wrap spacingX={1}>
             {masters.map((master, i) => {
               return (
@@ -396,9 +407,10 @@ function GamePage(): JSX.Element {
   return (
     <>
       {content()}
-      <UpdateGameMetadataModal {...updateGameMetadata} />
+      <UpdateGameMetadataModal {...updateGameMetadataModal} />
       <RestoreCharacterModal {...restoreCharacterModal} />
 
+      {addGameMasterModal && <AddGameMasterModal {...addGameMasterModal} />}
       {addRequirementModal && <AddItemRequirementModal />}
       {approveTransferModal && <ApproveTransferModal />}
       {assignClassModal && <AssignClassModal />}

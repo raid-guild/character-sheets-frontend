@@ -10,14 +10,15 @@ import { CombinedError } from 'urql';
 import { useAccount } from 'wagmi';
 
 import { useGetGameQuery } from '@/graphql/autogen/types';
+import { useIsEligible } from '@/hooks/useIsEligible';
 import { formatGame } from '@/utils/helpers';
 import { Character, Game } from '@/utils/types';
-import { useIsEligible } from '@/hooks/useIsEligible';
 
 type GameContextType = {
   game: Game | null;
   character: Character | null;
   pageCharacter: Character | null;
+  isAdmin: boolean;
   isMaster: boolean;
   isEligibleForCharacter: boolean;
   loading: boolean;
@@ -29,6 +30,7 @@ const GameContext = createContext<GameContextType>({
   game: null,
   character: null,
   pageCharacter: null,
+  isAdmin: false,
   isMaster: false,
   isEligibleForCharacter: false,
   loading: false,
@@ -98,6 +100,11 @@ export const GameProvider: React.FC<{
     );
   }, [game, characterId]);
 
+  const isAdmin = useMemo(
+    () => game?.admins.includes(address?.toLowerCase() ?? '') ?? false,
+    [game, address],
+  );
+
   const isMaster = useMemo(
     () => game?.masters.includes(address?.toLowerCase() ?? '') ?? false,
     [game, address],
@@ -111,6 +118,7 @@ export const GameProvider: React.FC<{
         game,
         character,
         pageCharacter,
+        isAdmin,
         isMaster,
         isEligibleForCharacter,
         loading: fetching || isFormatting || isRefetching,
