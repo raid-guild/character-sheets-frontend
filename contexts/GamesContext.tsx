@@ -2,8 +2,8 @@ import { useDisclosure } from '@chakra-ui/react';
 import { createContext, useContext, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 
-import { GameMeta } from '@/utils/types';
 import { useGames } from '@/hooks/useGames';
+import { GameMeta } from '@/utils/types';
 
 type GamesContextType = {
   allGames: GameMeta[] | null;

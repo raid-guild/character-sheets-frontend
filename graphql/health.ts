@@ -1,5 +1,6 @@
-import { SUPPORTED_CHAINS, getReadClient, getSubgraphName } from '@/lib/web3';
 import { gql, request } from 'graphql-request';
+
+import { getReadClient, getSubgraphName, SUPPORTED_CHAINS } from '@/lib/web3';
 import { timeout } from '@/utils/helpers';
 
 const GRAPH_HEALTH_ENDPOINT = 'https://api.thegraph.com/index-node/graphql';
@@ -121,7 +122,7 @@ const HealthStoreSingleton = (function () {
   };
 })();
 
-export const getAllSubgraphHealthStatus = () =>
+export const getAllSubgraphHealthStatus = (): Record<number, SubgraphHealth> =>
   HealthStoreSingleton.getInstance().status();
 
 const initSubgraphHealthStore = getAllSubgraphHealthStatus;
@@ -130,7 +131,7 @@ if (typeof window !== 'undefined') {
   initSubgraphHealthStore();
 }
 
-export const getSubgraphHealthStatus = (chainId: number) => {
+export const getSubgraphHealthStatus = (chainId: number): SubgraphHealth => {
   const health = getAllSubgraphHealthStatus();
   if (!health[chainId]) {
     throw new Error(`No health status for chain ${chainId}`);

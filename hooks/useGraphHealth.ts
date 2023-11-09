@@ -1,5 +1,6 @@
-import { SubgraphHealth, getAllSubgraphHealthStatus } from '@/graphql/health';
 import { useCallback, useEffect, useState } from 'react';
+
+import { getAllSubgraphHealthStatus, SubgraphHealth } from '@/graphql/health';
 
 type GraphHealth = Record<number, SubgraphHealth>;
 

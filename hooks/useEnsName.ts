@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import useSWR from 'swr';
-
 import { zeroAddress } from 'viem';
+
 import { READ_CLIENTS } from '@/lib/web3';
 
 export const useEnsName = (

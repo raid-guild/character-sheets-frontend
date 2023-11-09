@@ -4,10 +4,10 @@ import {
   GameMetaInfoFragment,
   GetGamesDocument,
 } from '@/graphql/autogen/types';
+import { getGraphClient } from '@/graphql/client';
+import { SUPPORTED_CHAINS } from '@/lib/web3';
 import { formatGameMeta } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
-import { SUPPORTED_CHAINS } from '@/lib/web3';
-import { getGraphClient } from '@/graphql/client';
 
 const fetchGamesForChainId = async (
   chainId: number,
@@ -89,7 +89,7 @@ export const useGames = (): {
 
   useEffect(() => {
     fetchGames();
-  }, [refreshCount]);
+  }, [fetchGames, refreshCount]);
 
   return {
     games,

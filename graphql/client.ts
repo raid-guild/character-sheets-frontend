@@ -1,10 +1,6 @@
-import {
-  createClient,
-  Client,
-  fetchExchange,
-} from 'urql';
+import { Client, createClient, fetchExchange } from 'urql';
 
-import { SUPPORTED_CHAINS, getSubgraphUrl, isSupportedChain } from '@/lib/web3';
+import { getSubgraphUrl, isSupportedChain, SUPPORTED_CHAINS } from '@/lib/web3';
 
 const GRAPH_CLIENTS: Record<number, Client> = SUPPORTED_CHAINS.reduce(
   (clients, chain) => ({

@@ -10,10 +10,10 @@ import { CombinedError, Provider } from 'urql';
 import { useAccount } from 'wagmi';
 
 import { useGetGameQuery } from '@/graphql/autogen/types';
+import { getGraphClient } from '@/graphql/client';
+import { useIsEligible } from '@/hooks/useIsEligible';
 import { formatGame } from '@/utils/helpers';
 import { Character, Game } from '@/utils/types';
-import { useIsEligible } from '@/hooks/useIsEligible';
-import { getGraphClient } from '@/graphql/client';
 
 type GameContextType = {
   game: Game | null;

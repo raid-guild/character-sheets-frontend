@@ -1,8 +1,9 @@
-import { useCallback, useMemo, useEffect, useState } from 'react';
-import { GetGlobalDocument, GlobalInfoFragment } from '@/graphql/autogen/types';
-import { SUPPORTED_CHAINS } from '@/lib/web3';
-import { getGraphClient } from '@/graphql/client';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useChainId } from 'wagmi';
+
+import { GetGlobalDocument, GlobalInfoFragment } from '@/graphql/autogen/types';
+import { getGraphClient } from '@/graphql/client';
+import { SUPPORTED_CHAINS } from '@/lib/web3';
 
 const fetchGlobalForChainId = async (
   chainId: number,
@@ -75,7 +76,7 @@ export const useGlobal = (): {
 
   useEffect(() => {
     fetchGlobal();
-  }, [refreshCount]);
+  }, [fetchGlobal, refreshCount]);
 
   return {
     data,
