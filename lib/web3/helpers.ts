@@ -1,6 +1,7 @@
 import { isAddress, isHash, PublicClient } from 'viem';
 
 import {
+  CHAIN_ID_TO_IMAGE,
   CHAIN_ID_TO_LABEL,
   CHAIN_LABEL_TO_ID,
   EXPLORER_URLS,
@@ -27,6 +28,14 @@ export const getChainLabelFromId = (chainId: number): string | undefined => {
   }
 
   return CHAIN_ID_TO_LABEL[chainId];
+};
+
+export const getChainImageFromId = (chainId: number): string | undefined => {
+  if (!chainId || !isSupportedChain(chainId)) {
+    return undefined;
+  }
+
+  return CHAIN_ID_TO_IMAGE[chainId];
 };
 
 export const getRPCUrl = (chainId: number): string => {

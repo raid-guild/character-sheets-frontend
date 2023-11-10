@@ -17,14 +17,7 @@ import {
 } from '@chakra-ui/react';
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  getAddress,
-  isAddress,
-  maxUint256,
-  pad,
-  parseAbi,
-  zeroAddress,
-} from 'viem';
+import { getAddress, isAddress, maxUint256, pad, parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
@@ -113,10 +106,7 @@ export const EditItemClaimableModal: React.FC = () => {
     tree,
     loading: isLoadingTree,
     reload: reloadTree,
-  } = useClaimableTree(
-    (game?.id || zeroAddress) as `0x${string}`,
-    BigInt(selectedItem?.itemId || '0'),
-  );
+  } = useClaimableTree(selectedItem?.itemId);
 
   useEffect(() => {
     if (!editItemClaimableModal?.isOpen) {

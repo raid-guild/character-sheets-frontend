@@ -48,6 +48,8 @@ import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
 import { TransferCharacterModal } from '@/components/Modals/TransferCharacterModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
 import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
+import { NetworkAlert } from '@/components/NetworkAlert';
+import { NetworkDisplay } from '@/components/NetworkDisplay';
 import { UserLink } from '@/components/UserLink';
 import { XPPanel } from '@/components/XPPanel';
 import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
@@ -85,7 +87,10 @@ export default function GamePageOuter(): JSX.Element {
     <GameProvider chainId={chainId} gameId={gameId.toString()}>
       <ActionsProvider>
         <ItemActionsProvider>
-          <GamePage />
+          <>
+            <NetworkAlert chainId={chainId} />
+            <GamePage />
+          </>
         </ItemActionsProvider>
       </ActionsProvider>
     </GameProvider>
@@ -198,23 +203,24 @@ function GamePage(): JSX.Element {
               <Text fontSize="xl" fontWeight={200} mb={2}>
                 {description}
               </Text>
-              <HStack spacing={4}>
-                <Link
-                  fontSize="sm"
-                  href={getAddressUrl(chainId, id)}
-                  isExternal
-                  fontWeight={300}
-                  mb={3}
-                  textDecoration={'underline'}
-                >
-                  {shortenAddress(id)}
-                </Link>
-                {isMaster && (
-                  <Button onClick={updateGameMetadata.onOpen} size="sm">
-                    edit
-                  </Button>
-                )}
-              </HStack>
+              <Link
+                fontSize="sm"
+                href={getAddressUrl(chainId, id)}
+                isExternal
+                fontWeight={300}
+                mb={3}
+                _hover={{}}
+              >
+                <HStack>
+                  <Text textDecoration={'underline'}>{shortenAddress(id)}</Text>
+                  <NetworkDisplay chainId={chainId} />
+                </HStack>
+              </Link>
+              {isMaster && (
+                <Button onClick={updateGameMetadata.onOpen} size="sm">
+                  edit
+                </Button>
+              )}
             </VStack>
           </HStack>
           <VStack

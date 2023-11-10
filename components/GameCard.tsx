@@ -15,6 +15,8 @@ import { getAddressUrl, getChainLabelFromId } from '@/lib/web3';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
 
+import { NetworkDisplay } from './NetworkDisplay';
+
 export const GameCard: React.FC<GameMeta> = ({
   chainId,
   characters,
@@ -62,9 +64,12 @@ export const GameCard: React.FC<GameMeta> = ({
             isExternal
             fontWeight={300}
             mb={3}
-            textDecoration={'underline'}
+            _hover={{}}
           >
-            {shortenAddress(id)}
+            <HStack>
+              <Text textDecoration={'underline'}>{shortenAddress(id)}</Text>
+              <NetworkDisplay chainId={chainId} />
+            </HStack>
           </Link>
         </VStack>
         <NextLink

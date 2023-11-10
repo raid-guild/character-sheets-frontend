@@ -63,15 +63,16 @@ const Button = {
       borderRadius: '0',
       borderRight: '3px solid white',
       borderTop: '1px solid white',
+      bg: 'none',
       _hover: {
         borderColor: 'accent',
         color: 'accent',
-        bg: 'dark',
+      bg: 'none',
       },
       _active: {
         borderColor: 'accent',
-        bg: 'accent',
         color: 'dark',
+      bg: 'none',
       },
     },
     play: {

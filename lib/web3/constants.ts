@@ -33,6 +33,15 @@ export const CHAIN_LABEL_TO_ID: { [key: string]: number } = {
   goerli: 5,
 };
 
+export const CHAIN_ID_TO_IMAGE: { [key: number]: string } = {
+  100: '/images/gnosis.svg',
+  5: '/images/ethereum.svg',
+  1: '/images/ethereum.svg',
+  420: '/images/optimism.svg',
+  137: '/images/polygon.svg',
+  42161: '/images/arbitrum.svg',
+};
+
 export const CHAIN_ID_TO_LABEL: { [key: number]: string } = {
   100: 'gnosis',
   5: 'goerli',
