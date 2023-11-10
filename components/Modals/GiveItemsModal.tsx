@@ -22,14 +22,14 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { RadioCard } from '@/components/RadioCard';
 import { TransactionPending } from '@/components/TransactionPending';
-import { useActions } from '@/contexts/ActionsContext';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
 export const GiveItemsModal: React.FC = () => {
   const { game, reload: reloadGame, isMaster } = useGame();
-  const { selectedCharacter, giveItemsModal } = useActions();
+  const { selectedCharacter, giveItemsModal } = useCharacterActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();

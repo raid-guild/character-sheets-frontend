@@ -39,12 +39,13 @@ const GameContext = createContext<GameContextType>({
 
 export const useGame = (): GameContextType => useContext(GameContext);
 
-export const GameProvider: React.FC<{
-  chainId: number;
-  children: JSX.Element;
-  gameId: string;
-  characterId?: string | null | undefined | string[];
-}> = ({ chainId, children, gameId, characterId }) => {
+export const GameProvider: React.FC<
+  React.PropsWithChildren<{
+    chainId: number;
+    gameId: string;
+    characterId?: string | null | undefined | string[];
+  }>
+> = ({ chainId, children, gameId, characterId }) => {
   const client = useMemo(() => getGraphClient(chainId), [chainId]);
 
   return (
@@ -56,11 +57,12 @@ export const GameProvider: React.FC<{
   );
 };
 
-const GameProviderInner: React.FC<{
-  children: JSX.Element;
-  gameId: string;
-  characterId?: string | null | undefined | string[];
-}> = ({ children, gameId, characterId }) => {
+const GameProviderInner: React.FC<
+  React.PropsWithChildren<{
+    gameId: string;
+    characterId?: string | null | undefined | string[];
+  }>
+> = ({ children, gameId, characterId }) => {
   const { address } = useAccount();
 
   const [game, setGame] = useState<Game | null>(null);

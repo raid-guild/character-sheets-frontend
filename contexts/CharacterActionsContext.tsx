@@ -11,6 +11,7 @@ import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 import { Character, Item } from '@/utils/types';
+import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
 
 export enum PlayerActions {
   APPROVE_TRANSFER = 'Approve transfer',
@@ -32,7 +33,9 @@ export enum GameMasterActions {
   TRANSFER_CHARACTER = 'Transfer character',
 }
 
-type ActionsContextType = {
+type ModalProps = Omit<ReturnType<typeof useDisclosure>, 'onOpen'> | undefined;
+
+type CharacterActionsContextType = {
   playerActions: PlayerActions[];
   gmActions: GameMasterActions[];
 
@@ -43,22 +46,22 @@ type ActionsContextType = {
   selectItem: (item: Item) => void;
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
-  approveTransferModal: ReturnType<typeof useDisclosure> | undefined;
-  assignClassModal: ReturnType<typeof useDisclosure> | undefined;
-  claimClassModal: ReturnType<typeof useDisclosure> | undefined;
-  editCharacterModal: ReturnType<typeof useDisclosure> | undefined;
-  equipItemModal: ReturnType<typeof useDisclosure> | undefined;
-  giveExpModal: ReturnType<typeof useDisclosure> | undefined;
-  giveItemsModal: ReturnType<typeof useDisclosure> | undefined;
-  jailPlayerModal: ReturnType<typeof useDisclosure> | undefined;
-  removeCharacterModal: ReturnType<typeof useDisclosure> | undefined;
-  renounceCharacterModal: ReturnType<typeof useDisclosure> | undefined;
-  renounceClassModal: ReturnType<typeof useDisclosure> | undefined;
-  revokeClassModal: ReturnType<typeof useDisclosure> | undefined;
-  transferCharacterModal: ReturnType<typeof useDisclosure> | undefined;
+  approveTransferModal: ModalProps;
+  assignClassModal: ModalProps;
+  claimClassModal: ModalProps;
+  editCharacterModal: ModalProps;
+  equipItemModal: ModalProps;
+  giveExpModal: ModalProps;
+  giveItemsModal: ModalProps;
+  jailPlayerModal: ModalProps;
+  removeCharacterModal: ModalProps;
+  renounceCharacterModal: ModalProps;
+  renounceClassModal: ModalProps;
+  revokeClassModal: ModalProps;
+  transferCharacterModal: ModalProps;
 };
 
-const ActionsContext = createContext<ActionsContextType>({
+const CharacterActionsContext = createContext<CharacterActionsContextType>({
   playerActions: [],
   gmActions: [],
 
@@ -84,11 +87,12 @@ const ActionsContext = createContext<ActionsContextType>({
   transferCharacterModal: undefined,
 });
 
-export const useActions = (): ActionsContextType => useContext(ActionsContext);
+export const useCharacterActions = (): CharacterActionsContextType =>
+  useContext(CharacterActionsContext);
 
-export const ActionsProvider: React.FC<{
-  children: JSX.Element;
-}> = ({ children }) => {
+export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
+  children,
+}) => {
   const { address } = useAccount();
   const { game, isMaster } = useGame();
 
@@ -170,8 +174,14 @@ export const ActionsProvider: React.FC<{
     return [];
   }, [address, game, isMaster, selectedCharacter]);
 
+  const { isWrongNetwork, renderNetworkError } = useCheckGameNetwork();
+
   const openActionModal = useCallback(
     (action: PlayerActions | GameMasterActions) => {
+      if (isWrongNetwork) {
+        renderNetworkError();
+        return;
+      }
       switch (action) {
         case GameMasterActions.ASSIGN_CLASS:
           assignClassModal.onOpen();
@@ -220,6 +230,8 @@ export const ActionsProvider: React.FC<{
       }
     },
     [
+      isWrongNetwork,
+      renderNetworkError,
       approveTransferModal,
       assignClassModal,
       claimClassModal,
@@ -237,7 +249,7 @@ export const ActionsProvider: React.FC<{
   );
 
   return (
-    <ActionsContext.Provider
+    <CharacterActionsContext.Provider
       value={{
         playerActions,
         gmActions,
@@ -265,6 +277,6 @@ export const ActionsProvider: React.FC<{
       }}
     >
       {children}
-    </ActionsContext.Provider>
+    </CharacterActionsContext.Provider>
   );
 };

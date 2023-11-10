@@ -9,7 +9,10 @@ import {
 } from '@chakra-ui/react';
 import { useMemo } from 'react';
 
-import { PlayerActions, useActions } from '@/contexts/ActionsContext';
+import {
+  PlayerActions,
+  useCharacterActions,
+} from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { Item } from '@/utils/types';
 
@@ -76,7 +79,8 @@ export const ItemTag: React.FC<ItemTagProps> = ({
     );
   }, [character, holderId, itemId, pageCharacter]);
 
-  const { openActionModal, selectCharacter, selectItem } = useActions();
+  const { openActionModal, selectCharacter, selectItem } =
+    useCharacterActions();
 
   return (
     <VStack

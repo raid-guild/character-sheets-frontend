@@ -32,6 +32,7 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
+import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
@@ -43,15 +44,8 @@ import {
   ClaimableAddressListInput,
 } from '../ClaimableAddressListInput';
 
-type CreateItemModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-};
-
-export const CreateItemModal: React.FC<CreateItemModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export const CreateItemModal: React.FC = () => {
+  const { createItemModal } = useGameActions();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const { renderError } = useToast();
@@ -156,10 +150,10 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   }, [setItemEmblem]);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!createItemModal?.isOpen) {
       resetData();
     }
-  }, [resetData, isOpen]);
+  }, [resetData, createItemModal?.isOpen]);
 
   const onCreateItem = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
@@ -400,7 +394,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       return (
         <VStack py={10} spacing={4}>
           <Text>Transaction failed.</Text>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={createItemModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -411,7 +405,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       return (
         <VStack py={10} spacing={4}>
           <Text>Your item was successfully created!</Text>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={createItemModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -643,8 +637,8 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={isOpen}
-      onClose={onClose}
+      isOpen={createItemModal?.isOpen ?? false}
+      onClose={createItemModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>

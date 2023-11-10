@@ -18,14 +18,14 @@ import { maxUint256, parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
-import { useActions } from '@/contexts/ActionsContext';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
 export const DropExperienceModal: React.FC = () => {
   const { game, reload: reloadGame, isMaster } = useGame();
-  const { selectedCharacter, giveExpModal } = useActions();
+  const { selectedCharacter, giveExpModal } = useCharacterActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();

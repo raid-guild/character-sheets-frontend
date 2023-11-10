@@ -14,7 +14,6 @@ import {
   TabPanels,
   Tabs,
   Text,
-  useDisclosure,
   VStack,
   Wrap,
 } from '@chakra-ui/react';
@@ -34,6 +33,8 @@ import { ApproveTransferModal } from '@/components/Modals/ApproveTransferModal';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { ClaimClassModal } from '@/components/Modals/ClaimClassModal';
 import { ClaimItemModal } from '@/components/Modals/ClaimItemModal';
+import { CreateClassModal } from '@/components/Modals/CreateClassModal';
+import { CreateItemModal } from '@/components/Modals/CreateItemModal';
 import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { EditItemClaimableModal } from '@/components/Modals/EditItemClaimableModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
@@ -52,7 +53,15 @@ import { NetworkAlert } from '@/components/NetworkAlert';
 import { NetworkDisplay } from '@/components/NetworkDisplay';
 import { UserLink } from '@/components/UserLink';
 import { XPPanel } from '@/components/XPPanel';
-import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
+import {
+  CharacterActionsProvider,
+  useCharacterActions,
+} from '@/contexts/CharacterActionsContext';
+import {
+  GameActionsProvider,
+  GameMasterActions,
+  useGameActions,
+} from '@/contexts/GameActionsContext';
 import { GameProvider, useGame } from '@/contexts/GameContext';
 import {
   ItemActionsProvider,
@@ -85,14 +94,14 @@ export default function GamePageOuter(): JSX.Element {
 
   return (
     <GameProvider chainId={chainId} gameId={gameId.toString()}>
-      <ActionsProvider>
-        <ItemActionsProvider>
-          <>
+      <GameActionsProvider>
+        <CharacterActionsProvider>
+          <ItemActionsProvider>
             <NetworkAlert chainId={chainId} />
             <GamePage />
-          </>
-        </ItemActionsProvider>
-      </ActionsProvider>
+          </ItemActionsProvider>
+        </CharacterActionsProvider>
+      </GameActionsProvider>
     </GameProvider>
   );
 }
@@ -100,6 +109,15 @@ export default function GamePageOuter(): JSX.Element {
 function GamePage(): JSX.Element {
   const { game, character, isMaster, loading, isEligibleForCharacter } =
     useGame();
+
+  const {
+    createItemModal,
+    createClassModal,
+    updateGameMetadataModal,
+    restoreCharacterModal,
+    openActionModal,
+  } = useGameActions();
+
   const {
     assignClassModal,
     approveTransferModal,
@@ -114,17 +132,16 @@ function GamePage(): JSX.Element {
     renounceClassModal,
     revokeClassModal,
     transferCharacterModal,
-  } = useActions();
+  } = useCharacterActions();
+
   const {
     addRequirementModal,
-    claimItemModal,
     removeRequirementModal,
+    claimItemModal,
     editItemClaimableModal,
   } = useItemActions();
-  const { isConnected } = useAccount();
 
-  const updateGameMetadata = useDisclosure();
-  const restoreCharacterModal = useDisclosure();
+  const { isConnected } = useAccount();
 
   const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
   const [showJoinGame, setShowJoinGame] = useState(false);
@@ -217,7 +234,12 @@ function GamePage(): JSX.Element {
                 </HStack>
               </Link>
               {isMaster && (
-                <Button onClick={updateGameMetadata.onOpen} size="sm">
+                <Button
+                  onClick={() =>
+                    openActionModal(GameMasterActions.UPDATE_GAME_METADATA)
+                  }
+                  size="sm"
+                >
                   edit
                 </Button>
               )}
@@ -315,7 +337,9 @@ function GamePage(): JSX.Element {
                   <HStack spacing={4}>
                     <Button
                       variant="solid"
-                      onClick={restoreCharacterModal.onOpen}
+                      onClick={() =>
+                        openActionModal(GameMasterActions.RESTORE_CHARACTER)
+                      }
                     >
                       Restore Character
                     </Button>
@@ -397,7 +421,24 @@ function GamePage(): JSX.Element {
           </Tabs>
         </VStack>
         <VStack h="100%" bg="cardBG" p={8} align="stretch">
-          <Text>Coming Soon!</Text>
+          {isMaster ? (
+            <>
+              <Button
+                onClick={() => openActionModal(GameMasterActions.CREATE_ITEM)}
+                size="sm"
+              >
+                Create Item
+              </Button>
+              <Button
+                onClick={() => openActionModal(GameMasterActions.CREATE_CLASS)}
+                size="sm"
+              >
+                Create Class
+              </Button>
+            </>
+          ) : (
+            <Text>Coming Soon!</Text>
+          )}
         </VStack>
       </Grid>
     );
@@ -406,26 +447,32 @@ function GamePage(): JSX.Element {
   return (
     <>
       {content()}
-      <UpdateGameMetadataModal {...updateGameMetadata} />
-      <RestoreCharacterModal {...restoreCharacterModal} />
+      {/*  GAME ACTIONS */}
+      {updateGameMetadataModal && <UpdateGameMetadataModal />}
+      {restoreCharacterModal && <RestoreCharacterModal />}
+      {createClassModal && <CreateClassModal />}
+      {createItemModal && <CreateItemModal />}
 
-      {addRequirementModal && <AddItemRequirementModal />}
+      {/*  CHARACTER ACTIONS */}
       {approveTransferModal && <ApproveTransferModal />}
       {assignClassModal && <AssignClassModal />}
       {claimClassModal && <ClaimClassModal />}
-      {claimItemModal && <ClaimItemModal />}
       {editCharacterModal && <UpdateCharacterMetadataModal />}
-      {editItemClaimableModal && <EditItemClaimableModal />}
       {equipItemModal && <EquipItemModal />}
       {giveExpModal && <DropExperienceModal />}
       {giveItemsModal && <GiveItemsModal />}
       {jailPlayerModal && <JailPlayerModal />}
       {removeCharacterModal && <RemoveCharacterModal />}
-      {removeRequirementModal && <RemoveItemRequirementModal />}
       {renounceCharacterModal && <RenounceCharacterModal />}
       {renounceClassModal && <RenounceClassModal />}
       {revokeClassModal && <RevokeClassModal />}
       {transferCharacterModal && <TransferCharacterModal />}
+
+      {/*  ITEM ACTIONS */}
+      {addRequirementModal && <AddItemRequirementModal />}
+      {removeRequirementModal && <RemoveItemRequirementModal />}
+      {claimItemModal && <ClaimItemModal />}
+      {editItemClaimableModal && <EditItemClaimableModal />}
     </>
   );
 }

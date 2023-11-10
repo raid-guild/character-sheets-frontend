@@ -1,19 +1,10 @@
-import {
-  Button,
-  SimpleGrid,
-  Text,
-  useDisclosure,
-  VStack,
-} from '@chakra-ui/react';
+import { SimpleGrid, Text, VStack } from '@chakra-ui/react';
 
 import { useGame } from '@/contexts/GameContext';
 
 import { SmallClassCard } from './ClassCard';
-import { CreateClassModal } from './Modals/CreateClassModal';
 
 export const ClassesPanel: React.FC = () => {
-  const createClassModal = useDisclosure();
-
   const { game, isMaster } = useGame();
 
   function content() {
@@ -40,11 +31,7 @@ export const ClassesPanel: React.FC = () => {
   }
   return (
     <VStack as="main" pt={10} pb={20} spacing={10} w="100%">
-      {isMaster && (
-        <Button onClick={createClassModal.onOpen}>Create a Class</Button>
-      )}
       <>{content()}</>
-      <CreateClassModal {...createClassModal} />
     </VStack>
   );
 };

@@ -18,7 +18,7 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { RadioCard } from '@/components/RadioCard';
 import { TransactionPending } from '@/components/TransactionPending';
-import { useActions } from '@/contexts/ActionsContext';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
@@ -26,7 +26,7 @@ import { executeAsCharacter } from '@/utils/account';
 
 export const RenounceClassModal: React.FC = () => {
   const { character, game, reload: reloadGame } = useGame();
-  const { renounceClassModal, selectedCharacter } = useActions();
+  const { renounceClassModal, selectedCharacter } = useCharacterActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();

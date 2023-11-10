@@ -14,14 +14,14 @@ import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
-import { useActions } from '@/contexts/ActionsContext';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
 export const RenounceCharacterModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
-  const { selectedCharacter, renounceCharacterModal } = useActions();
+  const { selectedCharacter, renounceCharacterModal } = useCharacterActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();

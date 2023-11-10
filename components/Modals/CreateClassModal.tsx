@@ -22,20 +22,14 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
+import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
-type CreateClassModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-};
-
-export const CreateClassModal: React.FC<CreateClassModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export const CreateClassModal: React.FC = () => {
+  const { createClassModal } = useGameActions();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const { renderError } = useToast();
@@ -88,10 +82,10 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
   }, [setClassEmblem]);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!createClassModal?.isOpen) {
       resetData();
     }
-  }, [resetData, isOpen]);
+  }, [resetData, createClassModal?.isOpen]);
 
   const onCreateClass = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
@@ -205,7 +199,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
       return (
         <VStack py={10} spacing={4}>
           <Text>Transaction failed.</Text>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={createClassModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -216,7 +210,7 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
       return (
         <VStack py={10} spacing={4}>
           <Text>Your class was successfully created!</Text>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={createClassModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -328,8 +322,8 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={isOpen}
-      onClose={onClose}
+      isOpen={createClassModal?.isOpen ?? false}
+      onClose={createClassModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>

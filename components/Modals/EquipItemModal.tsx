@@ -15,7 +15,7 @@ import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
-import { useActions } from '@/contexts/ActionsContext';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
@@ -27,7 +27,8 @@ export const EquipItemModal: React.FC = () => {
   const publicClient = usePublicClient();
   const { renderError } = useToast();
 
-  const { selectedCharacter, selectedItem, equipItemModal } = useActions();
+  const { selectedCharacter, selectedItem, equipItemModal } =
+    useCharacterActions();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
