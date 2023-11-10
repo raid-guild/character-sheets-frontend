@@ -1,11 +1,9 @@
 import { Db, MongoClient } from 'mongodb';
 
+import { ENVIRONMENT } from '@/utils/constants';
+
 if (!process.env.MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable');
-}
-
-if (!process.env.MONGODB_DB) {
-  throw new Error('Please define the MONGODB_DB environment variable');
 }
 
 declare const global: {
@@ -14,7 +12,15 @@ declare const global: {
 };
 
 const uri = process.env.MONGODB_URI;
-const dbName = process.env.MONGODB_DB;
+const dbName = (() => {
+  switch (ENVIRONMENT) {
+    case 'main':
+      return 'character-sheets-prod';
+    case 'dev':
+    default:
+      return 'character-sheets-dev';
+  }
+})();
 
 let clientPromise: Promise<MongoClient>;
 let dbPromise: Promise<Db>;
