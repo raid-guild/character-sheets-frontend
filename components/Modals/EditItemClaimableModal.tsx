@@ -220,6 +220,7 @@ export const EditItemClaimableModal: React.FC = () => {
               itemId: itemId.toString(),
               gameAddress: game.id,
               tree: jsonTree,
+              chainId: game.chainId,
             };
 
             const signature = await walletClient.signMessage({

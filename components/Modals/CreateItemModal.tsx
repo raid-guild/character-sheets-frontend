@@ -226,6 +226,7 @@ export const CreateItemModal: React.FC = () => {
               itemId: game.items.length,
               gameAddress: game.id,
               tree: jsonTree,
+              chainId: game.chainId,
             };
 
             const signature = await walletClient.signMessage({
