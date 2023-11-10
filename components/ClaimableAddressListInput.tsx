@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getAddress } from 'viem';
-import { useChainId } from 'wagmi';
+import { useNetwork } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 import { getAddressUrl } from '@/lib/web3';
@@ -41,12 +41,11 @@ export const ClaimableAddressListInput: React.FC<Props> = ({
   setClaimableAddressList,
 }) => {
   const { game } = useGame();
-
-  const currentChainId = useChainId();
+  const { chain } = useNetwork();
 
   const { characters, chainId } = game || {
     characters: [],
-    chainId: currentChainId,
+    chainId: chain?.id,
   };
 
   const characterMap = useMemo(() => {
@@ -70,6 +69,14 @@ export const ClaimableAddressListInput: React.FC<Props> = ({
     );
     return characters.filter(c => !selectedAddresses.has(c.account));
   }, [claimableAddressList, characters]);
+
+  if (!chainId) {
+    return (
+      <VStack align="stretch" spacing={4} w="100%">
+        <Text>You must connect your wallet to add claimers.</Text>
+      </VStack>
+    );
+  }
 
   return (
     <VStack align="stretch" spacing={4} w="100%">

@@ -2,6 +2,7 @@ import {
   AspectRatio,
   Box,
   Button,
+  Flex,
   Grid,
   Heading,
   HStack,
@@ -76,6 +77,8 @@ export default function GamePageOuter(): JSX.Element {
     push,
     isReady,
   } = useRouter();
+  const { isConnected } = useAccount();
+  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
 
   const chainId = getChainIdFromLabel(chainLabel as string);
 
@@ -88,6 +91,14 @@ export default function GamePageOuter(): JSX.Element {
     }
   }, [gameId, chainId, isReady, push]);
 
+  useEffect(() => {
+    if (isConnected) {
+      setIsConnectedAndMounted(true);
+    } else {
+      setIsConnectedAndMounted(false);
+    }
+  }, [isConnected]);
+
   if (!gameId || !chainId) {
     return <></>;
   }
@@ -97,8 +108,8 @@ export default function GamePageOuter(): JSX.Element {
       <GameActionsProvider>
         <CharacterActionsProvider>
           <ItemActionsProvider>
-            <NetworkAlert chainId={chainId} />
-            <GamePage />
+            {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
+            <GamePage isConnectedAndMounted={isConnectedAndMounted} />
           </ItemActionsProvider>
         </CharacterActionsProvider>
       </GameActionsProvider>
@@ -106,7 +117,11 @@ export default function GamePageOuter(): JSX.Element {
   );
 }
 
-function GamePage(): JSX.Element {
+function GamePage({
+  isConnectedAndMounted,
+}: {
+  isConnectedAndMounted: boolean;
+}): JSX.Element {
   const { game, character, isMaster, loading, isEligibleForCharacter } =
     useGame();
 
@@ -141,9 +156,6 @@ function GamePage(): JSX.Element {
     editItemClaimableModal,
   } = useItemActions();
 
-  const { isConnected } = useAccount();
-
-  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
   const [showJoinGame, setShowJoinGame] = useState(false);
   const { isWrongNetwork, renderNetworkError } = useCheckGameNetwork();
 
@@ -156,14 +168,6 @@ function GamePage(): JSX.Element {
   }, [isWrongNetwork, renderNetworkError]);
 
   const topOfCardRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (isConnected) {
-      setIsConnectedAndMounted(true);
-    } else {
-      setIsConnectedAndMounted(false);
-    }
-  }, [isConnected]);
 
   const content = () => {
     if (loading) {
@@ -285,7 +289,7 @@ function GamePage(): JSX.Element {
             Admins
           </Text>
           {admins.map(admin => (
-            <UserLink key={`gm-${admin}`} user={admin} />
+            <UserLink key={`admin-${admin}`} user={admin} />
           ))}
 
           <Text
@@ -299,10 +303,10 @@ function GamePage(): JSX.Element {
           <Wrap spacingX={1}>
             {masters.map((master, i) => {
               return (
-                <>
-                  <UserLink key={`gm-${master}`} user={master} />
+                <Flex key={`gm-${master}`}>
+                  <UserLink user={master} />
                   {i !== masters.length - 1 && <Text as="span">, </Text>}
-                </>
+                </Flex>
               );
             })}
           </Wrap>
