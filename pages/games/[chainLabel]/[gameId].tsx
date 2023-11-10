@@ -52,7 +52,6 @@ import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataM
 import { NetworkAlert } from '@/components/NetworkAlert';
 import { NetworkDisplay } from '@/components/NetworkDisplay';
 import { UserLink } from '@/components/UserLink';
-import { XPPanel } from '@/components/XPPanel';
 import {
   CharacterActionsProvider,
   useCharacterActions,
@@ -387,15 +386,6 @@ function GamePage(): JSX.Element {
               </Tab>
               <Tab gap={2}>
                 <Image
-                  alt="xp"
-                  height="20px"
-                  src="/icons/xp.svg"
-                  width="20px"
-                />
-                <Text>{experience} XP</Text>
-              </Tab>
-              <Tab gap={2}>
-                <Image
                   alt="users"
                   height="20px"
                   src="/icons/users.svg"
@@ -417,9 +407,6 @@ function GamePage(): JSX.Element {
             <TabPanels>
               <TabPanel px={0}>
                 <CharactersPanel />
-              </TabPanel>
-              <TabPanel px={0}>
-                <XPPanel />
               </TabPanel>
               <TabPanel px={0}>
                 <ClassesPanel />

@@ -8,20 +8,21 @@ export const CharactersPanel: React.FC = () => {
 
   const characters = game?.characters.filter(c => !c.removed) ?? [];
 
-  if (game && characters.length > 0) {
+  if (!game || characters.length === 0) {
     return (
-      <Wrap spacing={6} w="100%">
-        {characters.map(c => (
-          <WrapItem key={c.id}>
-            <CharacterCardSmall chainId={game.chainId} character={c} />
-          </WrapItem>
-        ))}
-      </Wrap>
+      <VStack as="main" py={20}>
+        <Text align="center">No characters found.</Text>
+      </VStack>
     );
   }
+
   return (
-    <VStack as="main" pt={20}>
-      <Text align="center">No characters found.</Text>
-    </VStack>
+    <Wrap spacing={6} w="100%" py={10}>
+      {characters.map(c => (
+        <WrapItem key={c.id}>
+          <CharacterCardSmall chainId={game.chainId} character={c} />
+        </WrapItem>
+      ))}
+    </Wrap>
   );
 };

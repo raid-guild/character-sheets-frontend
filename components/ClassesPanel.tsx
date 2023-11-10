@@ -7,16 +7,16 @@ import { SmallClassCard } from './ClassCard';
 export const ClassesPanel: React.FC = () => {
   const { game, isMaster } = useGame();
 
-  function content() {
-    if (!game || game.classes.length === 0) {
-      return (
-        <VStack as="main">
-          <Text align="center">No classes found.</Text>
-        </VStack>
-      );
-    }
-
+  if (!game || game.classes.length === 0) {
     return (
+      <VStack as="main" py={20}>
+        <Text align="center">No classes found.</Text>
+      </VStack>
+    );
+  }
+
+  return (
+    <VStack as="main" py={10} w="100%">
       <SimpleGrid columns={2} spacing={4} w="100%">
         {game.classes.map(c => (
           <SmallClassCard
@@ -27,11 +27,6 @@ export const ClassesPanel: React.FC = () => {
           />
         ))}
       </SimpleGrid>
-    );
-  }
-  return (
-    <VStack as="main" pt={10} pb={20} spacing={10} w="100%">
-      <>{content()}</>
     </VStack>
   );
 };

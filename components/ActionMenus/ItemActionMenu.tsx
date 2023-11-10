@@ -21,7 +21,7 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({ item }) => {
   return (
     <>
       <Menu onOpen={() => selectItem(item)}>
-        <MenuButton as={Button} size="sm" w="100%">
+        <MenuButton as={Button} size="sm">
           Actions
         </MenuButton>
         <MenuList>

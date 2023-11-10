@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   HStack,
   Image,
@@ -53,9 +52,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
 
   return (
     <HStack
-      border="3px solid white"
-      borderBottom="5px solid white"
-      borderRight="5px solid white"
+      border="1px solid white"
       h="300px"
       transition="background 0.3s ease"
       p={4}
@@ -69,7 +66,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
           src={image}
           w="100px"
         />
-        <VStack align="stretch" w="120px">
+        <VStack align="center" w="120px">
           <Button
             onClick={() => {
               toast({
@@ -89,11 +86,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
         <Text fontSize="lg" fontWeight="bold">
           {name}
         </Text>
-        <Text>
-          Description:{' '}
-          <Text as="span" fontSize="xs">
-            {shortenText(description, 130)}
-          </Text>
+        <Text fontSize="md" mb={4}>
+          {shortenText(description, 130)}
         </Text>
         <Text>
           Item ID:{' '}
@@ -101,8 +95,6 @@ export const ItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
             {itemId}
           </Text>
         </Text>
-
-        <Box background="white" h="3px" my={4} w={20} />
         <Text>
           Supply: {supply.toString()} / {totalSupply.toString()}
         </Text>
@@ -148,9 +140,7 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
 
   return (
     <HStack
-      border="3px solid white"
-      borderBottom="5px solid white"
-      borderRight="5px solid white"
+      border="1px solid white"
       transition="background 0.3s ease"
       p={4}
       spacing={8}
@@ -158,7 +148,7 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
     >
       <VStack align="center" h="100%" w="35%">
         <Image alt="item emblem" h="60%" objectFit="cover" src={image} />
-        <VStack align="stretch" w="100px">
+        <VStack align="center" w="100px">
           <Button
             onClick={() => {
               toast({
@@ -168,7 +158,6 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
               });
             }}
             size="sm"
-            w="100%"
           >
             View
           </Button>
@@ -179,15 +168,15 @@ export const SmallItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
         <Text fontSize="md" fontWeight="bold">
           {name}
         </Text>
-        <Text fontSize="xs">{shortenText(description, 130)}</Text>
+        <Text fontSize="sm" mb={4}>
+          {shortenText(description, 130)}
+        </Text>
         <Text fontSize="xs">
           Item ID:{' '}
           <Text as="span" fontSize="xs">
             {itemId}
           </Text>
         </Text>
-
-        <Box background="white" h="3px" my={4} w={20} />
         <Text fontSize="xs">
           Supply: {supply.toString()} / {totalSupply.toString()}
         </Text>
