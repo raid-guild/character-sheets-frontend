@@ -34,10 +34,8 @@ export const NetworkAlert: React.FC<NetworkAlertProps> = ({ chainId }) => {
               <Button
                 onClick={() => switchNetwork(chainId)}
                 size="xs"
-                color="dark"
                 ml={4}
-                borderColor="dark"
-                _hover={{ bg: 'dark', color: 'white' }}
+                variant="outline-dark"
               >
                 Click here to switch your network
               </Button>

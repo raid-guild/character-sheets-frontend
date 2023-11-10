@@ -3,6 +3,7 @@ import { useChainId } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 import { useToast } from '@/hooks/useToast';
+import { getChainLabelFromId } from '@/lib/web3';
 
 export const useCheckGameNetwork = (): {
   isWrongNetwork: boolean;
@@ -13,8 +14,12 @@ export const useCheckGameNetwork = (): {
   const { renderError } = useToast();
 
   const renderNetworkError = useCallback(() => {
-    renderError('You are connected to the wrong network');
-  }, [renderError]);
+    renderError(
+      `Please switch your wallet to ${getChainLabelFromId(
+        game?.chainId ?? 0,
+      )}.`,
+    );
+  }, [renderError, game?.chainId]);
 
   const connectedChainId = useChainId();
 

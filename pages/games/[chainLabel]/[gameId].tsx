@@ -18,7 +18,7 @@ import {
   Wrap,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { isAddress } from 'viem';
 import { useAccount } from 'wagmi';
 
@@ -67,6 +67,7 @@ import {
   ItemActionsProvider,
   useItemActions,
 } from '@/contexts/ItemActionsContext';
+import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
 import { getAddressUrl, getChainIdFromLabel } from '@/lib/web3';
 import { shortenAddress } from '@/utils/helpers';
 
@@ -145,6 +146,15 @@ function GamePage(): JSX.Element {
 
   const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
   const [showJoinGame, setShowJoinGame] = useState(false);
+  const { isWrongNetwork, renderNetworkError } = useCheckGameNetwork();
+
+  const startJoinGame = useCallback(() => {
+    if (isWrongNetwork) {
+      renderNetworkError();
+      return;
+    }
+    setShowJoinGame(true);
+  }, [isWrongNetwork, renderNetworkError]);
 
   const topOfCardRef = useRef<HTMLDivElement>(null);
 
@@ -309,7 +319,7 @@ function GamePage(): JSX.Element {
             <VStack p={8} bg="cardBG" align="start" spacing={4}>
               {!character && !showJoinGame && isEligibleForCharacter && (
                 <HStack w="100%" spacing={4}>
-                  <Button variant="solid" onClick={() => setShowJoinGame(true)}>
+                  <Button variant="solid" onClick={startJoinGame}>
                     Join this Game
                   </Button>
                   <Text fontSize="sm">
@@ -420,7 +430,7 @@ function GamePage(): JSX.Element {
             </TabPanels>
           </Tabs>
         </VStack>
-        <VStack h="100%" bg="cardBG" p={8} align="stretch">
+        <VStack h="100%" bg="cardBG" p={8} align="stretch" spacing={4}>
           {isMaster ? (
             <>
               <Button
