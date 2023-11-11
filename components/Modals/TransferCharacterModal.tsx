@@ -106,13 +106,14 @@ export const TransferCharacterModal: React.FC = () => {
           account: walletClient.account?.address as Address,
           address: game.id as Address,
           abi: parseAbi([
-            'function transferFrom(address from, address to, uint256 characterId) public',
+            'function safeTransferFrom(address from, address to, uint256 characterId, bytes memory) public',
           ]),
-          functionName: 'transferFrom',
+          functionName: 'safeTransferFrom',
           args: [
             selectedCharacter.player as Address,
             newPlayer as Address,
             BigInt(selectedCharacter.characterId),
+            '0x',
           ],
         });
         setTxHash(transactionhash);
