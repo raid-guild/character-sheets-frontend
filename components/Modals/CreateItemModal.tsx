@@ -67,6 +67,8 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     isUploaded,
   } = useUploadFile({ fileName: 'itemEmblem' });
 
+  console.log('test git issue');
+
   const [itemName, setItemName] = useState<string>('');
   const [itemDescription, setItemDescription] = useState<string>('');
   const [itemSupply, setItemSupply] = useState<string>('');
