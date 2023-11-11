@@ -23,8 +23,8 @@ import { Address, useAccount, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGamesContext } from '@/contexts/GamesContext';
-import { useGlobal } from '@/hooks/useGlobal';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
+import { useGlobalForChain } from '@/hooks/useGlobal';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
@@ -32,9 +32,8 @@ export const CreateGameModal: React.FC = () => {
   const { address } = useAccount();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const { gameFactory } = useGlobal(
-    walletClient?.chain?.name?.toLowerCase() ?? '',
-  );
+  const { data: globalInfo } = useGlobalForChain();
+  const { gameFactory } = globalInfo || {};
   const { renderError } = useToast();
   const { createGameModal: { isOpen, onClose } = {}, reload: reloadGames } =
     useGamesContext();
@@ -274,7 +273,7 @@ export const CreateGameModal: React.FC = () => {
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);

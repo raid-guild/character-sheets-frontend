@@ -1,13 +1,10 @@
 import { Text, VStack } from '@chakra-ui/react';
-import { useNetwork } from 'wagmi';
 
 import { GameCard } from '@/components/GameCard';
 import { useGamesContext } from '@/contexts/GamesContext';
-import { DEFAULT_CHAIN } from '@/lib/web3';
 
 export default function AllGames(): JSX.Element {
   const { allGames, loading } = useGamesContext();
-  const { chain } = useNetwork();
 
   if (loading) {
     return (
@@ -28,11 +25,7 @@ export default function AllGames(): JSX.Element {
   return (
     <VStack spacing={10}>
       {allGames.map(game => (
-        <GameCard
-          key={game.id}
-          chainId={chain?.id ?? DEFAULT_CHAIN.id}
-          {...game}
-        />
+        <GameCard key={game.id} {...game} />
       ))}
     </VStack>
   );

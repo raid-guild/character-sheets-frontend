@@ -11,15 +11,13 @@ import {
 import NextLink from 'next/link';
 
 import { GameTotals } from '@/components/GameTotals';
-import { EXPLORER_URLS } from '@/utils/constants';
+import { getAddressUrl, getChainLabelFromId } from '@/lib/web3';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
 
-type GameCardProps = GameMeta & {
-  chainId: number;
-};
+import { NetworkDisplay } from './NetworkDisplay';
 
-export const GameCard: React.FC<GameCardProps> = ({
+export const GameCard: React.FC<GameMeta> = ({
   chainId,
   characters,
   experience,
@@ -62,16 +60,22 @@ export const GameCard: React.FC<GameCardProps> = ({
           </Text>
           <Link
             fontSize="sm"
-            href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+            href={getAddressUrl(chainId, id)}
             isExternal
             fontWeight={300}
             mb={3}
-            textDecoration={'underline'}
+            _hover={{}}
           >
-            {shortenAddress(id)}
+            <HStack>
+              <Text textDecoration={'underline'}>{shortenAddress(id)}</Text>
+              <NetworkDisplay chainId={chainId} />
+            </HStack>
           </Link>
         </VStack>
-        <NextLink as={`/games/${id}`} href={`/games/[gameId]`}>
+        <NextLink
+          as={`/games/${getChainLabelFromId(chainId)}/${id}`}
+          href={`/games/[chainLabel]/[gameId]`}
+        >
           <Button variant="play">play</Button>
         </NextLink>
       </VStack>

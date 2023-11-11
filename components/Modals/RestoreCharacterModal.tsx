@@ -14,20 +14,14 @@ import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
+import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
-type RestoreCharacterModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-};
-
-export const RestoreCharacterModal: React.FC<RestoreCharacterModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export const RestoreCharacterModal: React.FC = () => {
   const { character, game, reload: reloadGame } = useGame();
+  const { restoreCharacterModal } = useGameActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -48,10 +42,10 @@ export const RestoreCharacterModal: React.FC<RestoreCharacterModalProps> = ({
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
+    if (restoreCharacterModal?.isOpen) {
       resetData();
     }
-  }, [isOpen, resetData]);
+  }, [restoreCharacterModal?.isOpen, resetData]);
 
   const onRestoreCharacter = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
@@ -85,7 +79,7 @@ export const RestoreCharacterModal: React.FC<RestoreCharacterModalProps> = ({
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -111,7 +105,7 @@ export const RestoreCharacterModal: React.FC<RestoreCharacterModalProps> = ({
       return (
         <VStack py={10} spacing={4}>
           <Text>Transaction failed.</Text>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={restoreCharacterModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -122,7 +116,7 @@ export const RestoreCharacterModal: React.FC<RestoreCharacterModalProps> = ({
       return (
         <VStack py={10} spacing={4}>
           <Text>Your character has been restored!</Text>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={restoreCharacterModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -135,6 +129,7 @@ export const RestoreCharacterModal: React.FC<RestoreCharacterModalProps> = ({
           isSyncing={isSyncing}
           text="Restoring your character..."
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }
@@ -161,8 +156,8 @@ export const RestoreCharacterModal: React.FC<RestoreCharacterModalProps> = ({
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={isOpen ?? false}
-      onClose={onClose ?? (() => {})}
+      isOpen={restoreCharacterModal?.isOpen ?? false}
+      onClose={restoreCharacterModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>

@@ -1,18 +1,23 @@
+import { useGame } from '@/contexts/GameContext';
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import { useMemo } from 'react';
 import useSWR from 'swr';
-import { zeroAddress } from 'viem';
 
 export type ClaimableItemLeaf = [bigint, `0x${string}`, bigint, bigint]; // itemId, address, nonce, amount
 
-type FetcherInput = [`0x${string}`, bigint];
+type FetcherInput = {
+  gameAddress: string;
+  chainId: string;
+  itemId: string;
+};
 
-const fetcher = async ([
-  _gameAddress,
-  _itemId,
-]: FetcherInput): Promise<StandardMerkleTree<ClaimableItemLeaf> | null> => {
+const fetcher = async ({
+  gameAddress,
+  chainId,
+  itemId,
+}: FetcherInput): Promise<StandardMerkleTree<ClaimableItemLeaf> | null> => {
   try {
-    const uri = `/api/getTree?gameAddress=${_gameAddress}&itemId=${_itemId.toString()}`;
+    const uri = `/api/getTree?gameAddress=${gameAddress}&chainId=${chainId}&itemId=${itemId}`;
 
     const data = await fetch(uri);
     const { tree } = await data.json();
@@ -30,16 +35,22 @@ const fetcher = async ([
 };
 
 export const useClaimableTree = (
-  gameAddress: `0x${string}`,
-  itemId: bigint,
+  itemId: string | undefined | null,
 ): {
   tree: StandardMerkleTree<ClaimableItemLeaf> | null;
   reload: () => void;
   loading: boolean;
   error: Error | null;
 } => {
+  const { game } = useGame();
+  const { id: gameAddress, chainId } = game || {};
+
   const input: FetcherInput = useMemo(
-    () => [gameAddress, itemId],
+    () => ({
+      gameAddress: gameAddress ? gameAddress.toString() : '',
+      chainId: chainId ? chainId.toString() : '',
+      itemId: itemId ? itemId.toString() : '',
+    }),
     [gameAddress, itemId],
   );
 
@@ -48,11 +59,7 @@ export const useClaimableTree = (
     Error,
     FetcherInput
   >(input, fetcher, {
-    isPaused: () =>
-      !gameAddress ||
-      itemId == undefined ||
-      itemId == null ||
-      gameAddress === zeroAddress,
+    isPaused: () => !gameAddress || !itemId || !chainId,
   });
 
   return {

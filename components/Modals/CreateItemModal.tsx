@@ -32,9 +32,10 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
+import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
+import { waitUntilBlock } from '@/graphql/health';
 import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
@@ -43,15 +44,8 @@ import {
   ClaimableAddressListInput,
 } from '../ClaimableAddressListInput';
 
-type CreateItemModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-};
-
-export const CreateItemModal: React.FC<CreateItemModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export const CreateItemModal: React.FC = () => {
+  const { createItemModal } = useGameActions();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const { renderError } = useToast();
@@ -156,10 +150,10 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   }, [setItemEmblem]);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!createItemModal?.isOpen) {
       resetData();
     }
-  }, [resetData, isOpen]);
+  }, [resetData, createItemModal?.isOpen]);
 
   const onCreateItem = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
@@ -232,6 +226,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               itemId: game.items.length,
               gameAddress: game.id,
               tree: jsonTree,
+              chainId: game.chainId,
             };
 
             const signature = await walletClient.signMessage({
@@ -243,6 +238,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               headers: {
                 'x-account-address': walletClient.account?.address as Address,
                 'x-account-signature': signature,
+                'x-account-chain-id': walletClient.chain.id.toString(),
               },
               method: 'POST',
               body: JSON.stringify(data),
@@ -361,7 +357,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -399,7 +395,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       return (
         <VStack py={10} spacing={4}>
           <Text>Transaction failed.</Text>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={createItemModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -410,7 +406,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       return (
         <VStack py={10} spacing={4}>
           <Text>Your item was successfully created!</Text>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={createItemModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -423,6 +419,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           isSyncing={isSyncing}
           text="Your item is being created."
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }
@@ -641,8 +638,8 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={isOpen}
-      onClose={onClose}
+      isOpen={createItemModal?.isOpen ?? false}
+      onClose={createItemModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>

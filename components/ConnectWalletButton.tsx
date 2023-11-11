@@ -1,5 +1,7 @@
-import { Button, Flex } from '@chakra-ui/react';
+import { Button, Flex, HStack, Text } from '@chakra-ui/react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+
+import { NetworkDisplay } from './NetworkDisplay';
 
 export const ConnectWalletButton: React.FC = () => {
   return (
@@ -67,7 +69,10 @@ export const ConnectWalletButton: React.FC = () => {
                   type="button"
                   variant="outline"
                 >
-                  {account.displayName}
+                  <HStack>
+                    <Text color="white">{account.displayName}</Text>
+                    <NetworkDisplay chainId={chain.id} />
+                  </HStack>
                 </Button>
               );
             })()}

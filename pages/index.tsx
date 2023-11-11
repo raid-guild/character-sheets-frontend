@@ -7,7 +7,7 @@ import { CharacterCard } from '@/components/CharacterCard';
 import { CreateGameModal } from '@/components/Modals/CreateGameModal';
 import { useGamesContext } from '@/contexts/GamesContext';
 import { useToast } from '@/hooks/useToast';
-import { DEFAULT_CHAIN } from '@/lib/web3';
+import { SUPPORTED_CHAINS } from '@/lib/web3';
 import { Character, Class, Item } from '@/utils/types';
 
 const createDummyClass = (name: string): Class => ({
@@ -128,10 +128,9 @@ export default function Home(): JSX.Element {
           Most recent :
         </Text>
 
-        {/* TODO: This could be Charactercard? */}
         <CharacterCard
           character={dummyCharacter}
-          chainId={DEFAULT_CHAIN.id}
+          chainId={SUPPORTED_CHAINS[0].id}
           dummy
         />
       </VStack>

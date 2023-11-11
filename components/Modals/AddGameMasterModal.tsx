@@ -19,20 +19,14 @@ import { isAddress, parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
+import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
-type AddGameMasterModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-};
-
-export const AddGameMasterModal: React.FC<AddGameMasterModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export const AddGameMasterModal: React.FC = () => {
   const { game, isAdmin, reload: reloadGame } = useGame();
+  const { addGameMasterModal } = useGameActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -77,10 +71,10 @@ export const AddGameMasterModal: React.FC<AddGameMasterModalProps> = ({
   }, []);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!addGameMasterModal?.isOpen) {
       resetData();
     }
-  }, [resetData, isOpen]);
+  }, [resetData, addGameMasterModal]);
 
   const onAddGameMaster = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
@@ -123,7 +117,7 @@ export const AddGameMasterModal: React.FC<AddGameMasterModalProps> = ({
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -155,7 +149,7 @@ export const AddGameMasterModal: React.FC<AddGameMasterModalProps> = ({
       return (
         <VStack py={10} spacing={4}>
           <Text>Transaction failed.</Text>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={addGameMasterModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -177,7 +171,11 @@ export const AddGameMasterModal: React.FC<AddGameMasterModalProps> = ({
             </Link>{' '}
             and give a GameMaster hat to the newly eligible address.
           </Text>
-          <Button mt={4} onClick={onClose} variant="outline">
+          <Button
+            mt={4}
+            onClick={addGameMasterModal?.onClose}
+            variant="outline"
+          >
             Close
           </Button>
         </VStack>
@@ -236,8 +234,8 @@ export const AddGameMasterModal: React.FC<AddGameMasterModalProps> = ({
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={isOpen ?? false}
-      onClose={onClose ?? (() => {})}
+      isOpen={addGameMasterModal?.isOpen ?? false}
+      onClose={addGameMasterModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>

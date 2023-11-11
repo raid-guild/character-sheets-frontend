@@ -10,6 +10,7 @@ import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 import { Item } from '@/utils/types';
+import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
 
 export enum PlayerActions {
   CLAIM_ITEM = 'Claim item',
@@ -24,6 +25,8 @@ export enum GameMasterActions {
   EDIT_ITEM_CLAIMABLE = 'Edit item claimable',
 }
 
+type ModalProps = Omit<ReturnType<typeof useDisclosure>, 'onOpen'> | undefined;
+
 type ItemActionsContextType = {
   playerActions: PlayerActions[];
   gmActions: GameMasterActions[];
@@ -32,10 +35,10 @@ type ItemActionsContextType = {
   selectItem: (item: Item) => void;
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
-  addRequirementModal: ReturnType<typeof useDisclosure> | undefined;
-  claimItemModal: ReturnType<typeof useDisclosure> | undefined;
-  removeRequirementModal: ReturnType<typeof useDisclosure> | undefined;
-  editItemClaimableModal: ReturnType<typeof useDisclosure> | undefined;
+  addRequirementModal: ModalProps;
+  claimItemModal: ModalProps;
+  removeRequirementModal: ModalProps;
+  editItemClaimableModal: ModalProps;
 };
 
 const ItemActionsContext = createContext<ItemActionsContextType>({
@@ -55,9 +58,9 @@ const ItemActionsContext = createContext<ItemActionsContextType>({
 export const useItemActions = (): ItemActionsContextType =>
   useContext(ItemActionsContext);
 
-export const ItemActionsProvider: React.FC<{
-  children: JSX.Element;
-}> = ({ children }) => {
+export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
+  children,
+}) => {
   const { address } = useAccount();
   const { character, isMaster } = useGame();
   const toast = useToast();
@@ -101,8 +104,14 @@ export const ItemActionsProvider: React.FC<{
     return [];
   }, [isMaster]);
 
+  const { isWrongNetwork, renderNetworkError } = useCheckGameNetwork();
+
   const openActionModal = useCallback(
     (action: PlayerActions | GameMasterActions) => {
+      if (isWrongNetwork) {
+        renderNetworkError();
+        return;
+      }
       switch (action) {
         case PlayerActions.CLAIM_ITEM:
           claimItemModal.onOpen();
@@ -134,7 +143,13 @@ export const ItemActionsProvider: React.FC<{
           break;
       }
     },
-    [claimItemModal, editItemClaimableModal, toast],
+    [
+      claimItemModal,
+      editItemClaimableModal,
+      toast,
+      isWrongNetwork,
+      renderNetworkError,
+    ],
   );
 
   return (
