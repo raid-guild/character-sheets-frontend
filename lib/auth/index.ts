@@ -39,16 +39,16 @@ export const withAuth =
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    const blockNumber = await readClient.getBlockNumber();
+
     // eslint-disable-next-line no-console
-    console.log(JSON.stringify(readClient));
+    console.log('blockNumber', blockNumber);
 
     const isVerified = await readClient.verifyMessage({
       address: accountAddress as `0x${string}`,
       message: message,
       signature: accountSignature as `0x${string}`,
     });
-    // eslint-disable-next-line no-console
-    console.log('isVerified', isVerified);
 
     if (!isVerified) {
       console.error('[AUTH] Invalid signature');
