@@ -237,6 +237,8 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
     owner: game.owner.address,
     admins: game.admins.map(a => a.address),
     masters: game.masters.map(m => m.address),
+    gameMasterHatEligibilityModule:
+      game.hatsData.gameMasterHatEligibilityModule,
     name: metadata.name,
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
