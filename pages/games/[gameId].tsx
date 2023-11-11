@@ -93,6 +93,7 @@ function GamePage(): JSX.Element {
   const {
     game,
     character,
+    isOwner,
     isAdmin,
     isMaster,
     loading,
@@ -214,7 +215,7 @@ function GamePage(): JSX.Element {
                 >
                   {shortenAddress(id)}
                 </Link>
-                {(isAdmin || isMaster) && (
+                {(isOwner || isAdmin || isMaster) && (
                   <Button onClick={updateGameMetadataModal.onOpen} size="sm">
                     edit
                   </Button>
@@ -260,7 +261,7 @@ function GamePage(): JSX.Element {
             <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
               Game Masters
             </Text>
-            {isAdmin && (
+            {(isOwner || isAdmin) && (
               <Button onClick={addGameMasterModal.onOpen} variant="unstyled">
                 +
               </Button>

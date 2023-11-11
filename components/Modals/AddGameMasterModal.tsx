@@ -4,6 +4,7 @@ import {
   FormHelperText,
   FormLabel,
   Input,
+  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -164,8 +165,19 @@ export const AddGameMasterModal: React.FC<AddGameMasterModalProps> = ({
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>
-          <Text>You successfully added a new GameMaster!</Text>
-          <Button onClick={onClose} variant="outline">
+          <Text fontSize="sm" textAlign="center">
+            GameMaster eligibility updated! However, to complete the process of
+            adding a new GameMaster, you must go to{' '}
+            <Link
+              href="https://app.hatsprotocol.xyz/"
+              isExternal
+              textDecor="underline"
+            >
+              Hats Protocol
+            </Link>{' '}
+            and give a GameMaster hat to the newly eligible address.
+          </Text>
+          <Button mt={4} onClick={onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -230,7 +242,7 @@ export const AddGameMasterModal: React.FC<AddGameMasterModalProps> = ({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Add a GameMaster</Text>
+          <Text>Make Address Eligible as GameMaster</Text>
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>
