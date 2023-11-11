@@ -25,23 +25,12 @@ export const withAuth =
       'x-account-chain-id': accountChainId,
     } = headers;
 
-    // eslint-disable-next-line no-console
-    console.log('url', url);
     const message = (url || '').split('?')[0];
-
-    // eslint-disable-next-line no-console
-    console.log('message', message);
 
     if (!accountAddress || !accountSignature) {
       console.error('[AUTH] Missing account address or signature');
       return res.status(401).json({ error: 'Unauthorized' });
     }
-
-    // eslint-disable-next-line no-console
-    console.log('accountAddress', accountAddress);
-
-    // eslint-disable-next-line no-console
-    console.log('accountSignature', accountSignature);
 
     const readClient = READ_CLIENTS[Number(accountChainId)];
 
@@ -50,11 +39,16 @@ export const withAuth =
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // eslint-disable-next-line no-console
+    console.log(JSON.stringify(readClient));
+
     const isVerified = await readClient.verifyMessage({
       address: accountAddress as `0x${string}`,
       message: message,
       signature: accountSignature as `0x${string}`,
     });
+    // eslint-disable-next-line no-console
+    console.log('isVerified', isVerified);
 
     if (!isVerified) {
       console.error('[AUTH] Invalid signature');
