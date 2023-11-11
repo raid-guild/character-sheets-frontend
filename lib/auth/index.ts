@@ -39,11 +39,6 @@ export const withAuth =
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const blockNumber = await readClient.getBlockNumber();
-
-    // eslint-disable-next-line no-console
-    console.log('blockNumber', blockNumber);
-
     const isVerified = await readClient.verifyMessage({
       address: accountAddress as `0x${string}`,
       message: message,
