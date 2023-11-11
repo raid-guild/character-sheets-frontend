@@ -25,7 +25,12 @@ export const withAuth =
       'x-account-chain-id': accountChainId,
     } = headers;
 
+    // eslint-disable-next-line no-console
+    console.log('url', url);
     const message = (url || '').split('?')[0];
+
+    // eslint-disable-next-line no-console
+    console.log('message', message);
 
     if (!accountAddress || !accountSignature) {
       console.error('[AUTH] Missing account address or signature');
