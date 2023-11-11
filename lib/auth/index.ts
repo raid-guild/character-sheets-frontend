@@ -37,6 +37,12 @@ export const withAuth =
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // eslint-disable-next-line no-console
+    console.log('accountAddress', accountAddress);
+
+    // eslint-disable-next-line no-console
+    console.log('accountSignature', accountSignature);
+
     const readClient = READ_CLIENTS[Number(accountChainId)];
 
     if (!readClient) {

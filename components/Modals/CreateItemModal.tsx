@@ -234,6 +234,13 @@ export const CreateItemModal: React.FC = () => {
               account: walletClient.account?.address as Address,
             });
 
+            // eslint-disable-next-line no-console
+            console.log('signature', signature);
+            // eslint-disable-next-line no-console
+            console.log('address', walletClient.account?.address as Address);
+            // eslint-disable-next-line no-console
+            console.log('chainId', walletClient.chain.id.toString());
+
             const res = await fetch('/api/setTree', {
               headers: {
                 'x-account-address': walletClient.account?.address as Address,
