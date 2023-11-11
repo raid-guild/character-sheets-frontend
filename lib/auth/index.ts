@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Address, getAddress } from 'viem';
+import { Address, createPublicClient, getAddress, http } from 'viem';
 
-import { READ_CLIENTS } from '../web3';
+import { CHAINS, SERVER_RPC_URLS } from '../web3/constants';
 
 export type AccountInfo = {
   address: Address;
@@ -32,7 +32,10 @@ export const withAuth =
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const readClient = READ_CLIENTS[Number(accountChainId)];
+    const readClient = createPublicClient({
+      chain: CHAINS[Number(accountChainId)],
+      transport: http(SERVER_RPC_URLS[Number(accountChainId)]),
+    });
 
     if (!readClient) {
       console.error('[AUTH] Invalid chain id');
