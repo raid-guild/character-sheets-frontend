@@ -32,6 +32,11 @@ export const withAuth =
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    if (!process.env.SERVER_INFURA_KEY) {
+      console.error('[AUTH] Missing infura key');
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+
     const readClient = createPublicClient({
       chain: CHAINS[Number(accountChainId)],
       transport: http(SERVER_RPC_URLS[Number(accountChainId)]),

@@ -73,10 +73,6 @@ const validateConfig = () => {
     throw new Error('INFURA_KEY is not set');
   }
 
-  if (!SERVER_INFURA_KEY) {
-    throw new Error('SERVER_INFURA_KEY is not set');
-  }
-
   if (!WALLET_CONNECT_PROJECT_ID) {
     throw new Error('WALLET_CONNECT_PROJECT_ID is not set');
   }
