@@ -14,14 +14,14 @@ import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
-import { useActions } from '@/contexts/ActionsContext';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
 export const JailPlayerModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
-  const { selectedCharacter, jailPlayerModal } = useActions();
+  const { selectedCharacter, jailPlayerModal } = useCharacterActions();
 
   const { jailed } = selectedCharacter ?? {};
 
@@ -84,7 +84,7 @@ export const JailPlayerModal: React.FC = () => {
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -147,6 +147,7 @@ export const JailPlayerModal: React.FC = () => {
             selectedCharacter.name
           }'s player...`}
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }

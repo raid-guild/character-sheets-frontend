@@ -6,13 +6,14 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { CombinedError } from 'urql';
+import { CombinedError, Provider } from 'urql';
 import { useAccount } from 'wagmi';
 
 import { useGetGameQuery } from '@/graphql/autogen/types';
+import { getGraphClient } from '@/graphql/client';
+import { useIsEligible } from '@/hooks/useIsEligible';
 import { formatGame } from '@/utils/helpers';
 import { Character, Game } from '@/utils/types';
-import { useIsEligible } from '@/hooks/useIsEligible';
 
 type GameContextType = {
   game: Game | null;
@@ -38,11 +39,30 @@ const GameContext = createContext<GameContextType>({
 
 export const useGame = (): GameContextType => useContext(GameContext);
 
-export const GameProvider: React.FC<{
-  children: JSX.Element;
-  gameId?: string | null | undefined | string[];
-  characterId?: string | null | undefined | string[];
-}> = ({ children, gameId, characterId }) => {
+export const GameProvider: React.FC<
+  React.PropsWithChildren<{
+    chainId: number;
+    gameId: string;
+    characterId?: string | null | undefined | string[];
+  }>
+> = ({ chainId, children, gameId, characterId }) => {
+  const client = useMemo(() => getGraphClient(chainId), [chainId]);
+
+  return (
+    <Provider value={client}>
+      <GameProviderInner gameId={gameId} characterId={characterId}>
+        {children}
+      </GameProviderInner>
+    </Provider>
+  );
+};
+
+const GameProviderInner: React.FC<
+  React.PropsWithChildren<{
+    gameId: string;
+    characterId?: string | null | undefined | string[];
+  }>
+> = ({ children, gameId, characterId }) => {
   const { address } = useAccount();
 
   const [game, setGame] = useState<Game | null>(null);
@@ -51,7 +71,7 @@ export const GameProvider: React.FC<{
 
   const queryVariables = useMemo(
     () => ({
-      gameId: gameId?.toString().toLowerCase() ?? '',
+      gameId: gameId.toString().toLowerCase(),
     }),
     [gameId],
   );

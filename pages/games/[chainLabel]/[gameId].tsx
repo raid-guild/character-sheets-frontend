@@ -2,6 +2,7 @@ import {
   AspectRatio,
   Box,
   Button,
+  Flex,
   Grid,
   Heading,
   HStack,
@@ -14,12 +15,11 @@ import {
   TabPanels,
   Tabs,
   Text,
-  useDisclosure,
   VStack,
   Wrap,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { isAddress } from 'viem';
 import { useAccount } from 'wagmi';
 
@@ -34,6 +34,8 @@ import { ApproveTransferModal } from '@/components/Modals/ApproveTransferModal';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { ClaimClassModal } from '@/components/Modals/ClaimClassModal';
 import { ClaimItemModal } from '@/components/Modals/ClaimItemModal';
+import { CreateClassModal } from '@/components/Modals/CreateClassModal';
+import { CreateItemModal } from '@/components/Modals/CreateItemModal';
 import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { EditItemClaimableModal } from '@/components/Modals/EditItemClaimableModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
@@ -48,48 +50,89 @@ import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
 import { TransferCharacterModal } from '@/components/Modals/TransferCharacterModal';
 import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
 import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
+import { NetworkAlert } from '@/components/NetworkAlert';
+import { NetworkDisplay } from '@/components/NetworkDisplay';
 import { UserLink } from '@/components/UserLink';
-import { XPPanel } from '@/components/XPPanel';
-import { ActionsProvider, useActions } from '@/contexts/ActionsContext';
+import {
+  CharacterActionsProvider,
+  useCharacterActions,
+} from '@/contexts/CharacterActionsContext';
+import {
+  GameActionsProvider,
+  GameMasterActions,
+  useGameActions,
+} from '@/contexts/GameActionsContext';
 import { GameProvider, useGame } from '@/contexts/GameContext';
 import {
   ItemActionsProvider,
   useItemActions,
 } from '@/contexts/ItemActionsContext';
-import { DEFAULT_CHAIN } from '@/lib/web3';
-import { EXPLORER_URLS } from '@/utils/constants';
+import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
+import { getAddressUrl, getChainIdFromLabel } from '@/lib/web3';
 import { shortenAddress } from '@/utils/helpers';
 
 export default function GamePageOuter(): JSX.Element {
   const {
-    query: { gameId },
+    query: { gameId, chainLabel },
     push,
     isReady,
   } = useRouter();
+  const { isConnected } = useAccount();
+  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
+
+  const chainId = getChainIdFromLabel(chainLabel as string);
 
   useEffect(() => {
     if (
       isReady &&
-      (!gameId || typeof gameId !== 'string' || !isAddress(gameId))
+      (!gameId || typeof gameId !== 'string' || !isAddress(gameId) || !chainId)
     ) {
       push('/');
     }
-  }, [gameId, isReady, push]);
+  }, [gameId, chainId, isReady, push]);
+
+  useEffect(() => {
+    if (isConnected) {
+      setIsConnectedAndMounted(true);
+    } else {
+      setIsConnectedAndMounted(false);
+    }
+  }, [isConnected]);
+
+  if (!gameId || !chainId) {
+    return <></>;
+  }
 
   return (
-    <GameProvider gameId={gameId}>
-      <ActionsProvider>
-        <ItemActionsProvider>
-          <GamePage />
-        </ItemActionsProvider>
-      </ActionsProvider>
+    <GameProvider chainId={chainId} gameId={gameId.toString()}>
+      <GameActionsProvider>
+        <CharacterActionsProvider>
+          <ItemActionsProvider>
+            {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
+            <GamePage isConnectedAndMounted={isConnectedAndMounted} />
+          </ItemActionsProvider>
+        </CharacterActionsProvider>
+      </GameActionsProvider>
     </GameProvider>
   );
 }
 
-function GamePage(): JSX.Element {
+function GamePage({
+  isConnectedAndMounted,
+}: {
+  isConnectedAndMounted: boolean;
+}): JSX.Element {
   const { game, character, isMaster, loading, isEligibleForCharacter } =
     useGame();
+
+  const {
+    createItemModal,
+    createClassModal,
+    updateGameMetadataModal,
+    restoreCharacterModal,
+    openActionModal,
+  } = useGameActions();
+
   const {
     assignClassModal,
     approveTransferModal,
@@ -104,30 +147,27 @@ function GamePage(): JSX.Element {
     renounceClassModal,
     revokeClassModal,
     transferCharacterModal,
-  } = useActions();
+  } = useCharacterActions();
+
   const {
     addRequirementModal,
-    claimItemModal,
     removeRequirementModal,
+    claimItemModal,
     editItemClaimableModal,
   } = useItemActions();
-  const { isConnected } = useAccount();
 
-  const updateGameMetadata = useDisclosure();
-  const restoreCharacterModal = useDisclosure();
-
-  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
   const [showJoinGame, setShowJoinGame] = useState(false);
+  const { isWrongNetwork, renderNetworkError } = useCheckGameNetwork();
+
+  const startJoinGame = useCallback(() => {
+    if (isWrongNetwork) {
+      renderNetworkError();
+      return;
+    }
+    setShowJoinGame(true);
+  }, [isWrongNetwork, renderNetworkError]);
 
   const topOfCardRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (isConnected) {
-      setIsConnectedAndMounted(true);
-    } else {
-      setIsConnectedAndMounted(false);
-    }
-  }, [isConnected]);
 
   const content = () => {
     if (loading) {
@@ -158,9 +198,8 @@ function GamePage(): JSX.Element {
       characters,
       classes,
       items,
+      chainId,
     } = game;
-
-    const chainId = DEFAULT_CHAIN.id;
 
     return (
       <Grid templateColumns="3fr 1fr" w="full" gridGap="5px">
@@ -194,23 +233,29 @@ function GamePage(): JSX.Element {
               <Text fontSize="xl" fontWeight={200} mb={2}>
                 {description}
               </Text>
-              <HStack spacing={4}>
-                <Link
-                  fontSize="sm"
-                  href={`${EXPLORER_URLS[chainId]}/address/${id}`}
-                  isExternal
-                  fontWeight={300}
-                  mb={3}
-                  textDecoration={'underline'}
+              <Link
+                fontSize="sm"
+                href={getAddressUrl(chainId, id)}
+                isExternal
+                fontWeight={300}
+                mb={3}
+                _hover={{}}
+              >
+                <HStack>
+                  <Text textDecoration={'underline'}>{shortenAddress(id)}</Text>
+                  <NetworkDisplay chainId={chainId} />
+                </HStack>
+              </Link>
+              {isMaster && (
+                <Button
+                  onClick={() =>
+                    openActionModal(GameMasterActions.UPDATE_GAME_METADATA)
+                  }
+                  size="sm"
                 >
-                  {shortenAddress(id)}
-                </Link>
-                {isMaster && (
-                  <Button onClick={updateGameMetadata.onOpen} size="sm">
-                    edit
-                  </Button>
-                )}
-              </HStack>
+                  edit
+                </Button>
+              )}
             </VStack>
           </HStack>
           <VStack
@@ -244,7 +289,7 @@ function GamePage(): JSX.Element {
             Admins
           </Text>
           {admins.map(admin => (
-            <UserLink key={`gm-${admin}`} user={admin} />
+            <UserLink key={`admin-${admin}`} user={admin} />
           ))}
 
           <Text
@@ -258,10 +303,10 @@ function GamePage(): JSX.Element {
           <Wrap spacingX={1}>
             {masters.map((master, i) => {
               return (
-                <>
-                  <UserLink key={`gm-${master}`} user={master} />
+                <Flex key={`gm-${master}`}>
+                  <UserLink user={master} />
                   {i !== masters.length - 1 && <Text as="span">, </Text>}
-                </>
+                </Flex>
               );
             })}
           </Wrap>
@@ -277,7 +322,7 @@ function GamePage(): JSX.Element {
             <VStack p={8} bg="cardBG" align="start" spacing={4}>
               {!character && !showJoinGame && isEligibleForCharacter && (
                 <HStack w="100%" spacing={4}>
-                  <Button variant="solid" onClick={() => setShowJoinGame(true)}>
+                  <Button variant="solid" onClick={startJoinGame}>
                     Join this Game
                   </Button>
                   <Text fontSize="sm">
@@ -305,7 +350,9 @@ function GamePage(): JSX.Element {
                   <HStack spacing={4}>
                     <Button
                       variant="solid"
-                      onClick={restoreCharacterModal.onOpen}
+                      onClick={() =>
+                        openActionModal(GameMasterActions.RESTORE_CHARACTER)
+                      }
                     >
                       Restore Character
                     </Button>
@@ -343,15 +390,6 @@ function GamePage(): JSX.Element {
               </Tab>
               <Tab gap={2}>
                 <Image
-                  alt="xp"
-                  height="20px"
-                  src="/icons/xp.svg"
-                  width="20px"
-                />
-                <Text>{experience} XP</Text>
-              </Tab>
-              <Tab gap={2}>
-                <Image
                   alt="users"
                   height="20px"
                   src="/icons/users.svg"
@@ -375,9 +413,6 @@ function GamePage(): JSX.Element {
                 <CharactersPanel />
               </TabPanel>
               <TabPanel px={0}>
-                <XPPanel />
-              </TabPanel>
-              <TabPanel px={0}>
                 <ClassesPanel />
               </TabPanel>
               <TabPanel px={0}>
@@ -386,8 +421,25 @@ function GamePage(): JSX.Element {
             </TabPanels>
           </Tabs>
         </VStack>
-        <VStack h="100%" bg="cardBG" p={8} align="stretch">
-          <Text>Coming Soon!</Text>
+        <VStack h="100%" bg="cardBG" p={8} align="stretch" spacing={4}>
+          {isMaster ? (
+            <>
+              <Button
+                onClick={() => openActionModal(GameMasterActions.CREATE_ITEM)}
+                size="sm"
+              >
+                Create Item
+              </Button>
+              <Button
+                onClick={() => openActionModal(GameMasterActions.CREATE_CLASS)}
+                size="sm"
+              >
+                Create Class
+              </Button>
+            </>
+          ) : (
+            <Text>Coming Soon!</Text>
+          )}
         </VStack>
       </Grid>
     );
@@ -396,26 +448,32 @@ function GamePage(): JSX.Element {
   return (
     <>
       {content()}
-      <UpdateGameMetadataModal {...updateGameMetadata} />
-      <RestoreCharacterModal {...restoreCharacterModal} />
+      {/*  GAME ACTIONS */}
+      {updateGameMetadataModal && <UpdateGameMetadataModal />}
+      {restoreCharacterModal && <RestoreCharacterModal />}
+      {createClassModal && <CreateClassModal />}
+      {createItemModal && <CreateItemModal />}
 
-      {addRequirementModal && <AddItemRequirementModal />}
+      {/*  CHARACTER ACTIONS */}
       {approveTransferModal && <ApproveTransferModal />}
       {assignClassModal && <AssignClassModal />}
       {claimClassModal && <ClaimClassModal />}
-      {claimItemModal && <ClaimItemModal />}
       {editCharacterModal && <UpdateCharacterMetadataModal />}
-      {editItemClaimableModal && <EditItemClaimableModal />}
       {equipItemModal && <EquipItemModal />}
       {giveExpModal && <DropExperienceModal />}
       {giveItemsModal && <GiveItemsModal />}
       {jailPlayerModal && <JailPlayerModal />}
       {removeCharacterModal && <RemoveCharacterModal />}
-      {removeRequirementModal && <RemoveItemRequirementModal />}
       {renounceCharacterModal && <RenounceCharacterModal />}
       {renounceClassModal && <RenounceClassModal />}
       {revokeClassModal && <RevokeClassModal />}
       {transferCharacterModal && <TransferCharacterModal />}
+
+      {/*  ITEM ACTIONS */}
+      {addRequirementModal && <AddItemRequirementModal />}
+      {removeRequirementModal && <RemoveItemRequirementModal />}
+      {claimItemModal && <ClaimItemModal />}
+      {editItemClaimableModal && <EditItemClaimableModal />}
     </>
   );
 }

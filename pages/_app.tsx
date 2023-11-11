@@ -23,19 +23,12 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
-import { Provider } from 'urql';
 import { WagmiConfig } from 'wagmi';
 
 import { Layout } from '@/components/Layout';
 import { GamesProvider } from '@/contexts/GamesContext';
-import { client } from '@/graphql/client';
-import { useGraphHealth } from '@/hooks/useGraphHealth';
-import { DEFAULT_CHAIN, wagmiConfig } from '@/lib/web3';
-import {
-  HOSTNAME,
-  RAIDGUILD_GAME_ADDRESS,
-  RAIDGUILD_HOSTNAME,
-} from '@/utils/constants';
+import { SUPPORTED_CHAINS, wagmiConfig } from '@/lib/web3';
+import { RAIDGUILD_GAME_URL } from '@/utils/constants';
 import { globalStyles, theme } from '@/utils/theme';
 
 const TITLE = 'CharacterSheets';
@@ -50,12 +43,11 @@ export default function App({
   Component: AppProps['Component'];
   pageProps: AppProps['pageProps'];
 }): JSX.Element {
-  useGraphHealth();
   const { push, pathname } = useRouter();
 
   useEffect(() => {
-    if (HOSTNAME === RAIDGUILD_HOSTNAME && pathname === '/') {
-      push(`games/${RAIDGUILD_GAME_ADDRESS}`);
+    if (RAIDGUILD_GAME_URL && pathname === '/') {
+      push(RAIDGUILD_GAME_URL);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -86,18 +78,16 @@ export default function App({
       </Head>
       <ChakraProvider resetCSS theme={theme}>
         <Global styles={globalStyles} />
-        <Provider value={client}>
-          <WagmiConfig config={wagmiConfig}>
-            <RainbowKitProvider chains={[DEFAULT_CHAIN]} theme={darkTheme()}>
-              <Analytics />
-              <GamesProvider>
-                <Layout>
-                  <Component {...pageProps} />
-                </Layout>
-              </GamesProvider>
-            </RainbowKitProvider>
-          </WagmiConfig>
-        </Provider>
+        <WagmiConfig config={wagmiConfig}>
+          <RainbowKitProvider chains={SUPPORTED_CHAINS} theme={darkTheme()}>
+            <Analytics />
+            <GamesProvider>
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+            </GamesProvider>
+          </RainbowKitProvider>
+        </WagmiConfig>
       </ChakraProvider>
     </>
   );

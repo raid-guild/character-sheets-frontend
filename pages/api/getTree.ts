@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
-import { getClaimableTree } from '@/lib/claimableTree';
+import { getClaimableTreeFromDB } from '@/lib/claimableTree';
+import { isSupportedChain } from '@/lib/web3';
 
 export default async function getTree(
   req: NextApiRequest,
@@ -8,25 +9,31 @@ export default async function getTree(
 ) {
   if (req.method !== 'GET') return res.status(405).end();
 
-  const { gameAddress, itemId } = req.query;
+  const { gameAddress, itemId, chainId } = req.query;
 
   if (
     typeof gameAddress !== 'string' ||
     typeof itemId !== 'string' ||
+    typeof chainId !== 'string' ||
     !gameAddress ||
-    !itemId
+    !itemId ||
+    !chainId
   ) {
     return res.status(400).end();
   }
 
+  if (!isSupportedChain(chainId)) {
+    return res.status(400).json({ error: 'Invalid chain id' });
+  }
+
   try {
-    const tree = await getClaimableTree(gameAddress, Number(itemId));
+    const tree = await getClaimableTreeFromDB(gameAddress, itemId, chainId);
 
     if (!tree) {
       return res.status(404).end();
     }
 
-    return res.status(200).json({ tree });
+    return res.status(200).json(tree);
   } catch (error) {
     return res.status(500).json({ error });
   }

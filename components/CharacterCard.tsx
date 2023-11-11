@@ -24,7 +24,7 @@ import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { useGame } from '@/contexts/GameContext';
-import { EXPLORER_URLS } from '@/utils/constants';
+import { getAddressUrl } from '@/lib/web3';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character } from '@/utils/types';
 
@@ -119,7 +119,7 @@ export const CharacterCard: React.FC<{
           display="flex"
           fontSize="sm"
           gap={2}
-          href={dummy ? '/' : `${EXPLORER_URLS[chainId]}/address/${account}`}
+          href={dummy ? '/' : getAddressUrl(chainId, account)}
           isExternal
           p={0}
         >

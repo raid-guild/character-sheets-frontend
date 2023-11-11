@@ -14,14 +14,14 @@ import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
-import { useActions } from '@/contexts/ActionsContext';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
 export const RemoveCharacterModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
-  const { selectedCharacter, removeCharacterModal } = useActions();
+  const { selectedCharacter, removeCharacterModal } = useCharacterActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -82,7 +82,7 @@ export const RemoveCharacterModal: React.FC = () => {
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -139,6 +139,7 @@ export const RemoveCharacterModal: React.FC = () => {
           isSyncing={isSyncing}
           text={`Removing ${selectedCharacter.name}...`}
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }

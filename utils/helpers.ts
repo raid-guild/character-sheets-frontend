@@ -64,7 +64,14 @@ export const shortenAddress = (address: string, chars = 4): string => {
   )}`;
 };
 
-export const shortenText = (text: string, length: number): string => {
+export const shortenText = (
+  text: string | undefined,
+  length: number,
+): string => {
+  if (!text) {
+    return '';
+  }
+
   if (text.length <= length) {
     return text;
   }
@@ -78,7 +85,7 @@ export const timeout = (ms: number): Promise<void> => {
 
 export const fetchMetadata = async (uri: string): Promise<Metadata> => {
   try {
-    const res = await fetch(`${uri}`);
+    const res = await fetch(uri);
     return await res.json();
   } catch (e) {
     console.error(e);
@@ -196,6 +203,8 @@ export const formatGameMeta = async (
 
   return {
     id: game.id,
+    startedAt: new Date(Number(game.startedAt) * 1000),
+    chainId: Number(game.chainId),
     uri: game.uri,
     owner: game.owner.address,
     admins: game.admins.map(a => a.address),
@@ -218,6 +227,8 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
 
   return {
     id: game.id,
+    startedAt: new Date(Number(game.startedAt) * 1000),
+    chainId: Number(game.chainId),
     classesAddress: game.classesAddress,
     itemsAddress: game.itemsAddress,
     experienceAddress: game.experienceAddress,

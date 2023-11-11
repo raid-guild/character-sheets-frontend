@@ -23,14 +23,14 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getAddress, pad, parseAbi, zeroAddress } from 'viem';
+import { getAddress, pad, parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
+import { waitUntilBlock } from '@/graphql/health';
 import { ClaimableItemLeaf, useClaimableTree } from '@/hooks/useClaimableTree';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useToast } from '@/hooks/useToast';
 import { executeAsCharacter } from '@/utils/account';
 
@@ -96,10 +96,7 @@ export const ClaimItemModal: React.FC = () => {
     tree,
     loading: isLoadingTree,
     reload: reloadTree,
-  } = useClaimableTree(
-    (game?.id || zeroAddress) as `0x${string}`,
-    BigInt(selectedItem?.itemId || '0'),
-  );
+  } = useClaimableTree(selectedItem?.itemId);
 
   useEffect(() => {
     if (!claimItemModal?.isOpen) {
@@ -251,7 +248,7 @@ export const ClaimItemModal: React.FC = () => {
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
 
         if (!synced) {
           throw new Error('Something went wrong while syncing.');
@@ -317,6 +314,7 @@ export const ClaimItemModal: React.FC = () => {
           isSyncing={isSyncing}
           text={`Claiming ${selectedItem.name}...`}
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }
