@@ -14,3 +14,11 @@ export const RAIDGUILD_GAME_URL =
   RAIDGUILD_GAME_CHAIN_LABEL
     ? `/games/${RAIDGUILD_GAME_CHAIN_LABEL}/${RAIDGUILD_GAME_ADDRESS}`
     : '';
+
+export const ENVIRONMENT = (process.env.NEXT_PUBLIC_ENVIRONMENT || 'dev') as
+  | 'main'
+  | 'dev';
+
+if (!ENVIRONMENT || !['main', 'dev'].includes(ENVIRONMENT)) {
+  throw new Error('NEXT_PUBLIC_ENVIRONMENT is not set');
+}

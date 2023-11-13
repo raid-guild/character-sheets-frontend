@@ -33,6 +33,7 @@ export type Game = Metadata & {
   owner: string;
   admins: string[];
   masters: string[];
+  gameMasterHatEligibilityModule: string;
   characters: Character[];
   classes: Class[];
   items: Item[];

@@ -1,6 +1,9 @@
 import { Chain, gnosis, goerli, mainnet } from 'wagmi/chains';
 
+import { ENVIRONMENT } from '@/utils/constants';
+
 export const INFURA_KEY: string = process.env.NEXT_PUBLIC_INFURA_KEY!;
+export const SERVER_INFURA_KEY: string = process.env.SERVER_INFURA_KEY!;
 
 export const WALLET_CONNECT_PROJECT_ID: string =
   process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID!;
@@ -20,6 +23,12 @@ export const RPC_URLS: { [key: number]: string } = {
   [100]: 'https://rpc.gnosis.gateway.fm',
   [5]: `https://goerli.infura.io/v3/${INFURA_KEY}`,
   [1]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+};
+
+export const SERVER_RPC_URLS: { [key: number]: string } = {
+  [100]: 'https://rpc.gnosis.gateway.fm',
+  [5]: `https://goerli.infura.io/v3/${SERVER_INFURA_KEY}`,
+  [1]: `https://mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
 };
 
 export const CHAINS: { [key: number]: Chain } = {
@@ -50,15 +59,12 @@ export const CHAIN_ID_TO_LABEL: { [key: number]: string } = {
 const ALL_SUPPORTED_CHAINS: Chain[] = [gnosis, goerli];
 
 export const SUPPORTED_CHAINS: Chain[] = (() => {
-  switch (process.env.NEXT_PUBLIC_ENVIRONMENT) {
+  switch (ENVIRONMENT) {
     case 'main':
       return ALL_SUPPORTED_CHAINS.filter(chain => chain.testnet === false);
     case 'dev':
-      return ALL_SUPPORTED_CHAINS.filter(chain => chain.testnet === true);
-    case 'local':
-      return ALL_SUPPORTED_CHAINS;
     default:
-      throw new Error('NEXT_PUBLIC_ENVIRONMENT is not set');
+      return ALL_SUPPORTED_CHAINS.filter(chain => chain.testnet === true);
   }
 })();
 

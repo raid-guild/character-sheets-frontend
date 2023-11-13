@@ -133,4 +133,11 @@ fragment FullGameInfo on Game {
   items {
     ...ItemInfo
   }
+  hatsData {
+    ...HatsDataInfo
+  }
+}
+
+fragment HatsDataInfo on HatsData {
+  gameMasterHatEligibilityModule
 }

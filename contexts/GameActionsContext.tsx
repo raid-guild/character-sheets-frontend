@@ -1,6 +1,5 @@
 import { useDisclosure } from '@chakra-ui/react';
 import { createContext, useCallback, useContext, useMemo } from 'react';
-import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
@@ -8,6 +7,7 @@ import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
 export enum AdminActions {}
 
 export enum GameMasterActions {
+  ADD_GAME_MASTER = 'Add a game master',
   UPDATE_GAME_METADATA = 'Update game metadata',
   RESTORE_CHARACTER = 'Restore character',
   CREATE_CLASS = 'Create class',
@@ -21,6 +21,7 @@ type GameActionsContextType = {
   gmActions: GameMasterActions[];
 
   openActionModal: (action: AdminActions | GameMasterActions) => void;
+  addGameMasterModal: ModalProps;
   updateGameMetadataModal: ModalProps;
   restoreCharacterModal: ModalProps;
   createClassModal: ModalProps;
@@ -32,6 +33,7 @@ const GameActionsContext = createContext<GameActionsContextType>({
   gmActions: [],
 
   openActionModal: () => {},
+  addGameMasterModal: undefined,
   updateGameMetadataModal: undefined,
   restoreCharacterModal: undefined,
   createClassModal: undefined,
@@ -44,9 +46,9 @@ export const useGameActions = (): GameActionsContextType =>
 export const GameActionsProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
-  const { address } = useAccount();
-  const { game, isMaster } = useGame();
+  const { isMaster } = useGame();
 
+  const addGameMasterModal = useDisclosure();
   const updateGameMetadataModal = useDisclosure();
   const restoreCharacterModal = useDisclosure();
   const createClassModal = useDisclosure();
@@ -58,14 +60,14 @@ export const GameActionsProvider: React.FC<React.PropsWithChildren> = ({
 
   const gmActions = useMemo(() => {
     if (isMaster) {
-      let actions = Object.keys(GameMasterActions).map(
+      const actions = Object.keys(GameMasterActions).map(
         key => GameMasterActions[key as keyof typeof GameMasterActions],
       );
 
       return actions;
     }
     return [];
-  }, [address, game, isMaster]);
+  }, [isMaster]);
 
   const { isWrongNetwork, renderNetworkError } = useCheckGameNetwork();
 
@@ -76,6 +78,9 @@ export const GameActionsProvider: React.FC<React.PropsWithChildren> = ({
         return;
       }
       switch (action) {
+        case GameMasterActions.ADD_GAME_MASTER:
+          addGameMasterModal.onOpen();
+          break;
         case GameMasterActions.UPDATE_GAME_METADATA:
           updateGameMetadataModal.onOpen();
           break;
@@ -93,6 +98,9 @@ export const GameActionsProvider: React.FC<React.PropsWithChildren> = ({
       }
     },
     [
+      addGameMasterModal,
+      createClassModal,
+      createItemModal,
       isWrongNetwork,
       renderNetworkError,
       updateGameMetadataModal,
@@ -107,6 +115,7 @@ export const GameActionsProvider: React.FC<React.PropsWithChildren> = ({
         gmActions,
 
         openActionModal,
+        addGameMasterModal,
         updateGameMetadataModal,
         restoreCharacterModal,
         createClassModal,

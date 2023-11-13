@@ -7,7 +7,7 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { useAccount, useChainId, useSwitchNetwork } from 'wagmi';
+import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi';
 
 import { NetworkDisplay } from './NetworkDisplay';
 
@@ -16,11 +16,11 @@ type NetworkAlertProps = {
 };
 
 export const NetworkAlert: React.FC<NetworkAlertProps> = ({ chainId }) => {
-  const connectedChainId = useChainId();
+  const { chain } = useNetwork();
   const { address } = useAccount();
   const { switchNetwork } = useSwitchNetwork();
 
-  if (!address || connectedChainId === chainId) return null;
+  if (!address || chain?.id === chainId) return null;
 
   return (
     <VStack align="center" w="100%" mb={8}>

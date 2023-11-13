@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useChainId } from 'wagmi';
+import { useNetwork } from 'wagmi';
 
 import { GetGlobalDocument, GlobalInfoFragment } from '@/graphql/autogen/types';
 import { getGraphClient } from '@/graphql/client';
@@ -92,13 +92,16 @@ export const useGlobalForChain = (): {
   reload: () => void;
   data: GlobalInfoFragment | undefined;
 } => {
-  const chainId = useChainId();
+  const { chain } = useNetwork();
 
   const { data: allData, loading, error, reload } = useGlobal();
 
   const data = useMemo(() => {
-    return allData[chainId];
-  }, [allData, chainId]);
+    if (!chain) {
+      return undefined;
+    }
+    return allData[chain.id];
+  }, [allData, chain]);
 
   return {
     data,

@@ -4,6 +4,7 @@ import {
   FormHelperText,
   FormLabel,
   Input,
+  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -18,54 +19,51 @@ import { isAddress, parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
-import { useCharacterActions } from '@/contexts/CharacterActionsContext';
+import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
-export const TransferCharacterModal: React.FC = () => {
-  const { game, reload: reloadGame } = useGame();
-  const { selectedCharacter, transferCharacterModal } = useCharacterActions();
+export const AddGameMasterModal: React.FC = () => {
+  const { game, isAdmin, reload: reloadGame } = useGame();
+  const { addGameMasterModal } = useGameActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const { renderError } = useToast();
 
-  const [newPlayer, setNewPlayer] = useState<string>('');
+  const [newGameMaster, setNewGameMaster] = useState<string>('');
 
   const [showError, setShowError] = useState<boolean>(false);
-  const [isTransferring, setIsTransferring] = useState<boolean>(false);
+  const [isAdding, setIsAdding] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
-  const invalidPlayerAddress = useMemo(() => {
-    return !isAddress(newPlayer) && !!newPlayer;
-  }, [newPlayer]);
+  const invalidGameMasterAddress = useMemo(() => {
+    return !isAddress(newGameMaster.trim());
+  }, [newGameMaster]);
 
-  const allPlayers = useMemo(() => {
-    if (!game) return [];
-    return game.characters.map(c => c.player);
-  }, [game]);
-
-  const newPlayerIsAlreadyPlayer = useMemo(() => {
-    return allPlayers.includes(newPlayer.toLowerCase());
-  }, [allPlayers, newPlayer]);
+  const alreadyGameMaster = useMemo(() => {
+    return game?.masters.some(
+      master => master === newGameMaster.trim().toLowerCase(),
+    );
+  }, [game, newGameMaster]);
 
   const hasError = useMemo(() => {
-    return !newPlayer || invalidPlayerAddress || newPlayerIsAlreadyPlayer;
-  }, [newPlayer, invalidPlayerAddress, newPlayerIsAlreadyPlayer]);
+    return !newGameMaster || invalidGameMasterAddress || alreadyGameMaster;
+  }, [alreadyGameMaster, newGameMaster, invalidGameMasterAddress]);
 
   useEffect(() => {
     setShowError(false);
-  }, [newPlayer]);
+  }, [newGameMaster]);
 
   const resetData = useCallback(() => {
-    setNewPlayer('');
+    setNewGameMaster('');
 
     setShowError(false);
-    setIsTransferring(false);
+    setIsAdding(false);
     setTxHash(null);
     setTxFailed(false);
     setIsSyncing(false);
@@ -73,17 +71,12 @@ export const TransferCharacterModal: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!transferCharacterModal?.isOpen) {
+    if (!addGameMasterModal?.isOpen) {
       resetData();
     }
-  }, [resetData, transferCharacterModal?.isOpen]);
+  }, [resetData, addGameMasterModal]);
 
-  const gameOwner = useMemo(() => {
-    if (!game) return null;
-    return game.owner as Address;
-  }, [game]);
-
-  const onTransferCharacter = useCallback(
+  const onAddGameMaster = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
@@ -94,27 +87,21 @@ export const TransferCharacterModal: React.FC = () => {
 
       try {
         if (!walletClient) throw new Error('Could not find a wallet client');
-        if (!game) throw new Error('Missing game data');
-        if (!selectedCharacter) throw new Error('Character not found');
+        if (!(game && game.gameMasterHatEligibilityModule))
+          throw new Error('Missing game data');
+        if (!isAdmin) throw new Error('You are not a game admin');
 
-        if (!gameOwner) throw new Error('Game owner not found');
-
-        setIsTransferring(true);
+        setIsAdding(true);
 
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
-          address: game.id as Address,
+          address: game.gameMasterHatEligibilityModule as Address,
           abi: parseAbi([
-            'function safeTransferFrom(address from, address to, uint256 characterId, bytes memory) public',
+            'function addEligibleAddresses(address[] calldata _addresses) external',
           ]),
-          functionName: 'safeTransferFrom',
-          args: [
-            selectedCharacter.player as Address,
-            newPlayer as Address,
-            BigInt(selectedCharacter.characterId),
-            '0x',
-          ],
+          functionName: 'addEligibleAddresses',
+          args: [[newGameMaster as Address]],
         });
         setTxHash(transactionhash);
 
@@ -125,7 +112,7 @@ export const TransferCharacterModal: React.FC = () => {
 
         if (status === 'reverted') {
           setTxFailed(true);
-          setIsTransferring(false);
+          setIsAdding(false);
           throw new Error('Transaction failed');
         }
 
@@ -136,29 +123,25 @@ export const TransferCharacterModal: React.FC = () => {
         setIsSynced(true);
         reloadGame();
       } catch (e) {
-        renderError(
-          e,
-          `Something went wrong while transferring character to a new player`,
-        );
+        renderError(e, `Something went wrong while adding a new GameMaster.`);
       } finally {
         setIsSyncing(false);
-        setIsTransferring(false);
+        setIsAdding(false);
       }
     },
     [
       game,
-      gameOwner,
       hasError,
-      newPlayer,
+      isAdmin,
+      newGameMaster,
       publicClient,
       reloadGame,
       renderError,
-      selectedCharacter,
       walletClient,
     ],
   );
 
-  const isLoading = isTransferring;
+  const isLoading = isAdding;
   const isDisabled = isLoading;
 
   const content = () => {
@@ -166,7 +149,7 @@ export const TransferCharacterModal: React.FC = () => {
       return (
         <VStack py={10} spacing={4}>
           <Text>Transaction failed.</Text>
-          <Button onClick={transferCharacterModal?.onClose} variant="outline">
+          <Button onClick={addGameMasterModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -176,48 +159,61 @@ export const TransferCharacterModal: React.FC = () => {
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>
-          <Text>
-            The character {selectedCharacter?.name} has been transferred to a
-            new player!
+          <Text fontSize="sm" textAlign="center">
+            GameMaster eligibility updated! However, to complete the process of
+            adding a new GameMaster, you must go to{' '}
+            <Link
+              href="https://app.hatsprotocol.xyz/"
+              isExternal
+              textDecor="underline"
+            >
+              Hats Protocol
+            </Link>{' '}
+            and give a GameMaster hat to the newly eligible address.
           </Text>
-          <Button onClick={transferCharacterModal?.onClose} variant="outline">
+          <Button
+            mt={4}
+            onClick={addGameMasterModal?.onClose}
+            variant="outline"
+          >
             Close
           </Button>
         </VStack>
       );
     }
 
-    if (txHash && selectedCharacter) {
+    if (txHash) {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text="Transferring character..."
+          text="Adding GameMaster..."
           txHash={txHash}
-          chainId={game?.chainId}
         />
       );
     }
 
     return (
-      <VStack as="form" onSubmit={onTransferCharacter} spacing={8}>
-        <FormControl isInvalid={showError && invalidPlayerAddress}>
-          <FormLabel>New player address</FormLabel>
+      <VStack as="form" onSubmit={onAddGameMaster} spacing={8}>
+        <FormControl isInvalid={showError && invalidGameMasterAddress}>
+          <FormLabel>Additional GameMaster address</FormLabel>
           <Input
-            onChange={e => setNewPlayer(e.target.value)}
+            onChange={e => setNewGameMaster(e.target.value)}
             type="text"
-            value={newPlayer}
+            value={newGameMaster}
           />
-          {showError && !newPlayer && (
+          {showError && !newGameMaster && (
             <FormHelperText color="red">
-              New player address is required
+              A GameMaster address is required
             </FormHelperText>
           )}
-          {showError && invalidPlayerAddress && (
-            <FormHelperText color="red">Invalid player address</FormHelperText>
-          )}
-          {showError && !invalidPlayerAddress && newPlayerIsAlreadyPlayer && (
+          {showError && invalidGameMasterAddress && (
             <FormHelperText color="red">
-              This player already owns a character in this game
+              Invalid GameMaster address
+            </FormHelperText>
+          )}
+          {showError && !invalidGameMasterAddress && alreadyGameMaster && (
+            <FormHelperText color="red">
+              This address is already a GameMaster
             </FormHelperText>
           )}
         </FormControl>
@@ -225,10 +221,10 @@ export const TransferCharacterModal: React.FC = () => {
           autoFocus
           isDisabled={isDisabled}
           isLoading={isLoading}
-          loadingText="Transferring..."
+          loadingText="Adding..."
           type="submit"
         >
-          Transfer
+          Add
         </Button>
       </VStack>
     );
@@ -238,13 +234,13 @@ export const TransferCharacterModal: React.FC = () => {
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={transferCharacterModal?.isOpen ?? false}
-      onClose={transferCharacterModal?.onClose ?? (() => {})}
+      isOpen={addGameMasterModal?.isOpen ?? false}
+      onClose={addGameMasterModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Text>Transfer Character to New Player</Text>
+          <Text>Make Address Eligible as GameMaster</Text>
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>
