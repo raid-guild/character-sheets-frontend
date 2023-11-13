@@ -3,6 +3,7 @@ import { Chain, gnosis, goerli, mainnet } from 'wagmi/chains';
 import { ENVIRONMENT } from '@/utils/constants';
 
 export const INFURA_KEY: string = process.env.NEXT_PUBLIC_INFURA_KEY!;
+export const SERVER_INFURA_KEY: string = process.env.SERVER_INFURA_KEY!;
 
 export const WALLET_CONNECT_PROJECT_ID: string =
   process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID!;
@@ -22,6 +23,12 @@ export const RPC_URLS: { [key: number]: string } = {
   [100]: 'https://rpc.gnosis.gateway.fm',
   [5]: `https://goerli.infura.io/v3/${INFURA_KEY}`,
   [1]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+};
+
+export const SERVER_RPC_URLS: { [key: number]: string } = {
+  [100]: 'https://rpc.gnosis.gateway.fm',
+  [5]: `https://goerli.infura.io/v3/${SERVER_INFURA_KEY}`,
+  [1]: `https://mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
 };
 
 export const CHAINS: { [key: number]: Chain } = {
