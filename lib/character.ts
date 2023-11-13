@@ -3,9 +3,8 @@ import { getAddress } from 'viem';
 import { dbPromise } from '@/lib/mongodb';
 import { CharacterMetaDB } from '@/utils/types';
 
-import { DEFAULT_CHAIN } from './web3';
-
 export const getCharacterMetaFromDB = async (
+  chainId: string | number | bigint,
   gameAddress: string,
   characterId: string | number | bigint,
 ): Promise<null | CharacterMetaDB> => {
@@ -14,7 +13,7 @@ export const getCharacterMetaFromDB = async (
     const result = await client.collection('characters').findOne({
       gameAddress: getAddress(gameAddress),
       characterId: BigInt(characterId).toString(),
-      chainId: DEFAULT_CHAIN.id,
+      chainId: BigInt(chainId).toString(),
     });
     return result ? (result as CharacterMetaDB) : null;
   } catch (error) {
@@ -24,31 +23,24 @@ export const getCharacterMetaFromDB = async (
 };
 
 export const updateCharacterInDB = async (
-  gameAddress: string,
-  characterId: string | number | bigint,
   update: Partial<CharacterMetaDB>,
 ): Promise<null | CharacterMetaDB> => {
   try {
+    if (!(update.gameAddress && update.characterId)) return null;
+
     const client = await dbPromise;
     const result = await client.collection('characters').findOneAndUpdate(
       {
-        gameAddress: getAddress(gameAddress),
-        characterId: BigInt(characterId).toString(),
+        gameAddress: getAddress(update.gameAddress),
+        characterId: BigInt(update.characterId).toString(),
       },
       {
         $set: {
           ...update,
-          gameAddress: getAddress(gameAddress),
-          characterId: BigInt(characterId).toString(),
           updatedAt: new Date(),
         },
         $setOnInsert: {
-          ...update,
-          gameAddress: getAddress(gameAddress),
-          characterId: BigInt(characterId).toString(),
-          chainId: DEFAULT_CHAIN.id,
           createdAt: new Date(),
-          updatedAt: new Date(),
         },
       },
       {

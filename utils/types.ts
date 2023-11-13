@@ -1,9 +1,15 @@
 import { ObjectId } from 'mongodb';
 
+export type Attribute = {
+  trait_type: string;
+  value: string;
+};
+
 export type Metadata = {
   name: string;
   description: string;
   image: string;
+  attributes?: Attribute[];
 };
 
 export type GameMeta = Metadata & {
@@ -97,6 +103,7 @@ export type ClaimableTreeDB = {
 
 export type CharacterMetaDB = Metadata & {
   _id: ObjectId;
+  chainId: string;
   gameAddress: string;
   characterId: string;
   account: string;

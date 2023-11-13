@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { isAddress, isHex } from 'viem';
 
 import { getCharacterMetaFromDB } from '@/lib/character';
+import { getChainIdFromLabel } from '@/lib/web3';
 
 export default async function getCharacterMetadata(
   req: NextApiRequest,
@@ -9,9 +10,15 @@ export default async function getCharacterMetadata(
 ) {
   if (req.method !== 'GET') return res.status(405).end();
 
-  const { characterId: extendedCharacterId } = req.query;
+  const { chainLabel, characterId: extendedCharacterId } = req.query;
+  const chainId = getChainIdFromLabel(chainLabel as string);
 
-  if (typeof extendedCharacterId !== 'string' || !extendedCharacterId) {
+  if (
+    typeof extendedCharacterId !== 'string' ||
+    !extendedCharacterId ||
+    typeof chainId !== 'number' ||
+    !chainId
+  ) {
     return res.status(400).end();
   }
 
@@ -32,7 +39,11 @@ export default async function getCharacterMetadata(
   }
 
   try {
-    const characterMeta = getCharacterMetaFromDB(gameAddress, characterIdHex);
+    const characterMeta = await getCharacterMetaFromDB(
+      chainId,
+      gameAddress,
+      characterIdHex,
+    );
 
     if (!characterMeta) {
       console.error(`Character ${extendedCharacterId} not found in DB`);

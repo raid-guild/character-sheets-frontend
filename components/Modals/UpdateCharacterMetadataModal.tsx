@@ -156,11 +156,23 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
 
         setIsUpdating(true);
 
-        const characterMetadata = {
+        const characterMetadata: {
+          name: string;
+          description: string;
+          image: string;
+          attributes?: {
+            trait_type: string;
+            value: string;
+          }[];
+        } = {
           name: newName,
           description: newDescription,
           image: `ipfs://${cid}`,
         };
+
+        if (!newAvatarFile && selectedCharacter.attributes) {
+          characterMetadata['attributes'] = selectedCharacter.attributes;
+        }
 
         const res = await fetch(
           '/api/uploadMetadata?name=characterMetadata.json',

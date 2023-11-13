@@ -5,14 +5,17 @@ import {
   CharacterMetaInfoFragment,
   GetCharacterMetaDocument,
 } from '@/graphql/autogen/types';
-import { client } from '@/graphql/client';
+import { getGraphClient } from '@/graphql/client';
 import { updateCharacterInDB } from '@/lib/character';
+import { getChainIdFromLabel } from '@/lib/web3';
 import { uriToHttp } from '@/utils/helpers';
 import { CharacterMetaDB } from '@/utils/types';
 
 const getCharacterMetaFromTheGraph = async (
+  chainId: number,
   characterId: string,
 ): Promise<CharacterMetaInfoFragment | null> => {
+  const client = getGraphClient(chainId);
   const { data, error } = await client.query(GetCharacterMetaDocument, {
     characterId: characterId.toLowerCase(),
   });
@@ -36,9 +39,15 @@ export default async function getCharacterMetadata(
 ) {
   if (req.method !== 'GET') return res.status(405).end();
 
-  const { characterId: extendedCharacterId } = req.query;
+  const { chainLabel, characterId: extendedCharacterId } = req.query;
+  const chainId = getChainIdFromLabel(chainLabel as string);
 
-  if (typeof extendedCharacterId !== 'string' || !extendedCharacterId) {
+  if (
+    typeof extendedCharacterId !== 'string' ||
+    !extendedCharacterId ||
+    typeof chainId !== 'number' ||
+    !chainId
+  ) {
     return res.status(400).end();
   }
 
@@ -59,7 +68,10 @@ export default async function getCharacterMetadata(
   }
 
   try {
-    const character = await getCharacterMetaFromTheGraph(characterIdHex);
+    const character = await getCharacterMetaFromTheGraph(
+      chainId,
+      extendedCharacterId,
+    );
 
     if (!character) {
       return res.status(404).end();
@@ -72,8 +84,9 @@ export default async function getCharacterMetadata(
     }
 
     let update: Partial<CharacterMetaDB> = {
+      chainId: BigInt(chainId).toString(),
       gameAddress: getAddress(gameAddress),
-      characterId: characterIdHex,
+      characterId: BigInt(characterIdHex).toString(),
       uri: uri,
       player: character.player,
       account: character.account,
@@ -87,14 +100,11 @@ export default async function getCharacterMetadata(
         name: data.name,
         description: data.description,
         image: data.image,
+        attributes: data.attributes,
       };
     }
 
-    const characterMeta = await updateCharacterInDB(
-      gameAddress,
-      characterIdHex,
-      update,
-    );
+    const characterMeta = await updateCharacterInDB(update);
 
     if (!characterMeta) {
       throw new Error('Error updating character');
