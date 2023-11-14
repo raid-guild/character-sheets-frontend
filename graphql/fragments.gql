@@ -9,6 +9,9 @@ fragment CharacterMetaInfo on Character {
   account
   player
   uri
+  game {
+    id
+  }
 }
 
 fragment CharacterInfo on Character {

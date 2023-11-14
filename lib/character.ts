@@ -3,7 +3,7 @@ import { getAddress } from 'viem';
 import { dbPromise } from '@/lib/mongodb';
 import { CharacterMetaDB } from '@/utils/types';
 
-export const getCharacterMetaFromDB = async (
+export const getCharacterMetaFromDBWithId = async (
   chainId: string | number | bigint,
   gameAddress: string,
   characterId: string | number | bigint,
@@ -18,6 +18,21 @@ export const getCharacterMetaFromDB = async (
     return result ? (result as CharacterMetaDB) : null;
   } catch (error) {
     console.error('Error in getCharacterMetaFromDB: ', error);
+    return null;
+  }
+};
+
+export const getCharacterMetaFromDBWithURI = async (
+  uri: string,
+): Promise<null | CharacterMetaDB> => {
+  try {
+    const client = await dbPromise;
+    const result = await client.collection('characters').findOne({
+      uri,
+    });
+    return result ? (result as CharacterMetaDB) : null;
+  } catch (error) {
+    console.error('Error in getCharacterMetaWithURI: ', error);
     return null;
   }
 };
