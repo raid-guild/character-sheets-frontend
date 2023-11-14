@@ -40,9 +40,14 @@ export default async function getCharacterMetadata(
   if (isCID) {
     const dbCharacterMeta = await getMetadataFromDBWithCID(extendedCharacterId);
     if (!dbCharacterMeta) {
+      // eslint-disable-next-line no-console
+      console.log(
+        'URI',
+        `${BASE_CHARACTER_URI}${chainLabel}/${extendedCharacterId}`,
+      );
       const result = await updateDBMetadataWithGraphViaURI(
         chainId,
-        `${BASE_CHARACTER_URI}${chainId}/${extendedCharacterId}`,
+        `${BASE_CHARACTER_URI}${chainLabel}/${extendedCharacterId}`,
       );
 
       if (result === null) {
