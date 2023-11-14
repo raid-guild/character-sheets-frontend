@@ -86,14 +86,13 @@ export default async function getCharacterMetadata(
  */
 
 const getMetadataFromDBWithURI = async (
-  cid: string,
+  uri: string,
 ): Promise<CharacterMetaDB | null> => {
   try {
-    const uri = `ipfs://${cid}`;
     const characterMeta = await getCharacterMetaFromDBWithURI(uri);
 
     if (!characterMeta) {
-      console.error(`Character URI ipfs://${cid} not found in DB`);
+      console.error(`Character URI ${uri} not found in DB`);
       return null;
     }
 
