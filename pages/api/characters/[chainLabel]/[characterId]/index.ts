@@ -3,7 +3,6 @@ import { getAddress, isAddress, isHex } from 'viem';
 
 import {
   CharacterMetaInfoFragment,
-  // GetCharacterMetaByIdDocument,
   GetCharacterMetaByUriDocument,
 } from '@/graphql/autogen/types';
 import { getGraphClient } from '@/graphql/client';
@@ -39,9 +38,10 @@ export default async function getCharacterMetadata(
 
   if (isCID) {
     const uri = `${BASE_CHARACTER_URI}${chainLabel}/${extendedCharacterId}`;
-    const dbCharacterMeta = await getMetadataFromDBWithURI(uri);
+    const dbCharacterMeta = await getCharacterMetaFromDBWithURI(uri);
+
     if (!dbCharacterMeta) {
-      const result = await updateDBMetadataWithGraphViaURI(chainId, uri);
+      const result = await updateDBMetadata(chainId, uri);
 
       if (result === null) {
         return res.status(404).end();
@@ -81,143 +81,12 @@ export default async function getCharacterMetadata(
   }
 }
 
-/**
- * DATABASE GETTER HELPERS
- */
-
-const getMetadataFromDBWithURI = async (
-  uri: string,
-): Promise<CharacterMetaDB | null> => {
-  try {
-    const characterMeta = await getCharacterMetaFromDBWithURI(uri);
-
-    if (!characterMeta) {
-      console.error(`Character URI ${uri} not found in DB`);
-      return null;
-    }
-
-    return characterMeta;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-};
-
-/**
- * THE GRAPH GETTER HELPERS
- */
-
-// const getCharacterMetaFromTheGraphWithId = async (
-//   chainId: number,
-//   characterId: string,
-// ): Promise<CharacterMetaInfoFragment | null> => {
-//   const client = getGraphClient(chainId);
-//   const { data, error } = await client.query(GetCharacterMetaByIdDocument, {
-//     characterId: characterId.toLowerCase(),
-//   });
-
-//   if (error) {
-//     throw new Error('Error getting character meta: ' + error);
-//   }
-
-//   const characterMeta = data?.character as CharacterMetaInfoFragment | null;
-
-//   if (!characterMeta) {
-//     return null;
-//   }
-
-//   return characterMeta;
-// };
-
-const getCharacterMetaFromTheGraphWithURI = async (
-  chainId: number,
-  uri: string,
-): Promise<CharacterMetaInfoFragment | null> => {
-  const client = getGraphClient(chainId);
-  const { data, error } = await client.query(GetCharacterMetaByUriDocument, {
-    characterURI: uri,
-  });
-
-  if (error) {
-    throw new Error('Error getting character meta: ' + error);
-  }
-
-  const characterMeta = data?.characters[0] as CharacterMetaInfoFragment | null;
-
-  if (!characterMeta) {
-    return null;
-  }
-
-  return characterMeta;
-};
-
-/**
- * DATABASE UPDATER HELPERS
- */
-
-// const updateDBMetadataWithGraphViaId = async (
-//   chainId: number,
-//   gameAddress: string,
-//   characterIdHex: string,
-//   extendedCharacterId: string,
-// ): Promise<CharacterMetaDB | null | string> => {
-//   try {
-//     const character = await getCharacterMetaFromTheGraphWithId(
-//       chainId,
-//       extendedCharacterId,
-//     );
-
-//     if (!character) {
-//       return null;
-//     }
-
-//     const { uri } = character;
-
-//     if (!uri) {
-//       throw new Error('Character has no URI');
-//     }
-
-//     let update: Partial<CharacterMetaDB> = {
-//       chainId: BigInt(chainId).toString(),
-//       gameAddress: getAddress(gameAddress),
-//       characterId: BigInt(characterIdHex).toString(),
-//       uri: uri,
-//       player: character.player,
-//       account: character.account,
-//     };
-
-//     const cid = uri.split('/').pop();
-//     const response = await fetch(uriToHttp(`ipfs://${cid}`)[0]);
-
-//     if (response.status === 200) {
-//       const data = await response.json();
-//       update = {
-//         ...update,
-//         name: data.name,
-//         description: data.description,
-//         image: data.image,
-//         attributes: data.attributes,
-//       };
-//     }
-
-//     const characterMeta = await updateCharacterInDB(update);
-
-//     if (!characterMeta) {
-//       throw new Error('Error updating character');
-//     }
-
-//     return characterMeta;
-//   } catch (error) {
-//     return JSON.stringify(error);
-//   }
-// };
-
-const updateDBMetadataWithGraphViaURI = async (
+const updateDBMetadata = async (
   chainId: number,
   uri: string,
 ): Promise<CharacterMetaDB | null | string> => {
   try {
-    const character = await getCharacterMetaFromTheGraphWithURI(chainId, uri);
+    const character = await getCharacterMetaFromTheGraph(chainId, uri);
 
     if (!character) {
       return null;
@@ -261,4 +130,26 @@ const updateDBMetadataWithGraphViaURI = async (
   } catch (error) {
     return JSON.stringify(error);
   }
+};
+
+const getCharacterMetaFromTheGraph = async (
+  chainId: number,
+  uri: string,
+): Promise<CharacterMetaInfoFragment | null> => {
+  const client = getGraphClient(chainId);
+  const { data, error } = await client.query(GetCharacterMetaByUriDocument, {
+    characterURI: uri,
+  });
+
+  if (error) {
+    throw new Error('Error getting character meta: ' + error);
+  }
+
+  const characterMeta = data?.characters[0] as CharacterMetaInfoFragment | null;
+
+  if (!characterMeta) {
+    return null;
+  }
+
+  return characterMeta;
 };
