@@ -13,6 +13,7 @@ import {
   updateCharacterInDB,
 } from '@/lib/character';
 import { getChainIdFromLabel } from '@/lib/web3';
+import { BASE_CHARACTER_URI } from '@/utils/constants';
 import { uriToHttp } from '@/utils/helpers';
 import { CharacterMetaDB } from '@/utils/types';
 
@@ -41,7 +42,7 @@ export default async function getCharacterMetadata(
     if (!dbCharacterMeta) {
       const result = await updateDBMetadataWithGraphViaURI(
         chainId,
-        `ipfs://${extendedCharacterId}`,
+        `${BASE_CHARACTER_URI}${chainId}/${extendedCharacterId}`,
       );
 
       if (result === null) {

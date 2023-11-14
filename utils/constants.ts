@@ -19,10 +19,14 @@ export const ENVIRONMENT = (process.env.NEXT_PUBLIC_ENVIRONMENT || 'dev') as
   | 'main'
   | 'dev';
 
+const DEV_BASE_CHARACTER_URI =
+  process.env.NEXT_PUBLIC_BASE_CHARACTER_URI ||
+  'https://dev.charactersheets.io/api/characters/';
+
 export const BASE_CHARACTER_URI =
   ENVIRONMENT === 'main'
     ? 'https://charactersheets.io/api/characters/'
-    : 'https://dev.charactersheets.io/api/characters/';
+    : DEV_BASE_CHARACTER_URI;
 
 if (!ENVIRONMENT || !['main', 'dev'].includes(ENVIRONMENT)) {
   throw new Error('NEXT_PUBLIC_ENVIRONMENT is not set');
