@@ -233,7 +233,9 @@ const updateDBMetadataWithGraphViaURI = async (
       throw new Error('Character has no URI');
     }
 
-    const response = await fetch(uriToHttp(graphURI)[0]);
+    const cid = graphURI.split('/').pop();
+
+    const response = await fetch(uriToHttp(`ipfs://${cid}`)[0]);
     const data = await response.json();
 
     const update: Partial<CharacterMetaDB> = {

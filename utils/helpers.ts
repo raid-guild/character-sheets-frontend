@@ -22,8 +22,6 @@ import {
  * @param uri to convert to fetch-able http url
  */
 export const uriToHttp = (uri: string): string[] => {
-  // eslint-disable-next-line no-console
-  console.log('Test', uri);
   try {
     const protocol = uri.split(':')[0].toLowerCase();
     switch (protocol) {
