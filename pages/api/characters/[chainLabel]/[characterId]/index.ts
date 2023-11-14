@@ -197,26 +197,21 @@ const updateDBMetadataWithGraphViaId = async (
       throw new Error('Character has no URI');
     }
 
-    let update: Partial<CharacterMetaDB> = {
+    const response = await fetch(uriToHttp(uri)[0]);
+    const data = await response.json();
+
+    const update: Partial<CharacterMetaDB> = {
       chainId: BigInt(chainId).toString(),
       gameAddress: getAddress(gameAddress),
       characterId: BigInt(characterIdHex).toString(),
       uri: uri,
       player: character.player,
       account: character.account,
+      name: data.name,
+      description: data.description,
+      image: data.image,
+      attributes: data.attributes,
     };
-
-    if (uri.startsWith('ipfs://')) {
-      const response = await fetch(uriToHttp(uri)[0]);
-      const data = await response.json();
-      update = {
-        ...update,
-        name: data.name,
-        description: data.description,
-        image: data.image,
-        attributes: data.attributes,
-      };
-    }
 
     const characterMeta = await updateCharacterInDB(update);
 
@@ -251,26 +246,21 @@ const updateDBMetadataWithGraphViaURI = async (
       throw new Error('Character has no URI');
     }
 
-    let update: Partial<CharacterMetaDB> = {
+    const response = await fetch(uriToHttp(graphURI)[0]);
+    const data = await response.json();
+
+    const update: Partial<CharacterMetaDB> = {
       chainId: BigInt(chainId).toString(),
       gameAddress: getAddress(gameAddress),
       characterId: BigInt(characterId).toString(),
       uri: graphURI,
       player: character.player,
       account: character.account,
+      name: data.name,
+      description: data.description,
+      image: data.image,
+      attributes: data.attributes,
     };
-
-    if (graphURI.startsWith('ipfs://')) {
-      const response = await fetch(uriToHttp(graphURI)[0]);
-      const data = await response.json();
-      update = {
-        ...update,
-        name: data.name,
-        description: data.description,
-        image: data.image,
-        attributes: data.attributes,
-      };
-    }
 
     const characterMeta = await updateCharacterInDB(update);
 
