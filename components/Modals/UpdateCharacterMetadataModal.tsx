@@ -57,15 +57,18 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
-  const uriIsUpToDate = useMemo(() => {
-    if (!game) return false;
+  const isCIDBasedURI = useMemo(() => {
     if (!selectedCharacter) return false;
-    const { baseTokenURI } = game;
     const { uri } = selectedCharacter;
+    const potentialCID = uri
+      .split('/')
+      .filter(s => !!s)
+      .pop();
 
-    const currentCharacterBaseUri = `${uri.split('/').slice(0, -1).join('/')}/`;
-    return baseTokenURI === currentCharacterBaseUri;
-  }, [game, selectedCharacter]);
+    if (!potentialCID) return false;
+
+    return potentialCID.match(/^[a-zA-Z0-9]{46,59}$/);
+  }, [selectedCharacter]);
 
   const sameName = useMemo(
     () => newName === selectedCharacter?.name && !!newName,
@@ -214,7 +217,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
             'Something went wrong updating your character metadata',
           );
 
-        if (!uriIsUpToDate) {
+        if (isCIDBasedURI) {
           const transactionhash = await walletClient.writeContract({
             chain: walletClient.chain,
             account: walletClient.account?.address as Address,
@@ -260,6 +263,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       chain,
       game,
       hasError,
+      isCIDBasedURI,
       newName,
       newAvatarFile,
       newDescription,
@@ -268,7 +272,6 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       reloadGame,
       renderError,
       selectedCharacter,
-      uriIsUpToDate,
       walletClient,
     ],
   );
