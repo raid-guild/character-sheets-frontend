@@ -206,8 +206,14 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 
         setIsCreating(true);
 
-        const totalCharacters = game.characters?.length ?? 0;
-        const characterId = `${game.id}-character-${toHex(totalCharacters)}`;
+        const totalSheets = await publicClient.readContract({
+          address: game.id as Address,
+          abi: parseAbi([
+            'function totalSheets() external view returns(uint256)',
+          ]),
+          functionName: 'totalSheets',
+        });
+        const characterId = `${game.id}-character-${toHex(totalSheets)}`;
         const chainLabel = getChainLabelFromId(chain.id);
         const apiRoute = `/api/characters/${chainLabel}/${characterId}/update`;
         const signature = await walletClient.signMessage({
@@ -610,7 +616,7 @@ const CompositeCharacterImage: React.FC<{ traits: Traits }> = ({ traits }) => {
             <Image
               alt={`${trait.split('_')[1]} trait layer`}
               h="100%"
-              key={`image-${trait}`}
+              key={`composit-trait-image-${trait}`}
               left={0}
               objectFit="cover"
               pos="absolute"
