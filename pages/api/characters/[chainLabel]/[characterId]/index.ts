@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse, PageConfig } from 'next';
 import { getAddress, isAddress, isHex } from 'viem';
 
 import {
@@ -15,6 +15,12 @@ import { getChainIdFromLabel } from '@/lib/web3';
 import { BASE_CHARACTER_URI } from '@/utils/constants';
 import { uriToHttp } from '@/utils/helpers';
 import { CharacterMetaDB } from '@/utils/types';
+
+export const config: PageConfig = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 export default async function getCharacterMetadata(
   req: NextApiRequest,
