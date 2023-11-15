@@ -25,7 +25,11 @@ import { useAccount } from 'wagmi';
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { useGame } from '@/contexts/GameContext';
 import { getAddressUrl } from '@/lib/web3';
-import { shortenAddress, shortenText } from '@/utils/helpers';
+import {
+  removeEndingBackslash,
+  shortenAddress,
+  shortenText,
+} from '@/utils/helpers';
 import { Character } from '@/utils/types';
 
 import { ClassTag } from './ClassTag';
@@ -89,7 +93,7 @@ export const CharacterCard: React.FC<{
             h="100%"
             borderRadius="lg"
             objectFit="cover"
-            src={image}
+            src={removeEndingBackslash(image)}
           />
         </AspectRatio>
         {jailed && (
@@ -217,7 +221,7 @@ export const CharacterCardSmall: React.FC<{
               filter={jailed ? 'grayscale(100%)' : 'none'}
               h="100%"
               objectFit="cover"
-              src={image}
+              src={removeEndingBackslash(image)}
               w="100%"
             />
           </AspectRatio>
