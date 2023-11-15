@@ -1,4 +1,5 @@
-import { NextApiRequest, NextApiResponse, PageConfig } from 'next';
+import Cors from 'cors';
+import { NextApiRequest, NextApiResponse } from 'next';
 import { getAddress, isAddress, isHex } from 'viem';
 
 import {
@@ -16,16 +17,30 @@ import { BASE_CHARACTER_URI } from '@/utils/constants';
 import { uriToHttp } from '@/utils/helpers';
 import { CharacterMetaDB } from '@/utils/types';
 
-export const config: PageConfig = {
-  api: {
-    bodyParser: false,
-  },
-};
+const cors = Cors({
+  methods: ['GET'],
+});
+
+function runMiddleware(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  fn: any,
+) {
+  return new Promise((resolve, reject) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fn(req, res, (result: any) => {
+      if (result instanceof Error) return reject(result);
+      return resolve(result);
+    });
+  });
+}
 
 export default async function getCharacterMetadata(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  await runMiddleware(req, res, cors);
   if (req.method !== 'GET') return res.status(405).end();
 
   const { chainLabel, characterId: extendedCharacterId } = req.query;
