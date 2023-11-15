@@ -208,6 +208,8 @@ export const AddItemRequirementModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Adding..."
           type="submit"
+          alignSelf="flex-end"
+          variant="solid"
         >
           Add
         </Button>

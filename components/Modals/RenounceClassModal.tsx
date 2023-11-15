@@ -197,6 +197,8 @@ export const RenounceClassModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Renouncing..."
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           Renounce
         </Button>

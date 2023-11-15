@@ -223,6 +223,8 @@ export const AddGameMasterModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Adding..."
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           Add
         </Button>

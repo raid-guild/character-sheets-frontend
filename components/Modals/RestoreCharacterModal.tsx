@@ -145,6 +145,8 @@ export const RestoreCharacterModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Restoring..."
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           Restore
         </Button>

@@ -433,6 +433,8 @@ export const ClaimItemModal: React.FC = () => {
             isLoading={isLoading}
             loadingText="Claiming..."
             type="submit"
+            variant="solid"
+            alignSelf="flex-end"
           >
             Claim
           </Button>

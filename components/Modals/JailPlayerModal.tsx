@@ -165,6 +165,8 @@ export const JailPlayerModal: React.FC = () => {
           isLoading={isLoading}
           loadingText={`${jailed ? 'Freeing' : 'Jailing'}...`}
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           {jailed ? 'Free' : 'Jail'}
         </Button>

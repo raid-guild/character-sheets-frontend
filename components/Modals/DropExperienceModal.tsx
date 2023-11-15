@@ -201,6 +201,7 @@ export const DropExperienceModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Giving..."
           type="submit"
+          variant="solid"
         >
           Give
         </Button>

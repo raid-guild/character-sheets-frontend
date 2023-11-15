@@ -211,6 +211,8 @@ export const AssignClassModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Assigning..."
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           Assign
         </Button>

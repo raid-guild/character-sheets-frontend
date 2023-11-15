@@ -264,6 +264,8 @@ export const GiveItemsModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Giving..."
           type="submit"
+          alignSelf="flex-end"
+          variant="solid"
         >
           Give
         </Button>
