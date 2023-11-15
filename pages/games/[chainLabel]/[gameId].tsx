@@ -336,6 +336,14 @@ function GamePage({
           spacing="5px"
         >
           <Box ref={topOfCardRef} position="absolute" top="-80px" />
+          {!isConnectedAndMounted && (
+            <VStack p={8} bg="cardBG" align="start" spacing={4}>
+              <Text fontSize="sm">
+                Please connect your wallet to play this game.
+              </Text>
+            </VStack>
+          )}
+
           {isConnectedAndMounted && (
             <VStack p={8} bg="cardBG" align="start" spacing={4}>
               {!character && !showJoinGame && isEligibleForCharacter && (
