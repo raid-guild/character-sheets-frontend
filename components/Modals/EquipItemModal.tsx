@@ -225,6 +225,8 @@ export const EquipItemModal: React.FC = () => {
           isLoading={isLoading}
           loadingText={isEquipped ? 'Unequipping...' : 'Equipping...'}
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           {isEquipped ? 'Unequip' : 'Equip'}
         </Button>

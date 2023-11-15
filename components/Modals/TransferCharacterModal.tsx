@@ -227,6 +227,8 @@ export const TransferCharacterModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Transferring..."
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           Transfer
         </Button>

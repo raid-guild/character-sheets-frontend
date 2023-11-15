@@ -463,6 +463,7 @@ export const CreateGameModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Creating..."
           type="submit"
+          variant="solid"
         >
           Create
         </Button>

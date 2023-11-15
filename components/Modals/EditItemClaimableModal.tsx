@@ -390,6 +390,8 @@ export const EditItemClaimableModal: React.FC = () => {
             isLoading={isLoading}
             loadingText="Updating..."
             type="submit"
+            variant="solid"
+            alignSelf="flex-end"
           >
             Update
           </Button>

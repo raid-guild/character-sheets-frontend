@@ -627,6 +627,7 @@ export const CreateItemModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Creating..."
           type="submit"
+          variant="solid"
         >
           Create
         </Button>

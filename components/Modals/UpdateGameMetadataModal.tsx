@@ -365,6 +365,7 @@ export const UpdateGameMetadataModal: React.FC = () => {
             isLoading={isLoading}
             loadingText="Updating..."
             type="submit"
+            variant="solid"
           >
             Update
           </Button>

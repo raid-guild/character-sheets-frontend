@@ -306,11 +306,12 @@ export const CreateClassModal: React.FC = () => {
           )}
         </FormControl>
         <Button
-          alignSelf="flex-end"
           isDisabled={isDisabled}
           isLoading={isLoading}
           loadingText="Creating..."
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           Create
         </Button>
