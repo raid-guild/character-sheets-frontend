@@ -28,6 +28,7 @@ import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { getChainLabelFromId } from '@/lib/web3';
+import { BASE_CHARACTER_URI } from '@/utils/constants';
 
 export const UpdateCharacterMetadataModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
@@ -57,18 +58,22 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
-  const isCIDBasedURI = useMemo(() => {
-    if (!selectedCharacter) return false;
+  const uriNeedsUpgraded = useMemo(() => {
+    if (!(chain && selectedCharacter)) return false;
+    const chainLabel = getChainLabelFromId(chain.id);
     const { uri } = selectedCharacter;
     const potentialCID = uri
       .split('/')
       .filter(s => !!s)
       .pop();
 
-    if (!potentialCID) return false;
+    if (!(chainLabel && potentialCID)) return false;
+
+    const baseURI = uri.replace(potentialCID, '');
+    if (baseURI !== `${BASE_CHARACTER_URI}${chainLabel}/`) return false;
 
     return potentialCID.match(/^[a-zA-Z0-9]{46,59}$/);
-  }, [selectedCharacter]);
+  }, [chain, selectedCharacter]);
 
   const sameName = useMemo(
     () => newName === selectedCharacter?.name && !!newName,
@@ -95,16 +100,16 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       !newDescription ||
       invalidDescription ||
       !newAvatarImage ||
-      (!isCIDBasedURI && sameName && sameDescription && sameAvatar),
+      (!uriNeedsUpgraded && sameName && sameDescription && sameAvatar),
     [
       newName,
       newDescription,
       newAvatarImage,
       invalidDescription,
-      isCIDBasedURI,
       sameName,
       sameDescription,
       sameAvatar,
+      uriNeedsUpgraded,
     ],
   );
 
@@ -218,7 +223,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
             'Something went wrong updating your character metadata',
           );
 
-        if (isCIDBasedURI) {
+        if (uriNeedsUpgraded) {
           const transactionhash = await walletClient.writeContract({
             chain: walletClient.chain,
             account: walletClient.account?.address as Address,
@@ -264,7 +269,6 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       chain,
       game,
       hasError,
-      isCIDBasedURI,
       newName,
       newAvatarFile,
       newDescription,
@@ -273,6 +277,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       reloadGame,
       renderError,
       selectedCharacter,
+      uriNeedsUpgraded,
       walletClient,
     ],
   );
@@ -320,7 +325,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
 
     return (
       <VStack as="form" onSubmit={onUpdateCharacterMetadata} spacing={8}>
-        {isCIDBasedURI && (
+        {uriNeedsUpgraded && (
           <Text>
             Your metadata URI is out of date. Please click &quot;Update&quot;
             below to upgrade to the latest version.
