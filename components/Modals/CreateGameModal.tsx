@@ -33,6 +33,7 @@ import { waitUntilBlock } from '@/graphql/health';
 import { useGlobalForChain } from '@/hooks/useGlobal';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import { getChainLabelFromId } from '@/lib/web3';
 import { BASE_CHARACTER_URI } from '@/utils/constants';
 
 export const CreateGameModal: React.FC = () => {
@@ -195,7 +196,7 @@ export const CreateGameModal: React.FC = () => {
           ],
           [
             `ipfs://${gameMetadataCid}`,
-            `${BASE_CHARACTER_URI}${chain.name}`,
+            `${BASE_CHARACTER_URI}${getChainLabelFromId(chain.id)}/`,
             'ipfs://',
             'ipfs://',
           ],

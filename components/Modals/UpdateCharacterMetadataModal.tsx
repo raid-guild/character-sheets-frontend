@@ -19,7 +19,7 @@ import {
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { parseAbi } from 'viem';
-import { Address, usePublicClient, useWalletClient } from 'wagmi';
+import { Address, useNetwork, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
@@ -27,12 +27,14 @@ import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import { getChainLabelFromId } from '@/lib/web3';
 
 export const UpdateCharacterMetadataModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
   const { selectedCharacter, editCharacterModal } = useCharacterActions();
 
   const { data: walletClient } = useWalletClient();
+  const { chain } = useNetwork();
   const publicClient = usePublicClient();
   const { renderError } = useToast();
 
@@ -140,6 +142,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
 
       try {
         if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!chain) throw new Error('Could not find a connected chain');
         if (!game) throw new Error('Missing game data');
         if (!selectedCharacter) throw new Error('Character not found');
 
@@ -160,7 +163,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
           name: string;
           description: string;
           image: string;
-          attributes?: {
+          attributes: {
             trait_type: string;
             value: string;
           }[];
@@ -168,28 +171,38 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
           name: newName,
           description: newDescription,
           image: `ipfs://${cid}`,
+          attributes: [],
         };
 
         if (!newAvatarFile && selectedCharacter.attributes) {
           characterMetadata['attributes'] = selectedCharacter.attributes;
         }
 
-        const res = await fetch(
-          '/api/uploadMetadata?name=characterMetadata.json',
-          {
-            method: 'POST',
-            body: JSON.stringify(characterMetadata),
+        const chainLabel = getChainLabelFromId(chain.id);
+        const apiRoute = `/api/characters/${chainLabel}/${selectedCharacter.id}/update`;
+        const signature = await walletClient.signMessage({
+          message: apiRoute,
+          account: walletClient.account?.address as Address,
+        });
+
+        const res = await fetch(apiRoute, {
+          headers: {
+            'x-account-address': walletClient.account?.address as Address,
+            'x-account-signature': signature,
+            'x-account-chain-id': walletClient.chain.id.toString(),
           },
-        );
+          method: 'POST',
+          body: JSON.stringify(characterMetadata),
+        });
         if (!res.ok)
           throw new Error(
-            "Something went wrong uploading your character's metadata",
+            "Something went wrong updating your character's metadata",
           );
 
-        const { cid: newCid } = await res.json();
-        if (!newCid)
+        const { name, description, image } = await res.json();
+        if (!(name && description && image))
           throw new Error(
-            'Something went wrong uploading your character metadata',
+            'Something went wrong updating your character metadata',
           );
 
         const transactionhash = await walletClient.writeContract({
@@ -200,7 +213,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
             'function updateCharacterMetadata(string calldata newCid) public',
           ]),
           functionName: 'updateCharacterMetadata',
-          args: [newCid],
+          args: [selectedCharacter.id],
         });
         setTxHash(transactionhash);
 
@@ -232,6 +245,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       }
     },
     [
+      chain,
       game,
       hasError,
       newName,
