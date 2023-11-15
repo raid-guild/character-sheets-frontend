@@ -18,7 +18,7 @@ import {
 } from './types';
 
 export const removeEndingBackslash = (uri: string): string => {
-  return uri.endsWith('/') ? uri.slice(0, -1) : uri;
+  return uri?.endsWith('/') ? uri?.slice(0, -1) : uri;
 };
 
 /**

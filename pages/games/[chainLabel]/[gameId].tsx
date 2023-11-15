@@ -53,6 +53,7 @@ import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacte
 import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
 import { NetworkAlert } from '@/components/NetworkAlert';
 import { NetworkDisplay } from '@/components/NetworkDisplay';
+import { OldCharacterURIAlert } from '@/components/OldCharacterURIAlert';
 import { UserLink } from '@/components/UserLink';
 import {
   CharacterActionsProvider,
@@ -109,6 +110,7 @@ export default function GamePageOuter(): JSX.Element {
       <GameActionsProvider>
         <CharacterActionsProvider>
           <ItemActionsProvider>
+            <OldCharacterURIAlert />
             {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
             <GamePage isConnectedAndMounted={isConnectedAndMounted} />
           </ItemActionsProvider>

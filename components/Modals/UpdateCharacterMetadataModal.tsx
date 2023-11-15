@@ -95,12 +95,13 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       !newDescription ||
       invalidDescription ||
       !newAvatarImage ||
-      (sameName && sameDescription && sameAvatar),
+      (!isCIDBasedURI && sameName && sameDescription && sameAvatar),
     [
       newName,
       newDescription,
       newAvatarImage,
       invalidDescription,
+      isCIDBasedURI,
       sameName,
       sameDescription,
       sameAvatar,
@@ -138,7 +139,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
   }, [onRemove]);
 
   useEffect(() => {
-    if (!editCharacterModal?.isOpen) {
+    if (editCharacterModal?.isOpen) {
       resetData();
     }
   }, [resetData, editCharacterModal?.isOpen]);
@@ -319,6 +320,12 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
 
     return (
       <VStack as="form" onSubmit={onUpdateCharacterMetadata} spacing={8}>
+        {isCIDBasedURI && (
+          <Text>
+            Your metadata URI is out of date. Please click &quot;Update&quot;
+            below to upgrade to the latest version.
+          </Text>
+        )}
         <FormControl isInvalid={showError && (!newName || noChanges)}>
           <FormLabel>Character Name</FormLabel>
           <Input onChange={e => setNewName(e.target.value)} value={newName} />
