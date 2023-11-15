@@ -9,6 +9,7 @@ import {
 
 import {
   Character,
+  CharacterMetaDB,
   Class,
   Game,
   GameMeta,
@@ -105,8 +106,25 @@ export const formatCharacter = async (
   character: CharacterInfoFragment,
   classes: Class[],
   items: Item[],
+  charactersDBMetadata: CharacterMetaDB[] | null,
 ): Promise<Character> => {
-  const metadata = await fetchMetadata(uriToHttp(character.uri)[0]);
+  let metadata;
+
+  if (charactersDBMetadata) {
+    const dbCharacterMeta = charactersDBMetadata.find(
+      c => c.uri === character.uri,
+    );
+
+    if (dbCharacterMeta) {
+      metadata = {
+        name: dbCharacterMeta.name,
+        description: dbCharacterMeta.description,
+        image: dbCharacterMeta.image,
+      };
+    }
+  } else {
+    metadata = await fetchMetadata(uriToHttp(character.uri)[0]);
+  }
 
   const characterClasses = classes.filter(c =>
     character.heldClasses.find(h => h.classEntity.classId === c.classId),
@@ -135,10 +153,10 @@ export const formatCharacter = async (
   return {
     id: character.id,
     uri: character.uri,
-    name: metadata.name,
-    description: metadata.description,
-    image: uriToHttp(metadata.image)[0],
-    attributes: metadata.attributes,
+    name: (metadata as Metadata).name,
+    description: (metadata as Metadata).description,
+    image: uriToHttp((metadata as Metadata).image)[0],
+    attributes: (metadata as Metadata).attributes,
     experience: character.experience,
     characterId: character.characterId,
     account: character.account,
@@ -230,6 +248,19 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
   const classes = await Promise.all(game.classes.map(formatClass));
   const items = await Promise.all(game.items.map(formatItem));
 
+  let charactersDBMetadata: CharacterMetaDB[] | null = null;
+
+  const res = await fetch(
+    '/api/getCharacterMetas?gameAddress=' +
+      game.id +
+      '&chainId=' +
+      game.chainId,
+  );
+
+  if (res.ok) {
+    charactersDBMetadata = await res.json();
+  }
+
   return {
     id: game.id,
     startedAt: new Date(Number(game.startedAt) * 1000),
@@ -249,7 +280,9 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
     characters: await Promise.all(
-      game.characters.map(c => formatCharacter(c, classes, items)),
+      game.characters.map(c =>
+        formatCharacter(c, classes, items, charactersDBMetadata),
+      ),
     ),
     classes,
     items,

@@ -1,7 +1,8 @@
-import { useGame } from '@/contexts/GameContext';
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import { useMemo } from 'react';
 import useSWR from 'swr';
+
+import { useGame } from '@/contexts/GameContext';
 
 export type ClaimableItemLeaf = [bigint, `0x${string}`, bigint, bigint]; // itemId, address, nonce, amount
 
@@ -51,7 +52,7 @@ export const useClaimableTree = (
       chainId: chainId ? chainId.toString() : '',
       itemId: itemId ? itemId.toString() : '',
     }),
-    [gameAddress, itemId],
+    [chainId, gameAddress, itemId],
   );
 
   const { data, error, mutate, isLoading, isValidating } = useSWR<

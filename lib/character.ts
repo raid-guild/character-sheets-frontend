@@ -37,6 +37,24 @@ export const getCharacterMetaFromDBWithURI = async (
   }
 };
 
+export const getCharacterMetasFromDBWithURIs = async (
+  uris: string[],
+): Promise<null | CharacterMetaDB[]> => {
+  try {
+    const client = await dbPromise;
+    const result = await client
+      .collection('characters')
+      .find({
+        uri: { $in: uris },
+      })
+      .toArray();
+    return result ? (result as CharacterMetaDB[]) : null;
+  } catch (error) {
+    console.error('Error in getCharacterMetasFromDBWithURIs: ', error);
+    return null;
+  }
+};
+
 export const updateCharacterInDB = async (
   update: Partial<CharacterMetaDB>,
 ): Promise<null | CharacterMetaDB> => {
