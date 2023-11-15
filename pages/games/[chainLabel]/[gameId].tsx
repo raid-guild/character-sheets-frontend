@@ -255,18 +255,16 @@ function GamePage({
                   <NetworkDisplay chainId={chainId} />
                 </HStack>
               </Link>
-              {isOwner ||
-                isAdmin ||
-                (isMaster && (
-                  <Button
-                    onClick={() =>
-                      openActionModal(GameMasterActions.UPDATE_GAME_METADATA)
-                    }
-                    size="sm"
-                  >
-                    edit
-                  </Button>
-                ))}
+              {(isOwner || isAdmin || isMaster) && (
+                <Button
+                  onClick={() =>
+                    openActionModal(GameMasterActions.UPDATE_GAME_METADATA)
+                  }
+                  size="sm"
+                >
+                  edit
+                </Button>
+              )}
             </VStack>
           </HStack>
           <VStack

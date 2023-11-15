@@ -15,6 +15,7 @@ import {
   ModalOverlay,
   Text,
   Textarea,
+  Tooltip,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -50,6 +51,7 @@ export const UpdateGameMetadataModal: React.FC = () => {
   const [newGameEmblemImage, setNewGameEmblemImage] = useState<string | null>(
     null,
   );
+  const [newBaseTokenURI, setNewBaseTokenURI] = useState<string>('');
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
@@ -75,18 +77,25 @@ export const UpdateGameMetadataModal: React.FC = () => {
     return !!newGameEmblemImage && newGameEmblemImage === game?.image;
   }, [newGameEmblemImage, game?.image]);
 
+  const sameBaseTokenURI = useMemo(() => {
+    return !!newBaseTokenURI && newBaseTokenURI === game?.baseTokenURI;
+  }, [newBaseTokenURI, game?.baseTokenURI]);
+
   const hasError = useMemo(
     () =>
       !newGameName ||
       !newGameDescription ||
       invalidDescription ||
       !newGameEmblemImage ||
-      (sameName && sameDescription && sameEmblem),
+      !newBaseTokenURI ||
+      (sameName && sameDescription && sameEmblem && sameBaseTokenURI),
     [
+      newBaseTokenURI,
       newGameName,
       newGameDescription,
       newGameEmblemImage,
       invalidDescription,
+      sameBaseTokenURI,
       sameName,
       sameDescription,
       sameEmblem,
@@ -102,6 +111,8 @@ export const UpdateGameMetadataModal: React.FC = () => {
     setNewGameName(game?.name ?? '');
     setNewGameDescription(game?.description ?? '');
     setNewGameEmblemImage(game?.image ?? null);
+    setNewBaseTokenURI(game?.baseTokenURI ?? '');
+
     setShowError(false);
     onRemove();
 
@@ -129,12 +140,68 @@ export const UpdateGameMetadataModal: React.FC = () => {
     }
   }, [resetData, updateGameMetadataModal?.isOpen]);
 
+  const onUpdateBaseTokenURI = useCallback(async () => {
+    try {
+      setIsUpdating(true);
+      if (!walletClient) throw new Error('Wallet client is not connected');
+      if (!game) throw new Error('Missing game data');
+
+      const transactionhash = await walletClient.writeContract({
+        chain: walletClient.chain,
+        account: walletClient.account?.address as Address,
+        address: game.id as Address,
+        abi: parseAbi(['function updateBaseUri(string memory _uri) public']),
+        functionName: 'updateBaseUri',
+        args: [newBaseTokenURI],
+      });
+      setTxHash(transactionhash);
+
+      const client = publicClient ?? walletClient;
+      const { blockNumber, status } = await client.waitForTransactionReceipt({
+        hash: transactionhash,
+      });
+
+      if (status === 'reverted') {
+        setTxFailed(true);
+        setIsUpdating(false);
+        throw new Error('Transaction failed');
+      }
+
+      setIsSyncing(true);
+      const synced = await waitUntilBlock(client.chain.id, blockNumber);
+      if (!synced) throw new Error('Something went wrong while syncing');
+
+      reloadGame();
+    } catch (e) {
+      renderError(e, 'Something went wrong updating base token URI');
+    } finally {
+      setIsSyncing(false);
+      setIsUpdating(false);
+    }
+  }, [
+    game,
+    newBaseTokenURI,
+    publicClient,
+    reloadGame,
+    renderError,
+    walletClient,
+  ]);
+
   const onUpdateGameMetadata = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
       if (hasError) {
         setShowError(true);
+        return;
+      }
+
+      if (!sameBaseTokenURI) {
+        await onUpdateBaseTokenURI();
+      }
+
+      if (sameName && sameDescription && sameEmblem) {
+        setIsSynced(true);
         return;
       }
 
@@ -150,8 +217,6 @@ export const UpdateGameMetadataModal: React.FC = () => {
               .pop();
         if (!cid)
           throw new Error('Something went wrong uploading your game emblem');
-
-        setIsUpdating(true);
 
         const gameMetadata = {
           name: newGameName,
@@ -212,10 +277,15 @@ export const UpdateGameMetadataModal: React.FC = () => {
       newGameName,
       newGameEmblemFile,
       newGameDescription,
+      onUpdateBaseTokenURI,
       onUpload,
       publicClient,
       reloadGame,
       renderError,
+      sameBaseTokenURI,
+      sameDescription,
+      sameEmblem,
+      sameName,
       walletClient,
     ],
   );
@@ -224,8 +294,8 @@ export const UpdateGameMetadataModal: React.FC = () => {
   const isDisabled = isLoading;
 
   const noChanges = useMemo(() => {
-    return sameName && sameDescription && sameEmblem;
-  }, [sameName, sameDescription, sameEmblem]);
+    return sameName && sameDescription && sameEmblem && sameBaseTokenURI;
+  }, [sameName, sameDescription, sameEmblem, sameBaseTokenURI]);
 
   const content = () => {
     if (txFailed) {
@@ -254,7 +324,11 @@ export const UpdateGameMetadataModal: React.FC = () => {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Updating your game...`}
+          text={
+            newBaseTokenURI === game?.baseTokenURI
+              ? 'Updating your game metadata...'
+              : 'Updating base token URI...'
+          }
           txHash={txHash}
           chainId={game?.chainId}
         />
@@ -346,7 +420,31 @@ export const UpdateGameMetadataModal: React.FC = () => {
           )}
           {showError && noChanges && (
             <FormHelperText color="red">
-              New name, description, or emblem must be different from the old
+              New name, description, emblem, or base token URI must be different
+              from the old
+            </FormHelperText>
+          )}
+        </FormControl>
+        <FormControl isInvalid={showError && (!newBaseTokenURI || noChanges)}>
+          <Flex align="center">
+            <FormLabel>Base Character Token URI</FormLabel>
+            <Tooltip label="This base URI will be used at the start of every character token metadata URI.">
+              <Image
+                alt="down arrow"
+                height="14px"
+                mb={2}
+                src="/icons/question-mark.svg"
+                width="14px"
+              />
+            </Tooltip>
+          </Flex>
+          <Input
+            onChange={e => setNewBaseTokenURI(e.target.value)}
+            value={newBaseTokenURI}
+          />
+          {showError && !newBaseTokenURI && (
+            <FormHelperText color="red">
+              A base token URI is required
             </FormHelperText>
           )}
         </FormControl>

@@ -235,6 +235,7 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
     experienceAddress: game.experienceAddress,
     characterEligibilityAdaptor: game.characterEligibilityAdaptor,
     uri: game.uri,
+    baseTokenURI: game.baseTokenURI,
     owner: game.owner.address,
     admins: game.admins.map(a => a.address),
     masters: game.masters.map(m => m.address),
