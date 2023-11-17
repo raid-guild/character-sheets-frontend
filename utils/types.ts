@@ -9,6 +9,7 @@ export type Metadata = {
   name: string;
   description: string;
   image: string;
+  equippable_layer?: string;
   attributes?: Attribute[];
 };
 
