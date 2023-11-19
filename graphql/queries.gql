@@ -23,3 +23,15 @@ query GetGameWithMasters($gameId: ID!) {
     }
   }
 }
+
+query GetCharacterMetaById($characterId: ID!) {
+  character(id: $characterId) {
+    ...CharacterMetaInfo
+  }
+}
+
+query GetCharacterMetaByURI($characterURI: String!) {
+  characters(where: { uri: $characterURI }) {
+    ...CharacterMetaInfo
+  }
+}
