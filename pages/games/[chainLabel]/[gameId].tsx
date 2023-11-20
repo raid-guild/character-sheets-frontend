@@ -130,7 +130,6 @@ function GamePage({
     character,
     isAdmin,
     isMaster,
-    isOwner,
     loading,
     isEligibleForCharacter,
   } = useGame();
@@ -257,7 +256,7 @@ function GamePage({
                   <NetworkDisplay chainId={chainId} />
                 </HStack>
               </Link>
-              {(isOwner || isAdmin || isMaster) && (
+              {isAdmin && (
                 <Button
                   onClick={() =>
                     openActionModal(GameMasterActions.UPDATE_GAME_METADATA)
@@ -307,7 +306,7 @@ function GamePage({
             <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
               Game Masters
             </Text>
-            {(isOwner || isAdmin) && (
+            {isAdmin && (
               <Button
                 onClick={() =>
                   openActionModal(GameMasterActions.ADD_GAME_MASTER)
