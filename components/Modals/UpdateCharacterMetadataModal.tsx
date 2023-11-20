@@ -28,6 +28,7 @@ import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { getChainLabelFromId } from '@/lib/web3';
+import { BASE_CHARACTER_URI } from '@/utils/constants';
 
 export const UpdateCharacterMetadataModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
@@ -48,7 +49,6 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
   } = useUploadFile({ fileName: 'characterAvatar' });
   const [newName, setNewName] = useState<string>('');
   const [newDescription, setNewDescription] = useState<string>('');
-
   const [newAvatarImage, setNewAvatarImage] = useState<string | null>(null);
 
   const [showError, setShowError] = useState<boolean>(false);
@@ -57,6 +57,23 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
   const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
+
+  const uriNeedsUpgraded = useMemo(() => {
+    if (!(chain && selectedCharacter)) return false;
+    const chainLabel = getChainLabelFromId(chain.id);
+    const { uri } = selectedCharacter;
+    const potentialCID = uri
+      .split('/')
+      .filter(s => !!s)
+      .pop();
+
+    if (!(chainLabel && potentialCID)) return false;
+
+    const baseURI = uri.replace(potentialCID, '');
+    if (baseURI !== `${BASE_CHARACTER_URI}${chainLabel}/`) return false;
+
+    return potentialCID.match(/^[a-zA-Z0-9]{46,59}$/);
+  }, [chain, selectedCharacter]);
 
   const sameName = useMemo(
     () => newName === selectedCharacter?.name && !!newName,
@@ -83,7 +100,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       !newDescription ||
       invalidDescription ||
       !newAvatarImage ||
-      (sameName && sameDescription && sameAvatar),
+      (!uriNeedsUpgraded && sameName && sameDescription && sameAvatar),
     [
       newName,
       newDescription,
@@ -92,6 +109,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       sameName,
       sameDescription,
       sameAvatar,
+      uriNeedsUpgraded,
     ],
   );
 
@@ -126,7 +144,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
   }, [onRemove]);
 
   useEffect(() => {
-    if (!editCharacterModal?.isOpen) {
+    if (editCharacterModal?.isOpen) {
       resetData();
     }
   }, [resetData, editCharacterModal?.isOpen]);
@@ -205,32 +223,35 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
             'Something went wrong updating your character metadata',
           );
 
-        const transactionhash = await walletClient.writeContract({
-          chain: walletClient.chain,
-          account: walletClient.account?.address as Address,
-          address: game.id as Address,
-          abi: parseAbi([
-            'function updateCharacterMetadata(string calldata newCid) public',
-          ]),
-          functionName: 'updateCharacterMetadata',
-          args: [selectedCharacter.id],
-        });
-        setTxHash(transactionhash);
+        if (uriNeedsUpgraded) {
+          const transactionhash = await walletClient.writeContract({
+            chain: walletClient.chain,
+            account: walletClient.account?.address as Address,
+            address: game.id as Address,
+            abi: parseAbi([
+              'function updateCharacterMetadata(string calldata newCid) public',
+            ]),
+            functionName: 'updateCharacterMetadata',
+            args: [selectedCharacter.id],
+          });
+          setTxHash(transactionhash);
 
-        const client = publicClient ?? walletClient;
-        const { blockNumber, status } = await client.waitForTransactionReceipt({
-          hash: transactionhash,
-        });
+          const client = publicClient ?? walletClient;
+          const { blockNumber, status } =
+            await client.waitForTransactionReceipt({
+              hash: transactionhash,
+            });
 
-        if (status === 'reverted') {
-          setTxFailed(true);
-          setIsUpdating(false);
-          throw new Error('Transaction failed');
+          if (status === 'reverted') {
+            setTxFailed(true);
+            setIsUpdating(false);
+            throw new Error('Transaction failed');
+          }
+
+          setIsSyncing(true);
+          const synced = await waitUntilBlock(client.chain.id, blockNumber);
+          if (!synced) throw new Error('Something went wrong while syncing');
         }
-
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(client.chain.id, blockNumber);
-        if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
         reloadGame();
@@ -256,6 +277,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       reloadGame,
       renderError,
       selectedCharacter,
+      uriNeedsUpgraded,
       walletClient,
     ],
   );
@@ -303,6 +325,12 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
 
     return (
       <VStack as="form" onSubmit={onUpdateCharacterMetadata} spacing={8}>
+        {uriNeedsUpgraded && (
+          <Text>
+            Your metadata URI is out of date. Please click &quot;Update&quot;
+            below to upgrade to the latest version.
+          </Text>
+        )}
         <FormControl isInvalid={showError && (!newName || noChanges)}>
           <FormLabel>Character Name</FormLabel>
           <Input onChange={e => setNewName(e.target.value)} value={newName} />

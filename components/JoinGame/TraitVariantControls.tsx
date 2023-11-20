@@ -175,7 +175,7 @@ export const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
             cursor={!selectedHex ? 'default' : 'pointer'}
             h="25px"
             justify="center"
-            key={hex}
+            key={`color-${hex}`}
             onClick={() => onSelectHex(hex)}
             p={1}
             w="25px"

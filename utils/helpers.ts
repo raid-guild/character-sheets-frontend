@@ -34,15 +34,15 @@ export const uriToHttp = (uri: string): string[] => {
       case 'ipfs': {
         const hash = uri.match(/^ipfs:(\/\/)?(.*)$/i)?.[2];
         return [
-          `https://ipfs.io/ipfs/${hash}/`,
-          `https://cloudflare-ipfs.com/ipfs/${hash}/`,
+          `https://ipfs.io/ipfs/${hash}`,
+          `https://cloudflare-ipfs.com/ipfs/${hash}`,
         ];
       }
       case 'ipns': {
         const name = uri.match(/^ipns:(\/\/)?(.*)$/i)?.[2];
         return [
-          `https://ipfs.io/ipns/${name}/`,
-          `https://cloudflare-ipfs.com/ipns/${name}/`,
+          `https://ipfs.io/ipns/${name}`,
+          `https://cloudflare-ipfs.com/ipns/${name}`,
         ];
       }
       case 'ar': {
@@ -235,6 +235,7 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
     experienceAddress: game.experienceAddress,
     characterEligibilityAdaptor: game.characterEligibilityAdaptor,
     uri: game.uri,
+    baseTokenURI: game.baseTokenURI,
     owner: game.owner.address,
     admins: game.admins.map(a => a.address),
     masters: game.masters.map(m => m.address),

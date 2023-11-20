@@ -11,7 +11,7 @@ import { updateCharacterInDB } from '@/lib/character';
 import { BASE_CHARACTER_URI } from '@/utils/constants';
 import { CharacterMetaDB } from '@/utils/types';
 
-const verifyCharacterPlayer = async (
+const getCharacterMetaFromGraph = async (
   extendedCharacterId: string,
   account: AccountInfo,
 ) => {
@@ -24,20 +24,10 @@ const verifyCharacterPlayer = async (
 
   if (error) {
     console.error('Error getting character', error);
-    return false;
+    return JSON.stringify(error);
   }
 
-  const characterMeta = data?.character as CharacterMetaInfoFragment | null;
-
-  if (!characterMeta) {
-    console.error('character meta not found');
-    return false;
-  }
-
-  const isCharacterPlayer =
-    characterMeta.player.toLowerCase() === account.address.toLowerCase();
-
-  return isCharacterPlayer;
+  return data?.character as CharacterMetaInfoFragment | null;
 };
 
 const updateCharacterMetadata = async (
@@ -91,40 +81,45 @@ const updateCharacterMetadata = async (
   }
 
   try {
-    const isCharacterPlayer = await verifyCharacterPlayer(
+    const characterMeta = await getCharacterMetaFromGraph(
       extendedCharacterId,
       account,
     );
-    if (!isCharacterPlayer) {
+
+    if (typeof characterMeta === 'string') {
+      return res.status(500).json({ error: characterMeta });
+    }
+
+    const isCharacterPlayer =
+      characterMeta?.player.toLowerCase() === account.address.toLowerCase();
+    if (!!characterMeta && !isCharacterPlayer) {
       return res
         .status(403)
         .json({ error: 'Not authorized to update character metadata' });
     }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error });
-  }
 
-  try {
     const update: Partial<CharacterMetaDB> = {
+      chainId: BigInt(account.chainId).toString(),
       gameAddress: getAddress(gameAddress),
       characterId: BigInt(characterId).toString(),
       uri: `${BASE_CHARACTER_URI}${chainLabel}/${extendedCharacterId}`,
+      player: characterMeta?.player ?? account.address,
+      account: characterMeta?.account ?? '',
       name,
       description,
       image,
       attributes,
     };
 
-    const characterMeta = await updateCharacterInDB(update);
+    const dbCharacterMeta = await updateCharacterInDB(update);
 
-    if (!characterMeta) {
+    if (!dbCharacterMeta) {
       return res
         .status(500)
         .json({ error: 'Error updating character metadata' });
     }
 
-    return res.status(200).json(characterMeta);
+    return res.status(200).json(dbCharacterMeta);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error });

@@ -53,6 +53,7 @@ import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacte
 import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
 import { NetworkAlert } from '@/components/NetworkAlert';
 import { NetworkDisplay } from '@/components/NetworkDisplay';
+import { OldCharacterURIAlert } from '@/components/OldCharacterURIAlert';
 import { UserLink } from '@/components/UserLink';
 import {
   CharacterActionsProvider,
@@ -109,6 +110,7 @@ export default function GamePageOuter(): JSX.Element {
       <GameActionsProvider>
         <CharacterActionsProvider>
           <ItemActionsProvider>
+            <OldCharacterURIAlert />
             {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
             <GamePage isConnectedAndMounted={isConnectedAndMounted} />
           </ItemActionsProvider>
@@ -128,7 +130,6 @@ function GamePage({
     character,
     isAdmin,
     isMaster,
-    isOwner,
     loading,
     isEligibleForCharacter,
   } = useGame();
@@ -255,18 +256,16 @@ function GamePage({
                   <NetworkDisplay chainId={chainId} />
                 </HStack>
               </Link>
-              {isOwner ||
-                isAdmin ||
-                (isMaster && (
-                  <Button
-                    onClick={() =>
-                      openActionModal(GameMasterActions.UPDATE_GAME_METADATA)
-                    }
-                    size="sm"
-                  >
-                    edit
-                  </Button>
-                ))}
+              {isAdmin && (
+                <Button
+                  onClick={() =>
+                    openActionModal(GameMasterActions.UPDATE_GAME_METADATA)
+                  }
+                  size="sm"
+                >
+                  edit
+                </Button>
+              )}
             </VStack>
           </HStack>
           <VStack
@@ -307,7 +306,7 @@ function GamePage({
             <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
               Game Masters
             </Text>
-            {(isOwner || isAdmin) && (
+            {isAdmin && (
               <Button
                 onClick={() =>
                   openActionModal(GameMasterActions.ADD_GAME_MASTER)

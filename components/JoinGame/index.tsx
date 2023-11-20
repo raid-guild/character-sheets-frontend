@@ -16,8 +16,8 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { parseAbi } from 'viem';
-import { Address, usePublicClient, useWalletClient } from 'wagmi';
+import { parseAbi, toHex } from 'viem';
+import { Address, useNetwork, usePublicClient, useWalletClient } from 'wagmi';
 
 import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
@@ -26,6 +26,7 @@ import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import { getChainLabelFromId } from '@/lib/web3';
 import { shortenText } from '@/utils/helpers';
 
 import { getImageUrl, TRAITS, Traits, TraitType } from './traits';
@@ -51,6 +52,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 }) => {
   const { game, character, reload: reloadGame } = useGame();
   const { data: walletClient } = useWalletClient();
+  const { chain } = useNetwork();
   const publicClient = usePublicClient();
   const { renderError } = useToast();
 
@@ -152,6 +154,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 
       try {
         if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!chain) throw new Error('Could not find a connected chain');
         if (!game) throw new Error('Missing game data');
         if (character) throw new Error('Character already exists');
 
@@ -203,24 +206,39 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 
         setIsCreating(true);
 
-        const res = await fetch(
-          '/api/uploadMetadata?name=characterMetadata.json',
-          {
-            method: 'POST',
-            body: JSON.stringify(characterMetadata),
-          },
-        );
+        const totalSheets = await publicClient.readContract({
+          address: game.id as Address,
+          abi: parseAbi([
+            'function totalSheets() external view returns(uint256)',
+          ]),
+          functionName: 'totalSheets',
+        });
+        const characterId = `${game.id}-character-${toHex(totalSheets)}`;
+        const chainLabel = getChainLabelFromId(chain.id);
+        const apiRoute = `/api/characters/${chainLabel}/${characterId}/update`;
+        const signature = await walletClient.signMessage({
+          message: apiRoute,
+          account: walletClient.account?.address as Address,
+        });
 
+        const res = await fetch(apiRoute, {
+          headers: {
+            'x-account-address': walletClient.account?.address as Address,
+            'x-account-signature': signature,
+            'x-account-chain-id': walletClient.chain.id.toString(),
+          },
+          method: 'POST',
+          body: JSON.stringify(characterMetadata),
+        });
         if (!res.ok)
           throw new Error(
-            'Something went wrong uploading your character metadata',
+            "Something went wrong updating your character's metadata",
           );
 
-        const { cid: characterMetadataCid } = await res.json();
-
-        if (!characterMetadataCid)
+        const { name, description, image } = await res.json();
+        if (!(name && description && image))
           throw new Error(
-            'Something went wrong uploading your character metadata',
+            'Something went wrong updating your character metadata',
           );
 
         const transactionhash = await walletClient.writeContract({
@@ -231,7 +249,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
             'function rollCharacterSheet(string calldata _tokenUri) external',
           ]),
           functionName: 'rollCharacterSheet',
-          args: [characterMetadataCid],
+          args: [characterId],
         });
         setTxHash(transactionhash);
 
@@ -261,6 +279,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
       }
     },
     [
+      chain,
       character,
       characterDescription,
       characterName,
@@ -597,7 +616,7 @@ const CompositeCharacterImage: React.FC<{ traits: Traits }> = ({ traits }) => {
             <Image
               alt={`${trait.split('_')[1]} trait layer`}
               h="100%"
-              key={`image-${trait}`}
+              key={`composit-trait-image-${trait}`}
               left={0}
               objectFit="cover"
               pos="absolute"

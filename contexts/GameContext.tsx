@@ -19,7 +19,6 @@ type GameContextType = {
   game: Game | null;
   character: Character | null;
   pageCharacter: Character | null;
-  isOwner: boolean;
   isAdmin: boolean;
   isMaster: boolean;
   isEligibleForCharacter: boolean;
@@ -32,7 +31,6 @@ const GameContext = createContext<GameContextType>({
   game: null,
   character: null,
   pageCharacter: null,
-  isOwner: false,
   isAdmin: false,
   isMaster: false,
   isEligibleForCharacter: false,
@@ -122,11 +120,6 @@ const GameProviderInner: React.FC<
     );
   }, [game, characterId]);
 
-  const isOwner = useMemo(
-    () => game?.owner === address?.toLowerCase() ?? false,
-    [game, address],
-  );
-
   const isAdmin = useMemo(
     () => game?.admins.includes(address?.toLowerCase() ?? '') ?? false,
     [game, address],
@@ -145,7 +138,6 @@ const GameProviderInner: React.FC<
         game,
         character,
         pageCharacter,
-        isOwner,
         isAdmin,
         isMaster,
         isEligibleForCharacter,

@@ -102,6 +102,7 @@ export const UpdateGameMetadataModal: React.FC = () => {
     setNewGameName(game?.name ?? '');
     setNewGameDescription(game?.description ?? '');
     setNewGameEmblemImage(game?.image ?? null);
+
     setShowError(false);
     onRemove();
 
@@ -150,8 +151,6 @@ export const UpdateGameMetadataModal: React.FC = () => {
               .pop();
         if (!cid)
           throw new Error('Something went wrong uploading your game emblem');
-
-        setIsUpdating(true);
 
         const gameMetadata = {
           name: newGameName,
@@ -254,7 +253,7 @@ export const UpdateGameMetadataModal: React.FC = () => {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Updating your game...`}
+          text="Updating your game metadata..."
           txHash={txHash}
           chainId={game?.chainId}
         />
@@ -346,7 +345,8 @@ export const UpdateGameMetadataModal: React.FC = () => {
           )}
           {showError && noChanges && (
             <FormHelperText color="red">
-              New name, description, or emblem must be different from the old
+              New name, description, emblem, or base token URI must be different
+              from the old
             </FormHelperText>
           )}
         </FormControl>

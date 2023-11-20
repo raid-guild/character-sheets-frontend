@@ -56,9 +56,9 @@ export default async function getCharacterMetadata(
   }
 
   const isCID = extendedCharacterId.match(/^[a-zA-Z0-9]{46,59}$/);
+  const uri = `${BASE_CHARACTER_URI}${chainLabel}/${extendedCharacterId}`;
 
   if (isCID) {
-    const uri = `${BASE_CHARACTER_URI}${chainLabel}/${extendedCharacterId}`;
     const dbCharacterMeta = await getCharacterMetaFromDBWithURI(uri);
 
     if (!dbCharacterMeta) {
@@ -97,6 +97,17 @@ export default async function getCharacterMetadata(
 
     if (!dbCharacterMeta) {
       return res.status(404).end();
+    }
+
+    if (!(dbCharacterMeta.account && dbCharacterMeta.player)) {
+      const result = await updateDBMetadata(chainId, uri);
+
+      if (result === null) {
+        return res.status(404).end();
+      } else if (typeof result === 'string') {
+        return res.status(500).json({ error: result });
+      }
+      return res.status(200).json(result);
     }
     return res.status(200).json(dbCharacterMeta);
   }

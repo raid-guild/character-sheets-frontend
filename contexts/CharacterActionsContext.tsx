@@ -10,8 +10,8 @@ import { zeroAddress } from 'viem';
 import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
-import { Character, Item } from '@/utils/types';
 import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
+import { Character, Item } from '@/utils/types';
 
 export enum PlayerActions {
   APPROVE_TRANSFER = 'Approve transfer',
