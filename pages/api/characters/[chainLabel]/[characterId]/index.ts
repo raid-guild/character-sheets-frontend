@@ -125,8 +125,10 @@ const updateDBMetadata = async (
     }
 
     const {
+      account,
       characterId,
       game: { id: gameAddress },
+      player,
       uri: graphURI,
     } = character;
 
@@ -134,25 +136,40 @@ const updateDBMetadata = async (
       throw new Error('Character has no URI');
     }
 
-    const cid = graphURI.split('/').pop();
+    const extendedCharacterId = graphURI.split('/').pop();
+    const isCID = extendedCharacterId?.match(/^[a-zA-Z0-9]{46,59}$/);
 
-    const response = await fetch(uriToHttp(`ipfs://${cid}`)[0]);
-    const data = await response.json();
+    let characterMeta = null;
 
-    const update: Partial<CharacterMetaDB> = {
-      chainId: BigInt(chainId).toString(),
-      gameAddress: getAddress(gameAddress),
-      characterId: BigInt(characterId).toString(),
-      uri: graphURI,
-      player: character.player,
-      account: character.account,
-      name: data.name,
-      description: data.description,
-      image: data.image,
-      attributes: data.attributes,
-    };
+    if (isCID && extendedCharacterId) {
+      const cid = extendedCharacterId;
+      const response = await fetch(uriToHttp(`ipfs://${cid}`)[0]);
+      const data = await response.json();
 
-    const characterMeta = await updateCharacterInDB(update);
+      const update: Partial<CharacterMetaDB> = {
+        chainId: BigInt(chainId).toString(),
+        gameAddress: getAddress(gameAddress),
+        characterId: BigInt(characterId).toString(),
+        uri: graphURI,
+        player,
+        account,
+        name: data.name,
+        description: data.description,
+        image: data.image,
+        attributes: data.attributes,
+      };
+      characterMeta = await updateCharacterInDB(update);
+    } else if (extendedCharacterId) {
+      const update: Partial<CharacterMetaDB> = {
+        chainId: BigInt(chainId).toString(),
+        gameAddress: getAddress(gameAddress),
+        characterId: BigInt(characterId).toString(),
+        uri: graphURI,
+        player,
+        account,
+      };
+      characterMeta = await updateCharacterInDB(update);
+    }
 
     if (!characterMeta) {
       throw new Error('Error updating character');
