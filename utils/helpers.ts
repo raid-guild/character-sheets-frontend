@@ -17,10 +17,6 @@ import {
   Metadata,
 } from './types';
 
-export const removeEndingBackslash = (uri: string): string => {
-  return uri?.endsWith('/') ? uri?.slice(0, -1) : uri;
-};
-
 /**
  * Given a URI that may be ipfs, ipns, http, https, ar, or data protocol, return the fetch-able http(s) URLs for the same content
  * @param uri to convert to fetch-able http url
