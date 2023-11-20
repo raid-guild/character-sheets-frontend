@@ -429,6 +429,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
             isLoading={isLoading}
             loadingText="Updating..."
             type="submit"
+            variant="solid"
           >
             Update
           </Button>

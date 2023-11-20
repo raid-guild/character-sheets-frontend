@@ -195,6 +195,8 @@ export const RevokeClassModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Revoking..."
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           Revoke
         </Button>

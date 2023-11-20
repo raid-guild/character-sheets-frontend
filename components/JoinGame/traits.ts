@@ -149,6 +149,6 @@ export const removeTraitHex = (trait: string): string => {
 
 export const getImageUrl = (fileName: string): string => {
   return (
-    uriToHttp(LAYERS_CID)[0] + 'layers/' + removeTraitHex(fileName) + '.png'
+    uriToHttp(LAYERS_CID)[0] + '/layers/' + removeTraitHex(fileName) + '.png'
   );
 };

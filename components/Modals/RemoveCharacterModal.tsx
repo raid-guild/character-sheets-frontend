@@ -156,6 +156,8 @@ export const RemoveCharacterModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Removing..."
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           Remove
         </Button>

@@ -199,6 +199,8 @@ export const RemoveItemRequirementModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Removing..."
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           Remove
         </Button>
