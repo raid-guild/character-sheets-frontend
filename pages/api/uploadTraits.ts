@@ -84,19 +84,28 @@ export default async function uploadTraits(
           i.attributes[0].value === EquippableTraitType.EQUIPPED_ITEM_2,
       );
 
-      if (equippedItem1s[0]?.equippable_layer) {
+      if (
+        equippedItem1s[0]?.equippable_layer &&
+        !traits[EquippableTraitType.EQUIPPED_ITEM_1].includes('equippable')
+      ) {
         traits[
           EquippableTraitType.EQUIPPED_ITEM_1
         ] = `equippable_${equippedItem1s[0].name}_${equippedItem1s[0].equippable_layer}`;
       }
 
-      if (equippedWearables[0]?.equippable_layer) {
+      if (
+        equippedWearables[0]?.equippable_layer &&
+        !traits[EquippableTraitType.EQUIPPED_WEARABLE].includes('equippable')
+      ) {
         traits[
           EquippableTraitType.EQUIPPED_WEARABLE
         ] = `equippable_${equippedWearables[0].name}_${equippedWearables[0].equippable_layer}`;
       }
 
-      if (equippedItem2s[0]?.equippable_layer) {
+      if (
+        equippedItem2s[0]?.equippable_layer &&
+        !traits[EquippableTraitType.EQUIPPED_ITEM_2].includes('equippable')
+      ) {
         traits[
           EquippableTraitType.EQUIPPED_ITEM_2
         ] = `equippable_${equippedItem2s[0].name}_${equippedItem2s[0].equippable_layer}`;

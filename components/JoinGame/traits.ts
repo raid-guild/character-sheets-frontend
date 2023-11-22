@@ -304,7 +304,7 @@ export const getAttributesFromTraitsObject = (
     if (index.includes('equippable')) {
       return {
         trait_type: traitType,
-        value: variant.toUpperCase(),
+        value: variant.toUpperCase(), // In this case, the "variant" is the name of the equippable item
       };
     } else if (!(index && variant && color)) {
       return {
