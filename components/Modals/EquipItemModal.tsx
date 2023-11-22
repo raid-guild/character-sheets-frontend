@@ -112,8 +112,8 @@ export const EquipItemModal: React.FC = () => {
             throw new Error('Missing equippable item type value');
 
           const newTrait = isEquipped
-            ? 'remove'
-            : `equippable_${itemName}_${equippable_layer}`;
+            ? `remove_${itemName}_${equippable_layer}`
+            : `equip_${itemName}_${equippable_layer}`;
           traits[itemAttributes[0].value as EquippableTraitType] = newTrait;
 
           const response = await fetch(`/api/uploadTraits`, {

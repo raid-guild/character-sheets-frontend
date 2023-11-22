@@ -10,6 +10,7 @@ import {
 import {
   Character,
   Class,
+  EquippedItem,
   Game,
   GameMeta,
   Item,
@@ -109,7 +110,7 @@ export const formatCharacter = async (
   );
 
   const heldItems: Item[] = [];
-  const equippedItems: Item[] = [];
+  const equippedItems: EquippedItem[] = [];
 
   items.forEach(i => {
     const held = character.heldItems.find(h => h.item.itemId === i.itemId);
@@ -125,6 +126,7 @@ export const formatCharacter = async (
     equippedItems.push({
       ...i,
       amount: BigInt(equipped.heldItem.amount),
+      equippedAt: new Date(Number(equipped.equippedAt) * 1000),
     });
   });
 

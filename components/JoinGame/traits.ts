@@ -176,7 +176,7 @@ export const removeTraitHex = (trait: string): string => {
 
 export const getImageUrl = (fileName: string): string => {
   const [index, , potentialUrl] = fileName.split('_');
-  if (index.includes('equippable')) {
+  if (index.includes('equip')) {
     return potentialUrl; // In this case, what would normally be "color" is actually the URL of the newly equipped item
   }
 
@@ -301,7 +301,7 @@ export const getAttributesFromTraitsObject = (
     const traitType = trait as BaseTraitType | EquippableTraitType;
     const [index, variant, color] = traits[traitType].split('_');
 
-    if (index.includes('equippable')) {
+    if (index.includes('equip')) {
       return {
         trait_type: traitType,
         value: variant.toUpperCase(), // In this case, the "variant" is the name of the equippable item

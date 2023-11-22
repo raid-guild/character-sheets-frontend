@@ -61,7 +61,7 @@ export type Character = Metadata & {
   uri: string;
   classes: Class[];
   heldItems: Item[];
-  equippedItems: Item[];
+  equippedItems: EquippedItem[];
 };
 
 export type Class = Metadata & {
@@ -91,6 +91,10 @@ export type Item = Metadata & {
   holders: { id: string }[];
   equippers: { id: string }[];
   merkleRoot: string;
+};
+
+export type EquippedItem = Item & {
+  equippedAt: Date;
 };
 
 export type ClaimableTreeDB = {

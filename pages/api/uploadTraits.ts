@@ -17,7 +17,7 @@ import {
 } from '@/graphql/autogen/types';
 import { getGraphClient } from '@/graphql/client';
 import { uploadToWeb3Storage } from '@/lib/fileStorage';
-import { formatItem } from '@/utils/helpers';
+import { formatCharacter, formatItem } from '@/utils/helpers';
 import { Attribute, Item } from '@/utils/types';
 
 type ResponseData = {
@@ -61,30 +61,51 @@ export default async function uploadTraits(
         return res.status(500).json({ error: 'Something went wrong' });
       }
 
-      const character = data?.character as CharacterInfoFragment | null;
-      if (!character)
+      const unformattedCharacter =
+        data?.character as CharacterInfoFragment | null;
+      if (!unformattedCharacter)
         return res.status(404).json({ error: 'Character not found' });
 
-      const equippedItems = await Promise.all(
-        character.equippedItems.map(h => formatItem(h.item)),
+      const items = await Promise.all(
+        unformattedCharacter.equippedItems.map(equippedItem =>
+          formatItem(equippedItem.item),
+        ),
       );
 
-      const equippedItem1s = equippedItems.filter(
-        i =>
-          i.attributes &&
-          i.attributes[0].value === EquippableTraitType.EQUIPPED_ITEM_1,
-      );
-      const equippedWearables = equippedItems.filter(
-        i =>
-          i.attributes &&
-          i.attributes[0].value === EquippableTraitType.EQUIPPED_WEARABLE,
-      );
+      const character = await formatCharacter(unformattedCharacter, [], items);
 
-      const equippedItem2s = equippedItems.filter(
-        i =>
-          i.attributes &&
-          i.attributes[0].value === EquippableTraitType.EQUIPPED_ITEM_2,
-      );
+      const equippedItem1s = character.equippedItems
+        .filter(
+          i =>
+            i.attributes &&
+            i.attributes[0].value === EquippableTraitType.EQUIPPED_ITEM_1,
+        )
+        .sort((a, b) => {
+          if (!a.equippedAt || !b.equippedAt) return 0;
+          return b.equippedAt.getTime() - a.equippedAt.getTime();
+        });
+
+      const equippedWearables = character.equippedItems
+        .filter(
+          i =>
+            i.attributes &&
+            i.attributes[0].value === EquippableTraitType.EQUIPPED_WEARABLE,
+        )
+        .sort((a, b) => {
+          if (!a.equippedAt || !b.equippedAt) return 0;
+          return b.equippedAt.getTime() - a.equippedAt.getTime();
+        });
+
+      const equippedItem2s = character.equippedItems
+        .filter(
+          i =>
+            i.attributes &&
+            i.attributes[0].value === EquippableTraitType.EQUIPPED_ITEM_2,
+        )
+        .sort((a, b) => {
+          if (!a.equippedAt || !b.equippedAt) return 0;
+          return b.equippedAt.getTime() - a.equippedAt.getTime();
+        });
 
       traits = getEquippableTraitName(
         EquippableTraitType.EQUIPPED_ITEM_1,
@@ -156,16 +177,24 @@ const getEquippableTraitName = (
 ): CharacterTraits => {
   if (
     items[0]?.equippable_layer &&
-    !traits[equippableTraitType].includes('equippable')
+    !traits[equippableTraitType].includes('equip')
   ) {
     if (traits[equippableTraitType].includes('remove')) {
-      traits[equippableTraitType] = items[1]
-        ? `equippable_${items[1].name}_${items[1].equippable_layer}`
-        : '';
+      const [, name, image] = traits[equippableTraitType].split('_');
+
+      if (items[0].name === name && items[0].equippable_layer === image) {
+        traits[equippableTraitType] = items[1]
+          ? `equip_${items[1].name}_${items[1].equippable_layer}`
+          : '';
+      } else {
+        traits[
+          equippableTraitType
+        ] = `equip_${items[0].name}_${items[0].equippable_layer}`;
+      }
     } else {
       traits[
         equippableTraitType
-      ] = `equippable_${items[0].name}_${items[0].equippable_layer}`;
+      ] = `equip_${items[0].name}_${items[0].equippable_layer}`;
     }
   }
 

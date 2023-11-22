@@ -15,8 +15,8 @@ export const EXPLORER_URLS: { [key: number]: string } = {
 
 export const SUBGRAPH_URLS: { [key: number]: string } = {
   [100]:
-    'https://api.thegraph.com/subgraphs/name/dan13ram/character-sheets-gnosis',
-  [5]: 'https://api.thegraph.com/subgraphs/name/dan13ram/character-sheets-goerli',
+    'https://api.thegraph.com/subgraphs/name/ecwireless/character-sheets-gnosis',
+  [5]: 'https://api.thegraph.com/subgraphs/name/ecwireless/character-sheets-goerli',
 };
 
 export const RPC_URLS: { [key: number]: string } = {
