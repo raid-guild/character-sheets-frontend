@@ -117,6 +117,8 @@ export const EquipItemModal: React.FC = () => {
           const response = await fetch(`/api/uploadTraits`, {
             method: 'POST',
             body: JSON.stringify({
+              characterId: id,
+              chainId: game.chainId,
               traits,
             }),
           });

@@ -24,6 +24,12 @@ query GetGameWithMasters($gameId: ID!) {
   }
 }
 
+query GetCharacterInfoById($characterId: ID!) {
+  character(id: $characterId) {
+    ...CharacterInfo
+  }
+}
+
 query GetCharacterMetaById($characterId: ID!) {
   character(id: $characterId) {
     ...CharacterMetaInfo
