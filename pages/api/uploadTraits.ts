@@ -18,7 +18,7 @@ import {
 import { getGraphClient } from '@/graphql/client';
 import { uploadToWeb3Storage } from '@/lib/fileStorage';
 import { formatItem } from '@/utils/helpers';
-import { Attribute } from '@/utils/types';
+import { Attribute, Item } from '@/utils/types';
 
 type ResponseData = {
   attributes?: Attribute[];
@@ -36,14 +36,16 @@ export default async function uploadTraits(
     const {
       chainId: chainIdString,
       characterId: extendedCharacterId,
-      traits,
+      traits: _traits,
     } = JSON.parse(req.body) as {
       chainId?: string;
       characterId?: string;
       traits: CharacterTraits;
     };
 
-    if (!traits) return res.status(400).json({ error: 'No traits provided' });
+    if (!_traits) return res.status(400).json({ error: 'No traits provided' });
+
+    let traits = _traits;
 
     if (extendedCharacterId && chainIdString) {
       const chainId = Number(chainIdString);
@@ -84,32 +86,23 @@ export default async function uploadTraits(
           i.attributes[0].value === EquippableTraitType.EQUIPPED_ITEM_2,
       );
 
-      if (
-        equippedItem1s[0]?.equippable_layer &&
-        !traits[EquippableTraitType.EQUIPPED_ITEM_1].includes('equippable')
-      ) {
-        traits[
-          EquippableTraitType.EQUIPPED_ITEM_1
-        ] = `equippable_${equippedItem1s[0].name}_${equippedItem1s[0].equippable_layer}`;
-      }
+      traits = getEquippableTraitName(
+        EquippableTraitType.EQUIPPED_ITEM_1,
+        equippedItem1s,
+        traits,
+      );
 
-      if (
-        equippedWearables[0]?.equippable_layer &&
-        !traits[EquippableTraitType.EQUIPPED_WEARABLE].includes('equippable')
-      ) {
-        traits[
-          EquippableTraitType.EQUIPPED_WEARABLE
-        ] = `equippable_${equippedWearables[0].name}_${equippedWearables[0].equippable_layer}`;
-      }
+      traits = getEquippableTraitName(
+        EquippableTraitType.EQUIPPED_WEARABLE,
+        equippedWearables,
+        traits,
+      );
 
-      if (
-        equippedItem2s[0]?.equippable_layer &&
-        !traits[EquippableTraitType.EQUIPPED_ITEM_2].includes('equippable')
-      ) {
-        traits[
-          EquippableTraitType.EQUIPPED_ITEM_2
-        ] = `equippable_${equippedItem2s[0].name}_${equippedItem2s[0].equippable_layer}`;
-      }
+      traits = getEquippableTraitName(
+        EquippableTraitType.EQUIPPED_ITEM_2,
+        equippedItem2s,
+        traits,
+      );
     }
 
     const traitsArray: TraitsArray = ['', '', '', '', '', '', '', ''];
@@ -155,3 +148,26 @@ export default async function uploadTraits(
     return res.status(500).json({ error: 'Something went wrong' });
   }
 }
+
+const getEquippableTraitName = (
+  equippableTraitType: EquippableTraitType,
+  items: Item[],
+  traits: CharacterTraits,
+): CharacterTraits => {
+  if (
+    items[0]?.equippable_layer &&
+    !traits[equippableTraitType].includes('equippable')
+  ) {
+    if (traits[equippableTraitType].includes('remove')) {
+      traits[equippableTraitType] = items[1]
+        ? `equippable_${items[1].name}_${items[1].equippable_layer}`
+        : '';
+    } else {
+      traits[
+        equippableTraitType
+      ] = `equippable_${items[0].name}_${items[0].equippable_layer}`;
+    }
+  }
+
+  return traits;
+};
