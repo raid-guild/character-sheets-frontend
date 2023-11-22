@@ -99,7 +99,7 @@ export const ClaimItemModal: React.FC = () => {
   } = useClaimableTree(selectedItem?.itemId);
 
   useEffect(() => {
-    if (!claimItemModal?.isOpen) {
+    if (claimItemModal?.isOpen) {
       resetData();
     } else {
       reloadTree();

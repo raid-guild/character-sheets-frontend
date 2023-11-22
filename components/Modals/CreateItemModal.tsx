@@ -31,6 +31,7 @@ import {
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { Dropdown } from '@/components/Dropdown';
+import { EquippableTraitType } from '@/components/JoinGame/traits';
 import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGameActions } from '@/contexts/GameActionsContext';
@@ -44,12 +45,6 @@ import {
   ClaimableAddress,
   ClaimableAddressListInput,
 } from '../ClaimableAddressListInput';
-
-enum ItemPosition {
-  BELOW_CLOTHING = 'BELOW CLOTHING',
-  CLOTHING = 'CLOTHING',
-  ABOVE_CLOTHING = 'ABOVE CLOTHING',
-}
 
 export const CreateItemModal: React.FC = () => {
   const { createItemModal } = useGameActions();
@@ -90,8 +85,8 @@ export const CreateItemModal: React.FC = () => {
     ClaimableAddress[]
   >([]);
 
-  const [position, setPosition] = useState<ItemPosition>(
-    ItemPosition.ABOVE_CLOTHING,
+  const [equippableType, setEquippableType] = useState<EquippableTraitType>(
+    EquippableTraitType.EQUIPPED_WEARABLE,
   );
 
   const [showError, setShowError] = useState<boolean>(false);
@@ -161,7 +156,7 @@ export const CreateItemModal: React.FC = () => {
     setClaimableAddressList([]);
     setItemEmblem(null);
     setItemLayer(null);
-    setPosition(ItemPosition.ABOVE_CLOTHING);
+    setEquippableType(EquippableTraitType.EQUIPPED_WEARABLE);
 
     setShowError(false);
 
@@ -213,8 +208,8 @@ export const CreateItemModal: React.FC = () => {
           equippable_layer: `ipfs://${layerCID}`,
           attributes: [
             {
-              trait_type: 'POSITION',
-              value: position,
+              trait_type: 'EQUIPPABLE TYPE',
+              value: equippableType,
             },
           ],
         };
@@ -411,6 +406,7 @@ export const CreateItemModal: React.FC = () => {
       claimableAddressList,
       claimableToggle,
       classRequirements,
+      equippableType,
       itemName,
       itemDescription,
       itemLayer,
@@ -420,7 +416,6 @@ export const CreateItemModal: React.FC = () => {
       hasError,
       onUploadEmblem,
       onUploadLayer,
-      position,
       publicClient,
       renderError,
       soulboundToggle,
@@ -712,8 +707,8 @@ export const CreateItemModal: React.FC = () => {
         </FormControl>
         <FormControl>
           <Flex align="center">
-            <FormLabel>Item Position</FormLabel>
-            <Tooltip label="The position is where the item will render when equipped by a character.">
+            <FormLabel>Item Type</FormLabel>
+            <Tooltip label="The type determines where the item will render when equipped by a character.">
               <Image
                 alt="down arrow"
                 height="14px"
@@ -724,9 +719,9 @@ export const CreateItemModal: React.FC = () => {
             </Tooltip>
           </Flex>
           <Dropdown
-            options={Object.values(ItemPosition)}
-            selectedOption={position}
-            setSelectedOption={setPosition as (option: string) => void}
+            options={Object.values(EquippableTraitType)}
+            selectedOption={equippableType}
+            setSelectedOption={setEquippableType as (option: string) => void}
           />
         </FormControl>
         <Button

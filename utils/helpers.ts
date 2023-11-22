@@ -188,6 +188,7 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     equippable_layer: metadata.equippable_layer
       ? uriToHttp(metadata.equippable_layer)[0]
       : undefined,
+    attributes: metadata.attributes,
     itemId: item.itemId,
     soulbound: item.soulbound,
     supply: BigInt(item.supply),
