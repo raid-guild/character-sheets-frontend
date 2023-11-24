@@ -27,6 +27,7 @@ import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { getChainLabelFromId } from '@/lib/web3';
+import { BASE_CHARACTER_URI } from '@/utils/constants';
 import { shortenText } from '@/utils/helpers';
 import { Attribute } from '@/utils/types';
 
@@ -204,40 +205,70 @@ export const JoinGame: React.FC<JoinGameProps> = ({
           characterMetadata['attributes'] = attributes;
         }
 
-        const totalSheets = await publicClient.readContract({
-          address: game.id as Address,
-          abi: parseAbi([
-            'function totalSheets() external view returns(uint256)',
-          ]),
-          functionName: 'totalSheets',
-        });
-        const characterId = `${game.id}-character-${toHex(totalSheets)}`;
-        const chainLabel = getChainLabelFromId(chain.id);
-        const apiRoute = `/api/characters/${chainLabel}/${characterId}/update`;
-        const signature = await walletClient.signMessage({
-          message: apiRoute,
-          account: walletClient.account?.address as Address,
-        });
+        const { baseTokenURI } = game;
 
-        const res = await fetch(apiRoute, {
-          headers: {
-            'x-account-address': walletClient.account?.address as Address,
-            'x-account-signature': signature,
-            'x-account-chain-id': walletClient.chain.id.toString(),
-          },
-          method: 'POST',
-          body: JSON.stringify(characterMetadata),
-        });
-        if (!res.ok)
-          throw new Error(
-            "Something went wrong updating your character's metadata",
+        let characterTokenUri = '';
+
+        if (baseTokenURI === BASE_CHARACTER_URI) {
+          const totalSheets = await publicClient.readContract({
+            address: game.id as Address,
+            abi: parseAbi([
+              'function totalSheets() external view returns(uint256)',
+            ]),
+            functionName: 'totalSheets',
+          });
+          const characterId = `${game.id}-character-${toHex(totalSheets)}`;
+          const chainLabel = getChainLabelFromId(chain.id);
+          const apiRoute = `/api/characters/${chainLabel}/${characterId}/update`;
+          const signature = await walletClient.signMessage({
+            message: apiRoute,
+            account: walletClient.account?.address as Address,
+          });
+
+          const res = await fetch(apiRoute, {
+            headers: {
+              'x-account-address': walletClient.account?.address as Address,
+              'x-account-signature': signature,
+              'x-account-chain-id': walletClient.chain.id.toString(),
+            },
+            method: 'POST',
+            body: JSON.stringify(characterMetadata),
+          });
+          if (!res.ok)
+            throw new Error(
+              "Something went wrong updating your character's metadata",
+            );
+
+          const { name, description, image } = await res.json();
+          if (!(name && description && image))
+            throw new Error(
+              'Something went wrong updating your character metadata',
+            );
+
+          characterTokenUri = characterId;
+        } else {
+          const res = await fetch(
+            '/api/uploadMetadata?name=characterMetadata.json',
+            {
+              method: 'POST',
+              body: JSON.stringify(characterMetadata),
+            },
           );
 
-        const { name, description, image } = await res.json();
-        if (!(name && description && image))
-          throw new Error(
-            'Something went wrong updating your character metadata',
-          );
+          if (!res.ok)
+            throw new Error(
+              'Something went wrong uploading your character metadata',
+            );
+
+          const { cid: characterMetadataCid } = await res.json();
+
+          if (!characterMetadataCid)
+            throw new Error(
+              'Something went wrong uploading your character metadata',
+            );
+
+          characterTokenUri = characterMetadataCid;
+        }
 
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
@@ -247,7 +278,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
             'function rollCharacterSheet(string calldata _tokenUri) external',
           ]),
           functionName: 'rollCharacterSheet',
-          args: [characterId],
+          args: [characterTokenUri],
         });
         setTxHash(transactionhash);
 
