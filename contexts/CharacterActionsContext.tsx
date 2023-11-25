@@ -11,6 +11,8 @@ import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
+import { getChainLabelFromId } from '@/lib/web3';
+import { BASE_CHARACTER_URI } from '@/utils/constants';
 import { Character, Item } from '@/utils/types';
 
 export enum PlayerActions {
@@ -59,6 +61,8 @@ type CharacterActionsContextType = {
   renounceClassModal: ModalProps;
   revokeClassModal: ModalProps;
   transferCharacterModal: ModalProps;
+
+  uriNeedsUpgraded: boolean;
 };
 
 const CharacterActionsContext = createContext<CharacterActionsContextType>({
@@ -85,6 +89,8 @@ const CharacterActionsContext = createContext<CharacterActionsContextType>({
   renounceClassModal: undefined,
   revokeClassModal: undefined,
   transferCharacterModal: undefined,
+
+  uriNeedsUpgraded: false,
 });
 
 export const useCharacterActions = (): CharacterActionsContextType =>
@@ -94,7 +100,7 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
   const { address } = useAccount();
-  const { game, isMaster } = useGame();
+  const { character, game, isMaster } = useGame();
 
   const approveTransferModal = useDisclosure();
   const assignClassModal = useDisclosure();
@@ -176,6 +182,23 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
 
   const { isWrongNetwork, renderNetworkError } = useCheckGameNetwork();
 
+  const uriNeedsUpgraded = useMemo(() => {
+    if (!(character && game)) return false;
+    const chainLabel = getChainLabelFromId(game.chainId);
+    const { uri } = character;
+    const potentialCID = uri
+      .split('/')
+      .filter(s => !!s)
+      .pop();
+
+    if (!(chainLabel && potentialCID)) return false;
+
+    const baseURI = uri.replace(potentialCID, '');
+    if (baseURI !== `${BASE_CHARACTER_URI}${chainLabel}/`) return false;
+
+    return !!potentialCID.match(/^[a-zA-Z0-9]{46,59}$/);
+  }, [character, game]);
+
   const openActionModal = useCallback(
     (action: PlayerActions | GameMasterActions) => {
       if (isWrongNetwork) {
@@ -217,6 +240,10 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
           editCharacterModal.onOpen();
           break;
         case PlayerActions.EQUIP_ITEM:
+          if (uriNeedsUpgraded) {
+            editCharacterModal.onOpen();
+            return;
+          }
           equipItemModal.onOpen();
           break;
         case PlayerActions.RENOUNCE_CHARACTER:
@@ -245,6 +272,7 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
       renounceClassModal,
       revokeClassModal,
       transferCharacterModal,
+      uriNeedsUpgraded,
     ],
   );
 
@@ -274,6 +302,8 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
         renounceClassModal,
         revokeClassModal,
         transferCharacterModal,
+
+        uriNeedsUpgraded,
       }}
     >
       {children}

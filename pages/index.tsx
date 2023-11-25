@@ -8,7 +8,7 @@ import { CreateGameModal } from '@/components/Modals/CreateGameModal';
 import { useGamesContext } from '@/contexts/GamesContext';
 import { useToast } from '@/hooks/useToast';
 import { SUPPORTED_CHAINS } from '@/lib/web3';
-import { Character, Class, Item } from '@/utils/types';
+import { Character, Class, EquippedItem, Item } from '@/utils/types';
 
 const createDummyClass = (name: string): Class => ({
   id: '',
@@ -56,8 +56,8 @@ const dummyCharacter: Character = {
     createDummyItem('Wooden Staff', '/staff.png'),
   ],
   equippedItems: [
-    createDummyItem('Sword of Undhur', '/sword.png'),
-    createDummyItem('Wooden Staff', '/staff.png'),
+    createDummyItem('Sword of Undhur', '/sword.png') as EquippedItem,
+    createDummyItem('Wooden Staff', '/staff.png') as EquippedItem,
   ],
   classes: [createDummyClass('Wizard'), createDummyClass('Warrior')],
 };
