@@ -6,6 +6,7 @@ import {
   Grid,
   Heading,
   HStack,
+  IconButton,
   Image,
   Link,
   Spinner,
@@ -16,6 +17,7 @@ import {
   TabPanels,
   Tabs,
   Text,
+  useDisclosure,
   VStack,
   Wrap,
 } from '@chakra-ui/react';
@@ -42,6 +44,7 @@ import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { EditItemClaimableModal } from '@/components/Modals/EditItemClaimableModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
+import { ItemsCatalogModal } from '@/components/Modals/ItemsCatalogModal';
 import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
 import { RemoveCharacterModal } from '@/components/Modals/RemoveCharacterModal';
 import { RemoveItemRequirementModal } from '@/components/Modals/RemoveItemRequirementModal';
@@ -349,14 +352,17 @@ function GamePage({
               Game Masters
             </Text>
             {isAdmin && (
-              <Button
+              <IconButton
                 onClick={() =>
                   openActionModal(GameMasterActions.ADD_GAME_MASTER)
                 }
-                variant="unstyled"
-              >
-                +
-              </Button>
+                aria-label="add game master"
+                variant="ghost"
+                minW={4}
+                icon={<Text>+</Text>}
+                mb={1}
+                ml={2}
+              />
             )}
           </Flex>
           <Wrap spacingX={1}>
@@ -547,6 +553,7 @@ const GameActions: React.FC<StackProps> = ({ ...props }) => {
   const { isMaster } = useGame();
 
   const { openActionModal } = useGameActions();
+  const itemsCatalogModal = useDisclosure();
 
   return (
     <VStack
@@ -558,24 +565,29 @@ const GameActions: React.FC<StackProps> = ({ ...props }) => {
       spacing={4}
       {...props}
     >
-      {isMaster ? (
+      <Button onClick={itemsCatalogModal.onOpen} size="sm">
+        show items catalog
+      </Button>
+      {isMaster && (
         <>
           <Button
             onClick={() => openActionModal(GameMasterActions.CREATE_ITEM)}
             size="sm"
           >
-            Create Item
+            create Item
           </Button>
           <Button
             onClick={() => openActionModal(GameMasterActions.CREATE_CLASS)}
             size="sm"
           >
-            Create Class
+            create Class
           </Button>
         </>
-      ) : (
-        <Text>Coming Soon!</Text>
       )}
+      <ItemsCatalogModal
+        isOpen={itemsCatalogModal.isOpen}
+        onClose={itemsCatalogModal.onClose}
+      />
     </VStack>
   );
 };

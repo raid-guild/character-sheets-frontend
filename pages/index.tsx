@@ -33,8 +33,8 @@ const createDummyItem = (name: string, image: string): Item => ({
   totalSupply: BigInt(0),
   amount: BigInt(2),
   requirements: [],
-  holders: [{ id: '1' }],
-  equippers: [{ id: '1' }],
+  holders: [{ id: '1', characterId: '1' }],
+  equippers: [{ id: '1', characterId: '1' }],
   merkleRoot: '',
 });
 

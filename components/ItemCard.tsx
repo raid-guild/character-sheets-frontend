@@ -1,4 +1,14 @@
-import { AspectRatio, Image, SimpleGrid, Text, VStack } from '@chakra-ui/react';
+import { CheckIcon } from '@chakra-ui/icons';
+import {
+  AspectRatio,
+  Divider,
+  Flex,
+  HStack,
+  Image,
+  SimpleGrid,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
 import { useAccount } from 'wagmi';
 
 import { ItemActionMenu } from '@/components/ActionMenus/ItemActionMenu';
@@ -8,9 +18,10 @@ import { Item } from '@/utils/types';
 
 type ItemCardProps = Item & {
   chainId: number;
+  holderId?: string;
 };
 
-export const ItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
+export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
   const { isConnected } = useAccount();
 
   const {
@@ -27,11 +38,12 @@ export const ItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
 
   const { character } = useGame();
 
-  // const isEquipped =
-  //   character?.equippedItems.find(e => e.itemId === item.itemId) !== undefined;
+  const isEquipped =
+    equippers.length > 0 &&
+    equippers.some(equippedBy => equippedBy.characterId === holderId);
 
   return (
-    <VStack spacing={3} w="100%">
+    <VStack spacing={3} w="100%" h="100%">
       <VStack
         transition="background 0.3s ease"
         p={{ base: 4, md: 6, lg: 8 }}
@@ -39,23 +51,53 @@ export const ItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
         w="100%"
         borderRadius="md"
         bg="whiteAlpha.100"
+        flexGrow={1}
+        justify="space-between"
       >
-        <AspectRatio ratio={1} w="100%" maxH="15rem">
-          <Image
-            alt={name}
-            w="100%"
-            style={{
-              objectFit: 'contain',
-            }}
-            src={image}
-          />
-        </AspectRatio>
-        <Text fontSize="md" fontWeight="500" w="100%">
-          {name}
-        </Text>
-        <Text fontSize="sm" w="100%">
-          {shortenText(description, 130)}
-        </Text>
+        <VStack spacing={3} w="100%">
+          <AspectRatio ratio={1} w="100%" maxH="15rem">
+            <Image
+              alt={name}
+              w="100%"
+              style={{
+                objectFit: 'contain',
+              }}
+              src={image}
+            />
+          </AspectRatio>
+          <Text fontSize="md" fontWeight="500" w="100%">
+            {name}
+          </Text>
+          <Text fontSize="sm" w="100%">
+            {shortenText(description, 130)}
+          </Text>
+          {isEquipped && (
+            <>
+              <HStack w="100%" spacing={4}>
+                <Flex
+                  borderRadius="50%"
+                  w="1.5rem"
+                  h="1.5rem"
+                  top={2}
+                  right={2}
+                  bg="dark"
+                  justify="center"
+                  align="center"
+                >
+                  <CheckIcon color="white" w="0.75rem" />
+                </Flex>
+                <Text
+                  fontSize="2xs"
+                  textTransform="uppercase"
+                  letterSpacing="2px"
+                >
+                  Equipped
+                </Text>
+              </HStack>
+              <Divider borderColor="whiteAlpha.300" />
+            </>
+          )}
+        </VStack>
         <SimpleGrid columns={3} w="100%" spacing={3} mt="4">
           <ItemValue label="Item ID" value={itemId} />
           <ItemValue
@@ -75,10 +117,12 @@ export const ItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
               equippers.length !== 1 ? 's' : ''
             }`}
           />
+          {/*
           <ItemValue
             label="Can I Claim?"
             value={isConnected ? '?' : 'Wallet not connected'}
           />
+          */}
         </SimpleGrid>
       </VStack>
       {isConnected && !!character && (
@@ -103,5 +147,3 @@ const ItemValue: React.FC<{ label: string; value: string }> = ({
     </VStack>
   );
 };
-
-export const SmallItemCard: React.FC<ItemCardProps> = ItemCard;

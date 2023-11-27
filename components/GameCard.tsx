@@ -3,9 +3,9 @@ import {
   Button,
   Heading,
   HStack,
-  Stack,
   Image,
   Link,
+  Stack,
   Text,
   VStack,
 } from '@chakra-ui/react';

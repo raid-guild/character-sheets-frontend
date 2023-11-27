@@ -163,7 +163,7 @@ export const formatClass = async (
     image: uriToHttp(metadata.image)[0],
     claimable: classEntity.claimable,
     classId: classEntity.classId,
-    holders: classEntity.holders,
+    holders: classEntity.holders.map(h => h.character),
   };
 };
 
@@ -197,8 +197,8 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     totalSupply: BigInt(item.totalSupply),
     amount: BigInt(0),
     requirements: item.requirements.map(formatItemRequirement),
-    holders: item.holders,
-    equippers: item.equippers,
+    holders: item.holders.map(h => h.character),
+    equippers: item.equippers.map(e => e.character),
     merkleRoot: item.merkleRoot,
   };
 };

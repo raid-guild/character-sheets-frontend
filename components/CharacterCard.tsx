@@ -23,6 +23,7 @@ import { useMemo } from 'react';
 import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
+import { ItemsCatalogModal } from '@/components/Modals/ItemsCatalogModal';
 import { useGame } from '@/contexts/GameContext';
 import { getAddressUrl } from '@/lib/web3';
 import { shortenAddress, shortenText } from '@/utils/helpers';
@@ -39,6 +40,7 @@ export const CharacterCard: React.FC<{
 }> = ({ chainId, character, dummy }) => {
   const { address, isConnected } = useAccount();
   const { isMaster } = useGame();
+  const itemsCatalogModal = useDisclosure();
 
   const {
     characterId,
@@ -162,7 +164,11 @@ export const CharacterCard: React.FC<{
                 </Text>
               </HStack>
               {items.length > 2 && (
-                <Button variant="ghost" size="xs">
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  onClick={itemsCatalogModal.onOpen}
+                >
                   show all
                 </Button>
               )}
@@ -177,6 +183,11 @@ export const CharacterCard: React.FC<{
           </>
         )}
       </VStack>
+      <ItemsCatalogModal
+        character={character}
+        isOpen={!!items.length && itemsCatalogModal.isOpen}
+        onClose={itemsCatalogModal.onClose}
+      />
     </SimpleGrid>
   );
 };

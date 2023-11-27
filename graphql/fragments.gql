@@ -52,7 +52,10 @@ fragment ClassInfo on Class {
   uri
   claimable
   holders {
-    id
+    character {
+      id
+      characterId
+    }
   }
 }
 
@@ -75,10 +78,16 @@ fragment ItemInfo on Item {
     ...ItemRequirementInfo
   }
   holders {
-    id
+    character {
+      id
+      characterId
+    }
   }
   equippers {
-    id
+    character {
+      id
+      characterId
+    }
   }
 }
 

@@ -69,7 +69,7 @@ export type Class = Metadata & {
   classId: string;
   uri: string;
   claimable: boolean;
-  holders: { id: string }[];
+  holders: { id: string; characterId: string }[];
 };
 
 export type ItemRequirement = {
@@ -88,8 +88,8 @@ export type Item = Metadata & {
   totalSupply: bigint;
   amount: bigint;
   requirements: ItemRequirement[];
-  holders: { id: string }[];
-  equippers: { id: string }[];
+  holders: { id: string; characterId: string }[];
+  equippers: { id: string; characterId: string }[];
   merkleRoot: string;
 };
 

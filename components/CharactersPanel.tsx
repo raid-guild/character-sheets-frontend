@@ -1,4 +1,4 @@
-import { SimpleGrid, Text, VStack, GridItem } from '@chakra-ui/react';
+import { GridItem, SimpleGrid, Text, VStack } from '@chakra-ui/react';
 
 import { CharacterCardSmall } from '@/components/CharacterCard';
 import { useGame } from '@/contexts/GameContext';
