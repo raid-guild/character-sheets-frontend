@@ -122,13 +122,11 @@ export const ItemTag: React.FC<ItemTagProps> = ({
         <Text textAlign="center" fontSize={fontSize}>
           {name} ({amount.toString()})
         </Text>
-        {showActions && (
+        {showActions && !!character && (
           <Button
             onClick={() => {
               selectItem(item);
-              if (character) {
-                selectCharacter(character);
-              }
+              selectCharacter(character);
               openActionModal(PlayerActions.EQUIP_ITEM);
             }}
             size="sm"

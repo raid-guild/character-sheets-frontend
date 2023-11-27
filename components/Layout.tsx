@@ -55,8 +55,9 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         </Flex>
       </VStack>
       <VStack
-        align="center"
+        align="stretch"
         as="main"
+        w="100%"
         mt={20}
         spacing={0}
         overflowX="hidden"

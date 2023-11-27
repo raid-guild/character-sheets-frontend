@@ -89,6 +89,7 @@ export const CharacterCard: React.FC<{
             h="100%"
             borderRadius="lg"
             objectFit="cover"
+            objectPosition="center"
             src={image}
           />
         </AspectRatio>
@@ -160,12 +161,14 @@ export const CharacterCard: React.FC<{
                   Inventory ({itemTotal})
                 </Text>
               </HStack>
-              <Button variant="ghost" size="xs">
-                show all
-              </Button>
+              {items.length > 2 && (
+                <Button variant="ghost" size="xs">
+                  show all
+                </Button>
+              )}
             </HStack>
             <SimpleGrid columns={2} spacing={4} w="full">
-              {items.map(item => (
+              {items.slice(0, 2).map(item => (
                 <GridItem key={item.itemId + item.name}>
                   <ItemTag item={item} holderId={characterId} />
                 </GridItem>

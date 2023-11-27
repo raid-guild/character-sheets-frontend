@@ -209,8 +209,8 @@ function GamePage({
     return (
       <Grid
         templateColumns={{ base: '1fr', lg: '3fr 1fr' }}
-        w="full"
         gridGap="5px"
+        w="100%"
       >
         <HStack spacing="5px">
           <HStack
