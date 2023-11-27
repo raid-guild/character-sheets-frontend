@@ -9,6 +9,7 @@ import {
   Image,
   Link,
   Spinner,
+  StackProps,
   Tab,
   TabList,
   TabPanel,
@@ -125,14 +126,8 @@ function GamePage({
 }: {
   isConnectedAndMounted: boolean;
 }): JSX.Element {
-  const {
-    game,
-    character,
-    isAdmin,
-    isMaster,
-    loading,
-    isEligibleForCharacter,
-  } = useGame();
+  const { game, character, isAdmin, loading, isEligibleForCharacter } =
+    useGame();
 
   const {
     addGameMasterModal,
@@ -212,17 +207,27 @@ function GamePage({
     } = game;
 
     return (
-      <Grid templateColumns="3fr 1fr" w="full" gridGap="5px">
+      <Grid
+        templateColumns={{ base: '1fr', lg: '3fr 1fr' }}
+        w="full"
+        gridGap="5px"
+      >
         <HStack spacing="5px">
           <HStack
             bg="cardBG"
             h="100%"
-            p={8}
+            px={{ base: 4, sm: 8 }}
+            py={8}
             transition="background 0.3s ease"
             w="100%"
             spacing={12}
           >
-            <AspectRatio ratio={1} w="100%" maxW="12rem">
+            <AspectRatio
+              ratio={1}
+              w="100%"
+              maxW="12rem"
+              display={{ base: 'none', lg: 'block' }}
+            >
               <Image
                 alt="game emblem"
                 objectFit="cover"
@@ -232,6 +237,20 @@ function GamePage({
               />
             </AspectRatio>
             <VStack spacing={4} align="flex-start">
+              <AspectRatio
+                ratio={1}
+                w="100%"
+                maxW="12rem"
+                display={{ base: 'block', lg: 'none' }}
+              >
+                <Image
+                  alt="game emblem"
+                  objectFit="cover"
+                  src={image}
+                  w="100%"
+                  h="100%"
+                />
+              </AspectRatio>
               <Heading
                 display="inline-block"
                 fontSize="40px"
@@ -275,6 +294,7 @@ function GamePage({
             bg="cardBG"
             flexShrink={0}
             p={8}
+            display={{ base: 'none', lg: 'flex' }}
           >
             <GameTotals
               experience={experience}
@@ -283,8 +303,30 @@ function GamePage({
             />
           </VStack>
         </HStack>
+        <VStack
+          align="start"
+          spacing={0}
+          h="100%"
+          bg="cardBG"
+          flexShrink={0}
+          px={{ base: 4, sm: 8 }}
+          py={8}
+          display={{ base: 'flex', lg: 'none' }}
+        >
+          <GameTotals
+            experience={experience}
+            characters={characters}
+            items={items}
+          />
+        </VStack>
 
-        <VStack align="start" spacing={4} p={8} bg="cardBG">
+        <VStack
+          align="start"
+          spacing={4}
+          px={{ base: 4, sm: 8 }}
+          py={8}
+          bg="cardBG"
+        >
           <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
             Owner
           </Text>
@@ -328,6 +370,10 @@ function GamePage({
             })}
           </Wrap>
         </VStack>
+        {isConnectedAndMounted && (
+          <GameActions display={{ base: 'flex', lg: 'none' }} />
+        )}
+
         <VStack
           align="stretch"
           position="relative"
@@ -344,7 +390,13 @@ function GamePage({
           )}
 
           {isConnectedAndMounted && (
-            <VStack p={8} bg="cardBG" align="start" spacing={4}>
+            <VStack
+              px={{ base: 4, sm: 8 }}
+              py={8}
+              bg="cardBG"
+              align="start"
+              spacing={4}
+            >
               {!character && !showJoinGame && isEligibleForCharacter && (
                 <HStack w="100%" spacing={4}>
                   <Button variant="solid" onClick={startJoinGame}>
@@ -399,37 +451,43 @@ function GamePage({
           <Tabs
             borderColor="transparent"
             colorScheme="white"
-            w="full"
-            p={8}
+            px={{ base: 4, sm: 8 }}
+            py={8}
             bg="cardBG"
           >
             <TabList>
-              <Tab gap={2}>
+              <Tab gap={2} flexDirection={{ base: 'column', lg: 'row' }}>
                 <Image
                   alt="users"
                   height="20px"
                   src="/icons/users.svg"
                   width="20px"
                 />
-                <Text>{characters.length} characters</Text>
+                <Text fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}>
+                  {characters.length} character{characters.length !== 1 && 's'}
+                </Text>
               </Tab>
-              <Tab gap={2}>
+              <Tab gap={2} flexDirection={{ base: 'column', lg: 'row' }}>
                 <Image
                   alt="users"
                   height="20px"
                   src="/icons/users.svg"
                   width="20px"
                 />
-                <Text>{classes.length} classes</Text>
+                <Text fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}>
+                  {classes.length} class{classes.length !== 1 && 'es'}
+                </Text>
               </Tab>
-              <Tab gap={2}>
+              <Tab gap={2} flexDirection={{ base: 'column', lg: 'row' }}>
                 <Image
                   alt="items"
                   height="20px"
                   src="/icons/items.svg"
                   width="20px"
                 />
-                <Text>{items.length} Items</Text>
+                <Text fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}>
+                  {items.length} item{items.length !== 1 && 's'}
+                </Text>
               </Tab>
             </TabList>
 
@@ -446,26 +504,7 @@ function GamePage({
             </TabPanels>
           </Tabs>
         </VStack>
-        <VStack h="100%" bg="cardBG" p={8} align="stretch" spacing={4}>
-          {isMaster ? (
-            <>
-              <Button
-                onClick={() => openActionModal(GameMasterActions.CREATE_ITEM)}
-                size="sm"
-              >
-                Create Item
-              </Button>
-              <Button
-                onClick={() => openActionModal(GameMasterActions.CREATE_CLASS)}
-                size="sm"
-              >
-                Create Class
-              </Button>
-            </>
-          ) : (
-            <Text>Coming Soon!</Text>
-          )}
-        </VStack>
+        <GameActions display={{ base: 'none', lg: 'flex' }} />
       </Grid>
     );
   };
@@ -503,3 +542,40 @@ function GamePage({
     </>
   );
 }
+
+const GameActions: React.FC<StackProps> = ({ ...props }) => {
+  const { isMaster } = useGame();
+
+  const { openActionModal } = useGameActions();
+
+  return (
+    <VStack
+      h="100%"
+      bg="cardBG"
+      px={{ base: 4, sm: 8 }}
+      py={8}
+      align="stretch"
+      spacing={4}
+      {...props}
+    >
+      {isMaster ? (
+        <>
+          <Button
+            onClick={() => openActionModal(GameMasterActions.CREATE_ITEM)}
+            size="sm"
+          >
+            Create Item
+          </Button>
+          <Button
+            onClick={() => openActionModal(GameMasterActions.CREATE_CLASS)}
+            size="sm"
+          >
+            Create Class
+          </Button>
+        </>
+      ) : (
+        <Text>Coming Soon!</Text>
+      )}
+    </VStack>
+  );
+};

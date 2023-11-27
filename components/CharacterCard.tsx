@@ -195,19 +195,19 @@ export const CharacterCardSmall: React.FC<{
   }, [heldItems]);
 
   return (
-    <VStack spacing={3}>
+    <VStack spacing={3} w="100%">
       <Box
         border="1px solid white"
-        h="375px"
         onClick={onOpen}
         overflow="hidden"
         p={3}
         transition="transform 0.3s"
-        w="220px"
         _hover={{
           cursor: 'pointer',
           transform: 'rotateY(15deg)',
         }}
+        w="100%"
+        h="100%"
       >
         <Box pos="relative">
           <AspectRatio ratio={10 / 13} w="full">

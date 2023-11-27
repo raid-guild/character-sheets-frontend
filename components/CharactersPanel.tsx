@@ -1,4 +1,4 @@
-import { Text, VStack, Wrap, WrapItem } from '@chakra-ui/react';
+import { SimpleGrid, Text, VStack, GridItem } from '@chakra-ui/react';
 
 import { CharacterCardSmall } from '@/components/CharacterCard';
 import { useGame } from '@/contexts/GameContext';
@@ -17,12 +17,18 @@ export const CharactersPanel: React.FC = () => {
   }
 
   return (
-    <Wrap spacing={6} w="100%" py={10}>
+    <SimpleGrid
+      spacing={{ base: 4, sm: 6, md: 8 }}
+      w="100%"
+      py={10}
+      columns={{ base: 1, sm: 2, md: 3, xl: 4 }}
+      alignItems="stretch"
+    >
       {characters.map(c => (
-        <WrapItem key={c.id}>
+        <GridItem key={c.id} w="100%">
           <CharacterCardSmall chainId={game.chainId} character={c} />
-        </WrapItem>
+        </GridItem>
       ))}
-    </Wrap>
+    </SimpleGrid>
   );
 };
