@@ -98,7 +98,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
             </>
           )}
         </VStack>
-        <SimpleGrid columns={3} w="100%" spacing={3} mt="4">
+        <SimpleGrid columns={{ base: 2, sm: 3 }} w="100%" spacing={3} mt="4">
           <ItemValue label="Item ID" value={itemId} />
           <ItemValue
             label="Held By"
