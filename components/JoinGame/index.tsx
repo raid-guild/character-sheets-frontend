@@ -27,18 +27,29 @@ import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { getChainLabelFromId } from '@/lib/web3';
+import { BASE_CHARACTER_URI } from '@/utils/constants';
 import { shortenText } from '@/utils/helpers';
+import { Attribute } from '@/utils/types';
 
-import { getImageUrl, TRAITS, Traits, TraitType } from './traits';
+import {
+  BaseTraitType,
+  CharacterTraits,
+  EquippableTraitType,
+  getImageUrl,
+  TRAITS,
+  TraitsArray,
+} from './traits';
 import { TraitVariantControls } from './TraitVariantControls';
 
-const DEFAULT_TRAITS: Traits = [
+const DEFAULT_TRAITS: TraitsArray = [
   '0_Clouds_a_64485b',
   '1_Type1_a_ccb5aa',
   '2_Type1_a_80a86c',
   '3_Bald_a_c5c3bb',
+  '',
   '5_Villager1_a_796e68',
   '6_Basic_a',
+  '',
 ];
 
 type JoinGameProps = {
@@ -70,8 +81,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
   const [characterDescription, setCharacterDescription] = useState<string>('');
 
   const [showUpload, setShowUpload] = useState<boolean>(false);
-  const [traits, setTraits] = useState<Traits>(DEFAULT_TRAITS);
-  const [isMerging, setIsMerging] = useState<boolean>(false);
+  const [traits, setTraits] = useState<TraitsArray>(DEFAULT_TRAITS);
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -120,29 +130,6 @@ export const JoinGame: React.FC<JoinGameProps> = ({
     resetData();
   }, [resetData]);
 
-  const mergeTraitImages = useCallback(async (): Promise<string> => {
-    try {
-      setIsMerging(true);
-
-      const response = await fetch(`/api/uploadTraits`, {
-        method: 'POST',
-        body: JSON.stringify({
-          traits,
-        }),
-      });
-
-      if (!response.ok)
-        throw new Error('Something went wrong uploading your character avatar');
-
-      const { cid } = await response.json();
-      return cid;
-    } catch (e) {
-      throw new Error('Something went wrong uploading your character avatar');
-    } finally {
-      setIsMerging(false);
-    }
-  }, [traits]);
-
   const onJoinCharacter = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
@@ -152,18 +139,47 @@ export const JoinGame: React.FC<JoinGameProps> = ({
         return;
       }
 
+      setIsCreating(true);
+
       try {
         if (!walletClient) throw new Error('Could not find a wallet client');
         if (!chain) throw new Error('Could not find a connected chain');
         if (!game) throw new Error('Missing game data');
         if (character) throw new Error('Character already exists');
 
+        let attributes: Attribute[] | null = null;
         let cid = '';
 
         if (showUpload) {
           cid = await onUpload();
         } else {
-          cid = await mergeTraitImages();
+          const traitsObject: CharacterTraits = {
+            [BaseTraitType.BACKGROUND]: traits[0],
+            [BaseTraitType.BODY]: traits[1],
+            [BaseTraitType.EYES]: traits[2],
+            [BaseTraitType.HAIR]: traits[3],
+            [EquippableTraitType.EQUIPPED_ITEM_1]: '',
+            [BaseTraitType.CLOTHING]: traits[5],
+            [EquippableTraitType.EQUIPPED_WEARABLE]: '',
+            [BaseTraitType.MOUTH]: traits[6],
+            [EquippableTraitType.EQUIPPED_ITEM_2]: '',
+          };
+
+          const response = await fetch(`/api/uploadTraits`, {
+            method: 'POST',
+            body: JSON.stringify({
+              traits: traitsObject,
+            }),
+          });
+
+          if (!response.ok)
+            throw new Error(
+              'Something went wrong uploading your character avatar',
+            );
+
+          const { attributes: _attributes, cid: _cid } = await response.json();
+          attributes = _attributes;
+          cid = _cid;
         }
 
         if (!cid)
@@ -185,61 +201,74 @@ export const JoinGame: React.FC<JoinGameProps> = ({
           image: `ipfs://${cid}`,
         };
 
-        if (!showUpload) {
-          const attributes = traits.map((trait, i) => {
-            const [, variant, color] = trait.split('_');
-            const traitTypes = [
-              TraitType.BACKGROUND,
-              TraitType.BODY,
-              TraitType.EYES,
-              TraitType.HAIR,
-              TraitType.CLOTHING,
-              TraitType.MOUTH,
-            ];
-            return {
-              trait_type: traitTypes[Number(i)],
-              value: `${variant.toUpperCase()} ${color.toUpperCase()}`,
-            };
-          });
+        if (!showUpload && attributes) {
           characterMetadata['attributes'] = attributes;
         }
 
-        setIsCreating(true);
+        const { baseTokenURI } = game;
 
-        const totalSheets = await publicClient.readContract({
-          address: game.id as Address,
-          abi: parseAbi([
-            'function totalSheets() external view returns(uint256)',
-          ]),
-          functionName: 'totalSheets',
-        });
-        const characterId = `${game.id}-character-${toHex(totalSheets)}`;
-        const chainLabel = getChainLabelFromId(chain.id);
-        const apiRoute = `/api/characters/${chainLabel}/${characterId}/update`;
-        const signature = await walletClient.signMessage({
-          message: apiRoute,
-          account: walletClient.account?.address as Address,
-        });
+        let characterTokenUri = '';
 
-        const res = await fetch(apiRoute, {
-          headers: {
-            'x-account-address': walletClient.account?.address as Address,
-            'x-account-signature': signature,
-            'x-account-chain-id': walletClient.chain.id.toString(),
-          },
-          method: 'POST',
-          body: JSON.stringify(characterMetadata),
-        });
-        if (!res.ok)
-          throw new Error(
-            "Something went wrong updating your character's metadata",
+        if (baseTokenURI === BASE_CHARACTER_URI) {
+          const totalSheets = await publicClient.readContract({
+            address: game.id as Address,
+            abi: parseAbi([
+              'function totalSheets() external view returns(uint256)',
+            ]),
+            functionName: 'totalSheets',
+          });
+          const characterId = `${game.id}-character-${toHex(totalSheets)}`;
+          const chainLabel = getChainLabelFromId(chain.id);
+          const apiRoute = `/api/characters/${chainLabel}/${characterId}/update`;
+          const signature = await walletClient.signMessage({
+            message: apiRoute,
+            account: walletClient.account?.address as Address,
+          });
+
+          const res = await fetch(apiRoute, {
+            headers: {
+              'x-account-address': walletClient.account?.address as Address,
+              'x-account-signature': signature,
+              'x-account-chain-id': walletClient.chain.id.toString(),
+            },
+            method: 'POST',
+            body: JSON.stringify(characterMetadata),
+          });
+          if (!res.ok)
+            throw new Error(
+              "Something went wrong updating your character's metadata",
+            );
+
+          const { name, description, image } = await res.json();
+          if (!(name && description && image))
+            throw new Error(
+              'Something went wrong updating your character metadata',
+            );
+
+          characterTokenUri = characterId;
+        } else {
+          const res = await fetch(
+            '/api/uploadMetadata?name=characterMetadata.json',
+            {
+              method: 'POST',
+              body: JSON.stringify(characterMetadata),
+            },
           );
 
-        const { name, description, image } = await res.json();
-        if (!(name && description && image))
-          throw new Error(
-            'Something went wrong updating your character metadata',
-          );
+          if (!res.ok)
+            throw new Error(
+              'Something went wrong uploading your character metadata',
+            );
+
+          const { cid: characterMetadataCid } = await res.json();
+
+          if (!characterMetadataCid)
+            throw new Error(
+              'Something went wrong uploading your character metadata',
+            );
+
+          characterTokenUri = characterMetadataCid;
+        }
 
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
@@ -249,7 +278,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
             'function rollCharacterSheet(string calldata _tokenUri) external',
           ]),
           functionName: 'rollCharacterSheet',
-          args: [characterId],
+          args: [characterTokenUri],
         });
         setTxHash(transactionhash);
 
@@ -285,7 +314,6 @@ export const JoinGame: React.FC<JoinGameProps> = ({
       characterName,
       game,
       hasError,
-      mergeTraitImages,
       onUpload,
       publicClient,
       showUpload,
@@ -314,7 +342,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
     [hasError, topOfCardRef],
   );
 
-  const isLoading = isCreating || isMerging;
+  const isLoading = isCreating;
   const isDisabled = isLoading || isUploading;
 
   if (txFailed) {
@@ -458,15 +486,18 @@ export const JoinGame: React.FC<JoinGameProps> = ({
             <Flex gap={12} w="100%">
               <CompositeCharacterImage traits={traits} />
               <VStack w="100%">
-                {traits.map((trait: string, i: number) => (
-                  <TraitVariantControls
-                    index={i}
-                    key={`trait-controls-${trait}`}
-                    traits={traits}
-                    setTraits={setTraits}
-                    traitsByType={TRAITS[i]}
-                  />
-                ))}
+                {traits.map((trait: string, i: number) => {
+                  if (!trait) return null;
+                  return (
+                    <TraitVariantControls
+                      index={i}
+                      key={`trait-controls-${trait}`}
+                      traits={traits}
+                      setTraits={setTraits}
+                      traitsByType={TRAITS[i]}
+                    />
+                  );
+                })}
               </VStack>
             </Flex>
           )}
@@ -607,11 +638,14 @@ export const JoinGame: React.FC<JoinGameProps> = ({
   );
 };
 
-const CompositeCharacterImage: React.FC<{ traits: Traits }> = ({ traits }) => {
+const CompositeCharacterImage: React.FC<{ traits: TraitsArray }> = ({
+  traits,
+}) => {
   return (
     <AspectRatio ratio={10 / 13} w="full">
       <Box bg="accent" borderRadius="10px" pos="relative">
         {traits.map((trait: string) => {
+          if (!trait) return null;
           return (
             <Image
               alt={`${trait.split('_')[1]} trait layer`}

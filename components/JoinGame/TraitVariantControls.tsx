@@ -2,12 +2,12 @@ import { Box, Button, Flex, Image, Text, VStack } from '@chakra-ui/react';
 import { capitalize } from 'lodash';
 import { useCallback, useMemo, useState } from 'react';
 
-import { Traits, TraitType } from './traits';
+import { BaseTraitType, EquippableTraitType, TraitsArray } from './traits';
 
 type TraitVariantControlsProps = {
   index: number;
-  traits: Traits;
-  setTraits: (traits: Traits) => void;
+  traits: TraitsArray;
+  setTraits: (traits: TraitsArray) => void;
   traitsByType: { [key: string]: string[] };
 };
 
@@ -26,17 +26,19 @@ export const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
   const type = useMemo(() => {
     switch (index) {
       case 0:
-        return TraitType.BACKGROUND;
+        return BaseTraitType.BACKGROUND;
       case 1:
-        return TraitType.BODY;
+        return BaseTraitType.BODY;
       case 2:
-        return TraitType.EYES;
+        return BaseTraitType.EYES;
       case 3:
-        return TraitType.HAIR;
+        return BaseTraitType.HAIR;
       case 4:
-        return TraitType.CLOTHING;
+        return EquippableTraitType.EQUIPPED_ITEM_1;
       case 5:
-        return TraitType.MOUTH;
+        return BaseTraitType.CLOTHING;
+      case 6:
+        return BaseTraitType.MOUTH;
       default:
         return '';
     }
@@ -52,7 +54,7 @@ export const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
     }
 
     setSelectedVariant(previewVariant);
-    const newTraits = [...traits] as Traits;
+    const newTraits = [...traits] as TraitsArray;
     const newTrait = traitsByType[previewVariant.toLowerCase()][0];
     newTraits[index] = newTrait;
     setTraits(newTraits);
@@ -68,7 +70,7 @@ export const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
     }
 
     setSelectedVariant(nextVariant);
-    const newTraits = [...traits] as Traits;
+    const newTraits = [...traits] as TraitsArray;
     const newTrait = traitsByType[nextVariant.toLowerCase()][0];
     newTraits[index] = newTrait;
     setTraits(newTraits);
@@ -96,7 +98,7 @@ export const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
 
   const onSelectHex = useCallback(
     (newHex: string) => {
-      const newTraits = [...traits] as Traits;
+      const newTraits = [...traits] as TraitsArray;
       const variantSelections = traitsByType[selectedVariant.toLowerCase()];
       const newTrait = variantSelections.find(
         v => v.split('_')[3] === newHex,

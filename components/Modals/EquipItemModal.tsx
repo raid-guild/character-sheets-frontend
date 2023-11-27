@@ -14,11 +14,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
+import {
+  EquippableTraitType,
+  getTraitsObjectFromAttributes,
+} from '@/components/JoinGame/traits';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
+import { getChainLabelFromId } from '@/lib/web3';
 import { executeAsCharacter } from '@/utils/account';
 
 export const EquipItemModal: React.FC = () => {
@@ -78,6 +83,99 @@ export const EquipItemModal: React.FC = () => {
         if (!game?.id) throw new Error(`Missing game data`);
 
         setIsLoading(true);
+
+        const {
+          attributes: characterAttributes,
+          description: characterDescription,
+          id,
+          name: characterName,
+        } = character;
+        const {
+          attributes: itemAttributes,
+          equippable_layer,
+          name: itemName,
+        } = selectedItem;
+        if (
+          characterAttributes &&
+          characterAttributes.length >= 6 &&
+          itemAttributes &&
+          itemAttributes.length >= 0 &&
+          equippable_layer
+        ) {
+          const traits = getTraitsObjectFromAttributes(characterAttributes);
+          if (
+            !(
+              itemAttributes[0]?.value &&
+              itemAttributes[0]?.trait_type === 'EQUIPPABLE TYPE'
+            )
+          )
+            throw new Error('Missing equippable item type value');
+
+          const newTrait = isEquipped
+            ? `remove_${itemName}_${equippable_layer}`
+            : `equip_${itemName}_${equippable_layer}`;
+          traits[itemAttributes[0].value as EquippableTraitType] = newTrait;
+
+          const response = await fetch(`/api/uploadTraits`, {
+            method: 'POST',
+            body: JSON.stringify({
+              characterId: id,
+              chainId: game.chainId,
+              traits,
+            }),
+          });
+
+          if (!response.ok)
+            throw new Error('Something went wrong uploading new avatar image');
+
+          const { attributes, cid } = await response.json();
+
+          if (!(attributes && cid))
+            throw new Error('Something went wrong uploading new avatar image');
+
+          const characterMetadata: {
+            name: string;
+            description: string;
+            image: string;
+            attributes?: {
+              trait_type: string;
+              value: string;
+            }[];
+          } = {
+            name: characterName,
+            description: characterDescription,
+            image: `ipfs://${cid}`,
+          };
+
+          characterMetadata['attributes'] = attributes;
+
+          const chainLabel = getChainLabelFromId(game.chainId);
+          const apiRoute = `/api/characters/${chainLabel}/${id}/update`;
+          const signature = await walletClient.signMessage({
+            message: apiRoute,
+            account: walletClient.account?.address as Address,
+          });
+
+          const res = await fetch(apiRoute, {
+            headers: {
+              'x-account-address': walletClient.account?.address as Address,
+              'x-account-signature': signature,
+              'x-account-chain-id': walletClient.chain.id.toString(),
+            },
+            method: 'POST',
+            body: JSON.stringify(characterMetadata),
+          });
+          if (!res.ok)
+            throw new Error(
+              "Something went wrong updating your character's metadata",
+            );
+
+          const { name, description, image } = await res.json();
+          if (!(name && description && image))
+            throw new Error(
+              'Something went wrong updating your character metadata',
+            );
+        }
 
         const transactionhash = await executeAsCharacter(
           character,

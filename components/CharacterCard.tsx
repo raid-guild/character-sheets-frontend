@@ -26,7 +26,7 @@ import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMen
 import { useGame } from '@/contexts/GameContext';
 import { getAddressUrl } from '@/lib/web3';
 import { shortenAddress, shortenText } from '@/utils/helpers';
-import { Character } from '@/utils/types';
+import { Character, Item } from '@/utils/types';
 
 import { ClassTag } from './ClassTag';
 import { ItemTag } from './ItemTag';
@@ -54,7 +54,7 @@ export const CharacterCard: React.FC<{
   } = character;
 
   const items = useMemo(() => {
-    const items = [...equippedItems];
+    const items: Item[] = [...equippedItems];
 
     heldItems.forEach(item => {
       if (!items.find(i => i.itemId === item.itemId)) {
