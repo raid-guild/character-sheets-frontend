@@ -33,7 +33,6 @@ import { GameTotals } from '@/components/GameTotals';
 import { ItemsPanel } from '@/components/ItemsPanel';
 import { JoinGame } from '@/components/JoinGame';
 import { AddGameMasterModal } from '@/components/Modals/AddGameMasterModal';
-import { AddItemRequirementModal } from '@/components/Modals/AddItemRequirementModal';
 import { ApproveTransferModal } from '@/components/Modals/ApproveTransferModal';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { ClaimClassModal } from '@/components/Modals/ClaimClassModal';
@@ -47,7 +46,6 @@ import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
 import { ItemsCatalogModal } from '@/components/Modals/ItemsCatalogModal';
 import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
 import { RemoveCharacterModal } from '@/components/Modals/RemoveCharacterModal';
-import { RemoveItemRequirementModal } from '@/components/Modals/RemoveItemRequirementModal';
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
 import { RenounceClassModal } from '@/components/Modals/RenounceClassModal';
 import { RestoreCharacterModal } from '@/components/Modals/RestoreCharacterModal';
@@ -146,7 +144,6 @@ function GamePage({
     approveTransferModal,
     claimClassModal,
     editCharacterModal,
-    equipItemModal,
     giveExpModal,
     giveItemsModal,
     jailPlayerModal,
@@ -157,12 +154,8 @@ function GamePage({
     transferCharacterModal,
   } = useCharacterActions();
 
-  const {
-    addRequirementModal,
-    removeRequirementModal,
-    claimItemModal,
-    editItemClaimableModal,
-  } = useItemActions();
+  const { equipItemModal, claimItemModal, editItemClaimableModal } =
+    useItemActions();
 
   const [showJoinGame, setShowJoinGame] = useState(false);
   const { isWrongNetwork, renderNetworkError } = useCheckGameNetwork();
@@ -541,8 +534,6 @@ function GamePage({
       {transferCharacterModal && <TransferCharacterModal />}
 
       {/*  ITEM ACTIONS */}
-      {addRequirementModal && <AddItemRequirementModal />}
-      {removeRequirementModal && <RemoveItemRequirementModal />}
       {claimItemModal && <ClaimItemModal />}
       {editItemClaimableModal && <EditItemClaimableModal />}
     </>

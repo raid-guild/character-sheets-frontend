@@ -9,11 +9,16 @@ import {
 import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
-import { Item } from '@/utils/types';
 import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
+import { getChainLabelFromId } from '@/lib/web3';
+import { BASE_CHARACTER_URI } from '@/utils/constants';
+import { Item } from '@/utils/types';
+
+import { useCharacterActions } from './CharacterActionsContext';
 
 export enum PlayerActions {
   CLAIM_ITEM = 'Claim item',
+  EQUIP_ITEM = 'Equip/Unequip item',
 }
 
 export enum GameMasterActions {
@@ -35,10 +40,13 @@ type ItemActionsContextType = {
   selectItem: (item: Item) => void;
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
-  addRequirementModal: ModalProps;
+  // addRequirementModal: ModalProps;
   claimItemModal: ModalProps;
-  removeRequirementModal: ModalProps;
+  equipItemModal: ModalProps;
+  // removeRequirementModal: ModalProps;
   editItemClaimableModal: ModalProps;
+
+  uriNeedsUpgraded: boolean;
 };
 
 const ItemActionsContext = createContext<ItemActionsContextType>({
@@ -49,10 +57,13 @@ const ItemActionsContext = createContext<ItemActionsContextType>({
   selectItem: () => {},
 
   openActionModal: () => {},
-  addRequirementModal: undefined,
+  // addRequirementModal: undefined,
   claimItemModal: undefined,
-  removeRequirementModal: undefined,
+  equipItemModal: undefined,
+  // removeRequirementModal: undefined,
   editItemClaimableModal: undefined,
+
+  uriNeedsUpgraded: false,
 });
 
 export const useItemActions = (): ItemActionsContextType =>
@@ -62,25 +73,51 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
   const { address } = useAccount();
-  const { character, isMaster } = useGame();
+  const { character, isMaster, game } = useGame();
+  const { editCharacterModal } = useCharacterActions();
   const toast = useToast();
 
-  const addRequirementModal = useDisclosure();
+  // const addRequirementModal = useDisclosure();
   const claimItemModal = useDisclosure();
-  const removeRequirementModal = useDisclosure();
+  const equipItemModal = useDisclosure();
+  // const removeRequirementModal = useDisclosure();
   const editItemClaimableModal = useDisclosure();
 
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+
+  const uriNeedsUpgraded = useMemo(() => {
+    if (!(character && game)) return false;
+    const chainLabel = getChainLabelFromId(game.chainId);
+    const { uri } = character;
+    const potentialCID = uri
+      .split('/')
+      .filter(s => !!s)
+      .pop();
+
+    if (!(chainLabel && potentialCID)) return false;
+
+    const baseURI = uri.replace(potentialCID, '');
+    if (baseURI !== `${BASE_CHARACTER_URI}${chainLabel}/`) return false;
+
+    return !!potentialCID.match(/^[a-zA-Z0-9]{46,59}$/);
+  }, [character, game]);
 
   const playerActions = useMemo(() => {
     if (character?.player !== address?.toLowerCase()) {
       return [];
     }
 
-    return Object.keys(PlayerActions).map(
+    let actions = Object.keys(PlayerActions).map(
       key => PlayerActions[key as keyof typeof PlayerActions],
     );
-  }, [address, character]);
+
+    const itemHolderIds = selectedItem?.holders.map(h => h.characterId) ?? [];
+    if (!itemHolderIds.includes(character?.characterId ?? '')) {
+      actions = actions.filter(a => a !== PlayerActions.EQUIP_ITEM);
+    }
+
+    return actions;
+  }, [address, character, selectedItem]);
 
   const gmActions = useMemo(() => {
     if (isMaster) {
@@ -116,6 +153,14 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
         case PlayerActions.CLAIM_ITEM:
           claimItemModal.onOpen();
           break;
+
+        case PlayerActions.EQUIP_ITEM:
+          if (uriNeedsUpgraded) {
+            editCharacterModal?.onToggle();
+            return;
+          }
+          equipItemModal.onOpen();
+          break;
         case GameMasterActions.EDIT_ITEM:
           toast({
             title: 'Coming soon!',
@@ -145,10 +190,13 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
     },
     [
       claimItemModal,
+      editCharacterModal,
       editItemClaimableModal,
+      equipItemModal,
       toast,
       isWrongNetwork,
       renderNetworkError,
+      uriNeedsUpgraded,
     ],
   );
 
@@ -162,10 +210,11 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
         selectItem: setSelectedItem,
 
         openActionModal,
-        addRequirementModal,
         claimItemModal,
-        removeRequirementModal,
+        equipItemModal,
         editItemClaimableModal,
+
+        uriNeedsUpgraded,
       }}
     >
       {children}

@@ -19,8 +19,8 @@ import {
   getTraitsObjectFromAttributes,
 } from '@/components/JoinGame/traits';
 import { TransactionPending } from '@/components/TransactionPending';
-import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
+import { useItemActions } from '@/contexts/ItemActionsContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { getChainLabelFromId } from '@/lib/web3';
@@ -32,8 +32,7 @@ export const EquipItemModal: React.FC = () => {
   const publicClient = usePublicClient();
   const { renderError } = useToast();
 
-  const { selectedCharacter, selectedItem, equipItemModal } =
-    useCharacterActions();
+  const { selectedItem, equipItemModal } = useItemActions();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -42,19 +41,15 @@ export const EquipItemModal: React.FC = () => {
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
   const isEquipped = useMemo(() => {
-    if (!selectedItem || !selectedCharacter || !character) {
-      return false;
-    }
-    if (character.characterId !== selectedCharacter.characterId) {
+    if (!selectedItem || !character) {
       return false;
     }
 
     return (
-      selectedCharacter.equippedItems.find(
-        e => e.itemId === selectedItem.itemId,
-      ) !== undefined
+      character.equippedItems.find(e => e.itemId === selectedItem.itemId) !==
+      undefined
     );
-  }, [character, selectedItem, selectedCharacter]);
+  }, [character, selectedItem]);
 
   const resetData = useCallback(() => {
     setTxHash(null);
@@ -75,10 +70,7 @@ export const EquipItemModal: React.FC = () => {
 
       try {
         if (!walletClient) throw new Error('Wallet client is not connected');
-        if (!character || !selectedCharacter)
-          throw new Error('Character address not found');
-        if (character.characterId !== selectedCharacter.characterId)
-          throw new Error('Character address does not match');
+        if (!character) throw new Error('Character address not found');
         if (!selectedItem) throw new Error('Item not found');
         if (!game?.id) throw new Error(`Missing game data`);
 
@@ -231,7 +223,6 @@ export const EquipItemModal: React.FC = () => {
       reloadGame,
       character,
       renderError,
-      selectedCharacter,
       selectedItem,
       walletClient,
       isEquipped,
@@ -277,7 +268,7 @@ export const EquipItemModal: React.FC = () => {
       );
     }
 
-    if (!character || !selectedCharacter) {
+    if (!character) {
       return (
         <VStack py={10} spacing={4}>
           <Text>Character not found.</Text>
