@@ -40,6 +40,11 @@ export const CharacterActionMenu: React.FC<CharacterActionMenuProps> = ({
               >
                 Player Actions
               </Text>
+              {playerActions.map(action => (
+                <MenuItem key={action} onClick={() => openActionModal(action)}>
+                  {action}
+                </MenuItem>
+              ))}
             </>
           )}
           {gmActions.length > 0 && (
