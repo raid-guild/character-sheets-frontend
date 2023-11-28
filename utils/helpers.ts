@@ -18,6 +18,12 @@ import {
   Metadata,
 } from './types';
 
+const IPFS_GATEWAYS = [
+  'https://gateway.pinata.cloud',
+  'https://ipfs.io',
+  'https://cloudflare-ipfs.com',
+];
+
 /**
  * Given a URI that may be ipfs, ipns, http, https, ar, or data protocol, return the fetch-able http(s) URLs for the same content
  * @param uri to convert to fetch-able http url
@@ -34,17 +40,11 @@ export const uriToHttp = (uri: string): string[] => {
         return ['https' + uri.substring(4), uri];
       case 'ipfs': {
         const hash = uri.match(/^ipfs:(\/\/)?(.*)$/i)?.[2];
-        return [
-          `https://ipfs.io/ipfs/${hash}`,
-          `https://cloudflare-ipfs.com/ipfs/${hash}`,
-        ];
+        return IPFS_GATEWAYS.map(g => `${g}/ipfs/${hash}`);
       }
       case 'ipns': {
         const name = uri.match(/^ipns:(\/\/)?(.*)$/i)?.[2];
-        return [
-          `https://ipfs.io/ipns/${name}`,
-          `https://cloudflare-ipfs.com/ipns/${name}`,
-        ];
+        return IPFS_GATEWAYS.map(g => `${g}/ipns/${name}`);
       }
       case 'ar': {
         const tx = uri.match(/^ar:(\/\/)?(.*)$/i)?.[2];
@@ -84,26 +84,40 @@ export const timeout = (ms: number): Promise<void> => {
   return new Promise(resolve => setTimeout(resolve, ms));
 };
 
-const fetchMetadata = async (uri: string): Promise<Metadata> => {
+const fetchMetadataFromUri = async (uri: string): Promise<Metadata> => {
+  const res = await fetch(uri);
+  if (!res.ok) throw new Error('Failed to fetch');
+  const metadata = await res.json();
+  metadata.name = metadata.name || '';
+  metadata.description = metadata.description || '';
+  metadata.image = metadata.image || '';
+  metadata.equippable_layer = metadata.equippable_layer || null;
+  metadata.attributes = metadata.attributes || [];
+  return metadata;
+};
+
+const fetchMetadata = async (ipfsUri: string): Promise<Metadata> => {
   try {
-    const res = await fetch(uri);
-    const metadata = await res.json();
-    metadata.name = metadata.name || '';
-    metadata.description = metadata.description || '';
-    metadata.image = metadata.image || '';
-    metadata.equippable_layer = metadata.equippable_layer || null;
-    metadata.attributes = metadata.attributes || [];
-    return metadata;
+    const uris = uriToHttp(ipfsUri);
+    for (const u of uris) {
+      try {
+        const metadata = await fetchMetadataFromUri(u);
+        return metadata;
+      } catch (e) {
+        console.error('Failed to fetch metadata from', u);
+        continue;
+      }
+    }
   } catch (e) {
-    console.error("Error fetching metadata for uri: '" + uri + "'", e);
-    return {
-      name: '',
-      description: '',
-      image: '',
-      equippable_layer: null,
-      attributes: [],
-    };
+    console.error('Failed to fetch metadata from', ipfsUri);
   }
+  return {
+    name: '',
+    description: '',
+    image: '',
+    equippable_layer: null,
+    attributes: [],
+  };
 };
 
 export const formatCharacter = async (
@@ -111,7 +125,7 @@ export const formatCharacter = async (
   classes: Class[],
   items: Item[],
 ): Promise<Character> => {
-  const metadata = await fetchMetadata(uriToHttp(character.uri)[0]);
+  const metadata = await fetchMetadata(character.uri);
 
   const characterClasses = classes.filter(c =>
     character.heldClasses.find(h => h.classEntity.classId === c.classId),
@@ -162,7 +176,7 @@ export const formatCharacter = async (
 export const formatClass = async (
   classEntity: ClassInfoFragment,
 ): Promise<Class> => {
-  const metadata = await fetchMetadata(uriToHttp(classEntity.uri)[0]);
+  const metadata = await fetchMetadata(classEntity.uri);
 
   return {
     id: classEntity.id,
@@ -190,7 +204,7 @@ export const formatItemRequirement = (
 };
 
 export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
-  const metadata = await fetchMetadata(uriToHttp(item.uri)[0]);
+  const metadata = await fetchMetadata(item.uri);
 
   return {
     id: item.id,
@@ -217,7 +231,7 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
 export const formatGameMeta = async (
   game: GameMetaInfoFragment,
 ): Promise<GameMeta> => {
-  const metadata = await fetchMetadata(uriToHttp(game.uri)[0]);
+  const metadata = await fetchMetadata(game.uri);
 
   return {
     id: game.id,
@@ -241,7 +255,7 @@ export const formatGameMeta = async (
 };
 
 export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
-  const metadata = await fetchMetadata(uriToHttp(game.uri)[0]);
+  const metadata = await fetchMetadata(game.uri);
   const classes = await Promise.all(game.classes.map(formatClass));
   const items = await Promise.all(game.items.map(formatItem));
 
