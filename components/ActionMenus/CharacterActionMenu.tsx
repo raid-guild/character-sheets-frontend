@@ -7,10 +7,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 
-import {
-  PlayerActions,
-  useCharacterActions,
-} from '@/contexts/CharacterActionsContext';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { Character } from '@/utils/types';
 
 type CharacterActionMenuProps = {
@@ -43,16 +40,6 @@ export const CharacterActionMenu: React.FC<CharacterActionMenuProps> = ({
               >
                 Player Actions
               </Text>
-              {playerActions
-                .filter(a => a != PlayerActions.EQUIP_ITEM)
-                .map(action => (
-                  <MenuItem
-                    key={action}
-                    onClick={() => openActionModal(action)}
-                  >
-                    {action}
-                  </MenuItem>
-                ))}
             </>
           )}
           {gmActions.length > 0 && (
