@@ -19,6 +19,8 @@ const createDummyClass = (name: string): Class => ({
   image: '',
   holders: [],
   claimable: false,
+  equippable_layer: null,
+  attributes: [],
 });
 
 const createDummyItem = (name: string, image: string): Item => ({
@@ -29,13 +31,15 @@ const createDummyItem = (name: string, image: string): Item => ({
   description: '',
   image,
   soulbound: false,
-  supply: BigInt(0),
-  totalSupply: BigInt(0),
-  amount: BigInt(2),
+  supply: BigInt(0).toString(),
+  totalSupply: BigInt(0).toString(),
+  amount: BigInt(2).toString(),
   requirements: [],
   holders: [{ id: '1', characterId: '1' }],
   equippers: [{ id: '1', characterId: '1' }],
   merkleRoot: '',
+  equippable_layer: null,
+  attributes: [],
 });
 
 const dummyCharacter: Character = {
@@ -60,6 +64,8 @@ const dummyCharacter: Character = {
     createDummyItem('Wooden Staff', '/staff.png') as EquippedItem,
   ],
   classes: [createDummyClass('Wizard'), createDummyClass('Warrior')],
+  equippable_layer: null,
+  attributes: [],
 };
 
 export default function Home(): JSX.Element {

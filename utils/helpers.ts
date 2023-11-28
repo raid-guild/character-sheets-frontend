@@ -84,16 +84,24 @@ export const timeout = (ms: number): Promise<void> => {
   return new Promise(resolve => setTimeout(resolve, ms));
 };
 
-export const fetchMetadata = async (uri: string): Promise<Metadata> => {
+const fetchMetadata = async (uri: string): Promise<Metadata> => {
   try {
     const res = await fetch(uri);
-    return await res.json();
+    const metadata = await res.json();
+    metadata.name = metadata.name || '';
+    metadata.description = metadata.description || '';
+    metadata.image = metadata.image || '';
+    metadata.equippable_layer = metadata.equippable_layer || null;
+    metadata.attributes = metadata.attributes || [];
+    return metadata;
   } catch (e) {
-    console.error(e);
+    console.error("Error fetching metadata for uri: '" + uri + "'", e);
     return {
       name: '',
       description: '',
       image: '',
+      equippable_layer: null,
+      attributes: [],
     };
   }
 };
@@ -117,7 +125,7 @@ export const formatCharacter = async (
     if (!held) return;
     heldItems.push({
       ...i,
-      amount: BigInt(held.amount),
+      amount: BigInt(held.amount).toString(),
     });
     const equipped = character.equippedItems.find(
       e => e.item.itemId === i.itemId,
@@ -125,8 +133,8 @@ export const formatCharacter = async (
     if (!equipped) return;
     equippedItems.push({
       ...i,
-      amount: BigInt(equipped.heldItem.amount),
-      equippedAt: new Date(Number(equipped.equippedAt) * 1000),
+      amount: BigInt(equipped.heldItem.amount).toString(),
+      equippedAt: Number(equipped.equippedAt) * 1000,
     });
   });
 
@@ -147,6 +155,7 @@ export const formatCharacter = async (
     classes: characterClasses,
     heldItems,
     equippedItems,
+    equippable_layer: null,
   };
 };
 
@@ -164,6 +173,8 @@ export const formatClass = async (
     claimable: classEntity.claimable,
     classId: classEntity.classId,
     holders: classEntity.holders.map(h => h.character),
+    equippable_layer: null,
+    attributes: metadata.attributes,
   };
 };
 
@@ -171,10 +182,10 @@ export const formatItemRequirement = (
   r: ItemRequirementInfoFragment,
 ): ItemRequirement => {
   return {
-    amount: BigInt(r.amount),
+    amount: BigInt(r.amount).toString(),
     assetAddress: r.assetAddress,
     assetCategory: r.assetCategory,
-    assetId: BigInt(r.assetId),
+    assetId: BigInt(r.assetId).toString(),
   };
 };
 
@@ -189,13 +200,13 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     image: uriToHttp(metadata.image)[0],
     equippable_layer: metadata.equippable_layer
       ? uriToHttp(metadata.equippable_layer)[0]
-      : undefined,
+      : null,
     attributes: metadata.attributes,
     itemId: item.itemId,
     soulbound: item.soulbound,
-    supply: BigInt(item.supply),
-    totalSupply: BigInt(item.totalSupply),
-    amount: BigInt(0),
+    supply: BigInt(item.supply).toString(),
+    totalSupply: BigInt(item.totalSupply).toString(),
+    amount: BigInt(0).toString(),
     requirements: item.requirements.map(formatItemRequirement),
     holders: item.holders.map(h => h.character),
     equippers: item.equippers.map(e => e.character),
@@ -210,7 +221,7 @@ export const formatGameMeta = async (
 
   return {
     id: game.id,
-    startedAt: new Date(Number(game.startedAt) * 1000),
+    startedAt: Number(game.startedAt) * 1000,
     chainId: Number(game.chainId),
     uri: game.uri,
     owner: game.owner.address,
@@ -224,6 +235,8 @@ export const formatGameMeta = async (
     classes: game.classes,
     items: game.items,
     experience: game.experience,
+    equippable_layer: null,
+    attributes: metadata.attributes,
   };
 };
 
@@ -234,7 +247,7 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
 
   return {
     id: game.id,
-    startedAt: new Date(Number(game.startedAt) * 1000),
+    startedAt: Number(game.startedAt) * 1000,
     chainId: Number(game.chainId),
     classesAddress: game.classesAddress,
     itemsAddress: game.itemsAddress,
@@ -256,5 +269,7 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
     classes,
     items,
     experience: game.experience,
+    equippable_layer: null,
+    attributes: metadata.attributes,
   };
 };

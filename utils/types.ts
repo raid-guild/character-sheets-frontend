@@ -9,13 +9,13 @@ export type Metadata = {
   name: string;
   description: string;
   image: string;
-  equippable_layer?: string;
-  attributes?: Attribute[];
+  equippable_layer: string | null;
+  attributes: Attribute[];
 };
 
 export type GameMeta = Metadata & {
   id: string;
-  startedAt: Date;
+  startedAt: number;
   chainId: number;
   uri: string;
   owner: string;
@@ -30,7 +30,7 @@ export type GameMeta = Metadata & {
 
 export type Game = Metadata & {
   id: string;
-  startedAt: Date;
+  startedAt: number;
   chainId: number;
   experienceAddress: string;
   itemsAddress: string;
@@ -73,8 +73,8 @@ export type Class = Metadata & {
 };
 
 export type ItemRequirement = {
-  amount: bigint;
-  assetId: bigint;
+  amount: string;
+  assetId: string;
   assetAddress: string;
   assetCategory: string;
 };
@@ -84,9 +84,9 @@ export type Item = Metadata & {
   itemId: string;
   uri: string;
   soulbound: boolean;
-  supply: bigint;
-  totalSupply: bigint;
-  amount: bigint;
+  supply: string;
+  totalSupply: string;
+  amount: string;
   requirements: ItemRequirement[];
   holders: { id: string; characterId: string }[];
   equippers: { id: string; characterId: string }[];
@@ -94,7 +94,7 @@ export type Item = Metadata & {
 };
 
 export type EquippedItem = Item & {
-  equippedAt: Date;
+  equippedAt: number;
 };
 
 export type ClaimableTreeDB = {

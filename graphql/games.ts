@@ -1,7 +1,12 @@
 import { Game, GameMeta } from '@/utils/types';
-import { GameMetaInfoFragment, GetGameDocument, GetGamesDocument } from './autogen/types';
+import {
+  FullGameInfoFragment,
+  GameMetaInfoFragment,
+  GetGameDocument,
+  GetGamesDocument,
+} from './autogen/types';
 import { getGraphClient } from './client';
-import { formatGameMeta } from '@/utils/helpers';
+import { formatGame, formatGameMeta } from '@/utils/helpers';
 
 export const getGamesForChainId = async (
   chainId: number,
@@ -33,24 +38,21 @@ export const getGameForChainId = async (
   chainId: number,
   gameId: string,
 ): Promise<Game | null> => {
-  const { data, error } = await getGraphClient(chainId).query(
-    GetGameDocument,
-    {
-        id: gameId.toLowerCase(),
-    },
-  );
+  const { data, error } = await getGraphClient(chainId).query(GetGameDocument, {
+    gameId: gameId.toLowerCase(),
+  });
 
   if (error) {
     console.error('Error getting game', error);
     return null;
   }
 
-  const game = data?.game as Game | undefined;
+  const game = data?.game as FullGameInfoFragment | undefined;
 
   if (!game) {
     console.error('Game not found');
     return null;
   }
 
-  return game;
-}
+  return formatGame(game);
+};

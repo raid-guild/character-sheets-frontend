@@ -18,7 +18,6 @@ import { Character, Game } from '@/utils/types';
 type GameContextType = {
   game: Game | null;
   character: Character | null;
-  pageCharacter: Character | null;
   isAdmin: boolean;
   isMaster: boolean;
   isEligibleForCharacter: boolean;
@@ -30,7 +29,6 @@ type GameContextType = {
 const GameContext = createContext<GameContextType>({
   game: null,
   character: null,
-  pageCharacter: null,
   isAdmin: false,
   isMaster: false,
   isEligibleForCharacter: false,
@@ -45,17 +43,15 @@ export const GameProvider: React.FC<
   React.PropsWithChildren<{
     chainId: number;
     gameId: string;
-    characterId?: string | null | undefined | string[];
     game: Game | null;
   }>
-> = ({ chainId, children, gameId, characterId, game }) => {
+> = ({ chainId, children, gameId, game }) => {
   const client = useMemo(() => getGraphClient(chainId), [chainId]);
 
   return (
     <Provider value={client}>
       <GameProviderInner
         gameId={gameId}
-        characterId={characterId}
         game={game}
       >
         {children}
@@ -67,10 +63,9 @@ export const GameProvider: React.FC<
 const GameProviderInner: React.FC<
   React.PropsWithChildren<{
     gameId: string;
-    characterId?: string | null | undefined | string[];
     game: Game | null;
   }>
-> = ({ children, gameId, characterId, game: staticGame }) => {
+> = ({ children, gameId, game: staticGame }) => {
   const { address } = useAccount();
 
   const [game, setGame] = useState<Game | null>(staticGame);
@@ -79,7 +74,7 @@ const GameProviderInner: React.FC<
 
   const queryVariables = useMemo(
     () => ({
-      gameId: gameId.toString().toLowerCase(),
+      gameId: gameId.toLowerCase(),
     }),
     [gameId],
   );
@@ -119,13 +114,6 @@ const GameProviderInner: React.FC<
     );
   }, [game, address]);
 
-  const pageCharacter = useMemo(() => {
-    if (!characterId || typeof characterId !== 'string') return null;
-    return (
-      game?.characters.find(c => c.id === characterId.toLowerCase()) ?? null
-    );
-  }, [game, characterId]);
-
   const isAdmin = useMemo(
     () => game?.admins.includes(address?.toLowerCase() ?? '') ?? false,
     [game, address],
@@ -143,7 +131,6 @@ const GameProviderInner: React.FC<
       value={{
         game,
         character,
-        pageCharacter,
         isAdmin,
         isMaster,
         isEligibleForCharacter,
