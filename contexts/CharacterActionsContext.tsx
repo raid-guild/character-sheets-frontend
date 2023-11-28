@@ -19,7 +19,6 @@ export enum PlayerActions {
   APPROVE_TRANSFER = 'Approve transfer',
   CLAIM_CLASS = 'Claim class',
   EDIT_CHARACTER = 'Edit character',
-  EQUIP_ITEM = 'Equip/Unequip item',
   RENOUNCE_CHARACTER = 'Renounce character',
   RENOUNCE_CLASS = 'Renounce class',
 }
@@ -52,7 +51,6 @@ type CharacterActionsContextType = {
   assignClassModal: ModalProps;
   claimClassModal: ModalProps;
   editCharacterModal: ModalProps;
-  equipItemModal: ModalProps;
   giveExpModal: ModalProps;
   giveItemsModal: ModalProps;
   jailPlayerModal: ModalProps;
@@ -80,7 +78,6 @@ const CharacterActionsContext = createContext<CharacterActionsContextType>({
   assignClassModal: undefined,
   claimClassModal: undefined,
   editCharacterModal: undefined,
-  equipItemModal: undefined,
   giveExpModal: undefined,
   giveItemsModal: undefined,
   jailPlayerModal: undefined,
@@ -106,7 +103,6 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
   const assignClassModal = useDisclosure();
   const claimClassModal = useDisclosure();
   const editCharacterModal = useDisclosure();
-  const equipItemModal = useDisclosure();
   const giveExpModal = useDisclosure();
   const giveItemsModal = useDisclosure();
   const jailPlayerModal = useDisclosure();
@@ -121,6 +117,23 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
   );
 
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+
+  const uriNeedsUpgraded = useMemo(() => {
+    if (!(character && game)) return false;
+    const chainLabel = getChainLabelFromId(game.chainId);
+    const { uri } = character;
+    const potentialCID = uri
+      .split('/')
+      .filter(s => !!s)
+      .pop();
+
+    if (!(chainLabel && potentialCID)) return false;
+
+    const baseURI = uri.replace(potentialCID, '');
+    if (baseURI !== `${BASE_CHARACTER_URI}${chainLabel}/`) return false;
+
+    return !!potentialCID.match(/^[a-zA-Z0-9]{46,59}$/);
+  }, [character, game]);
 
   const playerActions = useMemo(() => {
     if (selectedCharacter?.player !== address?.toLowerCase()) {
@@ -182,23 +195,6 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
 
   const { isWrongNetwork, renderNetworkError } = useCheckGameNetwork();
 
-  const uriNeedsUpgraded = useMemo(() => {
-    if (!(character && game)) return false;
-    const chainLabel = getChainLabelFromId(game.chainId);
-    const { uri } = character;
-    const potentialCID = uri
-      .split('/')
-      .filter(s => !!s)
-      .pop();
-
-    if (!(chainLabel && potentialCID)) return false;
-
-    const baseURI = uri.replace(potentialCID, '');
-    if (baseURI !== `${BASE_CHARACTER_URI}${chainLabel}/`) return false;
-
-    return !!potentialCID.match(/^[a-zA-Z0-9]{46,59}$/);
-  }, [character, game]);
-
   const openActionModal = useCallback(
     (action: PlayerActions | GameMasterActions) => {
       if (isWrongNetwork) {
@@ -239,13 +235,6 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
         case PlayerActions.EDIT_CHARACTER:
           editCharacterModal.onOpen();
           break;
-        case PlayerActions.EQUIP_ITEM:
-          if (uriNeedsUpgraded) {
-            editCharacterModal.onOpen();
-            return;
-          }
-          equipItemModal.onOpen();
-          break;
         case PlayerActions.RENOUNCE_CHARACTER:
           renounceCharacterModal.onOpen();
           break;
@@ -263,7 +252,6 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
       assignClassModal,
       claimClassModal,
       editCharacterModal,
-      equipItemModal,
       giveExpModal,
       giveItemsModal,
       jailPlayerModal,
@@ -272,7 +260,6 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
       renounceClassModal,
       revokeClassModal,
       transferCharacterModal,
-      uriNeedsUpgraded,
     ],
   );
 
@@ -293,7 +280,6 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
         assignClassModal,
         claimClassModal,
         editCharacterModal,
-        equipItemModal,
         giveExpModal,
         giveItemsModal,
         jailPlayerModal,

@@ -23,6 +23,7 @@ import { useMemo } from 'react';
 import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
+import { ItemsCatalogModal } from '@/components/Modals/ItemsCatalogModal';
 import { useGame } from '@/contexts/GameContext';
 import { getAddressUrl } from '@/lib/web3';
 import { shortenAddress, shortenText } from '@/utils/helpers';
@@ -39,6 +40,7 @@ export const CharacterCard: React.FC<{
 }> = ({ chainId, character, dummy }) => {
   const { address, isConnected } = useAccount();
   const { isMaster } = useGame();
+  const itemsCatalogModal = useDisclosure();
 
   const {
     characterId,
@@ -89,6 +91,7 @@ export const CharacterCard: React.FC<{
             h="100%"
             borderRadius="lg"
             objectFit="cover"
+            objectPosition="center"
             src={image}
           />
         </AspectRatio>
@@ -160,12 +163,18 @@ export const CharacterCard: React.FC<{
                   Inventory ({itemTotal})
                 </Text>
               </HStack>
-              <Button variant="ghost" size="xs">
-                show all
-              </Button>
+              {items.length > 2 && (
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  onClick={itemsCatalogModal.onOpen}
+                >
+                  show all
+                </Button>
+              )}
             </HStack>
             <SimpleGrid columns={2} spacing={4} w="full">
-              {items.map(item => (
+              {items.slice(0, 2).map(item => (
                 <GridItem key={item.itemId + item.name}>
                   <ItemTag item={item} holderId={characterId} />
                 </GridItem>
@@ -174,6 +183,11 @@ export const CharacterCard: React.FC<{
           </>
         )}
       </VStack>
+      <ItemsCatalogModal
+        character={character}
+        isOpen={!!items.length && itemsCatalogModal.isOpen}
+        onClose={itemsCatalogModal.onClose}
+      />
     </SimpleGrid>
   );
 };
@@ -195,19 +209,19 @@ export const CharacterCardSmall: React.FC<{
   }, [heldItems]);
 
   return (
-    <VStack spacing={3}>
+    <VStack spacing={3} w="100%">
       <Box
         border="1px solid white"
-        h="375px"
         onClick={onOpen}
         overflow="hidden"
         p={3}
         transition="transform 0.3s"
-        w="220px"
         _hover={{
           cursor: 'pointer',
           transform: 'rotateY(15deg)',
         }}
+        w="100%"
+        h="100%"
       >
         <Box pos="relative">
           <AspectRatio ratio={10 / 13} w="full">

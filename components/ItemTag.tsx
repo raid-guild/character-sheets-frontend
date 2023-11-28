@@ -9,11 +9,8 @@ import {
 } from '@chakra-ui/react';
 import { useMemo } from 'react';
 
-import {
-  PlayerActions,
-  useCharacterActions,
-} from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
+import { PlayerActions, useItemActions } from '@/contexts/ItemActionsContext';
 import { Item } from '@/utils/types';
 
 const fontSizeMap = {
@@ -79,8 +76,7 @@ export const ItemTag: React.FC<ItemTagProps> = ({
     );
   }, [character, holderId, itemId, pageCharacter]);
 
-  const { openActionModal, selectCharacter, selectItem } =
-    useCharacterActions();
+  const { openActionModal, selectItem } = useItemActions();
 
   return (
     <VStack
@@ -122,13 +118,10 @@ export const ItemTag: React.FC<ItemTagProps> = ({
         <Text textAlign="center" fontSize={fontSize}>
           {name} ({amount.toString()})
         </Text>
-        {showActions && (
+        {showActions && !!character && (
           <Button
             onClick={() => {
               selectItem(item);
-              if (character) {
-                selectCharacter(character);
-              }
               openActionModal(PlayerActions.EQUIP_ITEM);
             }}
             size="sm"

@@ -20,7 +20,7 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
   const isFullPage = FULL_PAGE_ROUTES.includes(pathname);
 
   return (
-    <Flex direction="column" minH="100vh">
+    <Flex direction="column" minH="100vh" maxW="100%" align="center">
       <VStack
         as="header"
         background="dark"
@@ -57,14 +57,14 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
       <VStack
         align="stretch"
         as="main"
+        w="100%"
         mt={20}
         spacing={0}
-        w="100%"
+        overflowX="hidden"
         {...(isFullPage
           ? {}
           : {
               maxW: '100rem',
-              mx: 'auto',
               py: 12,
               px: { base: 4, lg: 8 },
             })}
@@ -79,6 +79,7 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         h={24}
         justify="center"
         marginTop="auto"
+        w="100%"
       >
         <Link as={NextLink} href="https://raidguild.org" isExternal>
           <Text

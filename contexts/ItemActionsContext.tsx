@@ -9,19 +9,19 @@ import {
 import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
-import { Item } from '@/utils/types';
 import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
+import { Item } from '@/utils/types';
+
+import { useCharacterActions } from './CharacterActionsContext';
 
 export enum PlayerActions {
   CLAIM_ITEM = 'Claim item',
+  EQUIP_ITEM = 'Equip/Unequip item',
 }
 
 export enum GameMasterActions {
   EDIT_ITEM = 'Edit item',
   GIVE_ITEM = 'Give item',
-  // TODO: Remove these (and their modals) completetely once we are positive we don't need them
-  // ADD_REQUIREMENT = 'Add requirement',
-  // REMOVE_REQUIREMENT = 'Remove requirement',
   EDIT_ITEM_CLAIMABLE = 'Edit item claimable',
 }
 
@@ -35,9 +35,8 @@ type ItemActionsContextType = {
   selectItem: (item: Item) => void;
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
-  addRequirementModal: ModalProps;
   claimItemModal: ModalProps;
-  removeRequirementModal: ModalProps;
+  equipItemModal: ModalProps;
   editItemClaimableModal: ModalProps;
 };
 
@@ -49,9 +48,8 @@ const ItemActionsContext = createContext<ItemActionsContextType>({
   selectItem: () => {},
 
   openActionModal: () => {},
-  addRequirementModal: undefined,
   claimItemModal: undefined,
-  removeRequirementModal: undefined,
+  equipItemModal: undefined,
   editItemClaimableModal: undefined,
 });
 
@@ -63,11 +61,11 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
 }) => {
   const { address } = useAccount();
   const { character, isMaster } = useGame();
+  const { editCharacterModal, uriNeedsUpgraded } = useCharacterActions();
   const toast = useToast();
 
-  const addRequirementModal = useDisclosure();
   const claimItemModal = useDisclosure();
-  const removeRequirementModal = useDisclosure();
+  const equipItemModal = useDisclosure();
   const editItemClaimableModal = useDisclosure();
 
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -77,27 +75,23 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
       return [];
     }
 
-    return Object.keys(PlayerActions).map(
+    let actions = Object.keys(PlayerActions).map(
       key => PlayerActions[key as keyof typeof PlayerActions],
     );
-  }, [address, character]);
+
+    const itemHolderIds = selectedItem?.holders.map(h => h.characterId) ?? [];
+    if (!itemHolderIds.includes(character?.characterId ?? '')) {
+      actions = actions.filter(a => a !== PlayerActions.EQUIP_ITEM);
+    }
+
+    return actions;
+  }, [address, character, selectedItem]);
 
   const gmActions = useMemo(() => {
     if (isMaster) {
       const actions = Object.keys(GameMasterActions).map(
         key => GameMasterActions[key as keyof typeof GameMasterActions],
       );
-
-      // TODO: For now we are only adding/checking class requirements
-      // if (selectedItem?.requirements.length === game?.classes.length) {
-      //   actions = actions.filter(a => a !== GameMasterActions.ADD_REQUIREMENT);
-      // }
-
-      // if (selectedItem?.requirements.length === 0) {
-      //   actions = actions.filter(
-      //     a => a !== GameMasterActions.REMOVE_REQUIREMENT,
-      //   );
-      // }
 
       return actions;
     }
@@ -116,6 +110,14 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
         case PlayerActions.CLAIM_ITEM:
           claimItemModal.onOpen();
           break;
+
+        case PlayerActions.EQUIP_ITEM:
+          if (uriNeedsUpgraded) {
+            editCharacterModal?.onToggle();
+            return;
+          }
+          equipItemModal.onOpen();
+          break;
         case GameMasterActions.EDIT_ITEM:
           toast({
             title: 'Coming soon!',
@@ -130,12 +132,6 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
             status: 'warning',
           });
           break;
-        // case GameMasterActions.ADD_REQUIREMENT:
-        //   addRequirementModal.onOpen();
-        //   break;
-        // case GameMasterActions.REMOVE_REQUIREMENT:
-        //   removeRequirementModal.onOpen();
-        //   break;
         case GameMasterActions.EDIT_ITEM_CLAIMABLE:
           editItemClaimableModal.onOpen();
           break;
@@ -145,10 +141,13 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
     },
     [
       claimItemModal,
+      editCharacterModal,
       editItemClaimableModal,
+      equipItemModal,
       toast,
       isWrongNetwork,
       renderNetworkError,
+      uriNeedsUpgraded,
     ],
   );
 
@@ -162,9 +161,8 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
         selectItem: setSelectedItem,
 
         openActionModal,
-        addRequirementModal,
         claimItemModal,
-        removeRequirementModal,
+        equipItemModal,
         editItemClaimableModal,
       }}
     >

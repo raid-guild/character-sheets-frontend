@@ -1,9 +1,12 @@
+import { CheckIcon } from '@chakra-ui/icons';
 import {
-  Button,
+  AspectRatio,
+  Divider,
+  Flex,
   HStack,
   Image,
+  SimpleGrid,
   Text,
-  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useAccount } from 'wagmi';
@@ -15,10 +18,10 @@ import { Item } from '@/utils/types';
 
 type ItemCardProps = Item & {
   chainId: number;
+  holderId?: string;
 };
 
-export const ItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
-  const toast = useToast();
+export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
   const { isConnected } = useAccount();
 
   const {
@@ -30,159 +33,117 @@ export const ItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
     totalSupply,
     holders,
     equippers,
+    soulbound,
   } = item;
 
   const { character } = useGame();
 
-  const isHeld =
-    character?.heldItems.find(h => h.itemId === item.itemId) !== undefined;
   const isEquipped =
-    character?.equippedItems.find(e => e.itemId === item.itemId) !== undefined;
-
-  const holdersDisplay = isHeld
-    ? holders.length === 1
-      ? 'you'
-      : `you and ${holders.length - 1} others`
-    : holders.length;
-  const equippersDisplay = isEquipped
-    ? equippers.length === 1
-      ? 'you'
-      : `you and ${equippers.length - 1} others`
-    : equippers.length;
+    equippers.length > 0 &&
+    equippers.some(equippedBy => equippedBy.characterId === holderId);
 
   return (
-    <HStack
-      border="1px solid white"
-      h="300px"
-      transition="background 0.3s ease"
-      p={4}
-      w="100%"
-    >
-      <VStack w="30%">
-        <Image
-          alt="item emblem"
-          h="140px"
-          objectFit="cover"
-          src={image}
-          w="100px"
-        />
-        <VStack align="center" w="120px">
-          <Button
-            onClick={() => {
-              toast({
-                title: 'Coming soon!',
-                position: 'top',
-                status: 'warning',
-              });
-            }}
-            size="sm"
-          >
-            View
-          </Button>
-          {isConnected && <ItemActionMenu item={item} />}
-        </VStack>
-      </VStack>
-      <VStack align="flex-start">
-        <Text fontSize="lg" fontWeight="bold">
-          {name}
-        </Text>
-        <Text fontSize="md" mb={4}>
-          {shortenText(description, 130)}
-        </Text>
-        <Text>
-          Item ID:{' '}
-          <Text as="span" fontSize="xs">
-            {itemId}
+    <VStack spacing={3} w="100%" h="100%">
+      <VStack
+        transition="background 0.3s ease"
+        p={{ base: 4, md: 6, lg: 8 }}
+        spacing={3}
+        w="100%"
+        borderRadius="md"
+        bg="whiteAlpha.100"
+        flexGrow={1}
+        justify="space-between"
+      >
+        <VStack spacing={3} w="100%">
+          <AspectRatio ratio={1} w="100%" maxH="15rem">
+            <Image
+              alt={name}
+              w="100%"
+              style={{
+                objectFit: 'contain',
+              }}
+              src={image}
+            />
+          </AspectRatio>
+          <Text fontSize="md" fontWeight="500" w="100%">
+            {name}
           </Text>
-        </Text>
-        <Text>
-          Supply: {supply.toString()} / {totalSupply.toString()}
-        </Text>
-        <Text>Held By: {holdersDisplay}</Text>
-        <Text>Equipped By: {equippersDisplay}</Text>
+          <Text fontSize="sm" w="100%">
+            {shortenText(description, 130)}
+          </Text>
+          {isEquipped && (
+            <>
+              <HStack w="100%" spacing={4}>
+                <Flex
+                  borderRadius="50%"
+                  w="1.5rem"
+                  h="1.5rem"
+                  top={2}
+                  right={2}
+                  bg="dark"
+                  justify="center"
+                  align="center"
+                >
+                  <CheckIcon color="white" w="0.75rem" />
+                </Flex>
+                <Text
+                  fontSize="2xs"
+                  textTransform="uppercase"
+                  letterSpacing="2px"
+                >
+                  Equipped
+                </Text>
+              </HStack>
+              <Divider borderColor="whiteAlpha.300" />
+            </>
+          )}
+        </VStack>
+        <SimpleGrid columns={{ base: 2, sm: 3 }} w="100%" spacing={3} mt="4">
+          <ItemValue label="Item ID" value={itemId} />
+          <ItemValue
+            label="Held By"
+            value={`${holders.length} character${
+              holders.length !== 1 ? 's' : ''
+            }`}
+          />
+          <ItemValue label="Soulbound" value={soulbound ? 'Yes' : 'No'} />
+          <ItemValue
+            label="Item Supply"
+            value={`${supply.toString()} / ${totalSupply.toString()}`}
+          />
+          <ItemValue
+            label="Equipped By"
+            value={`${equippers.length} character${
+              equippers.length !== 1 ? 's' : ''
+            }`}
+          />
+          {/*
+          <ItemValue
+            label="Can I Claim?"
+            value={isConnected ? '?' : 'Wallet not connected'}
+          />
+          */}
+        </SimpleGrid>
       </VStack>
-    </HStack>
+      {isConnected && !!character && (
+        <ItemActionMenu item={item} variant="solid" />
+      )}
+    </VStack>
   );
 };
 
-export const SmallItemCard: React.FC<ItemCardProps> = ({ ...item }) => {
-  const toast = useToast();
-  const { isConnected } = useAccount();
-
-  const {
-    itemId,
-    name,
-    description,
-    image,
-    supply,
-    totalSupply,
-    holders,
-    equippers,
-  } = item;
-
-  const { character } = useGame();
-
-  const isHeld =
-    character?.heldItems.find(h => h.itemId === item.itemId) !== undefined;
-  const isEquipped =
-    character?.equippedItems.find(e => e.itemId === item.itemId) !== undefined;
-
-  const holdersDisplay = isHeld
-    ? holders.length === 1
-      ? 'you'
-      : `you and ${holders.length - 1} others`
-    : holders.length;
-  const equippersDisplay = isEquipped
-    ? equippers.length === 1
-      ? 'you'
-      : `you and ${equippers.length - 1} others`
-    : equippers.length;
-
+const ItemValue: React.FC<{ label: string; value: string }> = ({
+  label,
+  value,
+}) => {
   return (
-    <HStack
-      border="1px solid white"
-      transition="background 0.3s ease"
-      p={4}
-      spacing={8}
-      w="100%"
-    >
-      <VStack align="center" h="100%" w="35%">
-        <Image alt="item emblem" h="60%" objectFit="cover" src={image} />
-        <VStack align="center" w="100px">
-          <Button
-            onClick={() => {
-              toast({
-                title: 'Coming soon!',
-                position: 'top',
-                status: 'warning',
-              });
-            }}
-            size="sm"
-          >
-            View
-          </Button>
-          {isConnected && <ItemActionMenu item={item} />}
-        </VStack>
-      </VStack>
-      <VStack align="flex-start">
-        <Text fontSize="md" fontWeight="bold">
-          {name}
-        </Text>
-        <Text fontSize="sm" mb={4}>
-          {shortenText(description, 130)}
-        </Text>
-        <Text fontSize="xs">
-          Item ID:{' '}
-          <Text as="span" fontSize="xs">
-            {itemId}
-          </Text>
-        </Text>
-        <Text fontSize="xs">
-          Supply: {supply.toString()} / {totalSupply.toString()}
-        </Text>
-        <Text fontSize="xs">Held By: {holdersDisplay}</Text>
-        <Text fontSize="xs">Equipped By: {equippersDisplay}</Text>
-      </VStack>
-    </HStack>
+    <VStack align="flex-start" spacing={2}>
+      <Text letterSpacing="2px" fontSize="3xs" textTransform="uppercase">
+        {label}
+      </Text>
+      <Text fontSize="2xs" fontWeight="500">
+        {value}
+      </Text>
+    </VStack>
   );
 };

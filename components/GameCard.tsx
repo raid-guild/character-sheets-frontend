@@ -5,6 +5,7 @@ import {
   HStack,
   Image,
   Link,
+  Stack,
   Text,
   VStack,
 } from '@chakra-ui/react';
@@ -28,13 +29,15 @@ export const GameCard: React.FC<GameMeta> = ({
   description,
 }) => {
   return (
-    <HStack
+    <Stack
+      direction={{ base: 'column', md: 'row' }}
       bg="cardBG"
       justify="space-between"
       p={8}
       transition="background 0.3s ease"
       w="100%"
       spacing={12}
+      align="center"
     >
       <AspectRatio ratio={1} w="100%" maxW="12rem">
         <Image
@@ -45,17 +48,22 @@ export const GameCard: React.FC<GameMeta> = ({
           h="100%"
         />
       </AspectRatio>
-      <VStack spacing={4} align="flex-start" flex={1}>
+      <VStack spacing={4} align={{ base: 'center', md: 'start' }} flex={1}>
         <Heading
           display="inline-block"
           fontSize="40px"
           fontWeight="normal"
           lineHeight="40px"
+          textAlign={{ base: 'center', md: 'left' }}
         >
           {name}
         </Heading>
-        <VStack spacing={2} align="flex-start">
-          <Text fontWeight={200} mb={2}>
+        <VStack spacing={2} align={{ base: 'center', md: 'start' }}>
+          <Text
+            fontWeight={200}
+            mb={2}
+            textAlign={{ base: 'center', md: 'left' }}
+          >
             {shortenText(description, 60)}
           </Text>
           <Link
@@ -85,6 +93,6 @@ export const GameCard: React.FC<GameMeta> = ({
         characters={characters}
         items={items}
       />
-    </HStack>
+    </Stack>
   );
 };

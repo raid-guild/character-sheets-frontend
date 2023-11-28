@@ -6,15 +6,18 @@ import {
   Grid,
   Heading,
   HStack,
+  IconButton,
   Image,
   Link,
   Spinner,
+  StackProps,
   Tab,
   TabList,
   TabPanel,
   TabPanels,
   Tabs,
   Text,
+  useDisclosure,
   VStack,
   Wrap,
 } from '@chakra-ui/react';
@@ -30,7 +33,6 @@ import { GameTotals } from '@/components/GameTotals';
 import { ItemsPanel } from '@/components/ItemsPanel';
 import { JoinGame } from '@/components/JoinGame';
 import { AddGameMasterModal } from '@/components/Modals/AddGameMasterModal';
-import { AddItemRequirementModal } from '@/components/Modals/AddItemRequirementModal';
 import { ApproveTransferModal } from '@/components/Modals/ApproveTransferModal';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { ClaimClassModal } from '@/components/Modals/ClaimClassModal';
@@ -41,9 +43,9 @@ import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { EditItemClaimableModal } from '@/components/Modals/EditItemClaimableModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
+import { ItemsCatalogModal } from '@/components/Modals/ItemsCatalogModal';
 import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
 import { RemoveCharacterModal } from '@/components/Modals/RemoveCharacterModal';
-import { RemoveItemRequirementModal } from '@/components/Modals/RemoveItemRequirementModal';
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
 import { RenounceClassModal } from '@/components/Modals/RenounceClassModal';
 import { RestoreCharacterModal } from '@/components/Modals/RestoreCharacterModal';
@@ -125,14 +127,8 @@ function GamePage({
 }: {
   isConnectedAndMounted: boolean;
 }): JSX.Element {
-  const {
-    game,
-    character,
-    isAdmin,
-    isMaster,
-    loading,
-    isEligibleForCharacter,
-  } = useGame();
+  const { game, character, isAdmin, loading, isEligibleForCharacter } =
+    useGame();
 
   const {
     addGameMasterModal,
@@ -148,7 +144,6 @@ function GamePage({
     approveTransferModal,
     claimClassModal,
     editCharacterModal,
-    equipItemModal,
     giveExpModal,
     giveItemsModal,
     jailPlayerModal,
@@ -159,12 +154,8 @@ function GamePage({
     transferCharacterModal,
   } = useCharacterActions();
 
-  const {
-    addRequirementModal,
-    removeRequirementModal,
-    claimItemModal,
-    editItemClaimableModal,
-  } = useItemActions();
+  const { equipItemModal, claimItemModal, editItemClaimableModal } =
+    useItemActions();
 
   const [showJoinGame, setShowJoinGame] = useState(false);
   const { isWrongNetwork, renderNetworkError } = useCheckGameNetwork();
@@ -212,17 +203,27 @@ function GamePage({
     } = game;
 
     return (
-      <Grid templateColumns="3fr 1fr" w="full" gridGap="5px">
+      <Grid
+        templateColumns={{ base: '1fr', lg: '3fr 1fr' }}
+        gridGap="5px"
+        w="100%"
+      >
         <HStack spacing="5px">
           <HStack
             bg="cardBG"
             h="100%"
-            p={8}
+            px={{ base: 4, sm: 8 }}
+            py={8}
             transition="background 0.3s ease"
             w="100%"
             spacing={12}
           >
-            <AspectRatio ratio={1} w="100%" maxW="12rem">
+            <AspectRatio
+              ratio={1}
+              w="100%"
+              maxW="12rem"
+              display={{ base: 'none', lg: 'block' }}
+            >
               <Image
                 alt="game emblem"
                 objectFit="cover"
@@ -232,6 +233,20 @@ function GamePage({
               />
             </AspectRatio>
             <VStack spacing={4} align="flex-start">
+              <AspectRatio
+                ratio={1}
+                w="100%"
+                maxW="12rem"
+                display={{ base: 'block', lg: 'none' }}
+              >
+                <Image
+                  alt="game emblem"
+                  objectFit="cover"
+                  src={image}
+                  w="100%"
+                  h="100%"
+                />
+              </AspectRatio>
               <Heading
                 display="inline-block"
                 fontSize="40px"
@@ -275,6 +290,7 @@ function GamePage({
             bg="cardBG"
             flexShrink={0}
             p={8}
+            display={{ base: 'none', lg: 'flex' }}
           >
             <GameTotals
               experience={experience}
@@ -283,8 +299,30 @@ function GamePage({
             />
           </VStack>
         </HStack>
+        <VStack
+          align="start"
+          spacing={0}
+          h="100%"
+          bg="cardBG"
+          flexShrink={0}
+          px={{ base: 4, sm: 8 }}
+          py={8}
+          display={{ base: 'flex', lg: 'none' }}
+        >
+          <GameTotals
+            experience={experience}
+            characters={characters}
+            items={items}
+          />
+        </VStack>
 
-        <VStack align="start" spacing={4} p={8} bg="cardBG">
+        <VStack
+          align="start"
+          spacing={4}
+          px={{ base: 4, sm: 8 }}
+          py={8}
+          bg="cardBG"
+        >
           <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
             Owner
           </Text>
@@ -307,14 +345,17 @@ function GamePage({
               Game Masters
             </Text>
             {isAdmin && (
-              <Button
+              <IconButton
                 onClick={() =>
                   openActionModal(GameMasterActions.ADD_GAME_MASTER)
                 }
-                variant="unstyled"
-              >
-                +
-              </Button>
+                aria-label="add game master"
+                variant="ghost"
+                minW={4}
+                icon={<Text>+</Text>}
+                mb={1}
+                ml={2}
+              />
             )}
           </Flex>
           <Wrap spacingX={1}>
@@ -328,6 +369,10 @@ function GamePage({
             })}
           </Wrap>
         </VStack>
+        {isConnectedAndMounted && (
+          <GameActions display={{ base: 'flex', lg: 'none' }} />
+        )}
+
         <VStack
           align="stretch"
           position="relative"
@@ -344,7 +389,13 @@ function GamePage({
           )}
 
           {isConnectedAndMounted && (
-            <VStack p={8} bg="cardBG" align="start" spacing={4}>
+            <VStack
+              px={{ base: 4, sm: 8 }}
+              py={8}
+              bg="cardBG"
+              align="start"
+              spacing={4}
+            >
               {!character && !showJoinGame && isEligibleForCharacter && (
                 <HStack w="100%" spacing={4}>
                   <Button variant="solid" onClick={startJoinGame}>
@@ -399,37 +450,43 @@ function GamePage({
           <Tabs
             borderColor="transparent"
             colorScheme="white"
-            w="full"
-            p={8}
+            px={{ base: 4, sm: 8 }}
+            py={8}
             bg="cardBG"
           >
             <TabList>
-              <Tab gap={2}>
+              <Tab gap={2} flexDirection={{ base: 'column', lg: 'row' }}>
                 <Image
                   alt="users"
                   height="20px"
                   src="/icons/users.svg"
                   width="20px"
                 />
-                <Text>{characters.length} characters</Text>
+                <Text fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}>
+                  {characters.length} character{characters.length !== 1 && 's'}
+                </Text>
               </Tab>
-              <Tab gap={2}>
+              <Tab gap={2} flexDirection={{ base: 'column', lg: 'row' }}>
                 <Image
                   alt="users"
                   height="20px"
                   src="/icons/users.svg"
                   width="20px"
                 />
-                <Text>{classes.length} classes</Text>
+                <Text fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}>
+                  {classes.length} class{classes.length !== 1 && 'es'}
+                </Text>
               </Tab>
-              <Tab gap={2}>
+              <Tab gap={2} flexDirection={{ base: 'column', lg: 'row' }}>
                 <Image
                   alt="items"
                   height="20px"
                   src="/icons/items.svg"
                   width="20px"
                 />
-                <Text>{items.length} Items</Text>
+                <Text fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}>
+                  {items.length} item{items.length !== 1 && 's'}
+                </Text>
               </Tab>
             </TabList>
 
@@ -446,26 +503,7 @@ function GamePage({
             </TabPanels>
           </Tabs>
         </VStack>
-        <VStack h="100%" bg="cardBG" p={8} align="stretch" spacing={4}>
-          {isMaster ? (
-            <>
-              <Button
-                onClick={() => openActionModal(GameMasterActions.CREATE_ITEM)}
-                size="sm"
-              >
-                Create Item
-              </Button>
-              <Button
-                onClick={() => openActionModal(GameMasterActions.CREATE_CLASS)}
-                size="sm"
-              >
-                Create Class
-              </Button>
-            </>
-          ) : (
-            <Text>Coming Soon!</Text>
-          )}
-        </VStack>
+        <GameActions display={{ base: 'none', lg: 'flex' }} />
       </Grid>
     );
   };
@@ -496,10 +534,51 @@ function GamePage({
       {transferCharacterModal && <TransferCharacterModal />}
 
       {/*  ITEM ACTIONS */}
-      {addRequirementModal && <AddItemRequirementModal />}
-      {removeRequirementModal && <RemoveItemRequirementModal />}
       {claimItemModal && <ClaimItemModal />}
       {editItemClaimableModal && <EditItemClaimableModal />}
     </>
   );
 }
+
+const GameActions: React.FC<StackProps> = ({ ...props }) => {
+  const { isMaster } = useGame();
+
+  const { openActionModal } = useGameActions();
+  const itemsCatalogModal = useDisclosure();
+
+  return (
+    <VStack
+      h="100%"
+      bg="cardBG"
+      px={{ base: 4, sm: 8 }}
+      py={8}
+      align="stretch"
+      spacing={4}
+      {...props}
+    >
+      <Button onClick={itemsCatalogModal.onOpen} size="sm">
+        show items catalog
+      </Button>
+      {isMaster && (
+        <>
+          <Button
+            onClick={() => openActionModal(GameMasterActions.CREATE_ITEM)}
+            size="sm"
+          >
+            create Item
+          </Button>
+          <Button
+            onClick={() => openActionModal(GameMasterActions.CREATE_CLASS)}
+            size="sm"
+          >
+            create Class
+          </Button>
+        </>
+      )}
+      <ItemsCatalogModal
+        isOpen={itemsCatalogModal.isOpen}
+        onClose={itemsCatalogModal.onClose}
+      />
+    </VStack>
+  );
+};

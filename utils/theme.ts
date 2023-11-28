@@ -253,11 +253,11 @@ const Modal = {
       letterSpacing: '0.1em',
       fontSize: 'md',
       py: 6,
-      px: 10,
+      px: { base: 6, md: 10 },
     },
     closeButton: {
-      mt: 1,
-      mr: 4,
+      mt: 2,
+      mr: { base: 1, md: 4 },
       size: 'xl',
       _hover: {
         borderRadius: 0,
@@ -266,7 +266,7 @@ const Modal = {
       },
     },
     body: {
-      p: 10,
+      p: { base: 6, md: 10 },
       overflow: 'auto',
     },
     footer: {
@@ -367,10 +367,6 @@ export const theme = extendTheme({
     softyellow: '#FFEBA4',
     softblue: '#7B91DD',
     softorange: '#BA9179',
-    // gold: {
-    //   100: '#FFFAE2',
-    //   400: '#DBB865',
-    // },
   },
   components: {
     Button,
