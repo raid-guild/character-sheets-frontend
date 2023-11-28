@@ -19,9 +19,9 @@ import {
 } from './types';
 
 const IPFS_GATEWAYS = [
-  'https://gateway.pinata.cloud',
-  'https://ipfs.io',
   'https://cloudflare-ipfs.com',
+  'https://ipfs.io',
+  'https://w3s.link',
 ];
 
 /**

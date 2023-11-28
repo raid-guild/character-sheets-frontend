@@ -50,10 +50,7 @@ export const GameProvider: React.FC<
 
   return (
     <Provider value={client}>
-      <GameProviderInner
-        gameId={gameId}
-        game={game}
-      >
+      <GameProviderInner gameId={gameId} game={game}>
         {children}
       </GameProviderInner>
     </Provider>
@@ -134,7 +131,7 @@ const GameProviderInner: React.FC<
         isAdmin,
         isMaster,
         isEligibleForCharacter,
-        loading: fetching || isFormatting || isRefetching,
+        loading: isRefetching || (!game && (fetching || isFormatting)),
         error,
         reload: refetch,
       }}
