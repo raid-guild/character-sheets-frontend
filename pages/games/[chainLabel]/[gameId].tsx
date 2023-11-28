@@ -19,6 +19,7 @@ import {
   VStack,
   Wrap,
 } from '@chakra-ui/react';
+import { GetStaticPaths, GetStaticProps, InferGetStaticPropsType } from 'next';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isAddress } from 'viem';
@@ -69,11 +70,19 @@ import {
   ItemActionsProvider,
   useItemActions,
 } from '@/contexts/ItemActionsContext';
+import { getGameForChainId, getGamesForChainId } from '@/graphql/games';
 import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
-import { getAddressUrl, getChainIdFromLabel } from '@/lib/web3';
+import {
+  getAddressUrl,
+  getChainIdFromLabel,
+  getChainLabelFromId,
+  SUPPORTED_CHAINS,
+} from '@/lib/web3';
 import { shortenAddress } from '@/utils/helpers';
 
-export default function GamePageOuter(): JSX.Element {
+type Props = InferGetStaticPropsType<typeof getStaticProps>;
+
+export default function GamePageOuter({ game }: Props): JSX.Element {
   const {
     query: { gameId, chainLabel },
     push,
@@ -106,7 +115,7 @@ export default function GamePageOuter(): JSX.Element {
   }
 
   return (
-    <GameProvider chainId={chainId} gameId={gameId.toString()}>
+    <GameProvider chainId={chainId} gameId={gameId.toString()} game={game}>
       <GameActionsProvider>
         <CharacterActionsProvider>
           <ItemActionsProvider>
@@ -537,3 +546,45 @@ function GamePage({
     </>
   );
 }
+
+type QueryParams = { gameId: string; chainLabel: string };
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const paths: { params: QueryParams }[] = [];
+
+  await Promise.all(
+    SUPPORTED_CHAINS.map(async chain => {
+      const chainLabel = getChainLabelFromId(chain.id);
+      if (!chainLabel) {
+        return;
+      }
+      const games = await getGamesForChainId(chain.id);
+
+      paths.push(
+        ...games.map(game => ({
+          params: {
+            chainLabel,
+            gameId: game.id,
+          },
+        })),
+      );
+    }),
+  );
+
+  return { paths, fallback: true };
+};
+
+export const getStaticProps: GetStaticProps = async context => {
+  const chainLabel = context.params?.chainLabel as string;
+  const gameId = context.params?.gameId as string;
+  const chainId = getChainIdFromLabel(chainLabel);
+  const game =
+    !!chainId && !!gameId ? await getGameForChainId(chainId, gameId) : null;
+
+  return {
+    props: {
+      game,
+    },
+    revalidate: 60,
+  };
+};

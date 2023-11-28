@@ -46,13 +46,18 @@ export const GameProvider: React.FC<
     chainId: number;
     gameId: string;
     characterId?: string | null | undefined | string[];
+    game: Game | null;
   }>
-> = ({ chainId, children, gameId, characterId }) => {
+> = ({ chainId, children, gameId, characterId, game }) => {
   const client = useMemo(() => getGraphClient(chainId), [chainId]);
 
   return (
     <Provider value={client}>
-      <GameProviderInner gameId={gameId} characterId={characterId}>
+      <GameProviderInner
+        gameId={gameId}
+        characterId={characterId}
+        game={game}
+      >
         {children}
       </GameProviderInner>
     </Provider>
@@ -63,11 +68,12 @@ const GameProviderInner: React.FC<
   React.PropsWithChildren<{
     gameId: string;
     characterId?: string | null | undefined | string[];
+    game: Game | null;
   }>
-> = ({ children, gameId, characterId }) => {
+> = ({ children, gameId, characterId, game: staticGame }) => {
   const { address } = useAccount();
 
-  const [game, setGame] = useState<Game | null>(null);
+  const [game, setGame] = useState<Game | null>(staticGame);
   const [isFormatting, setIsFormatting] = useState(false);
   const [isRefetching, setIsRefetching] = useState(false);
 
