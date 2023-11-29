@@ -34,7 +34,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
           <Text>Select Option</Text>
         )}
       </MenuButton>
-      <MenuList minW="20rem">
+      <MenuList minW={{ base: 'auto', sm: '20rem' }}>
         {options.map((option: string) => (
           <MenuItem key={option} onClick={() => setSelectedOption(option)}>
             <SelectedOption option={option} />
@@ -48,7 +48,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
 const SelectedOption: React.FC<{ option: string }> = ({ option }) => {
   return (
     <HStack justify="space-between" spacing={4} w="100%">
-      <Text fontSize="md" fontWeight="bold">
+      <Text fontSize={{ base: 'xs', sm: 'md' }} fontWeight="bold">
         {option}
       </Text>
     </HStack>

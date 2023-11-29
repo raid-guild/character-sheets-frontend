@@ -121,7 +121,7 @@ export default function GamePageOuter({ game }: Props): JSX.Element {
           <ItemActionsProvider>
             <OldCharacterURIAlert />
             {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
-            <GamePage isConnectedAndMounted={isConnectedAndMounted} />
+            {isConnectedAndMounted && <GamePage />}
           </ItemActionsProvider>
         </CharacterActionsProvider>
       </GameActionsProvider>
@@ -129,11 +129,7 @@ export default function GamePageOuter({ game }: Props): JSX.Element {
   );
 }
 
-function GamePage({
-  isConnectedAndMounted,
-}: {
-  isConnectedAndMounted: boolean;
-}): JSX.Element {
+function GamePage(): JSX.Element {
   const { game, character, isAdmin, loading, isEligibleForCharacter } =
     useGame();
 
@@ -243,7 +239,7 @@ function GamePage({
               <AspectRatio
                 ratio={1}
                 w="100%"
-                maxW="12rem"
+                maxW={{ base: '8rem', md: '12rem' }}
                 display={{ base: 'block', lg: 'none' }}
               >
                 <Image
@@ -256,7 +252,7 @@ function GamePage({
               </AspectRatio>
               <Heading
                 display="inline-block"
-                fontSize="40px"
+                fontSize={{ base: '32px', md: '40px' }}
                 fontWeight="normal"
                 lineHeight="40px"
               >
@@ -376,9 +372,7 @@ function GamePage({
             })}
           </Wrap>
         </VStack>
-        {isConnectedAndMounted && (
-          <GameActions display={{ base: 'flex', lg: 'none' }} />
-        )}
+        <GameActions display={{ base: 'flex', lg: 'none' }} />
 
         <VStack
           align="stretch"
@@ -387,72 +381,67 @@ function GamePage({
           spacing="5px"
         >
           <Box ref={topOfCardRef} position="absolute" top="-80px" />
-          {!isConnectedAndMounted && (
-            <VStack p={8} bg="cardBG" align="start" spacing={4}>
-              <Text fontSize="sm">
-                Please connect your wallet to play this game.
-              </Text>
-            </VStack>
-          )}
+          <VStack p={8} bg="cardBG" align="start" spacing={4}>
+            <Text fontSize="sm">
+              Please connect your wallet to play this game.
+            </Text>
+          </VStack>
 
-          {isConnectedAndMounted && (
-            <VStack
-              px={{ base: 4, sm: 8 }}
-              py={8}
-              bg="cardBG"
-              align="start"
-              spacing={4}
-            >
-              {!character && !showJoinGame && isEligibleForCharacter && (
-                <HStack w="100%" spacing={4}>
-                  <Button variant="solid" onClick={startJoinGame}>
-                    Join this Game
-                  </Button>
-                  <Text fontSize="sm">
-                    You don’t have a character sheet in this game.
-                  </Text>
-                </HStack>
-              )}
-              {!character && showJoinGame && isEligibleForCharacter && (
-                <JoinGame
-                  onClose={() => setShowJoinGame(false)}
-                  topOfCardRef={topOfCardRef}
-                />
-              )}
-              {!character && !isEligibleForCharacter && (
-                <HStack w="100%" spacing={4}>
-                  <Text fontSize="sm">
-                    You are not eligible to join this game.
-                  </Text>
-                </HStack>
-              )}
-              {character &&
-                character.removed &&
-                !character.jailed &&
-                isEligibleForCharacter && (
-                  <HStack spacing={4}>
-                    <Button
-                      variant="solid"
-                      onClick={() =>
-                        openActionModal(GameMasterActions.RESTORE_CHARACTER)
-                      }
-                    >
-                      Restore Character
-                    </Button>
-                    <Text>Your character has been removed from this game.</Text>
-                  </HStack>
-                )}
-              {character && character.jailed && (
-                <Text>
-                  Your character is in jail. You can’t play until you’re
-                  released.
+          <VStack
+            px={{ base: 4, sm: 8 }}
+            py={8}
+            bg="cardBG"
+            align="start"
+            spacing={4}
+          >
+            {!character && !showJoinGame && isEligibleForCharacter && (
+              <HStack w="100%" spacing={4}>
+                <Button variant="solid" onClick={startJoinGame}>
+                  Join this Game
+                </Button>
+                <Text fontSize="sm">
+                  You don’t have a character sheet in this game.
                 </Text>
+              </HStack>
+            )}
+            {!character && showJoinGame && isEligibleForCharacter && (
+              <JoinGame
+                onClose={() => setShowJoinGame(false)}
+                topOfCardRef={topOfCardRef}
+              />
+            )}
+            {!character && !isEligibleForCharacter && (
+              <HStack w="100%" spacing={4}>
+                <Text fontSize="sm">
+                  You are not eligible to join this game.
+                </Text>
+              </HStack>
+            )}
+            {character &&
+              character.removed &&
+              !character.jailed &&
+              isEligibleForCharacter && (
+                <HStack spacing={4}>
+                  <Button
+                    variant="solid"
+                    onClick={() =>
+                      openActionModal(GameMasterActions.RESTORE_CHARACTER)
+                    }
+                  >
+                    Restore Character
+                  </Button>
+                  <Text>Your character has been removed from this game.</Text>
+                </HStack>
               )}
-              {character && !character.removed && !character.jailed && (
-                <CharacterCard chainId={chainId} character={character} />
-              )}
-            </VStack>
-          )}
+            {character && character.jailed && (
+              <Text>
+                Your character is in jail. You can’t play until you’re released.
+              </Text>
+            )}
+            {character && !character.removed && !character.jailed && (
+              <CharacterCard chainId={chainId} character={character} />
+            )}
+          </VStack>
 
           <Tabs
             borderColor="transparent"
@@ -510,9 +499,7 @@ function GamePage({
             </TabPanels>
           </Tabs>
         </VStack>
-        {isConnectedAndMounted && (
-          <GameActions display={{ base: 'none', lg: 'flex' }} />
-        )}
+        <GameActions display={{ base: 'none', lg: 'flex' }} />
       </Grid>
     );
   };

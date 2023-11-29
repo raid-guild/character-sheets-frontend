@@ -173,7 +173,7 @@ export const CharacterCard: React.FC<{
                 </Button>
               )}
             </HStack>
-            <SimpleGrid columns={2} spacing={4} w="full">
+            <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4} w="full">
               {items.slice(0, 2).map(item => (
                 <GridItem key={item.itemId + item.name}>
                   <ItemTag item={item} holderId={characterId} />

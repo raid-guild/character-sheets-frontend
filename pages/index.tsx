@@ -85,7 +85,10 @@ export default function Home(): JSX.Element {
     >
       <VStack spacing={0} align="start" maxW="100rem" w="100%" mx="auto">
         <Heading
-          fontSize="66px"
+          fontSize={{
+            base: '48px',
+            md: '66px',
+          }}
           lineHeight="56px"
           maxW="720px"
           textTransform="capitalize"

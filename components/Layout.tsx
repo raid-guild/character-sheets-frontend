@@ -5,6 +5,7 @@ import {
   Link,
   Spacer,
   Text,
+  useBreakpointValue,
   VStack,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
@@ -16,6 +17,7 @@ const FULL_PAGE_ROUTES = ['/'];
 
 export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
   const { pathname } = useRouter();
+  const isDesktop = useBreakpointValue({ base: false, lg: true });
 
   const isFullPage = FULL_PAGE_ROUTES.includes(pathname);
 
@@ -47,7 +49,7 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
             _hover={{ color: 'accent', textDecoration: 'none' }}
           >
             <Heading fontSize="22px" textTransform="uppercase">
-              CharacterSheets
+              {isDesktop ? 'CharacterSheets' : 'CS'}
             </Heading>
           </Link>
           <Spacer />
