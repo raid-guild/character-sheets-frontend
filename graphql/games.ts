@@ -1,4 +1,6 @@
+import { formatGame, formatGameMeta } from '@/utils/helpers';
 import { Game, GameMeta } from '@/utils/types';
+
 import {
   FullGameInfoFragment,
   GameMetaInfoFragment,
@@ -6,32 +8,34 @@ import {
   GetGamesDocument,
 } from './autogen/types';
 import { getGraphClient } from './client';
-import { formatGame, formatGameMeta } from '@/utils/helpers';
 
 export const getGamesForChainId = async (
   chainId: number,
-): Promise<Array<GameMeta>> => {
-  const { data, error } = await getGraphClient(chainId).query(
-    GetGamesDocument,
-    {
-      limit: 1000,
-      skip: 0,
-    },
-  );
+): Promise<{
+  games: GameMeta[];
+  error: Error | undefined;
+}> => {
+  try {
+    const { data, error } = await getGraphClient(chainId).query(
+      GetGamesDocument,
+      {},
+    );
 
-  if (error) {
-    console.error('Error getting game masters', error);
-    return [];
+    const games = await Promise.all(
+      data?.games.map((game: GameMetaInfoFragment) => formatGameMeta(game)),
+    );
+
+    return {
+      games: games || [],
+      error,
+    };
+  } catch (e) {
+    console.error('Error fetching games for chainId', chainId, e);
+    return {
+      games: [],
+      error: e as Error,
+    };
   }
-
-  const games = data?.games as Array<GameMetaInfoFragment> | undefined;
-
-  if (!games) {
-    console.error('Games not found');
-    return [];
-  }
-
-  return Promise.all(games.map(g => formatGameMeta(g)));
 };
 
 export const getGameForChainId = async (

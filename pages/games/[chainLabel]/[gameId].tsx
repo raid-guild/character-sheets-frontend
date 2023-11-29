@@ -30,6 +30,7 @@ import { CharactersPanel } from '@/components/CharactersPanel';
 import { ClassesPanel } from '@/components/ClassesPanel';
 import { GameActions } from '@/components/GameActions';
 import { GameTotals } from '@/components/GameTotals';
+import { ImplementationsAlert } from '@/components/ImplementationsAlert';
 import { ItemsPanel } from '@/components/ItemsPanel';
 import { JoinGame } from '@/components/JoinGame';
 import { AddGameMasterModal } from '@/components/Modals/AddGameMasterModal';
@@ -119,6 +120,7 @@ export default function GamePageOuter({ game }: Props): JSX.Element {
       <GameActionsProvider>
         <CharacterActionsProvider>
           <ItemActionsProvider>
+            <ImplementationsAlert />
             <OldCharacterURIAlert />
             {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
             {isConnectedAndMounted && <GamePage />}
@@ -255,10 +257,11 @@ function GamePage(): JSX.Element {
                 fontSize={{ base: '32px', md: '40px' }}
                 fontWeight="normal"
                 lineHeight="40px"
+                wordBreak="break-all"
               >
                 {name}
               </Heading>
-              <Text fontSize="xl" fontWeight={200} mb={2}>
+              <Text fontSize="xl" fontWeight={200} mb={2} wordBreak="break-all">
                 {description}
               </Text>
               <Link
@@ -551,7 +554,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
       if (!chainLabel) {
         return;
       }
-      const games = await getGamesForChainId(chain.id);
+      const { games } = await getGamesForChainId(chain.id);
 
       paths.push(
         ...games.map(game => ({
