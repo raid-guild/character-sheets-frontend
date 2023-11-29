@@ -299,6 +299,12 @@ export const EquipItemModal: React.FC = () => {
         <Text>
           Are you sure you want to {isEquipped ? 'unequip' : 'equip'} this item?
         </Text>
+        {character.attributes.length === 0 && !isEquipped && (
+          <Text color="red" textAlign="center">
+            Note: because you are using your own character avatar, you will not
+            be able to equip this item visually.
+          </Text>
+        )}
         <VStack justify="space-between" h="100%">
           <Image
             alt={`${heldItem.name} image`}

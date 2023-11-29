@@ -199,6 +199,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
           name: characterName,
           description: characterDescription,
           image: `ipfs://${cid}`,
+          attributes: [],
         };
 
         if (!showUpload && attributes) {
@@ -209,7 +210,8 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 
         let characterTokenUri = '';
 
-        if (baseTokenURI === BASE_CHARACTER_URI) {
+        const chainLabel = getChainLabelFromId(chain.id);
+        if (baseTokenURI === `${BASE_CHARACTER_URI}${chainLabel}/`) {
           const totalSheets = await publicClient.readContract({
             address: game.id as Address,
             abi: parseAbi([
@@ -218,7 +220,6 @@ export const JoinGame: React.FC<JoinGameProps> = ({
             functionName: 'totalSheets',
           });
           const characterId = `${game.id}-character-${toHex(totalSheets)}`;
-          const chainLabel = getChainLabelFromId(chain.id);
           const apiRoute = `/api/characters/${chainLabel}/${characterId}/update`;
           const signature = await walletClient.signMessage({
             message: apiRoute,
