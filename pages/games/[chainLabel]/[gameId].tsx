@@ -510,7 +510,9 @@ function GamePage({
             </TabPanels>
           </Tabs>
         </VStack>
-        <GameActions display={{ base: 'none', lg: 'flex' }} />
+        {isConnectedAndMounted && (
+          <GameActions display={{ base: 'none', lg: 'flex' }} />
+        )}
       </Grid>
     );
   };
