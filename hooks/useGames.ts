@@ -1,41 +1,42 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import {
-  GameMetaInfoFragment,
-  GetGamesDocument,
-} from '@/graphql/autogen/types';
-import { getGraphClient } from '@/graphql/client';
 import { SUPPORTED_CHAINS } from '@/lib/web3';
-import { formatGameMeta } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
+import { getGamesForChainId } from '@/graphql/games';
 
-const fetchGamesForChainId = async (
-  chainId: number,
-): Promise<{
+export const getAllGames = async (): Promise<{
   games: GameMeta[];
   error: Error | undefined;
 }> => {
-  try {
-    const { data, error } = await getGraphClient(chainId).query(
-      GetGamesDocument,
-      {},
-    );
+  const results = await Promise.all(
+    SUPPORTED_CHAINS.map(chain => getGamesForChainId(chain.id)),
+  );
 
-    const games = await Promise.all(
-      data?.games.map((game: GameMetaInfoFragment) => formatGameMeta(game)),
-    );
+  const { games: _games, error: _error } = results.reduce(
+    (acc, result) => {
+      acc.games.push(...result.games);
+      acc.error = acc.error || result.error;
+      return acc;
+    },
+    { games: [], error: undefined },
+  );
 
-    return {
-      games: games || [],
-      error,
-    };
-  } catch (e) {
-    console.error('Error fetching games for chainId', chainId, e);
-    return {
-      games: [],
-      error: e as Error,
-    };
-  }
+  const sortedGames = _games.sort((a, b) => {
+    const startDateA = new Date(a.startedAt).getTime();
+    const startDateB = new Date(b.startedAt).getTime();
+
+    if (startDateA < startDateB) {
+      return 1;
+    } else if (startDateA > startDateB) {
+      return -1;
+    } else {
+      return 0;
+    }
+  });
+  return {
+    games: sortedGames,
+    error: _error,
+  };
 };
 
 export const useGames = (): {
@@ -56,32 +57,7 @@ export const useGames = (): {
   const fetchGames = useCallback(async () => {
     setLoading(true);
 
-    const results = await Promise.all(
-      SUPPORTED_CHAINS.map(chain => fetchGamesForChainId(chain.id)),
-    );
-
-    const { games: _games, error: _error } = results.reduce(
-      (acc, result) => {
-        acc.games.push(...result.games);
-        acc.error = acc.error || result.error;
-        return acc;
-      },
-      { games: [], error: undefined },
-    );
-
-    const sortedGames = _games.sort((a, b) => {
-      const startDateA = new Date(a.startedAt).getTime();
-      const startDateB = new Date(b.startedAt).getTime();
-
-      if (startDateA < startDateB) {
-        return 1;
-      } else if (startDateA > startDateB) {
-        return -1;
-      } else {
-        return 0;
-      }
-    });
-
+    const { games: sortedGames, error: _error } = await getAllGames();
     setGames(sortedGames);
     setError(_error);
     setLoading(false);

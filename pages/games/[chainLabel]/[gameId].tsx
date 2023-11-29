@@ -561,7 +561,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
       if (!chainLabel) {
         return;
       }
-      const games = await getGamesForChainId(chain.id);
+      const { games } = await getGamesForChainId(chain.id);
 
       paths.push(
         ...games.map(game => ({
