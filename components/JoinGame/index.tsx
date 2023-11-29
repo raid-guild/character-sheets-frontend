@@ -206,10 +206,13 @@ export const JoinGame: React.FC<JoinGameProps> = ({
         }
 
         const { baseTokenURI } = game;
+        const baseCharacterUri = `${BASE_CHARACTER_URI}${getChainLabelFromId(
+          game.chainId,
+        )}/`;
 
         let characterTokenUri = '';
 
-        if (baseTokenURI === BASE_CHARACTER_URI) {
+        if (baseTokenURI === baseCharacterUri) {
           const totalSheets = await publicClient.readContract({
             address: game.id as Address,
             abi: parseAbi([
