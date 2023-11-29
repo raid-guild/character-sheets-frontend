@@ -408,7 +408,7 @@ export const EditItemClaimableModal: React.FC = () => {
       onClose={editItemClaimableModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Edit Claimability for {selectedItem?.name ?? 'Item'}</Text>
           <ModalCloseButton size="lg" />

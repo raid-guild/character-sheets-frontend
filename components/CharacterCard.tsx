@@ -9,7 +9,10 @@ import {
   Image,
   Link,
   Modal,
+  ModalBody,
+  ModalCloseButton,
   ModalContent,
+  ModalHeader,
   ModalOverlay,
   SimpleGrid,
   Text,
@@ -302,8 +305,14 @@ export const CharacterCardSmall: React.FC<{
         returnFocusOnClose={false}
       >
         <ModalOverlay />
-        <ModalContent>
-          <CharacterCard chainId={chainId} character={character} />
+        <ModalContent mt={{ base: 0, md: '84px' }}>
+          <ModalHeader>
+            <Text>Character: {name}</Text>
+            <ModalCloseButton size="lg" />
+          </ModalHeader>
+          <ModalBody>
+            <CharacterCard chainId={chainId} character={character} />
+          </ModalBody>
         </ModalContent>
       </Modal>
     </VStack>

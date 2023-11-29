@@ -228,7 +228,7 @@ export const AssignClassModal: React.FC = () => {
       onClose={assignClassModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Assign a Class</Text>
           <ModalCloseButton size="lg" />

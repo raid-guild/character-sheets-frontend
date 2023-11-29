@@ -21,7 +21,7 @@ export const RadioCard: React.FC<RadioCardProps> = props => {
         cursor="pointer"
         fontWeight={600}
         h="200px"
-        w="150px"
+        w={{ base: '120px', sm: '150px' }}
         _checked={{
           color: 'white',
           background: 'black',

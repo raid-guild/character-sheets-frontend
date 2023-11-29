@@ -281,7 +281,7 @@ export const GiveItemsModal: React.FC = () => {
       onClose={giveItemsModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Give items</Text>
           <ModalCloseButton size="lg" />

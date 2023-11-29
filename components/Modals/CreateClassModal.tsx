@@ -327,7 +327,7 @@ export const CreateClassModal: React.FC = () => {
       onClose={createClassModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Create a Class</Text>
           <ModalCloseButton size="lg" />

@@ -446,7 +446,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       onClose={editCharacterModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Update Character</Text>
           <ModalCloseButton size="lg" />

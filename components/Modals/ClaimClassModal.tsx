@@ -233,7 +233,7 @@ export const ClaimClassModal: React.FC = () => {
       onClose={claimClassModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Claim a Class</Text>
           <ModalCloseButton size="lg" />

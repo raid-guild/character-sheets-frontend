@@ -1,4 +1,5 @@
 import {
+  Flex,
   HStack,
   Image,
   Modal,
@@ -34,22 +35,28 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
   return (
     <Modal closeOnEsc closeOnOverlayClick isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
-          <HStack>
-            <Text textTransform="initial" fontWeight="500">
+          <Flex flexDir={{ base: 'column', md: 'row' }} gap={4}>
+            <Text textAlign="left" textTransform="initial" fontWeight="500">
               {character ? character.name : game?.name}
             </Text>
-            <Image
-              alt="items"
-              height="20px"
-              src="/icons/items.svg"
-              width="20px"
-            />
-            <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
-              Items Catalog ({items.length})
-            </Text>
-          </HStack>
+            <HStack>
+              <Image
+                alt="items"
+                height="20px"
+                src="/icons/items.svg"
+                width="20px"
+              />
+              <Text
+                letterSpacing="3px"
+                fontSize="2xs"
+                textTransform="uppercase"
+              >
+                Items Catalog ({items.length})
+              </Text>
+            </HStack>
+          </Flex>
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>

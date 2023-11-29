@@ -495,7 +495,7 @@ export const CreateGameModal: React.FC = () => {
       onClose={onClose ?? (() => undefined)}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Create a Game</Text>
           <ModalCloseButton size="lg" />

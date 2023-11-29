@@ -451,7 +451,7 @@ export const ClaimItemModal: React.FC = () => {
       onClose={claimItemModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Claim {selectedItem?.name ?? 'Item'}</Text>
           <ModalCloseButton size="lg" />
