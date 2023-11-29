@@ -395,7 +395,11 @@ function GamePage(): JSX.Element {
             spacing={4}
           >
             {!character && !showJoinGame && isEligibleForCharacter && (
-              <HStack w="100%" spacing={4}>
+              <HStack
+                flexDirection={{ base: 'column-reverse', md: 'row' }}
+                spacing={4}
+                w="100%"
+              >
                 <Button variant="solid" onClick={startJoinGame}>
                   Join this Game
                 </Button>

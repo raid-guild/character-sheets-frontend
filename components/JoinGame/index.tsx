@@ -13,6 +13,7 @@ import {
   SimpleGrid,
   Text,
   Textarea,
+  useBreakpointValue,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -21,7 +22,7 @@ import { Address, useNetwork, usePublicClient, useWalletClient } from 'wagmi';
 
 import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
-import { XPDisplay } from '@/components/XPDisplay';
+import { XPDisplay, XPDisplaySmall } from '@/components/XPDisplay';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
@@ -66,6 +67,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
   const { chain } = useNetwork();
   const publicClient = usePublicClient();
   const { renderError } = useToast();
+  const useSmallXp = useBreakpointValue({ base: true, md: false });
 
   const {
     file: characterAvatar,
@@ -392,7 +394,12 @@ export const JoinGame: React.FC<JoinGameProps> = ({
         </Button>
       </Flex>
       {step === 0 && (
-        <VStack pl={6} pr={20} spacing={8} w="100%">
+        <VStack
+          pl={{ base: 0, md: 6 }}
+          pr={{ base: 0, md: 20 }}
+          spacing={8}
+          w="100%"
+        >
           <FormControl isInvalid={showError && !characterName}>
             <FormLabel>Choose a name for your character</FormLabel>
             <Input
@@ -429,7 +436,12 @@ export const JoinGame: React.FC<JoinGameProps> = ({
       )}
 
       {step === 1 && (
-        <VStack pl={6} pr={8} spacing={8} w="100%">
+        <VStack
+          pl={{ base: 0, md: 6 }}
+          pr={{ base: 0, md: 8 }}
+          spacing={8}
+          w="100%"
+        >
           <VStack alignItems="flex-start" w="100%">
             <Text>Want to upload your own avatar image?</Text>
             <Text fontSize="xs">
@@ -456,7 +468,12 @@ export const JoinGame: React.FC<JoinGameProps> = ({
                 />
               )}
               {characterAvatar && (
-                <Flex align="center" gap={10} mt={4}>
+                <Flex
+                  align="center"
+                  flexDir={{ base: 'column', md: 'row' }}
+                  gap={10}
+                  mt={4}
+                >
                   <Image
                     alt="character avatar"
                     objectFit="contain"
@@ -484,7 +501,11 @@ export const JoinGame: React.FC<JoinGameProps> = ({
             </FormControl>
           )}
           {!showUpload && (
-            <Flex gap={12} w="100%">
+            <Flex
+              flexDir={{ base: 'column-reverse', md: 'row' }}
+              gap={12}
+              w="100%"
+            >
               <CompositeCharacterImage traits={traits} />
               <VStack w="100%">
                 {traits.map((trait: string, i: number) => {
@@ -516,9 +537,20 @@ export const JoinGame: React.FC<JoinGameProps> = ({
         >
           <Box pos="relative">
             <CompositeCharacterImage traits={traits} />
-            <HStack left={4} pos="absolute" top={4}>
-              <XPDisplay experience={'0'} />
-            </HStack>
+            {useSmallXp ? (
+              <HStack
+                bottom={4}
+                left="50%"
+                pos="absolute"
+                transform="translateX(-50%)"
+              >
+                <XPDisplaySmall experience="0" />
+              </HStack>
+            ) : (
+              <HStack left={4} pos="absolute" top={4}>
+                <XPDisplay experience="0" />
+              </HStack>
+            )}
           </Box>
           <VStack align="flex-start" spacing={6}>
             <Heading _hover={{ color: 'accent', cursor: 'pointer' }}>
@@ -563,7 +595,12 @@ export const JoinGame: React.FC<JoinGameProps> = ({
       )}
 
       {step === 1 && (
-        <Flex justify="space-between" w="100%">
+        <Flex
+          flexDir={{ base: 'column', md: 'row' }}
+          gap={{ base: 2, md: 0 }}
+          justify="space-between"
+          w="100%"
+        >
           <Button
             isDisabled={isDisabled}
             isLoading={isLoading}
@@ -574,7 +611,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
           >
             Back to step 1
           </Button>
-          <Flex gap={4}>
+          <Flex flexDir={{ base: 'column', md: 'row' }} gap={4}>
             <Button
               isDisabled={isDisabled}
               isLoading={isLoading}
@@ -600,8 +637,16 @@ export const JoinGame: React.FC<JoinGameProps> = ({
       )}
 
       {step === 2 && (
-        <Flex justify="space-between" w="100%">
-          <Flex gap={4}>
+        <Flex
+          flexDir={{ base: 'column', md: 'row' }}
+          gap={{ base: 4, md: 0 }}
+          justify="space-between"
+          w="100%"
+        >
+          <Flex
+            flexDir={{ base: 'column', md: 'row' }}
+            gap={{ base: 2, md: 4 }}
+          >
             <Button
               isDisabled={isDisabled}
               isLoading={isLoading}
