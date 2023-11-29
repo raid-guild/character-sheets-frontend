@@ -1,6 +1,14 @@
 fragment GlobalInfo on Global {
   id
   gameFactory
+  implementations {
+    characterSheetsImplementation
+    experienceImplementation
+    itemsImplementation
+    classesImplementation
+    itemsManagerImplementation
+    hatsAdaptorImplementation
+  }
 }
 
 fragment CharacterMetaInfo on Character {
@@ -126,6 +134,8 @@ fragment FullGameInfo on Game {
   itemsAddress
   experienceAddress
   characterEligibilityAdaptor
+  hatsAdaptor
+  itemsManager
   uri
   baseTokenURI
   owner {

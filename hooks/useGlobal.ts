@@ -86,7 +86,9 @@ export const useGlobal = (): {
   };
 };
 
-export const useGlobalForChain = (): {
+export const useGlobalForChain = (
+  chainId?: number,
+): {
   loading: boolean;
   error: Error | undefined;
   reload: () => void;
@@ -97,11 +99,14 @@ export const useGlobalForChain = (): {
   const { data: allData, loading, error, reload } = useGlobal();
 
   const data = useMemo(() => {
+    if (chainId) {
+      return allData[chainId];
+    }
     if (!chain) {
       return undefined;
     }
     return allData[chain.id];
-  }, [allData, chain]);
+  }, [allData, chain, chainId]);
 
   return {
     data,
