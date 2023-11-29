@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { getGamesForChainId } from '@/graphql/games';
 import { SUPPORTED_CHAINS } from '@/lib/web3';
 import { GameMeta } from '@/utils/types';
-import { getGamesForChainId } from '@/graphql/games';
 
 export const getAllGames = async (): Promise<{
   games: GameMeta[];

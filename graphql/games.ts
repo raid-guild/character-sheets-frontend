@@ -1,4 +1,6 @@
+import { formatGame, formatGameMeta } from '@/utils/helpers';
 import { Game, GameMeta } from '@/utils/types';
+
 import {
   FullGameInfoFragment,
   GameMetaInfoFragment,
@@ -6,7 +8,6 @@ import {
   GetGamesDocument,
 } from './autogen/types';
 import { getGraphClient } from './client';
-import { formatGame, formatGameMeta } from '@/utils/helpers';
 
 export const getGamesForChainId = async (
   chainId: number,

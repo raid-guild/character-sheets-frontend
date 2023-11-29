@@ -235,8 +235,7 @@ const UpgradeButton: React.FC<{
       ml={4}
       variant="outline-dark"
       isLoading={isUpgrading}
-      _loading={{ opacity: 1, color: 'black' }}
-      _hover={{ opacity: 1, color: 'black' }}
+      _loading={{ color: 'black', opacity: 1 }}
     >
       Upgrade {contractName} Contract
     </Button>
