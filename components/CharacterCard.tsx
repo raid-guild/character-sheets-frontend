@@ -22,7 +22,7 @@ import {
   Wrap,
   WrapItem,
 } from '@chakra-ui/react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
@@ -44,6 +44,16 @@ export const CharacterCard: React.FC<{
   const { address, isConnected } = useAccount();
   const { isMaster } = useGame();
   const itemsCatalogModal = useDisclosure();
+
+  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
+
+  useEffect(() => {
+    if (isConnected) {
+      setIsConnectedAndMounted(true);
+    } else {
+      setIsConnectedAndMounted(false);
+    }
+  }, [isConnected]);
 
   const {
     characterId,
@@ -144,7 +154,7 @@ export const CharacterCard: React.FC<{
         <Text fontSize="sm" fontWeight={300} lineHeight={5}>
           {shortenText(description, 100)}
         </Text>
-        {isConnected &&
+        {isConnectedAndMounted &&
           (isMaster || address?.toLowerCase() === character.player) && (
             <CharacterActionMenu character={character} />
           )}
@@ -202,6 +212,16 @@ export const CharacterCardSmall: React.FC<{
   const { address, isConnected } = useAccount();
   const { isMaster } = useGame();
   const { isOpen, onClose, onOpen } = useDisclosure();
+
+  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
+
+  useEffect(() => {
+    if (isConnected) {
+      setIsConnectedAndMounted(true);
+    } else {
+      setIsConnectedAndMounted(false);
+    }
+  }, [isConnected]);
 
   const { classes, experience, heldItems, image, jailed, name } = character;
 
@@ -294,7 +314,7 @@ export const CharacterCardSmall: React.FC<{
           </HStack>
         </VStack>
       </Box>
-      {isConnected &&
+      {isConnectedAndMounted &&
         (isMaster || address?.toLowerCase() === character.player) && (
           <CharacterActionMenu character={character} variant="solid" />
         )}

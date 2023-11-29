@@ -1,4 +1,5 @@
 import { HStack, Link, Text } from '@chakra-ui/react';
+import { useEffect, useState } from 'react';
 import { Address, useAccount, useChainId } from 'wagmi';
 
 import { useEnsName } from '@/hooks/useEnsName';
@@ -7,9 +8,19 @@ import { shortenAddress } from '@/utils/helpers';
 
 export const UserLink: React.FC<{ user: string }> = ({ user }) => {
   const { ensName } = useEnsName(user as Address);
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const isCurrentUser = address?.toLowerCase() === user.toLowerCase();
+
+  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
+
+  useEffect(() => {
+    if (isConnected) {
+      setIsConnectedAndMounted(true);
+    } else {
+      setIsConnectedAndMounted(false);
+    }
+  }, [isConnected]);
 
   return (
     <Link
@@ -22,7 +33,7 @@ export const UserLink: React.FC<{ user: string }> = ({ user }) => {
         color: 'accent',
       }}
     >
-      {isCurrentUser ? (
+      {isConnectedAndMounted && isCurrentUser ? (
         <HStack px={1} spacing={3}>
           <Text as="span">You</Text>
           <Text as="span" textDecor="underline">

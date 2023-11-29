@@ -9,6 +9,7 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
+import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 
 import { ItemActionMenu } from '@/components/ActionMenus/ItemActionMenu';
@@ -23,6 +24,16 @@ type ItemCardProps = Item & {
 
 export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
   const { isConnected } = useAccount();
+
+  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
+
+  useEffect(() => {
+    if (isConnected) {
+      setIsConnectedAndMounted(true);
+    } else {
+      setIsConnectedAndMounted(false);
+    }
+  }, [isConnected]);
 
   const {
     itemId,
@@ -80,7 +91,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
           <Text fontSize="sm" w="100%">
             {shortenText(description, 130)}
           </Text>
-          {isEquipped && (
+          {isConnectedAndMounted && isEquipped && (
             <>
               <HStack w="100%" spacing={4}>
                 <Flex
@@ -134,7 +145,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
           */}
         </SimpleGrid>
       </VStack>
-      {isConnected && !!character && (
+      {isConnectedAndMounted && !!character && (
         <ItemActionMenu item={item} variant="solid" />
       )}
     </VStack>
