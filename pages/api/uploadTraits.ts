@@ -82,7 +82,7 @@ export default async function uploadTraits(
         )
         .sort((a, b) => {
           if (!a.equippedAt || !b.equippedAt) return 0;
-          return b.equippedAt.getTime() - a.equippedAt.getTime();
+          return b.equippedAt - a.equippedAt;
         });
 
       const equippedWearables = character.equippedItems
@@ -93,7 +93,7 @@ export default async function uploadTraits(
         )
         .sort((a, b) => {
           if (!a.equippedAt || !b.equippedAt) return 0;
-          return b.equippedAt.getTime() - a.equippedAt.getTime();
+          return b.equippedAt - a.equippedAt;
         });
 
       const equippedItem2s = character.equippedItems
@@ -104,7 +104,7 @@ export default async function uploadTraits(
         )
         .sort((a, b) => {
           if (!a.equippedAt || !b.equippedAt) return 0;
-          return b.equippedAt.getTime() - a.equippedAt.getTime();
+          return b.equippedAt - a.equippedAt;
         });
 
       traits = getEquippableTraitName(

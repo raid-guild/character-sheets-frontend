@@ -18,6 +18,12 @@ import {
   Metadata,
 } from './types';
 
+const IPFS_GATEWAYS = [
+  'https://cloudflare-ipfs.com',
+  'https://ipfs.io',
+  'https://w3s.link',
+];
+
 /**
  * Given a URI that may be ipfs, ipns, http, https, ar, or data protocol, return the fetch-able http(s) URLs for the same content
  * @param uri to convert to fetch-able http url
@@ -34,17 +40,11 @@ export const uriToHttp = (uri: string): string[] => {
         return ['https' + uri.substring(4), uri];
       case 'ipfs': {
         const hash = uri.match(/^ipfs:(\/\/)?(.*)$/i)?.[2];
-        return [
-          `https://ipfs.io/ipfs/${hash}`,
-          `https://cloudflare-ipfs.com/ipfs/${hash}`,
-        ];
+        return IPFS_GATEWAYS.map(g => `${g}/ipfs/${hash}`);
       }
       case 'ipns': {
         const name = uri.match(/^ipns:(\/\/)?(.*)$/i)?.[2];
-        return [
-          `https://ipfs.io/ipns/${name}`,
-          `https://cloudflare-ipfs.com/ipns/${name}`,
-        ];
+        return IPFS_GATEWAYS.map(g => `${g}/ipns/${name}`);
       }
       case 'ar': {
         const tx = uri.match(/^ar:(\/\/)?(.*)$/i)?.[2];
@@ -84,18 +84,40 @@ export const timeout = (ms: number): Promise<void> => {
   return new Promise(resolve => setTimeout(resolve, ms));
 };
 
-export const fetchMetadata = async (uri: string): Promise<Metadata> => {
+const fetchMetadataFromUri = async (uri: string): Promise<Metadata> => {
+  const res = await fetch(uri);
+  if (!res.ok) throw new Error('Failed to fetch');
+  const metadata = await res.json();
+  metadata.name = metadata.name || '';
+  metadata.description = metadata.description || '';
+  metadata.image = metadata.image || '';
+  metadata.equippable_layer = metadata.equippable_layer || null;
+  metadata.attributes = metadata.attributes || [];
+  return metadata;
+};
+
+const fetchMetadata = async (ipfsUri: string): Promise<Metadata> => {
   try {
-    const res = await fetch(uri);
-    return await res.json();
+    const uris = uriToHttp(ipfsUri);
+    for (const u of uris) {
+      try {
+        const metadata = await fetchMetadataFromUri(u);
+        return metadata;
+      } catch (e) {
+        console.error('Failed to fetch metadata from', u);
+        continue;
+      }
+    }
   } catch (e) {
-    console.error(e);
-    return {
-      name: '',
-      description: '',
-      image: '',
-    };
+    console.error('Failed to fetch metadata from', ipfsUri);
   }
+  return {
+    name: '',
+    description: '',
+    image: '',
+    equippable_layer: null,
+    attributes: [],
+  };
 };
 
 export const formatCharacter = async (
@@ -103,7 +125,7 @@ export const formatCharacter = async (
   classes: Class[],
   items: Item[],
 ): Promise<Character> => {
-  const metadata = await fetchMetadata(uriToHttp(character.uri)[0]);
+  const metadata = await fetchMetadata(character.uri);
 
   const characterClasses = classes.filter(c =>
     character.heldClasses.find(h => h.classEntity.classId === c.classId),
@@ -117,7 +139,7 @@ export const formatCharacter = async (
     if (!held) return;
     heldItems.push({
       ...i,
-      amount: BigInt(held.amount),
+      amount: BigInt(held.amount).toString(),
     });
     const equipped = character.equippedItems.find(
       e => e.item.itemId === i.itemId,
@@ -125,8 +147,8 @@ export const formatCharacter = async (
     if (!equipped) return;
     equippedItems.push({
       ...i,
-      amount: BigInt(equipped.heldItem.amount),
-      equippedAt: new Date(Number(equipped.equippedAt) * 1000),
+      amount: BigInt(equipped.heldItem.amount).toString(),
+      equippedAt: Number(equipped.equippedAt) * 1000,
     });
   });
 
@@ -147,13 +169,14 @@ export const formatCharacter = async (
     classes: characterClasses,
     heldItems,
     equippedItems,
+    equippable_layer: null,
   };
 };
 
 export const formatClass = async (
   classEntity: ClassInfoFragment,
 ): Promise<Class> => {
-  const metadata = await fetchMetadata(uriToHttp(classEntity.uri)[0]);
+  const metadata = await fetchMetadata(classEntity.uri);
 
   return {
     id: classEntity.id,
@@ -164,6 +187,8 @@ export const formatClass = async (
     claimable: classEntity.claimable,
     classId: classEntity.classId,
     holders: classEntity.holders.map(h => h.character),
+    equippable_layer: null,
+    attributes: metadata.attributes,
   };
 };
 
@@ -171,15 +196,15 @@ export const formatItemRequirement = (
   r: ItemRequirementInfoFragment,
 ): ItemRequirement => {
   return {
-    amount: BigInt(r.amount),
+    amount: BigInt(r.amount).toString(),
     assetAddress: r.assetAddress,
     assetCategory: r.assetCategory,
-    assetId: BigInt(r.assetId),
+    assetId: BigInt(r.assetId).toString(),
   };
 };
 
 export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
-  const metadata = await fetchMetadata(uriToHttp(item.uri)[0]);
+  const metadata = await fetchMetadata(item.uri);
 
   return {
     id: item.id,
@@ -189,13 +214,13 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     image: uriToHttp(metadata.image)[0],
     equippable_layer: metadata.equippable_layer
       ? uriToHttp(metadata.equippable_layer)[0]
-      : undefined,
+      : null,
     attributes: metadata.attributes,
     itemId: item.itemId,
     soulbound: item.soulbound,
-    supply: BigInt(item.supply),
-    totalSupply: BigInt(item.totalSupply),
-    amount: BigInt(0),
+    supply: BigInt(item.supply).toString(),
+    totalSupply: BigInt(item.totalSupply).toString(),
+    amount: BigInt(0).toString(),
     requirements: item.requirements.map(formatItemRequirement),
     holders: item.holders.map(h => h.character),
     equippers: item.equippers.map(e => e.character),
@@ -206,11 +231,11 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
 export const formatGameMeta = async (
   game: GameMetaInfoFragment,
 ): Promise<GameMeta> => {
-  const metadata = await fetchMetadata(uriToHttp(game.uri)[0]);
+  const metadata = await fetchMetadata(game.uri);
 
   return {
     id: game.id,
-    startedAt: new Date(Number(game.startedAt) * 1000),
+    startedAt: Number(game.startedAt) * 1000,
     chainId: Number(game.chainId),
     uri: game.uri,
     owner: game.owner.address,
@@ -224,17 +249,19 @@ export const formatGameMeta = async (
     classes: game.classes,
     items: game.items,
     experience: game.experience,
+    equippable_layer: null,
+    attributes: metadata.attributes,
   };
 };
 
 export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
-  const metadata = await fetchMetadata(uriToHttp(game.uri)[0]);
+  const metadata = await fetchMetadata(game.uri);
   const classes = await Promise.all(game.classes.map(formatClass));
   const items = await Promise.all(game.items.map(formatItem));
 
   return {
     id: game.id,
-    startedAt: new Date(Number(game.startedAt) * 1000),
+    startedAt: Number(game.startedAt) * 1000,
     chainId: Number(game.chainId),
     classesAddress: game.classesAddress,
     itemsAddress: game.itemsAddress,
@@ -256,5 +283,7 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
     classes,
     items,
     experience: game.experience,
+    equippable_layer: null,
+    attributes: metadata.attributes,
   };
 };

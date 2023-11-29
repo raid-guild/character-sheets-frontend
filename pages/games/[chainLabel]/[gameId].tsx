@@ -10,17 +10,16 @@ import {
   Image,
   Link,
   Spinner,
-  StackProps,
   Tab,
   TabList,
   TabPanel,
   TabPanels,
   Tabs,
   Text,
-  useDisclosure,
   VStack,
   Wrap,
 } from '@chakra-ui/react';
+import { GetStaticPaths, GetStaticProps, InferGetStaticPropsType } from 'next';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isAddress } from 'viem';
@@ -29,6 +28,7 @@ import { useAccount } from 'wagmi';
 import { CharacterCard } from '@/components/CharacterCard';
 import { CharactersPanel } from '@/components/CharactersPanel';
 import { ClassesPanel } from '@/components/ClassesPanel';
+import { GameActions } from '@/components/GameActions';
 import { GameTotals } from '@/components/GameTotals';
 import { ItemsPanel } from '@/components/ItemsPanel';
 import { JoinGame } from '@/components/JoinGame';
@@ -43,7 +43,6 @@ import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
 import { EditItemClaimableModal } from '@/components/Modals/EditItemClaimableModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
-import { ItemsCatalogModal } from '@/components/Modals/ItemsCatalogModal';
 import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
 import { RemoveCharacterModal } from '@/components/Modals/RemoveCharacterModal';
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
@@ -71,11 +70,19 @@ import {
   ItemActionsProvider,
   useItemActions,
 } from '@/contexts/ItemActionsContext';
+import { getGameForChainId, getGamesForChainId } from '@/graphql/games';
 import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
-import { getAddressUrl, getChainIdFromLabel } from '@/lib/web3';
+import {
+  getAddressUrl,
+  getChainIdFromLabel,
+  getChainLabelFromId,
+  SUPPORTED_CHAINS,
+} from '@/lib/web3';
 import { shortenAddress } from '@/utils/helpers';
 
-export default function GamePageOuter(): JSX.Element {
+type Props = InferGetStaticPropsType<typeof getStaticProps>;
+
+export default function GamePageOuter({ game }: Props): JSX.Element {
   const {
     query: { gameId, chainLabel },
     push,
@@ -108,7 +115,7 @@ export default function GamePageOuter(): JSX.Element {
   }
 
   return (
-    <GameProvider chainId={chainId} gameId={gameId.toString()}>
+    <GameProvider chainId={chainId} gameId={gameId.toString()} game={game}>
       <GameActionsProvider>
         <CharacterActionsProvider>
           <ItemActionsProvider>
@@ -503,7 +510,9 @@ function GamePage({
             </TabPanels>
           </Tabs>
         </VStack>
-        <GameActions display={{ base: 'none', lg: 'flex' }} />
+        {isConnectedAndMounted && (
+          <GameActions display={{ base: 'none', lg: 'flex' }} />
+        )}
       </Grid>
     );
   };
@@ -540,45 +549,44 @@ function GamePage({
   );
 }
 
-const GameActions: React.FC<StackProps> = ({ ...props }) => {
-  const { isMaster } = useGame();
+type QueryParams = { gameId: string; chainLabel: string };
 
-  const { openActionModal } = useGameActions();
-  const itemsCatalogModal = useDisclosure();
+export const getStaticPaths: GetStaticPaths = async () => {
+  const paths: { params: QueryParams }[] = [];
 
-  return (
-    <VStack
-      h="100%"
-      bg="cardBG"
-      px={{ base: 4, sm: 8 }}
-      py={8}
-      align="stretch"
-      spacing={4}
-      {...props}
-    >
-      <Button onClick={itemsCatalogModal.onOpen} size="sm">
-        show items catalog
-      </Button>
-      {isMaster && (
-        <>
-          <Button
-            onClick={() => openActionModal(GameMasterActions.CREATE_ITEM)}
-            size="sm"
-          >
-            create Item
-          </Button>
-          <Button
-            onClick={() => openActionModal(GameMasterActions.CREATE_CLASS)}
-            size="sm"
-          >
-            create Class
-          </Button>
-        </>
-      )}
-      <ItemsCatalogModal
-        isOpen={itemsCatalogModal.isOpen}
-        onClose={itemsCatalogModal.onClose}
-      />
-    </VStack>
+  await Promise.all(
+    SUPPORTED_CHAINS.map(async chain => {
+      const chainLabel = getChainLabelFromId(chain.id);
+      if (!chainLabel) {
+        return;
+      }
+      const games = await getGamesForChainId(chain.id);
+
+      paths.push(
+        ...games.map(game => ({
+          params: {
+            chainLabel,
+            gameId: game.id,
+          },
+        })),
+      );
+    }),
   );
+
+  return { paths, fallback: true };
+};
+
+export const getStaticProps: GetStaticProps = async context => {
+  const chainLabel = context.params?.chainLabel as string;
+  const gameId = context.params?.gameId as string;
+  const chainId = getChainIdFromLabel(chainLabel);
+  const game =
+    !!chainId && !!gameId ? await getGameForChainId(chainId, gameId) : null;
+
+  return {
+    props: {
+      game,
+    },
+    revalidate: 60,
+  };
 };
