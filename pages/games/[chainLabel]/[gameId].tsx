@@ -259,10 +259,11 @@ function GamePage({
                 fontSize="40px"
                 fontWeight="normal"
                 lineHeight="40px"
+                wordBreak="break-all"
               >
                 {name}
               </Heading>
-              <Text fontSize="xl" fontWeight={200} mb={2}>
+              <Text fontSize="xl" fontWeight={200} mb={2} wordBreak="break-all">
                 {description}
               </Text>
               <Link
