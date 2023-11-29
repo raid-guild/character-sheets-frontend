@@ -17,7 +17,7 @@ export const ClassesPanel: React.FC = () => {
 
   return (
     <VStack as="main" py={10} w="100%">
-      <SimpleGrid columns={2} spacing={4} w="100%">
+      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="100%">
         {game.classes.map(c => (
           <ClassCard
             key={c.id}

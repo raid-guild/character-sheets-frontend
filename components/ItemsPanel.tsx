@@ -18,7 +18,7 @@ export const ItemsPanel: React.FC<PropsWithChildren> = () => {
 
   return (
     <VStack as="main" py={10} w="100%">
-      <SimpleGrid columns={2} spacing={4} w="100%">
+      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="100%">
         {game.items.map(c => (
           <ItemCard
             key={c.id}
