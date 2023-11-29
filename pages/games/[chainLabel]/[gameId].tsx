@@ -30,6 +30,7 @@ import { CharactersPanel } from '@/components/CharactersPanel';
 import { ClassesPanel } from '@/components/ClassesPanel';
 import { GameActions } from '@/components/GameActions';
 import { GameTotals } from '@/components/GameTotals';
+import { ImplementationsAlert } from '@/components/ImplementationsAlert';
 import { ItemsPanel } from '@/components/ItemsPanel';
 import { JoinGame } from '@/components/JoinGame';
 import { AddGameMasterModal } from '@/components/Modals/AddGameMasterModal';
@@ -119,6 +120,7 @@ export default function GamePageOuter({ game }: Props): JSX.Element {
       <GameActionsProvider>
         <CharacterActionsProvider>
           <ItemActionsProvider>
+            <ImplementationsAlert />
             <OldCharacterURIAlert />
             {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
             <GamePage isConnectedAndMounted={isConnectedAndMounted} />
