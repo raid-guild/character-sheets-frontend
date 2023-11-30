@@ -225,6 +225,7 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     holders: item.holders.map(h => h.character),
     equippers: item.equippers.map(e => e.character),
     merkleRoot: item.merkleRoot,
+    distribution: item.distribution,
   };
 };
 

@@ -115,7 +115,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
               holders.length !== 1 ? 's' : ''
             }`}
           />
-          <ItemValue label="Soulbound" value={soulbound ? 'Yes' : 'No'} />
+          <ItemValue label="Soulbound?" value={soulbound ? 'Yes' : 'No'} />
           <ItemValue
             label="Item Supply"
             value={`${supply.toString()} / ${totalSupply.toString()}`}

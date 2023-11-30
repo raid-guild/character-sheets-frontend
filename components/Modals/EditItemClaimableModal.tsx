@@ -4,6 +4,7 @@ import {
   FormControl,
   FormLabel,
   Image,
+  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -64,6 +65,9 @@ export const EditItemClaimableModal: React.FC = () => {
   const [isSynced, setIsSynced] = useState<boolean>(false);
   const [txFailed, setTxFailed] = useState<boolean>(false);
 
+  const [itemDistribution, setItemDistribution] = useState<string>(
+    selectedItem?.distribution.toString() ?? '0',
+  );
   const [claimableToggle, setClaimableToggle] = useState<boolean>(false);
 
   const [claimableAddressList, setClaimableAddressList] = useState<
@@ -73,10 +77,11 @@ export const EditItemClaimableModal: React.FC = () => {
   const resetData = useCallback(() => {
     setIsUpdating(false);
     setTxHash(null);
+    setItemDistribution(selectedItem?.distribution.toString() ?? '0');
     setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
-  }, []);
+  }, [selectedItem]);
 
   const noSupply = useMemo(() => {
     if (!selectedItem) return false;
@@ -84,6 +89,18 @@ export const EditItemClaimableModal: React.FC = () => {
     if (Number.isNaN(supply) || supply <= 0) return true;
     return false;
   }, [selectedItem]);
+
+  const itemSupply = selectedItem?.supply.toString() ?? '0';
+
+  const invalidItemDistribution = useMemo(() => {
+    return (
+      !itemDistribution ||
+      BigInt(itemDistribution).toString() === 'NaN' ||
+      BigInt(itemDistribution) <= BigInt(0) ||
+      BigInt(itemDistribution) > maxUint256 ||
+      BigInt(itemDistribution) > BigInt(itemSupply)
+    );
+  }, [itemDistribution, itemSupply]);
 
   const invalidClaimableAddressList = useMemo(() => {
     if (!selectedItem) return false;
@@ -97,10 +114,10 @@ export const EditItemClaimableModal: React.FC = () => {
       ({ address, amount }) =>
         !isAddress(address) ||
         BigInt(amount) <= BigInt(0) ||
-        BigInt(amount) > maxUint256 ||
+        BigInt(amount) > BigInt(itemDistribution) ||
         BigInt(amount).toString() === 'NaN',
     );
-  }, [claimableAddressList, selectedItem, claimableToggle]);
+  }, [claimableAddressList, selectedItem, claimableToggle, itemDistribution]);
 
   const {
     tree,
@@ -109,9 +126,8 @@ export const EditItemClaimableModal: React.FC = () => {
   } = useClaimableTree(selectedItem?.itemId);
 
   useEffect(() => {
-    if (!editItemClaimableModal?.isOpen) {
+    if (editItemClaimableModal?.isOpen) {
       resetData();
-    } else {
       reloadTree();
     }
   }, [resetData, editItemClaimableModal?.isOpen, reloadTree]);
@@ -156,6 +172,10 @@ export const EditItemClaimableModal: React.FC = () => {
       try {
         if (noSupply) {
           throw new Error('This item has zero supply.');
+        }
+
+        if (invalidItemDistribution) {
+          throw new Error('Invalid item distribution.');
         }
 
         if (invalidClaimableAddressList) {
@@ -249,7 +269,10 @@ export const EditItemClaimableModal: React.FC = () => {
           }
         }
 
-        if (claimable.toLowerCase() === selectedItem.merkleRoot.toLowerCase()) {
+        if (
+          claimable.toLowerCase() === selectedItem.merkleRoot.toLowerCase() &&
+          Number(itemDistribution) === Number(selectedItem.distribution)
+        ) {
           throw new Error('No changes were made.');
         }
 
@@ -292,6 +315,7 @@ export const EditItemClaimableModal: React.FC = () => {
     },
     [
       game,
+      itemDistribution,
       noSupply,
       publicClient,
       selectedItem,
@@ -301,6 +325,7 @@ export const EditItemClaimableModal: React.FC = () => {
       claimableAddressList,
       renderError,
       invalidClaimableAddressList,
+      invalidItemDistribution,
     ],
   );
 
@@ -358,6 +383,25 @@ export const EditItemClaimableModal: React.FC = () => {
         </VStack>
         <FormControl>
           <Flex align="center">
+            <FormLabel>Item Distribution</FormLabel>
+            <Tooltip label="The max amount of items that a single player can hold.">
+              <Image
+                alt="down arrow"
+                height="14px"
+                mb={2}
+                src="/icons/question-mark.svg"
+                width="14px"
+              />
+            </Tooltip>
+          </Flex>
+          <Input
+            onChange={e => setItemDistribution(e.target.value)}
+            type="number"
+            value={itemDistribution}
+          />
+        </FormControl>
+        <FormControl>
+          <Flex align="center">
             <FormLabel>Allow players to claim?</FormLabel>
             <Tooltip label="If you don't allow players to claim, then items can only be given by the GameMaster.">
               <Image
@@ -378,6 +422,7 @@ export const EditItemClaimableModal: React.FC = () => {
           <ClaimableAddressListInput
             claimableAddressList={claimableAddressList}
             itemSupply={selectedItem?.supply.toString() ?? '0'}
+            itemDistribution={itemDistribution}
             setClaimableAddressList={setClaimableAddressList}
           />
         )}

@@ -75,6 +75,7 @@ export const CreateItemModal: React.FC = () => {
   const [itemName, setItemName] = useState<string>('');
   const [itemDescription, setItemDescription] = useState<string>('');
   const [itemSupply, setItemSupply] = useState<string>('');
+  const [itemDistribution, setItemDistribution] = useState<string>('1');
   const [classRequirementsToggle, setClassRequirementsToggle] =
     useState<boolean>(false);
   const [classRequirements, setClassRequirements] = useState<string[]>([]);
@@ -109,6 +110,16 @@ export const CreateItemModal: React.FC = () => {
     );
   }, [itemSupply]);
 
+  const invalidItemDistribution = useMemo(() => {
+    return (
+      !itemDistribution ||
+      BigInt(itemDistribution).toString() === 'NaN' ||
+      BigInt(itemDistribution) <= BigInt(0) ||
+      BigInt(itemDistribution) > maxUint256 ||
+      BigInt(itemDistribution) > BigInt(itemSupply)
+    );
+  }, [itemDistribution, itemSupply]);
+
   const invalidClaimableAddressList = useMemo(() => {
     const totalAmount = claimableAddressList.reduce(
       (acc, { amount }) => acc + BigInt(amount),
@@ -116,14 +127,15 @@ export const CreateItemModal: React.FC = () => {
     );
 
     if (totalAmount > BigInt(itemSupply)) return true;
+
     return claimableAddressList.some(
       ({ address, amount }) =>
         !isAddress(address) ||
         BigInt(amount) <= BigInt(0) ||
-        BigInt(amount) > maxUint256 ||
+        BigInt(amount) > BigInt(itemDistribution) ||
         BigInt(amount).toString() === 'NaN',
     );
-  }, [claimableAddressList, itemSupply]);
+  }, [claimableAddressList, itemSupply, itemDistribution]);
 
   const hasError = useMemo(() => {
     return (
@@ -131,8 +143,8 @@ export const CreateItemModal: React.FC = () => {
       !itemEmblem ||
       !itemName ||
       invalidItemDescription ||
-      !itemSupply ||
       invalidItemSupply ||
+      invalidItemDistribution ||
       invalidClaimableAddressList
     );
   }, [
@@ -141,14 +153,15 @@ export const CreateItemModal: React.FC = () => {
     itemName,
     invalidClaimableAddressList,
     invalidItemDescription,
-    itemSupply,
     invalidItemSupply,
+    invalidItemDistribution,
   ]);
 
   const resetData = useCallback(() => {
     setItemName('');
     setItemDescription('');
     setItemSupply('');
+    setItemDistribution('1');
     setClassRequirementsToggle(false);
     setClassRequirements([]);
     setSoulboundToggle(false);
@@ -359,7 +372,7 @@ export const CreateItemModal: React.FC = () => {
             false,
             soulboundToggle,
             claimable,
-            BigInt(itemSupply), // refers to max amount a single character can hold
+            BigInt(itemDistribution),
             BigInt(itemSupply),
             itemMetadataCid,
             requiredAssetsBytes,
@@ -411,6 +424,7 @@ export const CreateItemModal: React.FC = () => {
       itemDescription,
       itemLayer,
       itemSupply,
+      itemDistribution,
       game,
       reloadGame,
       hasError,
@@ -502,6 +516,30 @@ export const CreateItemModal: React.FC = () => {
           {showError && !itemSupply && (
             <FormHelperText color="red">
               An item supply is required
+            </FormHelperText>
+          )}
+        </FormControl>
+        <FormControl isInvalid={showError && !itemDistribution}>
+          <Flex align="center">
+            <FormLabel>Item Distribution</FormLabel>
+            <Tooltip label="The max amount of items that a single player can hold.">
+              <Image
+                alt="down arrow"
+                height="14px"
+                mb={2}
+                src="/icons/question-mark.svg"
+                width="14px"
+              />
+            </Tooltip>
+          </Flex>
+          <Input
+            onChange={e => setItemDistribution(e.target.value)}
+            type="number"
+            value={itemDistribution}
+          />
+          {showError && !itemDistribution && (
+            <FormHelperText color="red">
+              An item distribution is required
             </FormHelperText>
           )}
         </FormControl>
@@ -616,6 +654,7 @@ export const CreateItemModal: React.FC = () => {
           <ClaimableAddressListInput
             claimableAddressList={claimableAddressList}
             itemSupply={itemSupply}
+            itemDistribution={itemDistribution}
             setClaimableAddressList={setClaimableAddressList}
           />
         )}

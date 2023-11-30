@@ -8,13 +8,9 @@ import { ClassActionMenu } from './ActionMenus/ClassActionMenu';
 
 type ClassCardProps = Class & {
   chainId: number;
-  isMaster: boolean;
 };
 
-export const ClassCard: React.FC<ClassCardProps> = ({
-  isMaster,
-  ...classEntity
-}) => {
+export const ClassCard: React.FC<ClassCardProps> = ({ ...classEntity }) => {
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const { claimable, classId, name, description, image, holders } = classEntity;
@@ -34,7 +30,16 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         justify="space-between"
       >
         <VStack spacing={3} w="100%">
-          <AspectRatio ratio={1} w="100%" maxH="15rem">
+          <AspectRatio
+            ratio={1}
+            h="15rem"
+            maxH="15rem"
+            w="100%"
+            _before={{
+              h: '15rem',
+              maxH: '15rem',
+            }}
+          >
             <Image
               alt={name}
               w="100%"
@@ -63,7 +68,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         </SimpleGrid>
       </VStack>
       {isConnectedAndMounted && (
-        <ClassActionMenu isMaster={isMaster} variant="solid" />
+        <ClassActionMenu variant="solid" {...classEntity} />
       )}
     </VStack>
   );

@@ -7,11 +7,14 @@ import {
 } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
 
+import { ClassesModal } from './Modals/ClassesModal';
+
 export const GameActions: React.FC<StackProps> = ({ ...props }) => {
   const { isMaster } = useGame();
 
   const { openActionModal } = useGameActions();
   const itemsCatalogModal = useDisclosure();
+  const classesModal = useDisclosure();
 
   return (
     <VStack
@@ -25,6 +28,9 @@ export const GameActions: React.FC<StackProps> = ({ ...props }) => {
     >
       <Button onClick={itemsCatalogModal.onOpen} size="sm">
         show items catalog
+      </Button>
+      <Button onClick={classesModal.onOpen} size="sm">
+        show all classes
       </Button>
       {isMaster && (
         <>
@@ -45,6 +51,10 @@ export const GameActions: React.FC<StackProps> = ({ ...props }) => {
       <ItemsCatalogModal
         isOpen={itemsCatalogModal.isOpen}
         onClose={itemsCatalogModal.onClose}
+      />
+      <ClassesModal
+        isOpen={classesModal.isOpen}
+        onClose={classesModal.onClose}
       />
     </VStack>
   );
