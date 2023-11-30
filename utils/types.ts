@@ -86,6 +86,7 @@ export type Item = Metadata & {
   itemId: string;
   uri: string;
   soulbound: boolean;
+  distribution: string;
   supply: string;
   totalSupply: string;
   amount: string;

@@ -34,9 +34,6 @@ import { ClaimableItemLeaf, useClaimableTree } from '@/hooks/useClaimableTree';
 import { useToast } from '@/hooks/useToast';
 import { executeAsCharacter } from '@/utils/account';
 
-const DISABLE_SUBSEQUENT_CLAIMS = true;
-const DEFAULT_CLAIM_AMOUNT = '1';
-
 export const ClaimItemModal: React.FC = () => {
   const { character, game, reload: reloadGame } = useGame();
   const { selectedItem, claimItemModal } = useItemActions();
@@ -46,7 +43,7 @@ export const ClaimItemModal: React.FC = () => {
   const { renderError } = useToast();
 
   const [openDetails, setOpenDetails] = useState(-1); // -1 = closed, 0 = open
-  const [amount, setAmount] = useState<string>(DEFAULT_CLAIM_AMOUNT);
+  const [amount, setAmount] = useState<string>('1');
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isClaiming, setIsClaiming] = useState<boolean>(false);
@@ -64,18 +61,35 @@ export const ClaimItemModal: React.FC = () => {
     return BigInt(item.amount);
   }, [selectedItem, character]);
 
+  const distributionLeftToClaim = useMemo(() => {
+    if (!selectedItem) return BigInt(0);
+    return BigInt(selectedItem.distribution) - existingAmount;
+  }, [selectedItem, existingAmount]);
+
   const hasError = useMemo(
     () =>
       !amount ||
       BigInt(amount).toString() === 'NaN' ||
       BigInt(amount) <= BigInt(0) ||
-      BigInt(amount) > BigInt(selectedItem?.supply || '0'),
-    [amount, selectedItem],
+      BigInt(amount) > BigInt(distributionLeftToClaim),
+    [amount, distributionLeftToClaim],
   );
+
+  const errorText = useMemo(() => {
+    if (!selectedItem) return '';
+    if (!amount) return 'Please enter a valid amount.';
+    if (BigInt(amount).toString() === 'NaN')
+      return 'Please enter a valid amount.';
+    if (BigInt(amount) <= BigInt(0)) return 'Please enter a valid amount.';
+    if (BigInt(amount) > BigInt(distributionLeftToClaim)) {
+      return `You can only claim up to ${distributionLeftToClaim.toString()} of this item.`;
+    }
+    return '';
+  }, [amount, selectedItem, distributionLeftToClaim]);
 
   const resetData = useCallback(() => {
     setOpenDetails(-1);
-    setAmount(DEFAULT_CLAIM_AMOUNT);
+    setAmount('1');
     setIsClaiming(false);
     setTxHash(null);
     setTxFailed(false);
@@ -296,14 +310,7 @@ export const ClaimItemModal: React.FC = () => {
 
   const isLoading = isClaiming;
 
-  const isClaimingDisabled =
-    existingAmount > BigInt(0) && DISABLE_SUBSEQUENT_CLAIMS;
-  const isDisabled =
-    isLoading ||
-    hasError ||
-    insufficientClasses ||
-    noSupply ||
-    isClaimingDisabled;
+  const isDisabled = isLoading;
 
   const content = () => {
     if (txFailed) {
@@ -410,9 +417,7 @@ export const ClaimItemModal: React.FC = () => {
         </Accordion>
         {!isLoadingTree && (
           <>
-            {isClaimingDisabled ? (
-              <Text color="red.500">You cannot claim this item again.</Text>
-            ) : noSupply ? (
+            {noSupply ? (
               <Text color="red.500">This item has zero supply.</Text>
             ) : isClaimableByPublic ? (
               <FormControl isInvalid={showError}>
@@ -421,13 +426,10 @@ export const ClaimItemModal: React.FC = () => {
                   onChange={e => setAmount(e.target.value)}
                   type="number"
                   value={amount}
-                  isDisabled={DISABLE_SUBSEQUENT_CLAIMS}
+                  max={distributionLeftToClaim.toString()}
                 />
                 {showError && (
-                  <FormHelperText color="red">
-                    Please enter a valid amount. Item supply is{' '}
-                    {selectedItem?.supply.toString()}.
-                  </FormHelperText>
+                  <FormHelperText color="red">{errorText}</FormHelperText>
                 )}
               </FormControl>
             ) : (
@@ -436,9 +438,14 @@ export const ClaimItemModal: React.FC = () => {
                 <Input
                   isDisabled
                   type="number"
-                  value={claimableAmount.toString()}
+                  value={
+                    claimableAmount === distributionLeftToClaim
+                      ? claimableAmount.toString()
+                      : '0'
+                  }
                 />
-                {claimableAmount === BigInt(0) && (
+                {(claimableAmount === BigInt(0) ||
+                  claimableAmount !== distributionLeftToClaim) && (
                   <FormHelperText color="red">
                     You cannot claim this item.
                   </FormHelperText>

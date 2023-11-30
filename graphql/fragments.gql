@@ -79,6 +79,7 @@ fragment ItemInfo on Item {
   itemId
   uri
   soulbound
+  distribution
   supply
   totalSupply
   merkleRoot

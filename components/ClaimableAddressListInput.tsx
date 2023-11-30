@@ -30,6 +30,7 @@ export type ClaimableAddress = {
 type Props = {
   claimableAddressList: Array<ClaimableAddress>;
   itemSupply: string;
+  itemDistribution: string;
   setClaimableAddressList: React.Dispatch<
     React.SetStateAction<Array<ClaimableAddress>>
   >;
@@ -38,6 +39,7 @@ type Props = {
 export const ClaimableAddressListInput: React.FC<Props> = ({
   claimableAddressList,
   itemSupply,
+  itemDistribution,
   setClaimableAddressList,
 }) => {
   const { game } = useGame();
@@ -85,6 +87,7 @@ export const ClaimableAddressListInput: React.FC<Props> = ({
         characters={charactersNotSelected}
         claimableAddressList={claimableAddressList}
         itemSupply={itemSupply}
+        itemDistribution={itemDistribution}
         setClaimableAddressList={setClaimableAddressList}
       />
       <VStack spacing={2} w="100%">
@@ -178,6 +181,7 @@ type InputProps = {
   characters: Character[];
   claimableAddressList: Array<ClaimableAddress>;
   itemSupply: string;
+  itemDistribution: string;
   setClaimableAddressList: React.Dispatch<
     React.SetStateAction<Array<ClaimableAddress>>
   >;
@@ -187,6 +191,7 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
   characters,
   claimableAddressList,
   itemSupply,
+  itemDistribution,
   setClaimableAddressList,
 }) => {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
@@ -212,12 +217,43 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
     return false;
   }, [amount, claimableAddressList, itemSupply]);
 
+  const moreThanDistribution = useMemo(() => {
+    if (BigInt(amount) > BigInt(itemDistribution)) {
+      return true;
+    }
+    return false;
+  }, [amount, itemDistribution]);
+
   useEffect(() => {
     setShowError(false);
   }, [selectedCharacter, amount]);
 
+  const errorText = useMemo(() => {
+    if (!selectedCharacter && amountInvalid) {
+      return 'Character and amount are invalid';
+    }
+    if (!selectedCharacter && !amountInvalid) {
+      return 'Character is invalid';
+    }
+    if (selectedCharacter && amountInvalid) {
+      return 'Amount is invalid';
+    }
+    if (!!selectedCharacter && moreThanSupply) {
+      return 'Total claimable amount exceeds item supply';
+    }
+    if (!!selectedCharacter && moreThanDistribution) {
+      return 'Claimable amount exceeds item distribution';
+    }
+    return '';
+  }, [selectedCharacter, amountInvalid, moreThanSupply, moreThanDistribution]);
+
   const onAddClaimableAddress = useCallback(() => {
-    if (!selectedCharacter || amountInvalid || moreThanSupply) {
+    if (
+      !selectedCharacter ||
+      amountInvalid ||
+      moreThanSupply ||
+      moreThanDistribution
+    ) {
       setShowError(true);
       return;
     }
@@ -237,6 +273,7 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
     selectedCharacter,
     amountInvalid,
     moreThanSupply,
+    moreThanDistribution,
     setClaimableAddressList,
   ]);
 
@@ -271,16 +308,7 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
           />
         </Grid>
         {showError && (
-          <FormHelperText color="red.500">
-            {!selectedCharacter &&
-              amountInvalid &&
-              'Character and amount are invalid'}
-            {!selectedCharacter && !amountInvalid && 'Character is invalid'}
-            {selectedCharacter && amountInvalid && 'Amount is invalid'}
-            {!!selectedCharacter &&
-              moreThanSupply &&
-              'Total claimable amount exceeds item supply'}
-          </FormHelperText>
+          <FormHelperText color="red.500">{errorText}</FormHelperText>
         )}
       </FormControl>
       <Button variant="outline" size="sm" onClick={onAddClaimableAddress}>
