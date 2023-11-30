@@ -34,6 +34,9 @@ import { ClaimableItemLeaf, useClaimableTree } from '@/hooks/useClaimableTree';
 import { useToast } from '@/hooks/useToast';
 import { executeAsCharacter } from '@/utils/account';
 
+const DISABLE_SUBSEQUENT_CLAIMS = true;
+const DEFAULT_CLAIM_AMOUNT = '1';
+
 export const ClaimItemModal: React.FC = () => {
   const { character, game, reload: reloadGame } = useGame();
   const { selectedItem, claimItemModal } = useItemActions();
@@ -43,7 +46,7 @@ export const ClaimItemModal: React.FC = () => {
   const { renderError } = useToast();
 
   const [openDetails, setOpenDetails] = useState(-1); // -1 = closed, 0 = open
-  const [amount, setAmount] = useState<string>('');
+  const [amount, setAmount] = useState<string>(DEFAULT_CLAIM_AMOUNT);
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isClaiming, setIsClaiming] = useState<boolean>(false);
@@ -51,6 +54,15 @@ export const ClaimItemModal: React.FC = () => {
   const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
+
+  const existingAmount = useMemo(() => {
+    if (!selectedItem || !character) return BigInt(0);
+    const item = character?.heldItems.find(
+      i => BigInt(i.itemId) === BigInt(selectedItem.itemId),
+    );
+    if (!item) return BigInt(0);
+    return BigInt(item.amount);
+  }, [selectedItem, character]);
 
   const hasError = useMemo(
     () =>
@@ -63,7 +75,7 @@ export const ClaimItemModal: React.FC = () => {
 
   const resetData = useCallback(() => {
     setOpenDetails(-1);
-    setAmount('');
+    setAmount(DEFAULT_CLAIM_AMOUNT);
     setIsClaiming(false);
     setTxHash(null);
     setTxFailed(false);
@@ -283,7 +295,15 @@ export const ClaimItemModal: React.FC = () => {
   );
 
   const isLoading = isClaiming;
-  const isDisabled = isLoading;
+
+  const isClaimingDisabled =
+    existingAmount > BigInt(0) && DISABLE_SUBSEQUENT_CLAIMS;
+  const isDisabled =
+    isLoading ||
+    hasError ||
+    insufficientClasses ||
+    noSupply ||
+    isClaimingDisabled;
 
   const content = () => {
     if (txFailed) {
@@ -390,7 +410,9 @@ export const ClaimItemModal: React.FC = () => {
         </Accordion>
         {!isLoadingTree && (
           <>
-            {noSupply ? (
+            {isClaimingDisabled ? (
+              <Text color="red.500">You cannot claim this item again.</Text>
+            ) : noSupply ? (
               <Text color="red.500">This item has zero supply.</Text>
             ) : isClaimableByPublic ? (
               <FormControl isInvalid={showError}>
@@ -399,6 +421,7 @@ export const ClaimItemModal: React.FC = () => {
                   onChange={e => setAmount(e.target.value)}
                   type="number"
                   value={amount}
+                  isDisabled={DISABLE_SUBSEQUENT_CLAIMS}
                 />
                 {showError && (
                   <FormHelperText color="red">
