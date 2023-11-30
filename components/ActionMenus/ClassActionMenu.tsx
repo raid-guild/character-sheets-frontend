@@ -8,16 +8,18 @@ import {
   useToast,
 } from '@chakra-ui/react';
 
+import { useGame } from '@/contexts/GameContext';
+import { Class } from '@/utils/types';
+
 type ActionMenuProps = {
-  isMaster: boolean;
   variant?: 'outline' | 'solid' | 'ghost';
-};
+} & Class;
 
 export const ClassActionMenu: React.FC<ActionMenuProps> = ({
-  isMaster,
   variant = 'outline',
 }) => {
   const toast = useToast();
+  const { isMaster } = useGame();
 
   return (
     <Menu>
