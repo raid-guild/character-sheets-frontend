@@ -1,26 +1,18 @@
 import { HStack, Link, Text } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
 import { Address, useAccount, useChainId } from 'wagmi';
 
 import { useEnsName } from '@/hooks/useEnsName';
+import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { getAddressUrl } from '@/lib/web3';
 import { shortenAddress } from '@/utils/helpers';
 
 export const UserLink: React.FC<{ user: string }> = ({ user }) => {
   const { ensName } = useEnsName(user as Address);
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const chainId = useChainId();
   const isCurrentUser = address?.toLowerCase() === user.toLowerCase();
 
-  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
-
-  useEffect(() => {
-    if (isConnected) {
-      setIsConnectedAndMounted(true);
-    } else {
-      setIsConnectedAndMounted(false);
-    }
-  }, [isConnected]);
+  const isConnectedAndMounted = useIsConnectedAndMounted();
 
   return (
     <Link

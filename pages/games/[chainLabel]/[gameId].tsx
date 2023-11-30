@@ -23,7 +23,6 @@ import { GetStaticPaths, GetStaticProps, InferGetStaticPropsType } from 'next';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isAddress } from 'viem';
-import { useAccount } from 'wagmi';
 
 import { CharacterCard } from '@/components/CharacterCard';
 import { CharactersPanel } from '@/components/CharactersPanel';
@@ -73,6 +72,7 @@ import {
 } from '@/contexts/ItemActionsContext';
 import { getGameForChainId, getGamesForChainId } from '@/graphql/games';
 import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
+import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import {
   getAddressUrl,
   getChainIdFromLabel,
@@ -89,8 +89,6 @@ export default function GamePageOuter({ game }: Props): JSX.Element {
     push,
     isReady,
   } = useRouter();
-  const { isConnected } = useAccount();
-  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
 
   const chainId = getChainIdFromLabel(chainLabel as string);
 
@@ -103,13 +101,7 @@ export default function GamePageOuter({ game }: Props): JSX.Element {
     }
   }, [gameId, chainId, isReady, push]);
 
-  useEffect(() => {
-    if (isConnected) {
-      setIsConnectedAndMounted(true);
-    } else {
-      setIsConnectedAndMounted(false);
-    }
-  }, [isConnected]);
+  const isConnectedAndMounted = useIsConnectedAndMounted();
 
   if (!gameId || !chainId) {
     return <></>;

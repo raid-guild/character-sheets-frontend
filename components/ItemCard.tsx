@@ -9,11 +9,10 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
 
 import { ItemActionMenu } from '@/components/ActionMenus/ItemActionMenu';
 import { useGame } from '@/contexts/GameContext';
+import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { shortenText } from '@/utils/helpers';
 import { Item } from '@/utils/types';
 
@@ -23,17 +22,7 @@ type ItemCardProps = Item & {
 };
 
 export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
-  const { isConnected } = useAccount();
-
-  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
-
-  useEffect(() => {
-    if (isConnected) {
-      setIsConnectedAndMounted(true);
-    } else {
-      setIsConnectedAndMounted(false);
-    }
-  }, [isConnected]);
+  const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const {
     itemId,

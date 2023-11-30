@@ -22,12 +22,13 @@ import {
   Wrap,
   WrapItem,
 } from '@chakra-ui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { ItemsCatalogModal } from '@/components/Modals/ItemsCatalogModal';
 import { useGame } from '@/contexts/GameContext';
+import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { getAddressUrl } from '@/lib/web3';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character, Item } from '@/utils/types';
@@ -41,19 +42,10 @@ export const CharacterCard: React.FC<{
   character: Character;
   dummy?: boolean;
 }> = ({ chainId, character, dummy }) => {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const { isMaster } = useGame();
   const itemsCatalogModal = useDisclosure();
-
-  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
-
-  useEffect(() => {
-    if (isConnected) {
-      setIsConnectedAndMounted(true);
-    } else {
-      setIsConnectedAndMounted(false);
-    }
-  }, [isConnected]);
+  const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const {
     characterId,
@@ -209,19 +201,11 @@ export const CharacterCardSmall: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const { isMaster } = useGame();
   const { isOpen, onClose, onOpen } = useDisclosure();
 
-  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
-
-  useEffect(() => {
-    if (isConnected) {
-      setIsConnectedAndMounted(true);
-    } else {
-      setIsConnectedAndMounted(false);
-    }
-  }, [isConnected]);
+  const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const { classes, experience, heldItems, image, jailed, name } = character;
 

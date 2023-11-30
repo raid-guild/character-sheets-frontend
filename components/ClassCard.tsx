@@ -1,7 +1,6 @@
 import { AspectRatio, Image, SimpleGrid, Text, VStack } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
 
+import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { shortenText } from '@/utils/helpers';
 import { Class } from '@/utils/types';
 
@@ -16,17 +15,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   isMaster,
   ...classEntity
 }) => {
-  const { isConnected } = useAccount();
-
-  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
-
-  useEffect(() => {
-    if (isConnected) {
-      setIsConnectedAndMounted(true);
-    } else {
-      setIsConnectedAndMounted(false);
-    }
-  }, [isConnected]);
+  const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const { claimable, classId, name, description, image, holders } = classEntity;
 
