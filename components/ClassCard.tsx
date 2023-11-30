@@ -30,7 +30,16 @@ export const ClassCard: React.FC<ClassCardProps> = ({ ...classEntity }) => {
         justify="space-between"
       >
         <VStack spacing={3} w="100%">
-          <AspectRatio ratio={1} w="100%" maxH="15rem">
+          <AspectRatio
+            ratio={1}
+            h="15rem"
+            maxH="15rem"
+            w="100%"
+            _before={{
+              h: '15rem',
+              maxH: '15rem',
+            }}
+          >
             <Image
               alt={name}
               w="100%"
