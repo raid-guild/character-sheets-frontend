@@ -32,6 +32,7 @@ const createDummyItem = (name: string, image: string): Item => ({
   image,
   soulbound: false,
   supply: BigInt(0).toString(),
+  distribution: BigInt(0).toString(),
   totalSupply: BigInt(0).toString(),
   amount: BigInt(2).toString(),
   requirements: [],

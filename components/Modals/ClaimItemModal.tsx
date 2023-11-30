@@ -43,7 +43,7 @@ export const ClaimItemModal: React.FC = () => {
   const { renderError } = useToast();
 
   const [openDetails, setOpenDetails] = useState(-1); // -1 = closed, 0 = open
-  const [amount, setAmount] = useState<string>('');
+  const [amount, setAmount] = useState<string>('1');
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isClaiming, setIsClaiming] = useState<boolean>(false);
@@ -52,18 +52,44 @@ export const ClaimItemModal: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
+  const existingAmount = useMemo(() => {
+    if (!selectedItem || !character) return BigInt(0);
+    const item = character?.heldItems.find(
+      i => BigInt(i.itemId) === BigInt(selectedItem.itemId),
+    );
+    if (!item) return BigInt(0);
+    return BigInt(item.amount);
+  }, [selectedItem, character]);
+
+  const distributionLeftToClaim = useMemo(() => {
+    if (!selectedItem) return BigInt(0);
+    return BigInt(selectedItem.distribution) - existingAmount;
+  }, [selectedItem, existingAmount]);
+
   const hasError = useMemo(
     () =>
       !amount ||
       BigInt(amount).toString() === 'NaN' ||
       BigInt(amount) <= BigInt(0) ||
-      BigInt(amount) > BigInt(selectedItem?.supply || '0'),
-    [amount, selectedItem],
+      BigInt(amount) > BigInt(distributionLeftToClaim),
+    [amount, distributionLeftToClaim],
   );
+
+  const errorText = useMemo(() => {
+    if (!selectedItem) return '';
+    if (!amount) return 'Please enter a valid amount.';
+    if (BigInt(amount).toString() === 'NaN')
+      return 'Please enter a valid amount.';
+    if (BigInt(amount) <= BigInt(0)) return 'Please enter a valid amount.';
+    if (BigInt(amount) > BigInt(distributionLeftToClaim)) {
+      return `You can only claim up to ${distributionLeftToClaim.toString()} of this item.`;
+    }
+    return '';
+  }, [amount, selectedItem, distributionLeftToClaim]);
 
   const resetData = useCallback(() => {
     setOpenDetails(-1);
-    setAmount('');
+    setAmount('1');
     setIsClaiming(false);
     setTxHash(null);
     setTxFailed(false);
@@ -283,6 +309,7 @@ export const ClaimItemModal: React.FC = () => {
   );
 
   const isLoading = isClaiming;
+
   const isDisabled = isLoading;
 
   const content = () => {
@@ -399,12 +426,10 @@ export const ClaimItemModal: React.FC = () => {
                   onChange={e => setAmount(e.target.value)}
                   type="number"
                   value={amount}
+                  max={distributionLeftToClaim.toString()}
                 />
                 {showError && (
-                  <FormHelperText color="red">
-                    Please enter a valid amount. Item supply is{' '}
-                    {selectedItem?.supply.toString()}.
-                  </FormHelperText>
+                  <FormHelperText color="red">{errorText}</FormHelperText>
                 )}
               </FormControl>
             ) : (
@@ -413,9 +438,14 @@ export const ClaimItemModal: React.FC = () => {
                 <Input
                   isDisabled
                   type="number"
-                  value={claimableAmount.toString()}
+                  value={
+                    claimableAmount === distributionLeftToClaim
+                      ? claimableAmount.toString()
+                      : '0'
+                  }
                 />
-                {claimableAmount === BigInt(0) && (
+                {(claimableAmount === BigInt(0) ||
+                  claimableAmount !== distributionLeftToClaim) && (
                   <FormHelperText color="red">
                     You cannot claim this item.
                   </FormHelperText>
