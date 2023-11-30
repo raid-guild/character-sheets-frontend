@@ -13,24 +13,22 @@ import {
 } from '@chakra-ui/react';
 
 import { useGame } from '@/contexts/GameContext';
-import { Character } from '@/utils/types';
+import { Class } from '@/utils/types';
 
-import { ItemCard } from '../ItemCard';
+import { ClassCard } from '../ClassCard';
 
-type ItemsCatalogModalProps = {
+type ClassesModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  character?: Character;
 };
 
-export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
-  character,
+export const ClassesModal: React.FC<ClassesModalProps> = ({
   isOpen,
   onClose,
 }) => {
   const { game } = useGame();
 
-  const items = character?.heldItems || game?.items || [];
+  const classes: Class[] = game?.classes || [];
 
   return (
     <Modal closeOnEsc closeOnOverlayClick isOpen={isOpen} onClose={onClose}>
@@ -39,13 +37,13 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
         <ModalHeader>
           <Flex flexDir={{ base: 'column', md: 'row' }} gap={4}>
             <Text textAlign="left" textTransform="initial" fontWeight="500">
-              {character ? character.name : game?.name}
+              {game?.name}
             </Text>
             <HStack>
               <Image
-                alt="items"
+                alt="classes"
                 height="20px"
-                src="/icons/items.svg"
+                src="/icons/users.svg"
                 width="20px"
               />
               <Text
@@ -53,7 +51,7 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
                 fontSize="2xs"
                 textTransform="uppercase"
               >
-                Items Catalog ({items.length})
+                Classes ({classes.length})
               </Text>
             </HStack>
           </Flex>
@@ -62,16 +60,13 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
         <ModalBody>
           <VStack spacing={6} w="100%">
             {game &&
-              items.length > 0 &&
-              items.map(item => (
-                <ItemCard
-                  key={item.id}
-                  chainId={game.chainId}
-                  holderId={character?.characterId}
-                  {...item}
-                />
+              classes.length > 0 &&
+              classes.map(_class => (
+                <ClassCard key={_class.id} chainId={game.chainId} {..._class} />
               ))}
-            {items.length === 0 && <Text align="center">No items found.</Text>}
+            {classes.length === 0 && (
+              <Text align="center">No classes found.</Text>
+            )}
           </VStack>
         </ModalBody>
       </ModalContent>

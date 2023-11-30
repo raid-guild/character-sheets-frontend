@@ -148,7 +148,7 @@ export const CharacterCard: React.FC<{
         </Text>
         {isConnectedAndMounted &&
           (isMaster || address?.toLowerCase() === character.player) && (
-            <CharacterActionMenu character={character} />
+            <CharacterActionMenu character={character} variant="solid" />
           )}
         {items.length > 0 && (
           <>

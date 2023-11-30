@@ -10,11 +10,6 @@ import {
   Image,
   Link,
   Spinner,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
   Text,
   VStack,
   Wrap,
@@ -26,11 +21,9 @@ import { isAddress } from 'viem';
 
 import { CharacterCard } from '@/components/CharacterCard';
 import { CharactersPanel } from '@/components/CharactersPanel';
-import { ClassesPanel } from '@/components/ClassesPanel';
 import { GameActions } from '@/components/GameActions';
 import { GameTotals } from '@/components/GameTotals';
 import { ImplementationsAlert } from '@/components/ImplementationsAlert';
-import { ItemsPanel } from '@/components/ItemsPanel';
 import { JoinGame } from '@/components/JoinGame';
 import { AddGameMasterModal } from '@/components/Modals/AddGameMasterModal';
 import { ApproveTransferModal } from '@/components/Modals/ApproveTransferModal';
@@ -198,7 +191,6 @@ function GamePage({
       masters,
       id,
       characters,
-      classes,
       items,
       chainId,
     } = game;
@@ -455,66 +447,25 @@ function GamePage({
                 </Text>
               )}
               {character && !character.removed && !character.jailed && (
-                <CharacterCard chainId={chainId} character={character} />
+                <>
+                  <Text
+                    letterSpacing="3px"
+                    fontSize="2xs"
+                    textTransform="uppercase"
+                    w="100%"
+                    mb={2}
+                  >
+                    Your Character
+                  </Text>
+                  <CharacterCard chainId={chainId} character={character} />
+                </>
               )}
             </VStack>
           )}
 
-          <Tabs
-            borderColor="transparent"
-            colorScheme="white"
-            px={{ base: 4, sm: 8 }}
-            py={8}
-            bg="cardBG"
-          >
-            <TabList>
-              <Tab gap={2} flexDirection={{ base: 'column', lg: 'row' }}>
-                <Image
-                  alt="users"
-                  height="20px"
-                  src="/icons/users.svg"
-                  width="20px"
-                />
-                <Text fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}>
-                  {characters.length} character{characters.length !== 1 && 's'}
-                </Text>
-              </Tab>
-              <Tab gap={2} flexDirection={{ base: 'column', lg: 'row' }}>
-                <Image
-                  alt="users"
-                  height="20px"
-                  src="/icons/users.svg"
-                  width="20px"
-                />
-                <Text fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}>
-                  {classes.length} class{classes.length !== 1 && 'es'}
-                </Text>
-              </Tab>
-              <Tab gap={2} flexDirection={{ base: 'column', lg: 'row' }}>
-                <Image
-                  alt="items"
-                  height="20px"
-                  src="/icons/items.svg"
-                  width="20px"
-                />
-                <Text fontSize={{ base: 'xs', sm: 'sm', md: 'md' }}>
-                  {items.length} item{items.length !== 1 && 's'}
-                </Text>
-              </Tab>
-            </TabList>
-
-            <TabPanels>
-              <TabPanel px={0}>
-                <CharactersPanel />
-              </TabPanel>
-              <TabPanel px={0}>
-                <ClassesPanel />
-              </TabPanel>
-              <TabPanel px={0}>
-                <ItemsPanel />
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
+          <VStack px={{ base: 4, sm: 8 }} py={8} bg="cardBG">
+            <CharactersPanel />
+          </VStack>
         </VStack>
         {isConnectedAndMounted && (
           <GameActions display={{ base: 'none', lg: 'flex' }} />
