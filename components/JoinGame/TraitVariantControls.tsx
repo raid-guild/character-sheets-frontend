@@ -143,8 +143,8 @@ export const TraitVariantControls: React.FC<TraitVariantControlsProps> = ({
             width="18px"
           />
         </Button>
-        <Text>
-          <Text as="span" fontSize="xs">
+        <Text fontSize={{ base: 'xs', md: 'md' }}>
+          <Text as="span" fontSize={{ base: '10px', md: 'xs' }}>
             {type}:
           </Text>{' '}
           {formattedVariantName}

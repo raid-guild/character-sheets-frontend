@@ -382,7 +382,7 @@ export const UpdateGameMetadataModal: React.FC = () => {
       onClose={updateGameMetadataModal?.onClose ?? (() => undefined)}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Update Game</Text>
           <ModalCloseButton size="lg" />

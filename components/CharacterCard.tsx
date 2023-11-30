@@ -9,7 +9,10 @@ import {
   Image,
   Link,
   Modal,
+  ModalBody,
+  ModalCloseButton,
   ModalContent,
+  ModalHeader,
   ModalOverlay,
   SimpleGrid,
   Text,
@@ -25,6 +28,7 @@ import { useAccount } from 'wagmi';
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { ItemsCatalogModal } from '@/components/Modals/ItemsCatalogModal';
 import { useGame } from '@/contexts/GameContext';
+import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { getAddressUrl } from '@/lib/web3';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character, Item } from '@/utils/types';
@@ -38,9 +42,10 @@ export const CharacterCard: React.FC<{
   character: Character;
   dummy?: boolean;
 }> = ({ chainId, character, dummy }) => {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const { isMaster } = useGame();
   const itemsCatalogModal = useDisclosure();
+  const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const {
     characterId,
@@ -141,7 +146,7 @@ export const CharacterCard: React.FC<{
         <Text fontSize="sm" fontWeight={300} lineHeight={5}>
           {shortenText(description, 100)}
         </Text>
-        {isConnected &&
+        {isConnectedAndMounted &&
           (isMaster || address?.toLowerCase() === character.player) && (
             <CharacterActionMenu character={character} />
           )}
@@ -173,7 +178,7 @@ export const CharacterCard: React.FC<{
                 </Button>
               )}
             </HStack>
-            <SimpleGrid columns={2} spacing={4} w="full">
+            <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4} w="full">
               {items.slice(0, 2).map(item => (
                 <GridItem key={item.itemId + item.name}>
                   <ItemTag item={item} holderId={characterId} />
@@ -196,9 +201,11 @@ export const CharacterCardSmall: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
-  const { address, isConnected } = useAccount();
+  const { address } = useAccount();
   const { isMaster } = useGame();
   const { isOpen, onClose, onOpen } = useDisclosure();
+
+  const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const { classes, experience, heldItems, image, jailed, name } = character;
 
@@ -291,7 +298,7 @@ export const CharacterCardSmall: React.FC<{
           </HStack>
         </VStack>
       </Box>
-      {isConnected &&
+      {isConnectedAndMounted &&
         (isMaster || address?.toLowerCase() === character.player) && (
           <CharacterActionMenu character={character} variant="solid" />
         )}
@@ -302,8 +309,14 @@ export const CharacterCardSmall: React.FC<{
         returnFocusOnClose={false}
       >
         <ModalOverlay />
-        <ModalContent>
-          <CharacterCard chainId={chainId} character={character} />
+        <ModalContent mt={{ base: 0, md: '84px' }}>
+          <ModalHeader>
+            <Text>Character: {name}</Text>
+            <ModalCloseButton size="lg" />
+          </ModalHeader>
+          <ModalBody>
+            <CharacterCard chainId={chainId} character={character} />
+          </ModalBody>
         </ModalContent>
       </Modal>
     </VStack>

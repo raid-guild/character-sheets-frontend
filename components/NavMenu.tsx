@@ -61,7 +61,7 @@ export const NavMenu: React.FC = () => {
               pt={4}
             >
               <Heading fontSize="22px" textTransform="uppercase" ml={2}>
-                CharacterSheets
+                {isDesktop ? 'CharacterSheets' : 'CS'}
               </Heading>
               <IconButton
                 aria-label="Close menu"

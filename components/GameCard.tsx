@@ -51,7 +51,7 @@ export const GameCard: React.FC<GameMeta> = ({
       <VStack spacing={4} align={{ base: 'center', md: 'start' }} flex={1}>
         <Heading
           display="inline-block"
-          fontSize="40px"
+          fontSize={{ base: '32px', md: '40px' }}
           fontWeight="normal"
           lineHeight="40px"
           textAlign={{ base: 'center', md: 'left' }}

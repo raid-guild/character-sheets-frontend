@@ -527,7 +527,7 @@ export const CreateItemModal: React.FC = () => {
         </FormControl>
 
         {classRequirementsToggle && (
-          <SimpleGrid columns={4} spacing={3} w="100%">
+          <SimpleGrid columns={{ base: 2, sm: 4 }} spacing={3} w="100%">
             {game?.classes.map(c => (
               <Button
                 h="200px"
@@ -746,7 +746,7 @@ export const CreateItemModal: React.FC = () => {
       onClose={createItemModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Create an Item</Text>
           <ModalCloseButton size="lg" />

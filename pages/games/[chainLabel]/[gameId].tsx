@@ -23,7 +23,6 @@ import { GetStaticPaths, GetStaticProps, InferGetStaticPropsType } from 'next';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isAddress } from 'viem';
-import { useAccount } from 'wagmi';
 
 import { CharacterCard } from '@/components/CharacterCard';
 import { CharactersPanel } from '@/components/CharactersPanel';
@@ -73,6 +72,7 @@ import {
 } from '@/contexts/ItemActionsContext';
 import { getGameForChainId, getGamesForChainId } from '@/graphql/games';
 import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
+import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import {
   getAddressUrl,
   getChainIdFromLabel,
@@ -89,8 +89,6 @@ export default function GamePageOuter({ game }: Props): JSX.Element {
     push,
     isReady,
   } = useRouter();
-  const { isConnected } = useAccount();
-  const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
 
   const chainId = getChainIdFromLabel(chainLabel as string);
 
@@ -103,13 +101,7 @@ export default function GamePageOuter({ game }: Props): JSX.Element {
     }
   }, [gameId, chainId, isReady, push]);
 
-  useEffect(() => {
-    if (isConnected) {
-      setIsConnectedAndMounted(true);
-    } else {
-      setIsConnectedAndMounted(false);
-    }
-  }, [isConnected]);
+  const isConnectedAndMounted = useIsConnectedAndMounted();
 
   if (!gameId || !chainId) {
     return <></>;
@@ -245,7 +237,7 @@ function GamePage({
               <AspectRatio
                 ratio={1}
                 w="100%"
-                maxW="12rem"
+                maxW={{ base: '8rem', md: '12rem' }}
                 display={{ base: 'block', lg: 'none' }}
               >
                 <Image
@@ -258,14 +250,21 @@ function GamePage({
               </AspectRatio>
               <Heading
                 display="inline-block"
-                fontSize="40px"
+                fontSize={{ base: '32px', md: '40px' }}
                 fontWeight="normal"
                 lineHeight="40px"
-                wordBreak="break-all"
+                overflowWrap="break-word"
+                wordBreak="break-word"
               >
                 {name}
               </Heading>
-              <Text fontSize="xl" fontWeight={200} mb={2} wordBreak="break-all">
+              <Text
+                fontSize="xl"
+                fontWeight={200}
+                mb={2}
+                overflowWrap="break-word"
+                wordBreak="break-word"
+              >
                 {description}
               </Text>
               <Link
@@ -281,7 +280,7 @@ function GamePage({
                   <NetworkDisplay chainId={chainId} />
                 </HStack>
               </Link>
-              {isAdmin && (
+              {isConnectedAndMounted && isAdmin && (
                 <Button
                   onClick={() =>
                     openActionModal(GameMasterActions.UPDATE_GAME_METADATA)
@@ -354,7 +353,7 @@ function GamePage({
             <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
               Game Masters
             </Text>
-            {isAdmin && (
+            {isConnectedAndMounted && isAdmin && (
               <IconButton
                 onClick={() =>
                   openActionModal(GameMasterActions.ADD_GAME_MASTER)
@@ -407,7 +406,11 @@ function GamePage({
               spacing={4}
             >
               {!character && !showJoinGame && isEligibleForCharacter && (
-                <HStack w="100%" spacing={4}>
+                <HStack
+                  flexDirection={{ base: 'column-reverse', md: 'row' }}
+                  spacing={4}
+                  w="100%"
+                >
                   <Button variant="solid" onClick={startJoinGame}>
                     Join this Game
                   </Button>

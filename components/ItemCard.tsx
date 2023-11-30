@@ -9,10 +9,10 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { useAccount } from 'wagmi';
 
 import { ItemActionMenu } from '@/components/ActionMenus/ItemActionMenu';
 import { useGame } from '@/contexts/GameContext';
+import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { shortenText } from '@/utils/helpers';
 import { Item } from '@/utils/types';
 
@@ -22,7 +22,7 @@ type ItemCardProps = Item & {
 };
 
 export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
-  const { isConnected } = useAccount();
+  const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const {
     itemId,
@@ -55,7 +55,16 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
         justify="space-between"
       >
         <VStack spacing={3} w="100%">
-          <AspectRatio ratio={1} w="100%" maxH="15rem">
+          <AspectRatio
+            ratio={1}
+            h="15rem"
+            maxH="15rem"
+            w="100%"
+            _before={{
+              h: '15rem',
+              maxH: '15rem',
+            }}
+          >
             <Image
               alt={name}
               w="100%"
@@ -71,7 +80,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
           <Text fontSize="sm" w="100%">
             {shortenText(description, 130)}
           </Text>
-          {isEquipped && (
+          {isConnectedAndMounted && isEquipped && (
             <>
               <HStack w="100%" spacing={4}>
                 <Flex
@@ -125,7 +134,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
           */}
         </SimpleGrid>
       </VStack>
-      {isConnected && !!character && (
+      {isConnectedAndMounted && !!character && (
         <ItemActionMenu item={item} variant="solid" />
       )}
     </VStack>

@@ -160,7 +160,7 @@ const ClaimableAddressDisplay: React.FC<DisplayProps> = ({
         <Text>{amount.toString()}</Text>
         <CloseIcon
           position="absolute"
-          right="-2rem"
+          right="0"
           top="50%"
           transform="translateY(-50%)"
           cursor="pointer"
@@ -246,7 +246,7 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
         <Grid
           w="100%"
           templateColumns={{
-            base: '2fr 1.5fr',
+            base: '1fr',
             sm: '3fr 1.5fr',
             md: '3fr 1fr',
           }}
