@@ -61,7 +61,7 @@ const ALL_SUPPORTED_CHAINS: Chain[] = [gnosis, goerli];
 export const SUPPORTED_CHAINS: Chain[] = (() => {
   switch (ENVIRONMENT) {
     case 'main':
-      return ALL_SUPPORTED_CHAINS.filter(chain => chain.testnet === false);
+      return ALL_SUPPORTED_CHAINS.filter(chain => !!chain.testnet === false);
     case 'dev':
     default:
       return ALL_SUPPORTED_CHAINS.filter(chain => chain.testnet === true);
