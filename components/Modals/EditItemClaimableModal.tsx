@@ -269,7 +269,10 @@ export const EditItemClaimableModal: React.FC = () => {
           }
         }
 
-        if (claimable.toLowerCase() === selectedItem.merkleRoot.toLowerCase()) {
+        if (
+          claimable.toLowerCase() === selectedItem.merkleRoot.toLowerCase() &&
+          Number(itemDistribution) === Number(selectedItem.distribution)
+        ) {
           throw new Error('No changes were made.');
         }
 
@@ -312,6 +315,7 @@ export const EditItemClaimableModal: React.FC = () => {
     },
     [
       game,
+      itemDistribution,
       noSupply,
       publicClient,
       selectedItem,
