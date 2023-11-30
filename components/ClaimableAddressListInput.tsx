@@ -13,18 +13,14 @@ import {
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getAddress } from 'viem';
+import { useNetwork } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
-import { DEFAULT_CHAIN } from '@/lib/web3';
-import { EXPLORER_URLS } from '@/utils/constants';
+import { getAddressUrl } from '@/lib/web3';
 import { shortenAddress } from '@/utils/helpers';
 import { Character } from '@/utils/types';
 
 import { SelectCharacterInput } from './SelectCharacterInput';
-
-const getExplorerUrl = (address: string) => {
-  return `${EXPLORER_URLS[DEFAULT_CHAIN.id]}/address/${address}`;
-};
 
 export type ClaimableAddress = {
   address: `0x${string}`;
@@ -45,8 +41,12 @@ export const ClaimableAddressListInput: React.FC<Props> = ({
   setClaimableAddressList,
 }) => {
   const { game } = useGame();
+  const { chain } = useNetwork();
 
-  const { characters } = game || { characters: [] };
+  const { characters, chainId } = game || {
+    characters: [],
+    chainId: chain?.id,
+  };
 
   const characterMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -70,6 +70,14 @@ export const ClaimableAddressListInput: React.FC<Props> = ({
     return characters.filter(c => !selectedAddresses.has(c.account));
   }, [claimableAddressList, characters]);
 
+  if (!chainId) {
+    return (
+      <VStack align="stretch" spacing={4} w="100%">
+        <Text>You must connect your wallet to add claimers.</Text>
+      </VStack>
+    );
+  }
+
   return (
     <VStack align="stretch" spacing={4} w="100%">
       <Text>Whitelisted claimers (if left empty, any player can claim)</Text>
@@ -91,6 +99,7 @@ export const ClaimableAddressListInput: React.FC<Props> = ({
               )}
               removeClaimableAddress={removeClaimableAddress}
               index={i}
+              chainId={chainId}
             />
           ))}
       </VStack>
@@ -103,6 +112,7 @@ type DisplayProps = {
   characterName: string | undefined;
   removeClaimableAddress: (index: number) => void;
   index: number;
+  chainId: number;
 };
 
 const ClaimableAddressDisplay: React.FC<DisplayProps> = ({
@@ -110,6 +120,7 @@ const ClaimableAddressDisplay: React.FC<DisplayProps> = ({
   characterName,
   removeClaimableAddress,
   index: i,
+  chainId,
 }) => {
   const { address, amount } = claimableAddress;
 
@@ -133,7 +144,7 @@ const ClaimableAddressDisplay: React.FC<DisplayProps> = ({
             display="flex"
             fontSize="sm"
             gap={2}
-            href={getExplorerUrl(address)}
+            href={getAddressUrl(chainId, address)}
             isExternal
             p={0}
           >
@@ -149,7 +160,7 @@ const ClaimableAddressDisplay: React.FC<DisplayProps> = ({
         <Text>{amount.toString()}</Text>
         <CloseIcon
           position="absolute"
-          right="-2rem"
+          right="0"
           top="50%"
           transform="translateY(-50%)"
           cursor="pointer"
@@ -235,7 +246,7 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
         <Grid
           w="100%"
           templateColumns={{
-            base: '2fr 1.5fr',
+            base: '1fr',
             sm: '3fr 1.5fr',
             md: '3fr 1fr',
           }}

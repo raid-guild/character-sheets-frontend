@@ -18,14 +18,14 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { RadioCard } from '@/components/RadioCard';
 import { TransactionPending } from '@/components/TransactionPending';
-import { useActions } from '@/contexts/ActionsContext';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
 export const RevokeClassModal: React.FC = () => {
   const { game, isMaster, reload: reloadGame } = useGame();
-  const { selectedCharacter, revokeClassModal } = useActions();
+  const { selectedCharacter, revokeClassModal } = useCharacterActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -105,7 +105,7 @@ export const RevokeClassModal: React.FC = () => {
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -161,6 +161,7 @@ export const RevokeClassModal: React.FC = () => {
           isSyncing={isSyncing}
           text={`Revoking class...`}
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }
@@ -194,6 +195,8 @@ export const RevokeClassModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Revoking..."
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           Revoke
         </Button>

@@ -1,6 +1,25 @@
 fragment GlobalInfo on Global {
   id
   gameFactory
+  implementations {
+    characterSheetsImplementation
+    experienceImplementation
+    itemsImplementation
+    classesImplementation
+    itemsManagerImplementation
+    hatsAdaptorImplementation
+  }
+}
+
+fragment CharacterMetaInfo on Character {
+  id
+  characterId
+  account
+  player
+  uri
+  game {
+    id
+  }
 }
 
 fragment CharacterInfo on Character {
@@ -31,6 +50,7 @@ fragment CharacterInfo on Character {
     item {
       ...ItemInfo
     }
+    equippedAt
   }
 }
 
@@ -40,7 +60,10 @@ fragment ClassInfo on Class {
   uri
   claimable
   holders {
-    id
+    character {
+      id
+      characterId
+    }
   }
 }
 
@@ -63,15 +86,23 @@ fragment ItemInfo on Item {
     ...ItemRequirementInfo
   }
   holders {
-    id
+    character {
+      id
+      characterId
+    }
   }
   equippers {
-    id
+    character {
+      id
+      characterId
+    }
   }
 }
 
 fragment GameMetaInfo on Game {
   id
+  startedAt
+  chainId
   uri
   owner {
     address
@@ -97,11 +128,16 @@ fragment GameMetaInfo on Game {
 
 fragment FullGameInfo on Game {
   id
+  startedAt
+  chainId
   classesAddress
   itemsAddress
   experienceAddress
   characterEligibilityAdaptor
+  hatsAdaptor
+  itemsManager
   uri
+  baseTokenURI
   owner {
     address
   }
@@ -121,4 +157,11 @@ fragment FullGameInfo on Game {
   items {
     ...ItemInfo
   }
+  hatsData {
+    ...HatsDataInfo
+  }
+}
+
+fragment HatsDataInfo on HatsData {
+  gameMasterHatEligibilityModule
 }

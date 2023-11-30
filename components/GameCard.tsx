@@ -5,21 +5,20 @@ import {
   HStack,
   Image,
   Link,
+  Stack,
   Text,
   VStack,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 
 import { GameTotals } from '@/components/GameTotals';
-import { EXPLORER_URLS } from '@/utils/constants';
+import { getAddressUrl, getChainLabelFromId } from '@/lib/web3';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
 
-type GameCardProps = GameMeta & {
-  chainId: number;
-};
+import { NetworkDisplay } from './NetworkDisplay';
 
-export const GameCard: React.FC<GameCardProps> = ({
+export const GameCard: React.FC<GameMeta> = ({
   chainId,
   characters,
   experience,
@@ -30,13 +29,15 @@ export const GameCard: React.FC<GameCardProps> = ({
   description,
 }) => {
   return (
-    <HStack
+    <Stack
+      direction={{ base: 'column', md: 'row' }}
       bg="cardBG"
       justify="space-between"
       p={8}
       transition="background 0.3s ease"
       w="100%"
       spacing={12}
+      align="center"
     >
       <AspectRatio ratio={1} w="100%" maxW="12rem">
         <Image
@@ -47,31 +48,42 @@ export const GameCard: React.FC<GameCardProps> = ({
           h="100%"
         />
       </AspectRatio>
-      <VStack spacing={4} align="flex-start" flex={1}>
+      <VStack spacing={4} align={{ base: 'center', md: 'start' }} flex={1}>
         <Heading
           display="inline-block"
-          fontSize="40px"
+          fontSize={{ base: '32px', md: '40px' }}
           fontWeight="normal"
           lineHeight="40px"
+          textAlign={{ base: 'center', md: 'left' }}
         >
           {name}
         </Heading>
-        <VStack spacing={2} align="flex-start">
-          <Text fontWeight={200} mb={2}>
+        <VStack spacing={2} align={{ base: 'center', md: 'start' }}>
+          <Text
+            fontWeight={200}
+            mb={2}
+            textAlign={{ base: 'center', md: 'left' }}
+          >
             {shortenText(description, 60)}
           </Text>
           <Link
             fontSize="sm"
-            href={`${EXPLORER_URLS[chainId]}/address/${id}`}
+            href={getAddressUrl(chainId, id)}
             isExternal
             fontWeight={300}
             mb={3}
-            textDecoration={'underline'}
+            _hover={{}}
           >
-            {shortenAddress(id)}
+            <HStack>
+              <Text textDecoration={'underline'}>{shortenAddress(id)}</Text>
+              <NetworkDisplay chainId={chainId} />
+            </HStack>
           </Link>
         </VStack>
-        <NextLink as={`/games/${id}`} href={`/games/[gameId]`}>
+        <NextLink
+          as={`/games/${getChainLabelFromId(chainId)}/${id}`}
+          href={`/games/[chainLabel]/[gameId]`}
+        >
           <Button variant="play">play</Button>
         </NextLink>
       </VStack>
@@ -81,6 +93,6 @@ export const GameCard: React.FC<GameCardProps> = ({
         characters={characters}
         items={items}
       />
-    </HStack>
+    </Stack>
   );
 };

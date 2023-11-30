@@ -18,14 +18,14 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { RadioCard } from '@/components/RadioCard';
 import { TransactionPending } from '@/components/TransactionPending';
-import { useActions } from '@/contexts/ActionsContext';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
 export const AssignClassModal: React.FC = () => {
   const { game, reload: reloadGame, isMaster } = useGame();
-  const { selectedCharacter, assignClassModal } = useActions();
+  const { selectedCharacter, assignClassModal } = useCharacterActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -114,7 +114,7 @@ export const AssignClassModal: React.FC = () => {
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -174,6 +174,7 @@ export const AssignClassModal: React.FC = () => {
           isSyncing={isSyncing}
           text={`Assigning the class to ${selectedCharacter.name}...`}
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }
@@ -210,6 +211,8 @@ export const AssignClassModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Assigning..."
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           Assign
         </Button>
@@ -225,7 +228,7 @@ export const AssignClassModal: React.FC = () => {
       onClose={assignClassModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Assign a Class</Text>
           <ModalCloseButton size="lg" />

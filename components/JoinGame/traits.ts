@@ -1,8 +1,9 @@
+import { capitalize } from 'lodash';
+
 import { uriToHttp } from '@/utils/helpers';
+import { Attribute } from '@/utils/types';
 
-export type Traits = [string, string, string, string, string, string];
-
-export enum TraitType {
+export enum BaseTraitType {
   BACKGROUND = 'BACKGROUND',
   BODY = 'BODY',
   EYES = 'EYES',
@@ -10,6 +11,32 @@ export enum TraitType {
   CLOTHING = 'CLOTHING',
   MOUTH = 'MOUTH',
 }
+
+export enum EquippableTraitType {
+  EQUIPPED_ITEM_1 = 'EQUIPPED ITEM 1',
+  EQUIPPED_WEARABLE = 'EQUIPPED WEARABLE',
+  EQUIPPED_ITEM_2 = 'EQUIPPED ITEM 2',
+}
+
+/*
+ * NOTE:
+ * base trait names are formatted as <index>_<variant>_<color>
+ * equippable trait names are formatted as <tag>_<name>_<uri>
+ */
+export type CharacterTraits = {
+  [key in BaseTraitType | EquippableTraitType]: string;
+};
+
+export type TraitsArray = [
+  string,
+  string,
+  string,
+  string,
+  string,
+  string,
+  string,
+  string,
+];
 
 export const LAYERS_CID =
   'ipfs://bafybeifbgpsf4hr53ifk646xrxsvg33toq7fqktzqupcdz6cin3ifkvzxq';
@@ -112,11 +139,11 @@ export const TRAITS: { [key: number]: { [key: string]: string[] } } = {
       '3_Mohawk_g_87b8f1',
     ],
   },
-  4: {
+  5: {
     villager1: ['5_Villager1_a_796e68'],
     villager2: ['5_Villager2_a_50434e'],
   },
-  5: {
+  6: {
     basic: ['6_Basic_a'],
     bigbeard: [
       '6_Bigbeard_a_c5c3bb',
@@ -148,7 +175,146 @@ export const removeTraitHex = (trait: string): string => {
 };
 
 export const getImageUrl = (fileName: string): string => {
+  const [index, , potentialUrl] = fileName.split('_');
+  if (index.includes('equip')) {
+    return potentialUrl; // In this case, what would normally be "color" is actually the URL of the newly equipped item
+  }
+
   return (
-    uriToHttp(LAYERS_CID)[0] + 'layers/' + removeTraitHex(fileName) + '.png'
+    uriToHttp(LAYERS_CID)[0] + '/layers/' + removeTraitHex(fileName) + '.png'
   );
+};
+
+export const formatLayerNameFromTrait = (
+  traitType: BaseTraitType,
+  trait: string,
+): string => {
+  const [variant, color] = trait.split(' ');
+  return `${traitPositionToIndex(traitType)}_${capitalize(
+    variant,
+  )}_${color.toLowerCase()}`;
+};
+
+export const getTraitsObjectFromAttributes = (
+  attributes: Attribute[],
+): CharacterTraits => {
+  const characterTraits: CharacterTraits = {
+    [BaseTraitType.BACKGROUND]: '',
+    [BaseTraitType.BODY]: '',
+    [BaseTraitType.EYES]: '',
+    [BaseTraitType.HAIR]: '',
+    [BaseTraitType.CLOTHING]: '',
+    [BaseTraitType.MOUTH]: '',
+    [EquippableTraitType.EQUIPPED_ITEM_1]: '',
+    [EquippableTraitType.EQUIPPED_WEARABLE]: '',
+    [EquippableTraitType.EQUIPPED_ITEM_2]: '',
+  };
+
+  attributes.forEach(attribute => {
+    if (!attribute.value) return;
+    switch (attribute.trait_type) {
+      case BaseTraitType.BACKGROUND:
+        characterTraits[BaseTraitType.BACKGROUND] = formatLayerNameFromTrait(
+          BaseTraitType.BACKGROUND,
+          attribute.value,
+        );
+        break;
+      case BaseTraitType.BODY:
+        characterTraits[BaseTraitType.BODY] = formatLayerNameFromTrait(
+          BaseTraitType.BODY,
+          attribute.value,
+        );
+        break;
+      case BaseTraitType.EYES:
+        characterTraits[BaseTraitType.EYES] = formatLayerNameFromTrait(
+          BaseTraitType.EYES,
+          attribute.value,
+        );
+        break;
+      case BaseTraitType.HAIR:
+        characterTraits[BaseTraitType.HAIR] = formatLayerNameFromTrait(
+          BaseTraitType.HAIR,
+          attribute.value,
+        );
+        break;
+      case EquippableTraitType.EQUIPPED_ITEM_1:
+        characterTraits[EquippableTraitType.EQUIPPED_ITEM_1] = attribute.value;
+        break;
+      case BaseTraitType.CLOTHING:
+        characterTraits[BaseTraitType.CLOTHING] = formatLayerNameFromTrait(
+          BaseTraitType.CLOTHING,
+          attribute.value,
+        );
+        break;
+      case EquippableTraitType.EQUIPPED_WEARABLE:
+        characterTraits[EquippableTraitType.EQUIPPED_WEARABLE] =
+          attribute.value;
+        break;
+      case BaseTraitType.MOUTH:
+        characterTraits[BaseTraitType.MOUTH] = formatLayerNameFromTrait(
+          BaseTraitType.MOUTH,
+          attribute.value,
+        );
+        break;
+      case EquippableTraitType.EQUIPPED_ITEM_2:
+        characterTraits[EquippableTraitType.EQUIPPED_ITEM_2] = attribute.value;
+        break;
+      default:
+        break;
+    }
+  });
+
+  return characterTraits;
+};
+
+export const traitPositionToIndex = (
+  position: BaseTraitType | EquippableTraitType,
+): number => {
+  switch (position) {
+    case BaseTraitType.BACKGROUND:
+      return 0;
+    case BaseTraitType.BODY:
+      return 1;
+    case BaseTraitType.EYES:
+      return 2;
+    case BaseTraitType.HAIR:
+      return 3;
+    case EquippableTraitType.EQUIPPED_ITEM_1:
+      return 4;
+    case BaseTraitType.CLOTHING:
+      return 5;
+    case EquippableTraitType.EQUIPPED_WEARABLE:
+      return 5;
+    case BaseTraitType.MOUTH:
+      return 6;
+    case EquippableTraitType.EQUIPPED_ITEM_2:
+      return 7;
+    default:
+      return 5;
+  }
+};
+
+export const getAttributesFromTraitsObject = (
+  traits: CharacterTraits,
+): Attribute[] => {
+  return Object.keys(traits).map(trait => {
+    const traitType = trait as BaseTraitType | EquippableTraitType;
+    const [index, variant, color] = traits[traitType].split('_');
+
+    if (index.includes('equip')) {
+      return {
+        trait_type: traitType,
+        value: variant.toUpperCase(), // In this case, the "variant" is the name of the equippable item
+      };
+    } else if (!(index && variant && color)) {
+      return {
+        trait_type: traitType,
+        value: '',
+      };
+    }
+    return {
+      trait_type: traitType,
+      value: `${variant.toUpperCase()} ${color.toUpperCase()}`,
+    };
+  });
 };

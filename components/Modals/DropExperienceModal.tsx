@@ -18,14 +18,14 @@ import { maxUint256, parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
-import { useActions } from '@/contexts/ActionsContext';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
 export const DropExperienceModal: React.FC = () => {
   const { game, reload: reloadGame, isMaster } = useGame();
-  const { selectedCharacter, giveExpModal } = useActions();
+  const { selectedCharacter, giveExpModal } = useCharacterActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -115,7 +115,7 @@ export const DropExperienceModal: React.FC = () => {
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -175,6 +175,7 @@ export const DropExperienceModal: React.FC = () => {
           isSyncing={isSyncing}
           text={`Giving ${amount} XP to ${selectedCharacter.name}...`}
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }
@@ -200,6 +201,7 @@ export const DropExperienceModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Giving..."
           type="submit"
+          variant="solid"
         >
           Give
         </Button>

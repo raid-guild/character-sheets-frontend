@@ -1,20 +1,23 @@
 import { HStack, Link, Text } from '@chakra-ui/react';
-import { Address, useAccount } from 'wagmi';
+import { Address, useAccount, useChainId } from 'wagmi';
 
 import { useEnsName } from '@/hooks/useEnsName';
-import { DEFAULT_CHAIN } from '@/lib/web3';
-import { EXPLORER_URLS } from '@/utils/constants';
+import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
+import { getAddressUrl } from '@/lib/web3';
 import { shortenAddress } from '@/utils/helpers';
 
 export const UserLink: React.FC<{ user: string }> = ({ user }) => {
   const { ensName } = useEnsName(user as Address);
   const { address } = useAccount();
+  const chainId = useChainId();
   const isCurrentUser = address?.toLowerCase() === user.toLowerCase();
+
+  const isConnectedAndMounted = useIsConnectedAndMounted();
 
   return (
     <Link
       fontSize="sm"
-      href={`${EXPLORER_URLS[DEFAULT_CHAIN.id]}/address/${user}`}
+      href={getAddressUrl(chainId, user)}
       isExternal
       bg={isCurrentUser ? 'whiteAlpha.300' : ''}
       textDecor={!isCurrentUser ? 'underline' : ''}
@@ -22,7 +25,7 @@ export const UserLink: React.FC<{ user: string }> = ({ user }) => {
         color: 'accent',
       }}
     >
-      {isCurrentUser ? (
+      {isConnectedAndMounted && isCurrentUser ? (
         <HStack px={1} spacing={3}>
           <Text as="span">You</Text>
           <Text as="span" textDecor="underline">

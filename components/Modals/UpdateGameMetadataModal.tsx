@@ -22,19 +22,14 @@ import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
+import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
-type UpdateGameMetadataModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-};
-
-export const UpdateGameMetadataModal: React.FC<
-  UpdateGameMetadataModalProps
-> = ({ isOpen, onClose }) => {
+export const UpdateGameMetadataModal: React.FC = () => {
+  const { updateGameMetadataModal } = useGameActions();
   const { game, reload: reloadGame } = useGame();
 
   const { data: walletClient } = useWalletClient();
@@ -107,6 +102,7 @@ export const UpdateGameMetadataModal: React.FC<
     setNewGameName(game?.name ?? '');
     setNewGameDescription(game?.description ?? '');
     setNewGameEmblemImage(game?.image ?? null);
+
     setShowError(false);
     onRemove();
 
@@ -129,10 +125,10 @@ export const UpdateGameMetadataModal: React.FC<
   }, [onRemove]);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!updateGameMetadataModal?.isOpen) {
       resetData();
     }
-  }, [resetData, isOpen]);
+  }, [resetData, updateGameMetadataModal?.isOpen]);
 
   const onUpdateGameMetadata = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
@@ -155,8 +151,6 @@ export const UpdateGameMetadataModal: React.FC<
               .pop();
         if (!cid)
           throw new Error('Something went wrong uploading your game emblem');
-
-        setIsUpdating(true);
 
         const gameMetadata = {
           name: newGameName,
@@ -199,7 +193,7 @@ export const UpdateGameMetadataModal: React.FC<
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -237,7 +231,7 @@ export const UpdateGameMetadataModal: React.FC<
       return (
         <VStack py={10} spacing={4}>
           <Text>Transaction failed.</Text>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={updateGameMetadataModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -248,7 +242,7 @@ export const UpdateGameMetadataModal: React.FC<
       return (
         <VStack py={10} spacing={4}>
           <Text>Your game has been updated!</Text>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={updateGameMetadataModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -259,8 +253,9 @@ export const UpdateGameMetadataModal: React.FC<
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Updating your game...`}
+          text="Updating your game metadata..."
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }
@@ -350,7 +345,8 @@ export const UpdateGameMetadataModal: React.FC<
           )}
           {showError && noChanges && (
             <FormHelperText color="red">
-              New name, description, or emblem must be different from the old
+              New name, description, emblem, or base token URI must be different
+              from the old
             </FormHelperText>
           )}
         </FormControl>
@@ -369,6 +365,7 @@ export const UpdateGameMetadataModal: React.FC<
             isLoading={isLoading}
             loadingText="Updating..."
             type="submit"
+            variant="solid"
           >
             Update
           </Button>
@@ -381,11 +378,11 @@ export const UpdateGameMetadataModal: React.FC<
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={isOpen}
-      onClose={onClose}
+      isOpen={updateGameMetadataModal?.isOpen ?? false}
+      onClose={updateGameMetadataModal?.onClose ?? (() => undefined)}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Update Game</Text>
           <ModalCloseButton size="lg" />

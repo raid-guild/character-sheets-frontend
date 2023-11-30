@@ -5,6 +5,7 @@ import { getErrorMessage, USER_ERRORS } from '@/utils/errors';
 export const useToast = (): {
   renderError: (error: unknown, defaultError?: string) => void;
   renderWarning: (msg: string) => void;
+  renderSuccess: (msg: string) => void;
 } => {
   const toast = useChakraToast();
 
@@ -30,5 +31,13 @@ export const useToast = (): {
     });
   };
 
-  return { renderError, renderWarning };
+  const renderSuccess = (msg: string) => {
+    toast({
+      description: msg,
+      position: 'top',
+      status: 'success',
+    });
+  };
+
+  return { renderError, renderWarning, renderSuccess };
 };

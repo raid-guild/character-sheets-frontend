@@ -1,28 +1,35 @@
 import { Button, Spinner, Text, VStack } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
-import { useAccount, useNetwork } from 'wagmi';
+import { useCallback } from 'react';
+import { useNetwork } from 'wagmi';
 
 import { GameCard } from '@/components/GameCard';
 import { CreateGameModal } from '@/components/Modals/CreateGameModal';
 import { useGamesContext } from '@/contexts/GamesContext';
+import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
+import { useToast } from '@/hooks/useToast';
+import { isSupportedChain } from '@/lib/web3';
 
 export default function MyGames(): JSX.Element {
-  const { isConnected } = useAccount();
-  const { createGameModal, loading, myGames } = useGamesContext();
   const { chain } = useNetwork();
+  const { createGameModal, loading, myGames } = useGamesContext();
+  const { renderError } = useToast();
 
-  const [isConnectedAndMount, setIsConnectedAndMounted] = useState(false);
+  const isConnectedAndMounted = useIsConnectedAndMounted();
 
-  useEffect(() => {
-    if (isConnected) {
-      setIsConnectedAndMounted(true);
-    } else {
-      setIsConnectedAndMounted(false);
+  const startCreateGame = useCallback(() => {
+    if (!chain) {
+      renderError('Please connect your wallet');
+      return;
     }
-  }, [isConnected]);
+    if (!isSupportedChain(chain.id)) {
+      renderError('Please switch to a supported network');
+      return;
+    }
+    createGameModal?.onOpen();
+  }, [chain, createGameModal, renderError]);
 
   const content = () => {
-    if (!isConnectedAndMount) {
+    if (!isConnectedAndMounted) {
       return (
         <VStack>
           <Text align="center">Connect wallet to view your games.</Text>
@@ -40,7 +47,7 @@ export default function MyGames(): JSX.Element {
 
     return (
       <VStack spacing={10}>
-        <Button size="lg" onClick={createGameModal?.onOpen}>
+        <Button size="lg" onClick={startCreateGame}>
           Create Game
         </Button>
         {!myGames || myGames.length === 0 ? (
@@ -50,11 +57,7 @@ export default function MyGames(): JSX.Element {
         ) : (
           <VStack spacing={10} w="100%">
             {myGames.map(game => (
-              <GameCard
-                key={game.id}
-                chainId={chain?.id ?? 11155111}
-                {...game}
-              />
+              <GameCard key={game.id} {...game} />
             ))}
           </VStack>
         )}

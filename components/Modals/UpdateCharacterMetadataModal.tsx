@@ -19,20 +19,23 @@ import {
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { parseAbi } from 'viem';
-import { Address, usePublicClient, useWalletClient } from 'wagmi';
+import { Address, useNetwork, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
-import { useActions } from '@/contexts/ActionsContext';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import { getChainLabelFromId } from '@/lib/web3';
+import { BASE_CHARACTER_URI } from '@/utils/constants';
 
 export const UpdateCharacterMetadataModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
-  const { selectedCharacter, editCharacterModal } = useActions();
+  const { selectedCharacter, editCharacterModal } = useCharacterActions();
 
   const { data: walletClient } = useWalletClient();
+  const { chain } = useNetwork();
   const publicClient = usePublicClient();
   const { renderError } = useToast();
 
@@ -46,7 +49,6 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
   } = useUploadFile({ fileName: 'characterAvatar' });
   const [newName, setNewName] = useState<string>('');
   const [newDescription, setNewDescription] = useState<string>('');
-
   const [newAvatarImage, setNewAvatarImage] = useState<string | null>(null);
 
   const [showError, setShowError] = useState<boolean>(false);
@@ -55,6 +57,23 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
   const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
+
+  const uriNeedsUpgraded = useMemo(() => {
+    if (!(chain && selectedCharacter)) return false;
+    const chainLabel = getChainLabelFromId(chain.id);
+    const { uri } = selectedCharacter;
+    const potentialCID = uri
+      .split('/')
+      .filter(s => !!s)
+      .pop();
+
+    if (!(chainLabel && potentialCID)) return false;
+
+    const baseURI = uri.replace(potentialCID, '');
+    if (baseURI !== `${BASE_CHARACTER_URI}${chainLabel}/`) return false;
+
+    return potentialCID.match(/^[a-zA-Z0-9]{46,59}$/);
+  }, [chain, selectedCharacter]);
 
   const sameName = useMemo(
     () => newName === selectedCharacter?.name && !!newName,
@@ -81,7 +100,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       !newDescription ||
       invalidDescription ||
       !newAvatarImage ||
-      (sameName && sameDescription && sameAvatar),
+      (!uriNeedsUpgraded && sameName && sameDescription && sameAvatar),
     [
       newName,
       newDescription,
@@ -90,6 +109,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       sameName,
       sameDescription,
       sameAvatar,
+      uriNeedsUpgraded,
     ],
   );
 
@@ -124,7 +144,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
   }, [onRemove]);
 
   useEffect(() => {
-    if (!editCharacterModal?.isOpen) {
+    if (editCharacterModal?.isOpen) {
       resetData();
     }
   }, [resetData, editCharacterModal?.isOpen]);
@@ -140,6 +160,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
 
       try {
         if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!chain) throw new Error('Could not find a connected chain');
         if (!game) throw new Error('Missing game data');
         if (!selectedCharacter) throw new Error('Character not found');
 
@@ -156,56 +177,81 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
 
         setIsUpdating(true);
 
-        const characterMetadata = {
+        const characterMetadata: {
+          name: string;
+          description: string;
+          image: string;
+          attributes: {
+            trait_type: string;
+            value: string;
+          }[];
+        } = {
           name: newName,
           description: newDescription,
           image: `ipfs://${cid}`,
+          attributes: [],
         };
 
-        const res = await fetch(
-          '/api/uploadMetadata?name=characterMetadata.json',
-          {
-            method: 'POST',
-            body: JSON.stringify(characterMetadata),
-          },
-        );
-        if (!res.ok)
-          throw new Error(
-            "Something went wrong uploading your character's metadata",
-          );
-
-        const { cid: newCid } = await res.json();
-        if (!newCid)
-          throw new Error(
-            'Something went wrong uploading your character metadata',
-          );
-
-        const transactionhash = await walletClient.writeContract({
-          chain: walletClient.chain,
-          account: walletClient.account?.address as Address,
-          address: game.id as Address,
-          abi: parseAbi([
-            'function updateCharacterMetadata(string calldata newCid) public',
-          ]),
-          functionName: 'updateCharacterMetadata',
-          args: [newCid],
-        });
-        setTxHash(transactionhash);
-
-        const client = publicClient ?? walletClient;
-        const { blockNumber, status } = await client.waitForTransactionReceipt({
-          hash: transactionhash,
-        });
-
-        if (status === 'reverted') {
-          setTxFailed(true);
-          setIsUpdating(false);
-          throw new Error('Transaction failed');
+        if (!newAvatarFile && selectedCharacter.attributes) {
+          characterMetadata['attributes'] = selectedCharacter.attributes;
         }
 
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
-        if (!synced) throw new Error('Something went wrong while syncing');
+        const chainLabel = getChainLabelFromId(chain.id);
+        const apiRoute = `/api/characters/${chainLabel}/${selectedCharacter.id}/update`;
+        const signature = await walletClient.signMessage({
+          message: apiRoute,
+          account: walletClient.account?.address as Address,
+        });
+
+        const res = await fetch(apiRoute, {
+          headers: {
+            'x-account-address': walletClient.account?.address as Address,
+            'x-account-signature': signature,
+            'x-account-chain-id': walletClient.chain.id.toString(),
+          },
+          method: 'POST',
+          body: JSON.stringify(characterMetadata),
+        });
+        if (!res.ok)
+          throw new Error(
+            "Something went wrong updating your character's metadata",
+          );
+
+        const { name, description, image } = await res.json();
+        if (!(name && description && image))
+          throw new Error(
+            'Something went wrong updating your character metadata',
+          );
+
+        if (uriNeedsUpgraded) {
+          const transactionhash = await walletClient.writeContract({
+            chain: walletClient.chain,
+            account: walletClient.account?.address as Address,
+            address: game.id as Address,
+            abi: parseAbi([
+              'function updateCharacterMetadata(string calldata newCid) public',
+            ]),
+            functionName: 'updateCharacterMetadata',
+            args: [selectedCharacter.id],
+          });
+          setTxHash(transactionhash);
+
+          const client = publicClient ?? walletClient;
+          const { blockNumber, status } =
+            await client.waitForTransactionReceipt({
+              hash: transactionhash,
+            });
+
+          if (status === 'reverted') {
+            setTxFailed(true);
+            setIsUpdating(false);
+            throw new Error('Transaction failed');
+          }
+
+          setIsSyncing(true);
+          const synced = await waitUntilBlock(client.chain.id, blockNumber);
+          if (!synced) throw new Error('Something went wrong while syncing');
+        }
 
         setIsSynced(true);
         reloadGame();
@@ -220,6 +266,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       }
     },
     [
+      chain,
       game,
       hasError,
       newName,
@@ -230,6 +277,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       reloadGame,
       renderError,
       selectedCharacter,
+      uriNeedsUpgraded,
       walletClient,
     ],
   );
@@ -270,12 +318,19 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
           isSyncing={isSyncing}
           text={`Updating your character...`}
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }
 
     return (
       <VStack as="form" onSubmit={onUpdateCharacterMetadata} spacing={8}>
+        {uriNeedsUpgraded && (
+          <Text>
+            Your metadata URI is out of date. Please click &quot;Update&quot;
+            below to upgrade to the latest version.
+          </Text>
+        )}
         <FormControl isInvalid={showError && (!newName || noChanges)}>
           <FormLabel>Character Name</FormLabel>
           <Input onChange={e => setNewName(e.target.value)} value={newName} />
@@ -374,6 +429,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
             isLoading={isLoading}
             loadingText="Updating..."
             type="submit"
+            variant="solid"
           >
             Update
           </Button>
@@ -390,7 +446,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
       onClose={editCharacterModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Update Character</Text>
           <ModalCloseButton size="lg" />

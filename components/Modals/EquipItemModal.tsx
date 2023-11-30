@@ -14,11 +14,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
+import {
+  EquippableTraitType,
+  getTraitsObjectFromAttributes,
+} from '@/components/JoinGame/traits';
 import { TransactionPending } from '@/components/TransactionPending';
-import { useActions } from '@/contexts/ActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { useItemActions } from '@/contexts/ItemActionsContext';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
+import { getChainLabelFromId } from '@/lib/web3';
 import { executeAsCharacter } from '@/utils/account';
 
 export const EquipItemModal: React.FC = () => {
@@ -27,7 +32,7 @@ export const EquipItemModal: React.FC = () => {
   const publicClient = usePublicClient();
   const { renderError } = useToast();
 
-  const { selectedCharacter, selectedItem, equipItemModal } = useActions();
+  const { selectedItem, equipItemModal } = useItemActions();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -36,19 +41,15 @@ export const EquipItemModal: React.FC = () => {
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
   const isEquipped = useMemo(() => {
-    if (!selectedItem || !selectedCharacter || !character) {
-      return false;
-    }
-    if (character.characterId !== selectedCharacter.characterId) {
+    if (!selectedItem || !character) {
       return false;
     }
 
     return (
-      selectedCharacter.equippedItems.find(
-        e => e.itemId === selectedItem.itemId,
-      ) !== undefined
+      character.equippedItems.find(e => e.itemId === selectedItem.itemId) !==
+      undefined
     );
-  }, [character, selectedItem, selectedCharacter]);
+  }, [character, selectedItem]);
 
   const resetData = useCallback(() => {
     setTxHash(null);
@@ -69,14 +70,104 @@ export const EquipItemModal: React.FC = () => {
 
       try {
         if (!walletClient) throw new Error('Wallet client is not connected');
-        if (!character || !selectedCharacter)
-          throw new Error('Character address not found');
-        if (character.characterId !== selectedCharacter.characterId)
-          throw new Error('Character address does not match');
+        if (!character) throw new Error('Character address not found');
         if (!selectedItem) throw new Error('Item not found');
         if (!game?.id) throw new Error(`Missing game data`);
 
         setIsLoading(true);
+
+        const {
+          attributes: characterAttributes,
+          description: characterDescription,
+          id,
+          name: characterName,
+        } = character;
+        const {
+          attributes: itemAttributes,
+          equippable_layer,
+          name: itemName,
+        } = selectedItem;
+        if (
+          characterAttributes &&
+          characterAttributes.length >= 6 &&
+          itemAttributes &&
+          itemAttributes.length >= 0 &&
+          equippable_layer
+        ) {
+          const traits = getTraitsObjectFromAttributes(characterAttributes);
+          if (
+            !(
+              itemAttributes[0]?.value &&
+              itemAttributes[0]?.trait_type === 'EQUIPPABLE TYPE'
+            )
+          )
+            throw new Error('Missing equippable item type value');
+
+          const newTrait = isEquipped
+            ? `remove_${itemName}_${equippable_layer}`
+            : `equip_${itemName}_${equippable_layer}`;
+          traits[itemAttributes[0].value as EquippableTraitType] = newTrait;
+
+          const response = await fetch(`/api/uploadTraits`, {
+            method: 'POST',
+            body: JSON.stringify({
+              characterId: id,
+              chainId: game.chainId,
+              traits,
+            }),
+          });
+
+          if (!response.ok)
+            throw new Error('Something went wrong uploading new avatar image');
+
+          const { attributes, cid } = await response.json();
+
+          if (!(attributes && cid))
+            throw new Error('Something went wrong uploading new avatar image');
+
+          const characterMetadata: {
+            name: string;
+            description: string;
+            image: string;
+            attributes?: {
+              trait_type: string;
+              value: string;
+            }[];
+          } = {
+            name: characterName,
+            description: characterDescription,
+            image: `ipfs://${cid}`,
+          };
+
+          characterMetadata['attributes'] = attributes;
+
+          const chainLabel = getChainLabelFromId(game.chainId);
+          const apiRoute = `/api/characters/${chainLabel}/${id}/update`;
+          const signature = await walletClient.signMessage({
+            message: apiRoute,
+            account: walletClient.account?.address as Address,
+          });
+
+          const res = await fetch(apiRoute, {
+            headers: {
+              'x-account-address': walletClient.account?.address as Address,
+              'x-account-signature': signature,
+              'x-account-chain-id': walletClient.chain.id.toString(),
+            },
+            method: 'POST',
+            body: JSON.stringify(characterMetadata),
+          });
+          if (!res.ok)
+            throw new Error(
+              "Something went wrong updating your character's metadata",
+            );
+
+          const { name, description, image } = await res.json();
+          if (!(name && description && image))
+            throw new Error(
+              'Something went wrong updating your character metadata',
+            );
+        }
 
         const transactionhash = await executeAsCharacter(
           character,
@@ -109,7 +200,7 @@ export const EquipItemModal: React.FC = () => {
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -132,7 +223,6 @@ export const EquipItemModal: React.FC = () => {
       reloadGame,
       character,
       renderError,
-      selectedCharacter,
       selectedItem,
       walletClient,
       isEquipped,
@@ -173,11 +263,12 @@ export const EquipItemModal: React.FC = () => {
             selectedItem.name
           }.`}
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }
 
-    if (!character || !selectedCharacter) {
+    if (!character) {
       return (
         <VStack py={10} spacing={4}>
           <Text>Character not found.</Text>
@@ -208,6 +299,12 @@ export const EquipItemModal: React.FC = () => {
         <Text>
           Are you sure you want to {isEquipped ? 'unequip' : 'equip'} this item?
         </Text>
+        {character.attributes.length === 0 && !isEquipped && (
+          <Text color="red" textAlign="center">
+            Note: because you are using your own character avatar, you will not
+            be able to equip this item visually.
+          </Text>
+        )}
         <VStack justify="space-between" h="100%">
           <Image
             alt={`${heldItem.name} image`}
@@ -223,6 +320,8 @@ export const EquipItemModal: React.FC = () => {
           isLoading={isLoading}
           loadingText={isEquipped ? 'Unequipping...' : 'Equipping...'}
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           {isEquipped ? 'Unequip' : 'Equip'}
         </Button>
@@ -238,7 +337,7 @@ export const EquipItemModal: React.FC = () => {
       onClose={equipItemModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>{isEquipped ? 'Unequip item' : 'Equip item'}</Text>
           <ModalCloseButton size="lg" />

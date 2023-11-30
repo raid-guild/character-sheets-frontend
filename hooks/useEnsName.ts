@@ -1,9 +1,8 @@
 import { useCallback } from 'react';
 import useSWR from 'swr';
-import { usePublicClient } from 'wagmi';
-
 import { zeroAddress } from 'viem';
-import { mainnetReadClient } from '@/lib/web3';
+
+import { READ_CLIENTS } from '@/lib/web3';
 
 export const useEnsName = (
   address: `0x${string}` | null | undefined,
@@ -12,15 +11,15 @@ export const useEnsName = (
   reload: () => void;
   loading: boolean;
 } => {
-  const publicClient = usePublicClient();
-
   const fetchEnsName = useCallback(
     async (
       addr: `0x${string}` | undefined | null,
     ): Promise<string | undefined> => {
-      if (!publicClient || addr === zeroAddress || !addr) return undefined;
+      if (addr === zeroAddress || !addr) return undefined;
 
       try {
+        const mainnetReadClient = READ_CLIENTS[1];
+        if (!mainnetReadClient) return undefined;
         const name = await mainnetReadClient.getEnsName({
           address: addr,
         });
@@ -30,7 +29,7 @@ export const useEnsName = (
         return undefined;
       }
     },
-    [publicClient],
+    [],
   );
 
   const { data: ensName, isLoading, mutate } = useSWR(address, fetchEnsName);

@@ -6,18 +6,19 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { CombinedError } from 'urql';
+import { CombinedError, Provider } from 'urql';
 import { useAccount } from 'wagmi';
 
 import { useGetGameQuery } from '@/graphql/autogen/types';
+import { getGraphClient } from '@/graphql/client';
+import { useIsEligible } from '@/hooks/useIsEligible';
 import { formatGame } from '@/utils/helpers';
 import { Character, Game } from '@/utils/types';
-import { useIsEligible } from '@/hooks/useIsEligible';
 
 type GameContextType = {
   game: Game | null;
   character: Character | null;
-  pageCharacter: Character | null;
+  isAdmin: boolean;
   isMaster: boolean;
   isEligibleForCharacter: boolean;
   loading: boolean;
@@ -28,7 +29,7 @@ type GameContextType = {
 const GameContext = createContext<GameContextType>({
   game: null,
   character: null,
-  pageCharacter: null,
+  isAdmin: false,
   isMaster: false,
   isEligibleForCharacter: false,
   loading: false,
@@ -38,20 +39,39 @@ const GameContext = createContext<GameContextType>({
 
 export const useGame = (): GameContextType => useContext(GameContext);
 
-export const GameProvider: React.FC<{
-  children: JSX.Element;
-  gameId?: string | null | undefined | string[];
-  characterId?: string | null | undefined | string[];
-}> = ({ children, gameId, characterId }) => {
+export const GameProvider: React.FC<
+  React.PropsWithChildren<{
+    chainId: number;
+    gameId: string;
+    game: Game | null;
+  }>
+> = ({ chainId, children, gameId, game }) => {
+  const client = useMemo(() => getGraphClient(chainId), [chainId]);
+
+  return (
+    <Provider value={client}>
+      <GameProviderInner gameId={gameId} game={game}>
+        {children}
+      </GameProviderInner>
+    </Provider>
+  );
+};
+
+const GameProviderInner: React.FC<
+  React.PropsWithChildren<{
+    gameId: string;
+    game: Game | null;
+  }>
+> = ({ children, gameId, game: staticGame }) => {
   const { address } = useAccount();
 
-  const [game, setGame] = useState<Game | null>(null);
+  const [game, setGame] = useState<Game | null>(staticGame);
   const [isFormatting, setIsFormatting] = useState(false);
   const [isRefetching, setIsRefetching] = useState(false);
 
   const queryVariables = useMemo(
     () => ({
-      gameId: gameId?.toString().toLowerCase() ?? '',
+      gameId: gameId.toLowerCase(),
     }),
     [gameId],
   );
@@ -91,12 +111,10 @@ export const GameProvider: React.FC<{
     );
   }, [game, address]);
 
-  const pageCharacter = useMemo(() => {
-    if (!characterId || typeof characterId !== 'string') return null;
-    return (
-      game?.characters.find(c => c.id === characterId.toLowerCase()) ?? null
-    );
-  }, [game, characterId]);
+  const isAdmin = useMemo(
+    () => game?.admins.includes(address?.toLowerCase() ?? '') ?? false,
+    [game, address],
+  );
 
   const isMaster = useMemo(
     () => game?.masters.includes(address?.toLowerCase() ?? '') ?? false,
@@ -110,10 +128,10 @@ export const GameProvider: React.FC<{
       value={{
         game,
         character,
-        pageCharacter,
+        isAdmin,
         isMaster,
         isEligibleForCharacter,
-        loading: fetching || isFormatting || isRefetching,
+        loading: isRefetching || (!game && (fetching || isFormatting)),
         error,
         reload: refetch,
       }}

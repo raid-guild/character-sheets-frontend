@@ -1,5 +1,5 @@
-query GetGlobal($id: ID!) {
-  global(id: $id) {
+query GetGlobal {
+  globals {
     ...GlobalInfo
   }
 }
@@ -21,5 +21,23 @@ query GetGameWithMasters($gameId: ID!) {
     masters {
       address
     }
+  }
+}
+
+query GetCharacterInfoById($characterId: ID!) {
+  character(id: $characterId) {
+    ...CharacterInfo
+  }
+}
+
+query GetCharacterMetaById($characterId: ID!) {
+  character(id: $characterId) {
+    ...CharacterMetaInfo
+  }
+}
+
+query GetCharacterMetaByURI($characterURI: String!) {
+  characters(where: { uri: $characterURI }) {
+    ...CharacterMetaInfo
   }
 }

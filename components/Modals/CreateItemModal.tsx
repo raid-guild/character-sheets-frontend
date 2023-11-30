@@ -30,11 +30,14 @@ import {
 } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
+import { Dropdown } from '@/components/Dropdown';
+import { EquippableTraitType } from '@/components/JoinGame/traits';
 import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
+import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
+import { waitUntilBlock } from '@/graphql/health';
 import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
@@ -43,15 +46,8 @@ import {
   ClaimableAddressListInput,
 } from '../ClaimableAddressListInput';
 
-type CreateItemModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-};
-
-export const CreateItemModal: React.FC<CreateItemModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export const CreateItemModal: React.FC = () => {
+  const { createItemModal } = useGameActions();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
   const { renderError } = useToast();
@@ -61,11 +57,20 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   const {
     file: itemEmblem,
     setFile: setItemEmblem,
-    onRemove,
-    onUpload,
-    isUploading,
-    isUploaded,
+    onRemove: onRemoveEmblem,
+    onUpload: onUploadEmblem,
+    isUploading: isUploadingEmblem,
+    isUploaded: isUploadedEmblem,
   } = useUploadFile({ fileName: 'itemEmblem' });
+
+  const {
+    file: itemLayer,
+    setFile: setItemLayer,
+    onRemove: onRemoveLayer,
+    onUpload: onUploadLayer,
+    isUploading: isUploadingLayer,
+    isUploaded: isUploadedLayer,
+  } = useUploadFile({ fileName: 'itemLayer' });
 
   const [itemName, setItemName] = useState<string>('');
   const [itemDescription, setItemDescription] = useState<string>('');
@@ -79,6 +84,10 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
   const [claimableAddressList, setClaimableAddressList] = useState<
     ClaimableAddress[]
   >([]);
+
+  const [equippableType, setEquippableType] = useState<EquippableTraitType>(
+    EquippableTraitType.EQUIPPED_WEARABLE,
+  );
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -146,6 +155,8 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     setClaimableToggle(false);
     setClaimableAddressList([]);
     setItemEmblem(null);
+    setItemLayer(null);
+    setEquippableType(EquippableTraitType.EQUIPPED_WEARABLE);
 
     setShowError(false);
 
@@ -153,13 +164,13 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     setTxHash(null);
     setIsSyncing(false);
     setIsSynced(false);
-  }, [setItemEmblem]);
+  }, [setItemEmblem, setItemLayer]);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!createItemModal?.isOpen) {
       resetData();
     }
-  }, [resetData, isOpen]);
+  }, [resetData, createItemModal?.isOpen]);
 
   const onCreateItem = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
@@ -177,14 +188,30 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
             `Missing item factory address for the ${walletClient.chain.name} network`,
           );
 
-        const cid = await onUpload();
-        if (!cid)
+        const emblemCID = await onUploadEmblem();
+        if (!emblemCID)
           throw new Error('Something went wrong uploading your item emblem');
+
+        let layerCID = emblemCID;
+        if (itemLayer) {
+          layerCID = await onUploadLayer();
+          if (!layerCID)
+            throw new Error(
+              'Something went wrong uploading your item thumbnail',
+            );
+        }
 
         const itemMetadata = {
           name: itemName,
           description: itemDescription,
-          image: `ipfs://${cid}`,
+          image: `ipfs://${emblemCID}`,
+          equippable_layer: `ipfs://${layerCID}`,
+          attributes: [
+            {
+              trait_type: 'EQUIPPABLE TYPE',
+              value: equippableType,
+            },
+          ],
         };
 
         setIsCreating(true);
@@ -232,6 +259,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               itemId: game.items.length,
               gameAddress: game.id,
               tree: jsonTree,
+              chainId: game.chainId,
             };
 
             const signature = await walletClient.signMessage({
@@ -243,6 +271,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
               headers: {
                 'x-account-address': walletClient.account?.address as Address,
                 'x-account-signature': signature,
+                'x-account-chain-id': walletClient.chain.id.toString(),
               },
               method: 'POST',
               body: JSON.stringify(data),
@@ -361,7 +390,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -374,32 +403,35 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       }
     },
     [
+      claimableAddressList,
       claimableToggle,
       classRequirements,
+      equippableType,
       itemName,
       itemDescription,
+      itemLayer,
       itemSupply,
       game,
       reloadGame,
       hasError,
-      onUpload,
+      onUploadEmblem,
+      onUploadLayer,
       publicClient,
       renderError,
       soulboundToggle,
       walletClient,
-      claimableAddressList,
     ],
   );
 
   const isLoading = isCreating;
-  const isDisabled = isLoading || isUploading;
+  const isDisabled = isLoading || isUploadingEmblem || isUploadingLayer;
 
   const content = () => {
     if (txFailed) {
       return (
         <VStack py={10} spacing={4}>
           <Text>Transaction failed.</Text>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={createItemModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -410,7 +442,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
       return (
         <VStack py={10} spacing={4}>
           <Text>Your item was successfully created!</Text>
-          <Button onClick={onClose} variant="outline">
+          <Button onClick={createItemModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -423,6 +455,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           isSyncing={isSyncing}
           text="Your item is being created."
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }
@@ -494,7 +527,7 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
         </FormControl>
 
         {classRequirementsToggle && (
-          <SimpleGrid columns={4} spacing={3} w="100%">
+          <SimpleGrid columns={{ base: 2, sm: 4 }} spacing={3} w="100%">
             {game?.classes.map(c => (
               <Button
                 h="200px"
@@ -587,11 +620,11 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
           />
         )}
         <FormControl isInvalid={showError && !itemEmblem}>
-          <FormLabel>Item Emblem</FormLabel>
+          <FormLabel>Item Emblem (Thumbnail)</FormLabel>
           {!itemEmblem && (
             <Input
               accept=".png, .jpg, .jpeg, .svg"
-              disabled={isUploading}
+              disabled={isDisabled}
               onChange={e => setItemEmblem(e.target.files?.[0] ?? null)}
               type="file"
               variant="file"
@@ -606,15 +639,15 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
                 w="300px"
               />
               <Button
-                isDisabled={isUploading || isUploaded}
-                isLoading={isUploading}
+                isDisabled={isUploadingEmblem || isUploadedEmblem}
+                isLoading={isUploadingEmblem}
                 loadingText="Uploading..."
                 mt={4}
-                onClick={!isUploaded ? onRemove : undefined}
+                onClick={!isUploadedEmblem ? onRemoveEmblem : undefined}
                 type="button"
                 variant="outline"
               >
-                {isUploaded ? 'Uploaded' : 'Remove'}
+                {isUploadedEmblem ? 'Uploaded' : 'Remove'}
               </Button>
             </Flex>
           )}
@@ -624,12 +657,80 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
             </FormHelperText>
           )}
         </FormControl>
+        <FormControl>
+          <Flex align="center">
+            <FormLabel>Equippable Item Layer</FormLabel>
+            <Tooltip
+              label="The equippable item layer is combined with a character's
+            current image when they equip the item. If you do not upload an
+            equippable layer, the item emblem will be used instead."
+            >
+              <Image
+                alt="down arrow"
+                height="14px"
+                mb={2}
+                src="/icons/question-mark.svg"
+                width="14px"
+              />
+            </Tooltip>
+          </Flex>
+          {!itemLayer && (
+            <Input
+              accept=".png, .jpg, .jpeg, .svg"
+              disabled={isDisabled}
+              onChange={e => setItemLayer(e.target.files?.[0] ?? null)}
+              type="file"
+              variant="file"
+            />
+          )}
+          {itemLayer && (
+            <Flex align="center" gap={10} mt={4}>
+              <Image
+                alt="item layer"
+                objectFit="contain"
+                src={URL.createObjectURL(itemLayer)}
+                w="300px"
+              />
+              <Button
+                isDisabled={isUploadingLayer || isUploadedLayer}
+                isLoading={isUploadingLayer}
+                loadingText="Uploading..."
+                mt={4}
+                onClick={!isUploadedLayer ? onRemoveLayer : undefined}
+                type="button"
+                variant="outline"
+              >
+                {isUploadedLayer ? 'Uploaded' : 'Remove'}
+              </Button>
+            </Flex>
+          )}
+        </FormControl>
+        <FormControl>
+          <Flex align="center">
+            <FormLabel>Item Type</FormLabel>
+            <Tooltip label="The type determines where the item will render when equipped by a character.">
+              <Image
+                alt="down arrow"
+                height="14px"
+                mb={2}
+                src="/icons/question-mark.svg"
+                width="14px"
+              />
+            </Tooltip>
+          </Flex>
+          <Dropdown
+            options={Object.values(EquippableTraitType)}
+            selectedOption={equippableType}
+            setSelectedOption={setEquippableType as (option: string) => void}
+          />
+        </FormControl>
         <Button
           alignSelf="flex-end"
           isDisabled={isDisabled}
           isLoading={isLoading}
           loadingText="Creating..."
           type="submit"
+          variant="solid"
         >
           Create
         </Button>
@@ -641,11 +742,11 @@ export const CreateItemModal: React.FC<CreateItemModalProps> = ({
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={isOpen}
-      onClose={onClose}
+      isOpen={createItemModal?.isOpen ?? false}
+      onClose={createItemModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Create an Item</Text>
           <ModalCloseButton size="lg" />

@@ -31,14 +31,14 @@ export const XPPanel: React.FC = () => {
 
   if (!game || Number(game.experience) === 0) {
     return (
-      <VStack as="main">
+      <VStack as="main" py={20}>
         <Text align="center">No XP has been given in this game.</Text>
       </VStack>
     );
   }
 
   return (
-    <VStack as="main" pt={10} w="100%">
+    <VStack as="main" py={10} w="100%">
       <TableContainer w="100%">
         <Table>
           <Thead>

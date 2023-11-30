@@ -15,16 +15,16 @@ import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
-import { useActions } from '@/contexts/ActionsContext';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
-import { DEFAULT_CHAIN } from '@/lib/web3';
-import { EXPLORER_URLS } from '@/utils/constants';
+import { getAddressUrl } from '@/lib/web3';
+import { shortenAddress } from '@/utils/helpers';
 
 export const ApproveTransferModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
-  const { selectedCharacter, approveTransferModal } = useActions();
+  const { selectedCharacter, approveTransferModal } = useCharacterActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -92,7 +92,7 @@ export const ApproveTransferModal: React.FC = () => {
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -120,7 +120,6 @@ export const ApproveTransferModal: React.FC = () => {
 
   const isLoading = isApproving;
   const isDisabled = isLoading;
-  const chainId = DEFAULT_CHAIN.id;
 
   const content = () => {
     if (txFailed) {
@@ -151,6 +150,7 @@ export const ApproveTransferModal: React.FC = () => {
           isSyncing={isSyncing}
           text="Approving the transfer of your character..."
           txHash={txHash}
+          chainId={game?.chainId}
         />
       );
     }
@@ -161,12 +161,14 @@ export const ApproveTransferModal: React.FC = () => {
           By clicking approve, you are allowing the game owner (
           <Link
             alignItems="center"
-            color="blue"
             fontSize="sm"
-            href={`${EXPLORER_URLS[chainId]}/address/${gameOwner}`}
+            href={
+              game && gameOwner ? getAddressUrl(game.chainId, gameOwner) : ''
+            }
             isExternal
+            textDecor="underline"
           >
-            {gameOwner}
+            {gameOwner ? shortenAddress(gameOwner) : ''}
           </Link>
           ) to transfer your character to another player address.
         </Text>
@@ -176,6 +178,8 @@ export const ApproveTransferModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Approving..."
           type="submit"
+          variant="solid"
+          alignSelf="flex-end"
         >
           Approve
         </Button>

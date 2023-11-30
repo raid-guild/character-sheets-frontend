@@ -9,20 +9,23 @@ import {
 import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
+import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
 import { Item } from '@/utils/types';
+
+import { useCharacterActions } from './CharacterActionsContext';
 
 export enum PlayerActions {
   CLAIM_ITEM = 'Claim item',
+  EQUIP_ITEM = 'Equip/Unequip item',
 }
 
 export enum GameMasterActions {
   EDIT_ITEM = 'Edit item',
   GIVE_ITEM = 'Give item',
-  // TODO: Remove these (and their modals) completetely once we are positive we don't need them
-  // ADD_REQUIREMENT = 'Add requirement',
-  // REMOVE_REQUIREMENT = 'Remove requirement',
   EDIT_ITEM_CLAIMABLE = 'Edit item claimable',
 }
+
+type ModalProps = Omit<ReturnType<typeof useDisclosure>, 'onOpen'> | undefined;
 
 type ItemActionsContextType = {
   playerActions: PlayerActions[];
@@ -32,10 +35,9 @@ type ItemActionsContextType = {
   selectItem: (item: Item) => void;
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
-  addRequirementModal: ReturnType<typeof useDisclosure> | undefined;
-  claimItemModal: ReturnType<typeof useDisclosure> | undefined;
-  removeRequirementModal: ReturnType<typeof useDisclosure> | undefined;
-  editItemClaimableModal: ReturnType<typeof useDisclosure> | undefined;
+  claimItemModal: ModalProps;
+  equipItemModal: ModalProps;
+  editItemClaimableModal: ModalProps;
 };
 
 const ItemActionsContext = createContext<ItemActionsContextType>({
@@ -46,25 +48,24 @@ const ItemActionsContext = createContext<ItemActionsContextType>({
   selectItem: () => {},
 
   openActionModal: () => {},
-  addRequirementModal: undefined,
   claimItemModal: undefined,
-  removeRequirementModal: undefined,
+  equipItemModal: undefined,
   editItemClaimableModal: undefined,
 });
 
 export const useItemActions = (): ItemActionsContextType =>
   useContext(ItemActionsContext);
 
-export const ItemActionsProvider: React.FC<{
-  children: JSX.Element;
-}> = ({ children }) => {
+export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
+  children,
+}) => {
   const { address } = useAccount();
   const { character, isMaster } = useGame();
+  const { editCharacterModal, uriNeedsUpgraded } = useCharacterActions();
   const toast = useToast();
 
-  const addRequirementModal = useDisclosure();
   const claimItemModal = useDisclosure();
-  const removeRequirementModal = useDisclosure();
+  const equipItemModal = useDisclosure();
   const editItemClaimableModal = useDisclosure();
 
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -74,10 +75,17 @@ export const ItemActionsProvider: React.FC<{
       return [];
     }
 
-    return Object.keys(PlayerActions).map(
+    let actions = Object.keys(PlayerActions).map(
       key => PlayerActions[key as keyof typeof PlayerActions],
     );
-  }, [address, character]);
+
+    const itemHolderIds = selectedItem?.holders.map(h => h.characterId) ?? [];
+    if (!itemHolderIds.includes(character?.characterId ?? '')) {
+      actions = actions.filter(a => a !== PlayerActions.EQUIP_ITEM);
+    }
+
+    return actions;
+  }, [address, character, selectedItem]);
 
   const gmActions = useMemo(() => {
     if (isMaster) {
@@ -85,27 +93,30 @@ export const ItemActionsProvider: React.FC<{
         key => GameMasterActions[key as keyof typeof GameMasterActions],
       );
 
-      // TODO: For now we are only adding/checking class requirements
-      // if (selectedItem?.requirements.length === game?.classes.length) {
-      //   actions = actions.filter(a => a !== GameMasterActions.ADD_REQUIREMENT);
-      // }
-
-      // if (selectedItem?.requirements.length === 0) {
-      //   actions = actions.filter(
-      //     a => a !== GameMasterActions.REMOVE_REQUIREMENT,
-      //   );
-      // }
-
       return actions;
     }
     return [];
   }, [isMaster]);
 
+  const { isWrongNetwork, renderNetworkError } = useCheckGameNetwork();
+
   const openActionModal = useCallback(
     (action: PlayerActions | GameMasterActions) => {
+      if (isWrongNetwork) {
+        renderNetworkError();
+        return;
+      }
       switch (action) {
         case PlayerActions.CLAIM_ITEM:
           claimItemModal.onOpen();
+          break;
+
+        case PlayerActions.EQUIP_ITEM:
+          if (uriNeedsUpgraded) {
+            editCharacterModal?.onToggle();
+            return;
+          }
+          equipItemModal.onOpen();
           break;
         case GameMasterActions.EDIT_ITEM:
           toast({
@@ -121,12 +132,6 @@ export const ItemActionsProvider: React.FC<{
             status: 'warning',
           });
           break;
-        // case GameMasterActions.ADD_REQUIREMENT:
-        //   addRequirementModal.onOpen();
-        //   break;
-        // case GameMasterActions.REMOVE_REQUIREMENT:
-        //   removeRequirementModal.onOpen();
-        //   break;
         case GameMasterActions.EDIT_ITEM_CLAIMABLE:
           editItemClaimableModal.onOpen();
           break;
@@ -134,7 +139,16 @@ export const ItemActionsProvider: React.FC<{
           break;
       }
     },
-    [claimItemModal, editItemClaimableModal, toast],
+    [
+      claimItemModal,
+      editCharacterModal,
+      editItemClaimableModal,
+      equipItemModal,
+      toast,
+      isWrongNetwork,
+      renderNetworkError,
+      uriNeedsUpgraded,
+    ],
   );
 
   return (
@@ -147,9 +161,8 @@ export const ItemActionsProvider: React.FC<{
         selectItem: setSelectedItem,
 
         openActionModal,
-        addRequirementModal,
         claimItemModal,
-        removeRequirementModal,
+        equipItemModal,
         editItemClaimableModal,
       }}
     >

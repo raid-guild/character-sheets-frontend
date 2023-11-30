@@ -10,13 +10,15 @@ import { zeroAddress } from 'viem';
 import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
+import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
+import { getChainLabelFromId } from '@/lib/web3';
+import { BASE_CHARACTER_URI } from '@/utils/constants';
 import { Character, Item } from '@/utils/types';
 
 export enum PlayerActions {
   APPROVE_TRANSFER = 'Approve transfer',
   CLAIM_CLASS = 'Claim class',
   EDIT_CHARACTER = 'Edit character',
-  EQUIP_ITEM = 'Equip/Unequip item',
   RENOUNCE_CHARACTER = 'Renounce character',
   RENOUNCE_CLASS = 'Renounce class',
 }
@@ -32,7 +34,9 @@ export enum GameMasterActions {
   TRANSFER_CHARACTER = 'Transfer character',
 }
 
-type ActionsContextType = {
+type ModalProps = Omit<ReturnType<typeof useDisclosure>, 'onOpen'> | undefined;
+
+type CharacterActionsContextType = {
   playerActions: PlayerActions[];
   gmActions: GameMasterActions[];
 
@@ -43,22 +47,23 @@ type ActionsContextType = {
   selectItem: (item: Item) => void;
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
-  approveTransferModal: ReturnType<typeof useDisclosure> | undefined;
-  assignClassModal: ReturnType<typeof useDisclosure> | undefined;
-  claimClassModal: ReturnType<typeof useDisclosure> | undefined;
-  editCharacterModal: ReturnType<typeof useDisclosure> | undefined;
-  equipItemModal: ReturnType<typeof useDisclosure> | undefined;
-  giveExpModal: ReturnType<typeof useDisclosure> | undefined;
-  giveItemsModal: ReturnType<typeof useDisclosure> | undefined;
-  jailPlayerModal: ReturnType<typeof useDisclosure> | undefined;
-  removeCharacterModal: ReturnType<typeof useDisclosure> | undefined;
-  renounceCharacterModal: ReturnType<typeof useDisclosure> | undefined;
-  renounceClassModal: ReturnType<typeof useDisclosure> | undefined;
-  revokeClassModal: ReturnType<typeof useDisclosure> | undefined;
-  transferCharacterModal: ReturnType<typeof useDisclosure> | undefined;
+  approveTransferModal: ModalProps;
+  assignClassModal: ModalProps;
+  claimClassModal: ModalProps;
+  editCharacterModal: ModalProps;
+  giveExpModal: ModalProps;
+  giveItemsModal: ModalProps;
+  jailPlayerModal: ModalProps;
+  removeCharacterModal: ModalProps;
+  renounceCharacterModal: ModalProps;
+  renounceClassModal: ModalProps;
+  revokeClassModal: ModalProps;
+  transferCharacterModal: ModalProps;
+
+  uriNeedsUpgraded: boolean;
 };
 
-const ActionsContext = createContext<ActionsContextType>({
+const CharacterActionsContext = createContext<CharacterActionsContextType>({
   playerActions: [],
   gmActions: [],
 
@@ -73,7 +78,6 @@ const ActionsContext = createContext<ActionsContextType>({
   assignClassModal: undefined,
   claimClassModal: undefined,
   editCharacterModal: undefined,
-  equipItemModal: undefined,
   giveExpModal: undefined,
   giveItemsModal: undefined,
   jailPlayerModal: undefined,
@@ -82,21 +86,23 @@ const ActionsContext = createContext<ActionsContextType>({
   renounceClassModal: undefined,
   revokeClassModal: undefined,
   transferCharacterModal: undefined,
+
+  uriNeedsUpgraded: false,
 });
 
-export const useActions = (): ActionsContextType => useContext(ActionsContext);
+export const useCharacterActions = (): CharacterActionsContextType =>
+  useContext(CharacterActionsContext);
 
-export const ActionsProvider: React.FC<{
-  children: JSX.Element;
-}> = ({ children }) => {
+export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
+  children,
+}) => {
   const { address } = useAccount();
-  const { game, isMaster } = useGame();
+  const { character, game, isMaster } = useGame();
 
   const approveTransferModal = useDisclosure();
   const assignClassModal = useDisclosure();
   const claimClassModal = useDisclosure();
   const editCharacterModal = useDisclosure();
-  const equipItemModal = useDisclosure();
   const giveExpModal = useDisclosure();
   const giveItemsModal = useDisclosure();
   const jailPlayerModal = useDisclosure();
@@ -111,6 +117,23 @@ export const ActionsProvider: React.FC<{
   );
 
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+
+  const uriNeedsUpgraded = useMemo(() => {
+    if (!(character && game)) return false;
+    const chainLabel = getChainLabelFromId(game.chainId);
+    const { uri } = character;
+    const potentialCID = uri
+      .split('/')
+      .filter(s => !!s)
+      .pop();
+
+    if (!(chainLabel && potentialCID)) return false;
+
+    const baseURI = uri.replace(potentialCID, '');
+    if (baseURI !== `${BASE_CHARACTER_URI}${chainLabel}/`) return false;
+
+    return !!potentialCID.match(/^[a-zA-Z0-9]{46,59}$/);
+  }, [character, game]);
 
   const playerActions = useMemo(() => {
     if (selectedCharacter?.player !== address?.toLowerCase()) {
@@ -170,8 +193,14 @@ export const ActionsProvider: React.FC<{
     return [];
   }, [address, game, isMaster, selectedCharacter]);
 
+  const { isWrongNetwork, renderNetworkError } = useCheckGameNetwork();
+
   const openActionModal = useCallback(
     (action: PlayerActions | GameMasterActions) => {
+      if (isWrongNetwork) {
+        renderNetworkError();
+        return;
+      }
       switch (action) {
         case GameMasterActions.ASSIGN_CLASS:
           assignClassModal.onOpen();
@@ -206,9 +235,6 @@ export const ActionsProvider: React.FC<{
         case PlayerActions.EDIT_CHARACTER:
           editCharacterModal.onOpen();
           break;
-        case PlayerActions.EQUIP_ITEM:
-          equipItemModal.onOpen();
-          break;
         case PlayerActions.RENOUNCE_CHARACTER:
           renounceCharacterModal.onOpen();
           break;
@@ -220,11 +246,12 @@ export const ActionsProvider: React.FC<{
       }
     },
     [
+      isWrongNetwork,
+      renderNetworkError,
       approveTransferModal,
       assignClassModal,
       claimClassModal,
       editCharacterModal,
-      equipItemModal,
       giveExpModal,
       giveItemsModal,
       jailPlayerModal,
@@ -237,7 +264,7 @@ export const ActionsProvider: React.FC<{
   );
 
   return (
-    <ActionsContext.Provider
+    <CharacterActionsContext.Provider
       value={{
         playerActions,
         gmActions,
@@ -253,7 +280,6 @@ export const ActionsProvider: React.FC<{
         assignClassModal,
         claimClassModal,
         editCharacterModal,
-        equipItemModal,
         giveExpModal,
         giveItemsModal,
         jailPlayerModal,
@@ -262,9 +288,11 @@ export const ActionsProvider: React.FC<{
         renounceClassModal,
         revokeClassModal,
         transferCharacterModal,
+
+        uriNeedsUpgraded,
       }}
     >
       {children}
-    </ActionsContext.Provider>
+    </CharacterActionsContext.Provider>
   );
 };

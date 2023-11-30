@@ -19,22 +19,30 @@ import {
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { encodeAbiParameters, isAddress, parseAbi, zeroAddress } from 'viem';
-import { Address, useAccount, usePublicClient, useWalletClient } from 'wagmi';
+import {
+  Address,
+  useAccount,
+  useNetwork,
+  usePublicClient,
+  useWalletClient,
+} from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGamesContext } from '@/contexts/GamesContext';
-import { useGlobal } from '@/hooks/useGlobal';
-import { waitUntilBlock } from '@/hooks/useGraphHealth';
+import { waitUntilBlock } from '@/graphql/health';
+import { useGlobalForChain } from '@/hooks/useGlobal';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import { getChainLabelFromId } from '@/lib/web3';
+import { BASE_CHARACTER_URI } from '@/utils/constants';
 
 export const CreateGameModal: React.FC = () => {
   const { address } = useAccount();
+  const { chain } = useNetwork();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
-  const { gameFactory } = useGlobal(
-    walletClient?.chain?.name?.toLowerCase() ?? '',
-  );
+  const { data: globalInfo } = useGlobalForChain();
+  const { gameFactory } = globalInfo || {};
   const { renderError } = useToast();
   const { createGameModal: { isOpen, onClose } = {}, reload: reloadGames } =
     useGamesContext();
@@ -132,6 +140,7 @@ export const CreateGameModal: React.FC = () => {
 
       try {
         if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!chain) throw new Error('Could not find connected chain');
         if (!gameFactory)
           throw new Error(
             `Missing game factory address for the ${walletClient.chain.name} network`,
@@ -185,7 +194,12 @@ export const CreateGameModal: React.FC = () => {
               type: 'string',
             },
           ],
-          [`ipfs://${gameMetadataCid}`, 'ipfs://', 'ipfs://', 'ipfs://'],
+          [
+            `ipfs://${gameMetadataCid}`,
+            `${BASE_CHARACTER_URI}${getChainLabelFromId(chain.id)}/`,
+            'ipfs://',
+            'ipfs://',
+          ],
         );
 
         const encodedHatsData = encodeAbiParameters(
@@ -274,7 +288,7 @@ export const CreateGameModal: React.FC = () => {
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(blockNumber);
+        const synced = await waitUntilBlock(client.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
@@ -287,6 +301,7 @@ export const CreateGameModal: React.FC = () => {
       }
     },
     [
+      chain,
       daoAddress,
       gameDescription,
       gameFactory,
@@ -464,6 +479,7 @@ export const CreateGameModal: React.FC = () => {
           isLoading={isLoading}
           loadingText="Creating..."
           type="submit"
+          variant="solid"
         >
           Create
         </Button>
@@ -479,7 +495,7 @@ export const CreateGameModal: React.FC = () => {
       onClose={onClose ?? (() => undefined)}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
           <Text>Create a Game</Text>
           <ModalCloseButton size="lg" />

@@ -5,17 +5,21 @@ import {
   FullGameInfoFragment,
   GetGameWithMastersDocument,
 } from '@/graphql/autogen/types';
-import { client } from '@/graphql/client';
-import { withAuth } from '@/lib/auth';
-import { dbPromise } from '@/lib/mongodb';
+import { getGraphClient } from '@/graphql/client';
+import { AccountInfo, withAuth } from '@/lib/auth';
+import { updateClaimableTreeInDB } from '@/lib/claimableTree';
+import { isSupportedChain } from '@/lib/web3';
 
 const verifyGameMaster = async (
   gameAddress: `0x${string}`,
-  account: `0x${string}`,
+  account: AccountInfo,
 ) => {
-  const { data, error } = await client.query(GetGameWithMastersDocument, {
-    gameId: gameAddress.toLowerCase(),
-  });
+  const { data, error } = await getGraphClient(account.chainId).query(
+    GetGameWithMastersDocument,
+    {
+      gameId: gameAddress.toLowerCase(),
+    },
+  );
 
   if (error) {
     console.error('Error getting game masters', error);
@@ -30,14 +34,14 @@ const verifyGameMaster = async (
   }
 
   const isGameMaster = game.masters.some(
-    master => master.address.toLowerCase() === account.toLowerCase(),
+    master => master.address.toLowerCase() === account.address.toLowerCase(),
   );
 
   return isGameMaster;
 };
 
 const setTree = async (
-  account: `0x${string}`,
+  account: AccountInfo,
   req: NextApiRequest,
   res: NextApiResponse,
 ) => {
@@ -46,11 +50,16 @@ const setTree = async (
   const {
     gameAddress: _gameAddress,
     itemId: _itemId,
+    chainId,
     tree,
   } = JSON.parse(req.body);
 
   let gameAddress: `0x${string}`;
   let itemId: string;
+
+  if (!isSupportedChain(chainId) || account.chainId !== chainId) {
+    return res.status(400).json({ error: 'Invalid chain id' });
+  }
 
   try {
     gameAddress = getAddress(_gameAddress);
@@ -71,26 +80,12 @@ const setTree = async (
   }
 
   try {
-    const client = await dbPromise;
-
-    const result = await client.collection('claimableTrees').findOneAndUpdate(
-      {
-        gameAddress,
-        itemId,
-      },
-      {
-        $set: {
-          tree,
-        },
-        $setOnInsert: {
-          gameAddress,
-          itemId,
-        },
-      },
-      {
-        upsert: true,
-        returnDocument: 'after',
-      },
+    const result = await updateClaimableTreeInDB(
+      gameAddress,
+      itemId,
+      tree,
+      account.address,
+      chainId,
     );
 
     if (!result) {
@@ -98,7 +93,7 @@ const setTree = async (
       return res.status(500).json({ error: 'Could not set tree' });
     }
 
-    return res.status(200).json({ id: result._id });
+    return res.status(200).json(result);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error });

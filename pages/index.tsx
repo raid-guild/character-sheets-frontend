@@ -7,8 +7,8 @@ import { CharacterCard } from '@/components/CharacterCard';
 import { CreateGameModal } from '@/components/Modals/CreateGameModal';
 import { useGamesContext } from '@/contexts/GamesContext';
 import { useToast } from '@/hooks/useToast';
-import { DEFAULT_CHAIN } from '@/lib/web3';
-import { Character, Class, Item } from '@/utils/types';
+import { SUPPORTED_CHAINS } from '@/lib/web3';
+import { Character, Class, EquippedItem, Item } from '@/utils/types';
 
 const createDummyClass = (name: string): Class => ({
   id: '',
@@ -19,6 +19,8 @@ const createDummyClass = (name: string): Class => ({
   image: '',
   holders: [],
   claimable: false,
+  equippable_layer: null,
+  attributes: [],
 });
 
 const createDummyItem = (name: string, image: string): Item => ({
@@ -29,13 +31,15 @@ const createDummyItem = (name: string, image: string): Item => ({
   description: '',
   image,
   soulbound: false,
-  supply: BigInt(0),
-  totalSupply: BigInt(0),
-  amount: BigInt(2),
+  supply: BigInt(0).toString(),
+  totalSupply: BigInt(0).toString(),
+  amount: BigInt(2).toString(),
   requirements: [],
-  holders: [{ id: '1' }],
-  equippers: [{ id: '1' }],
+  holders: [{ id: '1', characterId: '1' }],
+  equippers: [{ id: '1', characterId: '1' }],
   merkleRoot: '',
+  equippable_layer: null,
+  attributes: [],
 });
 
 const dummyCharacter: Character = {
@@ -56,10 +60,12 @@ const dummyCharacter: Character = {
     createDummyItem('Wooden Staff', '/staff.png'),
   ],
   equippedItems: [
-    createDummyItem('Sword of Undhur', '/sword.png'),
-    createDummyItem('Wooden Staff', '/staff.png'),
+    createDummyItem('Sword of Undhur', '/sword.png') as EquippedItem,
+    createDummyItem('Wooden Staff', '/staff.png') as EquippedItem,
   ],
   classes: [createDummyClass('Wizard'), createDummyClass('Warrior')],
+  equippable_layer: null,
+  attributes: [],
 };
 
 export default function Home(): JSX.Element {
@@ -79,7 +85,10 @@ export default function Home(): JSX.Element {
     >
       <VStack spacing={0} align="start" maxW="100rem" w="100%" mx="auto">
         <Heading
-          fontSize="66px"
+          fontSize={{
+            base: '48px',
+            md: '66px',
+          }}
           lineHeight="56px"
           maxW="720px"
           textTransform="capitalize"
@@ -128,10 +137,9 @@ export default function Home(): JSX.Element {
           Most recent :
         </Text>
 
-        {/* TODO: This could be Charactercard? */}
         <CharacterCard
           character={dummyCharacter}
-          chainId={DEFAULT_CHAIN.id}
+          chainId={SUPPORTED_CHAINS[0].id}
           dummy
         />
       </VStack>
