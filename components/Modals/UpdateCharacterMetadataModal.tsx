@@ -383,7 +383,12 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
             />
           )}
           {newAvatarImage && (
-            <Flex align="center" gap={10} mt={4}>
+            <Flex
+              align="center"
+              flexDir={{ base: 'column', sm: 'row' }}
+              gap={10}
+              mt={4}
+            >
               <Image
                 alt="character avatar"
                 objectFit="contain"

@@ -318,12 +318,16 @@ export const UpdateGameMetadataModal: React.FC = () => {
             />
           )}
           {newGameEmblemImage && (
-            <Flex align="center" gap={10} mt={4}>
+            <Flex
+              align="center"
+              flexDir={{ base: 'column', sm: 'row' }}
+              gap={10}
+              mt={4}
+            >
               <Image
                 alt="game emblem"
                 objectFit="contain"
                 src={newGameEmblemImage}
-                w="300px"
               />
               <Button
                 isDisabled={isUploading || isUploaded}
