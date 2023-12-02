@@ -30,6 +30,7 @@ import {
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGamesContext } from '@/contexts/GamesContext';
 import { waitUntilBlock } from '@/graphql/health';
+import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useGlobalForChain } from '@/hooks/useGlobal';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
@@ -58,6 +59,10 @@ export const CreateGameModal: React.FC = () => {
 
   const [gameName, setGameName] = useState<string>('');
   const [gameDescription, setGameDescription] = useState<string>('');
+  const characterLimitMessage = useCharacterLimitMessage({
+    characterLimit: 200,
+    currentCharacterCount: gameDescription.length,
+  });
   const [gameMasters, setGameMasters] = useState<string>('');
   const [daoAddress, setDaoAddress] = useState<string>('');
 
@@ -366,7 +371,7 @@ export const CreateGameModal: React.FC = () => {
           )}
         </FormControl>
         <FormControl isInvalid={showError && !gameDescription}>
-          <FormLabel>Game Description (200 character limit)</FormLabel>
+          <FormLabel>Game Description ({characterLimitMessage})</FormLabel>
           <Textarea
             onChange={e => setGameDescription(e.target.value)}
             value={gameDescription}

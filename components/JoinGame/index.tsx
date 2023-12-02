@@ -25,6 +25,7 @@ import { TransactionPending } from '@/components/TransactionPending';
 import { XPDisplay, XPDisplaySmall } from '@/components/XPDisplay';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
+import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { getChainLabelFromId } from '@/lib/web3';
@@ -81,6 +82,10 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 
   const [characterName, setCharacterName] = useState<string>('');
   const [characterDescription, setCharacterDescription] = useState<string>('');
+  const characterLimitMessage = useCharacterLimitMessage({
+    characterLimit: 200,
+    currentCharacterCount: characterDescription.length,
+  });
 
   const [showUpload, setShowUpload] = useState<boolean>(false);
   const [traits, setTraits] = useState<TraitsArray>(DEFAULT_TRAITS);
@@ -415,7 +420,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
           </FormControl>
           <FormControl isInvalid={showError && !characterDescription}>
             <FormLabel>
-              Write a description for your character (200 character limit)
+              Write a description for your character ({characterLimitMessage})
             </FormLabel>
             <Textarea
               onChange={e => setCharacterDescription(e.target.value)}
