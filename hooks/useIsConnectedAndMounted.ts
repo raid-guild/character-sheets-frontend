@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 
-export const useIsConnectedAndMounted = () => {
+export const useIsConnectedAndMounted = (): boolean => {
   const { isConnected } = useAccount();
   const [isConnectedAndMounted, setIsConnectedAndMounted] = useState(false);
 

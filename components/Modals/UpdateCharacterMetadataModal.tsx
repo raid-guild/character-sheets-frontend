@@ -25,6 +25,7 @@ import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
+import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { getChainLabelFromId } from '@/lib/web3';
@@ -49,6 +50,10 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
   } = useUploadFile({ fileName: 'characterAvatar' });
   const [newName, setNewName] = useState<string>('');
   const [newDescription, setNewDescription] = useState<string>('');
+  const characterLimitMessage = useCharacterLimitMessage({
+    characterLimit: 200,
+    currentCharacterCount: newDescription.length,
+  });
   const [newAvatarImage, setNewAvatarImage] = useState<string | null>(null);
 
   const [showError, setShowError] = useState<boolean>(false);
@@ -350,7 +355,7 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
             showError && (!newDescription || invalidDescription || noChanges)
           }
         >
-          <FormLabel>Character Description (200 character limit)</FormLabel>
+          <FormLabel>Character Description ({characterLimitMessage})</FormLabel>
           <Textarea
             onChange={e => setNewDescription(e.target.value)}
             value={newDescription}
@@ -383,7 +388,12 @@ export const UpdateCharacterMetadataModal: React.FC = () => {
             />
           )}
           {newAvatarImage && (
-            <Flex align="center" gap={10} mt={4}>
+            <Flex
+              align="center"
+              flexDir={{ base: 'column', sm: 'row' }}
+              gap={10}
+              mt={4}
+            >
               <Image
                 alt="character avatar"
                 objectFit="contain"
