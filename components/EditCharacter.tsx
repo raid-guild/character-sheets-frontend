@@ -52,7 +52,7 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
   topOfCardRef,
 }) => {
   const { game, character, reload: reloadGame } = useGame();
-  const { onCloseEditCharacter, uriNeedsUpgraded } = useCharacterActions();
+  const { setShowEditCharacter, uriNeedsUpgraded } = useCharacterActions();
   const { data: walletClient } = useWalletClient();
   const { chain } = useNetwork();
   const publicClient = usePublicClient();
@@ -379,7 +379,7 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
 
         setIsSynced(true);
         reloadGame();
-        onCloseEditCharacter();
+        setShowEditCharacter(false);
       } catch (e) {
         renderError(
           e,
@@ -398,13 +398,13 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
       newName,
       newAvatarFile,
       newDescription,
-      onCloseEditCharacter,
       onSetStep,
       onUpload,
       publicClient,
       reloadGame,
       renderError,
       sameTraits,
+      setShowEditCharacter,
       showUpload,
       traits,
       uriNeedsUpgraded,
@@ -512,7 +512,7 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
     return (
       <VStack py={10} spacing={4} w="100%">
         <Text>Transaction failed.</Text>
-        <Button onClick={onCloseEditCharacter} variant="ghost">
+        <Button onClick={() => setShowEditCharacter(false)} variant="ghost">
           continue
         </Button>
       </VStack>
@@ -523,7 +523,7 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
     return (
       <VStack py={10} spacing={4} w="100%">
         <Text>Your character was successfully updated!</Text>
-        <Button onClick={onCloseEditCharacter} variant="ghost">
+        <Button onClick={() => setShowEditCharacter(false)} variant="ghost">
           continue
         </Button>
       </VStack>
@@ -550,7 +550,11 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
           <Text fontSize="sm" textTransform="uppercase">
             Character editing - {step === 2 ? 'preview' : `${step + 1} / 2`}
           </Text>
-          <Button onClick={onCloseEditCharacter} size="sm" variant="ghost">
+          <Button
+            onClick={() => setShowEditCharacter(false)}
+            size="sm"
+            variant="ghost"
+          >
             cancel
           </Button>
         </Flex>
@@ -562,9 +566,10 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
             w="100%"
           >
             {uriNeedsUpgraded && (
-              <Text>
-                Your metadata URI is out of date. Please click
-                &quot;Update&quot; below to upgrade to the latest version.
+              <Text color="red">
+                Your metadata URI is out of date. Please click &quot;Next
+                step&quot; then &quot;Update&quot; below to upgrade to the
+                latest version.
               </Text>
             )}
             <FormControl isInvalid={showError && (!newName || noChanges)}>

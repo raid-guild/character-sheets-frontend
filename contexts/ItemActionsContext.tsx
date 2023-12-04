@@ -61,7 +61,7 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
 }) => {
   const { address } = useAccount();
   const { character, isMaster } = useGame();
-  const { editCharacterModal, uriNeedsUpgraded } = useCharacterActions();
+  const { setShowEditCharacter, uriNeedsUpgraded } = useCharacterActions();
   const toast = useToast();
 
   const claimItemModal = useDisclosure();
@@ -113,7 +113,7 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
 
         case PlayerActions.EQUIP_ITEM:
           if (uriNeedsUpgraded) {
-            editCharacterModal?.onToggle();
+            setShowEditCharacter(true);
             return;
           }
           equipItemModal.onOpen();
@@ -141,12 +141,12 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
     },
     [
       claimItemModal,
-      editCharacterModal,
       editItemClaimableModal,
       equipItemModal,
       toast,
       isWrongNetwork,
       renderNetworkError,
+      setShowEditCharacter,
       uriNeedsUpgraded,
     ],
   );

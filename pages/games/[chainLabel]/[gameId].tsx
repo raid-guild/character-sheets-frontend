@@ -21,6 +21,7 @@ import { isAddress } from 'viem';
 
 import { CharacterCard } from '@/components/CharacterCard';
 import { CharactersPanel } from '@/components/CharactersPanel';
+import { EditCharacter } from '@/components/EditCharacter';
 import { GameActions } from '@/components/GameActions';
 import { GameTotals } from '@/components/GameTotals';
 import { ImplementationsAlert } from '@/components/ImplementationsAlert';
@@ -43,7 +44,6 @@ import { RenounceClassModal } from '@/components/Modals/RenounceClassModal';
 import { RestoreCharacterModal } from '@/components/Modals/RestoreCharacterModal';
 import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
 import { TransferCharacterModal } from '@/components/Modals/TransferCharacterModal';
-import { UpdateCharacterMetadataModal } from '@/components/Modals/UpdateCharacterMetadataModal';
 import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
 import { NetworkAlert } from '@/components/NetworkAlert';
 import { NetworkDisplay } from '@/components/NetworkDisplay';
@@ -137,7 +137,6 @@ function GamePage({
     assignClassModal,
     approveTransferModal,
     claimClassModal,
-    editCharacterModal,
     giveExpModal,
     giveItemsModal,
     jailPlayerModal,
@@ -145,6 +144,7 @@ function GamePage({
     renounceCharacterModal,
     renounceClassModal,
     revokeClassModal,
+    showEditCharacter,
     transferCharacterModal,
   } = useCharacterActions();
 
@@ -374,12 +374,7 @@ function GamePage({
           <GameActions display={{ base: 'flex', lg: 'none' }} />
         )}
 
-        <VStack
-          align="stretch"
-          position="relative"
-          ref={topOfCardRef}
-          spacing="5px"
-        >
+        <VStack align="stretch" position="relative" spacing="5px">
           <Box ref={topOfCardRef} position="absolute" top="-80px" />
           {!isConnectedAndMounted && (
             <VStack p={8} bg="cardBG" align="start" spacing={4}>
@@ -457,7 +452,11 @@ function GamePage({
                   >
                     Your Character
                   </Text>
-                  <CharacterCard chainId={chainId} character={character} />
+                  {showEditCharacter ? (
+                    <EditCharacter topOfCardRef={topOfCardRef} />
+                  ) : (
+                    <CharacterCard chainId={chainId} character={character} />
+                  )}
                 </>
               )}
             </VStack>
@@ -488,7 +487,6 @@ function GamePage({
       {approveTransferModal && <ApproveTransferModal />}
       {assignClassModal && <AssignClassModal />}
       {claimClassModal && <ClaimClassModal />}
-      {editCharacterModal && <UpdateCharacterMetadataModal />}
       {equipItemModal && <EquipItemModal />}
       {giveExpModal && <DropExperienceModal />}
       {giveItemsModal && <GiveItemsModal />}
