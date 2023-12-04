@@ -17,7 +17,7 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 import {
   EquippableTraitType,
   getTraitsObjectFromAttributes,
-} from '@/components/JoinGame/traits';
+} from '@/components/CompositeCharacterImage/traits';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
