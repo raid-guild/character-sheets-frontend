@@ -38,6 +38,7 @@ import { XPDisplay, XPDisplaySmall } from '@/components/XPDisplay';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
+import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { getChainLabelFromId } from '@/lib/web3';
@@ -71,6 +72,10 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
 
   const [newName, setNewName] = useState<string>('');
   const [newDescription, setNewDescription] = useState<string>('');
+  const characterLimitMessage = useCharacterLimitMessage({
+    characterLimit: 200,
+    currentCharacterCount: newDescription.length,
+  });
   const [newAvatarImage, setNewAvatarImage] = useState<string | null>(null);
 
   const [showUpload, setShowUpload] = useState<boolean>(false);
@@ -597,7 +602,9 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
                 (!newDescription || invalidDescription || noChanges)
               }
             >
-              <FormLabel>Character Description (200 character limit)</FormLabel>
+              <FormLabel>
+                Character Description ({characterLimitMessage})
+              </FormLabel>
               <Textarea
                 onChange={e => setNewDescription(e.target.value)}
                 value={newDescription}
@@ -655,7 +662,12 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
                   />
                 )}
                 {newAvatarImage && (
-                  <Flex align="center" gap={10} mt={4}>
+                  <Flex
+                    align="center"
+                    flexDir={{ base: 'column', sm: 'row' }}
+                    gap={10}
+                    mt={4}
+                  >
                     <Image
                       alt="character avatar"
                       objectFit="contain"

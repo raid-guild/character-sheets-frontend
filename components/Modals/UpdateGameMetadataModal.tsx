@@ -25,6 +25,7 @@ import { TransactionPending } from '@/components/TransactionPending';
 import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
+import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
@@ -47,6 +48,10 @@ export const UpdateGameMetadataModal: React.FC = () => {
 
   const [newGameName, setNewGameName] = useState<string>('');
   const [newGameDescription, setNewGameDescription] = useState<string>('');
+  const characterLimitMessage = useCharacterLimitMessage({
+    characterLimit: 200,
+    currentCharacterCount: newGameDescription.length,
+  });
   const [newGameEmblemImage, setNewGameEmblemImage] = useState<string | null>(
     null,
   );
@@ -283,7 +288,7 @@ export const UpdateGameMetadataModal: React.FC = () => {
             (!newGameDescription || invalidDescription || noChanges)
           }
         >
-          <FormLabel>Game Description (200 character limit)</FormLabel>
+          <FormLabel>Game Description ({characterLimitMessage})</FormLabel>
           <Textarea
             onChange={e => setNewGameDescription(e.target.value)}
             value={newGameDescription}
@@ -318,12 +323,16 @@ export const UpdateGameMetadataModal: React.FC = () => {
             />
           )}
           {newGameEmblemImage && (
-            <Flex align="center" gap={10} mt={4}>
+            <Flex
+              align="center"
+              flexDir={{ base: 'column', sm: 'row' }}
+              gap={10}
+              mt={4}
+            >
               <Image
                 alt="game emblem"
                 objectFit="contain"
                 src={newGameEmblemImage}
-                w="300px"
               />
               <Button
                 isDisabled={isUploading || isUploaded}
