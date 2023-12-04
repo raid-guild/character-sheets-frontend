@@ -106,7 +106,7 @@ export default function GamePageOuter({ game }: Props): JSX.Element {
         <CharacterActionsProvider>
           <ItemActionsProvider>
             <ImplementationsAlert />
-            <OldCharacterURIAlert />
+            {isConnectedAndMounted && <OldCharacterURIAlert />}
             {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
             <GamePage isConnectedAndMounted={isConnectedAndMounted} />
           </ItemActionsProvider>
