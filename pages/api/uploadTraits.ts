@@ -7,10 +7,11 @@ import {
   CharacterTraits,
   EquippableTraitType,
   getAttributesFromTraitsObject,
+  getEquippableTraitName,
   getImageUrl,
   traitPositionToIndex,
   TraitsArray,
-} from '@/components/JoinGame/traits';
+} from '@/components/CompositeCharacterImage/traits';
 import {
   CharacterInfoFragment,
   GetCharacterInfoByIdDocument,
@@ -18,7 +19,7 @@ import {
 import { getGraphClient } from '@/graphql/client';
 import { uploadToWeb3Storage } from '@/lib/fileStorage';
 import { formatCharacter, formatItem } from '@/utils/helpers';
-import { Attribute, Item } from '@/utils/types';
+import { Attribute } from '@/utils/types';
 
 type ResponseData = {
   attributes?: Attribute[];
@@ -169,34 +170,3 @@ export default async function uploadTraits(
     return res.status(500).json({ error: 'Something went wrong' });
   }
 }
-
-const getEquippableTraitName = (
-  equippableTraitType: EquippableTraitType,
-  items: Item[],
-  traits: CharacterTraits,
-): CharacterTraits => {
-  if (
-    items[0]?.equippable_layer &&
-    !traits[equippableTraitType].includes('equip')
-  ) {
-    if (traits[equippableTraitType].includes('remove')) {
-      const [, name, image] = traits[equippableTraitType].split('_');
-
-      if (items[0].name === name && items[0].equippable_layer === image) {
-        traits[equippableTraitType] = items[1]
-          ? `equip_${items[1].name}_${items[1].equippable_layer}`
-          : '';
-      } else {
-        traits[
-          equippableTraitType
-        ] = `equip_${items[0].name}_${items[0].equippable_layer}`;
-      }
-    } else {
-      traits[
-        equippableTraitType
-      ] = `equip_${items[0].name}_${items[0].equippable_layer}`;
-    }
-  }
-
-  return traits;
-};

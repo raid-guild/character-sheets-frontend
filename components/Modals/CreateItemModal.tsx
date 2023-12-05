@@ -30,8 +30,8 @@ import {
 } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
+import { EquippableTraitType } from '@/components/CompositeCharacterImage/traits';
 import { Dropdown } from '@/components/Dropdown';
-import { EquippableTraitType } from '@/components/JoinGame/traits';
 import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGameActions } from '@/contexts/GameActionsContext';

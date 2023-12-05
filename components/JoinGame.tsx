@@ -1,5 +1,4 @@
 import {
-  AspectRatio,
   Box,
   Button,
   Flex,
@@ -20,7 +19,17 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { parseAbi, toHex } from 'viem';
 import { Address, useNetwork, usePublicClient, useWalletClient } from 'wagmi';
 
+import { CompositeCharacterImage } from '@/components/CompositeCharacterImage';
+import {
+  BaseTraitType,
+  CharacterTraits,
+  DEFAULT_TRAITS,
+  EquippableTraitType,
+  TRAITS,
+  TraitsArray,
+} from '@/components/CompositeCharacterImage/traits';
 import { Switch } from '@/components/Switch';
+import { TraitVariantControls } from '@/components/TraitVariantControls';
 import { TransactionPending } from '@/components/TransactionPending';
 import { XPDisplay, XPDisplaySmall } from '@/components/XPDisplay';
 import { useGame } from '@/contexts/GameContext';
@@ -32,27 +41,6 @@ import { getChainLabelFromId } from '@/lib/web3';
 import { BASE_CHARACTER_URI } from '@/utils/constants';
 import { shortenText } from '@/utils/helpers';
 import { Attribute } from '@/utils/types';
-
-import {
-  BaseTraitType,
-  CharacterTraits,
-  EquippableTraitType,
-  getImageUrl,
-  TRAITS,
-  TraitsArray,
-} from './traits';
-import { TraitVariantControls } from './TraitVariantControls';
-
-const DEFAULT_TRAITS: TraitsArray = [
-  '0_Clouds_a_64485b',
-  '1_Type1_a_ccb5aa',
-  '2_Type1_a_80a86c',
-  '3_Bald_a_c5c3bb',
-  '',
-  '5_Villager1_a_796e68',
-  '6_Basic_a',
-  '',
-];
 
 type JoinGameProps = {
   onClose: () => void;
@@ -686,32 +674,5 @@ export const JoinGame: React.FC<JoinGameProps> = ({
         </Flex>
       )}
     </VStack>
-  );
-};
-
-const CompositeCharacterImage: React.FC<{ traits: TraitsArray }> = ({
-  traits,
-}) => {
-  return (
-    <AspectRatio ratio={10 / 13} w="full">
-      <Box bg="accent" borderRadius="10px" pos="relative">
-        {traits.map((trait: string) => {
-          if (!trait) return null;
-          return (
-            <Image
-              alt={`${trait.split('_')[1]} trait layer`}
-              h="100%"
-              key={`composit-trait-image-${trait}`}
-              left={0}
-              objectFit="cover"
-              pos="absolute"
-              src={getImageUrl(trait)}
-              top={0}
-              w="100%"
-            />
-          );
-        })}
-      </Box>
-    </AspectRatio>
   );
 };
