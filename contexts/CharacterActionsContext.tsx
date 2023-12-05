@@ -50,7 +50,6 @@ type CharacterActionsContextType = {
   approveTransferModal: ModalProps;
   assignClassModal: ModalProps;
   claimClassModal: ModalProps;
-  editCharacterModal: ModalProps;
   giveExpModal: ModalProps;
   giveItemsModal: ModalProps;
   jailPlayerModal: ModalProps;
@@ -60,6 +59,8 @@ type CharacterActionsContextType = {
   revokeClassModal: ModalProps;
   transferCharacterModal: ModalProps;
 
+  setShowEditCharacter: (show: boolean) => void;
+  showEditCharacter: boolean;
   uriNeedsUpgraded: boolean;
 };
 
@@ -77,7 +78,6 @@ const CharacterActionsContext = createContext<CharacterActionsContextType>({
   approveTransferModal: undefined,
   assignClassModal: undefined,
   claimClassModal: undefined,
-  editCharacterModal: undefined,
   giveExpModal: undefined,
   giveItemsModal: undefined,
   jailPlayerModal: undefined,
@@ -87,6 +87,8 @@ const CharacterActionsContext = createContext<CharacterActionsContextType>({
   revokeClassModal: undefined,
   transferCharacterModal: undefined,
 
+  setShowEditCharacter: () => {},
+  showEditCharacter: false,
   uriNeedsUpgraded: false,
 });
 
@@ -99,10 +101,15 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
   const { address } = useAccount();
   const { character, game, isMaster } = useGame();
 
+  const [showEditCharacter, setShowEditCharacter] = useState(false);
+
+  const onSetShowEditCharacter = useCallback((show: boolean) => {
+    setShowEditCharacter(show);
+  }, []);
+
   const approveTransferModal = useDisclosure();
   const assignClassModal = useDisclosure();
   const claimClassModal = useDisclosure();
-  const editCharacterModal = useDisclosure();
   const giveExpModal = useDisclosure();
   const giveItemsModal = useDisclosure();
   const jailPlayerModal = useDisclosure();
@@ -233,7 +240,7 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
           claimClassModal.onOpen();
           break;
         case PlayerActions.EDIT_CHARACTER:
-          editCharacterModal.onOpen();
+          setShowEditCharacter(true);
           break;
         case PlayerActions.RENOUNCE_CHARACTER:
           renounceCharacterModal.onOpen();
@@ -251,7 +258,6 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
       approveTransferModal,
       assignClassModal,
       claimClassModal,
-      editCharacterModal,
       giveExpModal,
       giveItemsModal,
       jailPlayerModal,
@@ -279,7 +285,6 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
         approveTransferModal,
         assignClassModal,
         claimClassModal,
-        editCharacterModal,
         giveExpModal,
         giveItemsModal,
         jailPlayerModal,
@@ -289,6 +294,8 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
         revokeClassModal,
         transferCharacterModal,
 
+        setShowEditCharacter: onSetShowEditCharacter,
+        showEditCharacter,
         uriNeedsUpgraded,
       }}
     >

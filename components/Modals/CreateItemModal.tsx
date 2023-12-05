@@ -30,13 +30,14 @@ import {
 } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
+import { EquippableTraitType } from '@/components/CompositeCharacterImage/traits';
 import { Dropdown } from '@/components/Dropdown';
-import { EquippableTraitType } from '@/components/JoinGame/traits';
 import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
+import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
@@ -74,6 +75,10 @@ export const CreateItemModal: React.FC = () => {
 
   const [itemName, setItemName] = useState<string>('');
   const [itemDescription, setItemDescription] = useState<string>('');
+  const characterLimitMessage = useCharacterLimitMessage({
+    characterLimit: 200,
+    currentCharacterCount: itemDescription.length,
+  });
   const [itemSupply, setItemSupply] = useState<string>('');
   const [itemDistribution, setItemDistribution] = useState<string>('1');
   const [classRequirementsToggle, setClassRequirementsToggle] =
@@ -490,7 +495,7 @@ export const CreateItemModal: React.FC = () => {
           )}
         </FormControl>
         <FormControl isInvalid={showError && !itemDescription}>
-          <FormLabel>Item Description (200 character limit)</FormLabel>
+          <FormLabel>Item Description ({characterLimitMessage})</FormLabel>
           <Textarea
             onChange={e => setItemDescription(e.target.value)}
             value={itemDescription}

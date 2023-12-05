@@ -1,5 +1,4 @@
 import {
-  AspectRatio,
   Box,
   Button,
   Flex,
@@ -20,38 +19,28 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { parseAbi, toHex } from 'viem';
 import { Address, useNetwork, usePublicClient, useWalletClient } from 'wagmi';
 
+import { CompositeCharacterImage } from '@/components/CompositeCharacterImage';
+import {
+  BaseTraitType,
+  CharacterTraits,
+  DEFAULT_TRAITS,
+  EquippableTraitType,
+  TRAITS,
+  TraitsArray,
+} from '@/components/CompositeCharacterImage/traits';
 import { Switch } from '@/components/Switch';
+import { TraitVariantControls } from '@/components/TraitVariantControls';
 import { TransactionPending } from '@/components/TransactionPending';
 import { XPDisplay, XPDisplaySmall } from '@/components/XPDisplay';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
+import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { getChainLabelFromId } from '@/lib/web3';
 import { BASE_CHARACTER_URI } from '@/utils/constants';
 import { shortenText } from '@/utils/helpers';
 import { Attribute } from '@/utils/types';
-
-import {
-  BaseTraitType,
-  CharacterTraits,
-  EquippableTraitType,
-  getImageUrl,
-  TRAITS,
-  TraitsArray,
-} from './traits';
-import { TraitVariantControls } from './TraitVariantControls';
-
-const DEFAULT_TRAITS: TraitsArray = [
-  '0_Clouds_a_64485b',
-  '1_Type1_a_ccb5aa',
-  '2_Type1_a_80a86c',
-  '3_Bald_a_c5c3bb',
-  '',
-  '5_Villager1_a_796e68',
-  '6_Basic_a',
-  '',
-];
 
 type JoinGameProps = {
   onClose: () => void;
@@ -81,6 +70,10 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 
   const [characterName, setCharacterName] = useState<string>('');
   const [characterDescription, setCharacterDescription] = useState<string>('');
+  const characterLimitMessage = useCharacterLimitMessage({
+    characterLimit: 200,
+    currentCharacterCount: characterDescription.length,
+  });
 
   const [showUpload, setShowUpload] = useState<boolean>(false);
   const [traits, setTraits] = useState<TraitsArray>(DEFAULT_TRAITS);
@@ -415,7 +408,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
           </FormControl>
           <FormControl isInvalid={showError && !characterDescription}>
             <FormLabel>
-              Write a description for your character (200 character limit)
+              Write a description for your character ({characterLimitMessage})
             </FormLabel>
             <Textarea
               onChange={e => setCharacterDescription(e.target.value)}
@@ -681,32 +674,5 @@ export const JoinGame: React.FC<JoinGameProps> = ({
         </Flex>
       )}
     </VStack>
-  );
-};
-
-const CompositeCharacterImage: React.FC<{ traits: TraitsArray }> = ({
-  traits,
-}) => {
-  return (
-    <AspectRatio ratio={10 / 13} w="full">
-      <Box bg="accent" borderRadius="10px" pos="relative">
-        {traits.map((trait: string) => {
-          if (!trait) return null;
-          return (
-            <Image
-              alt={`${trait.split('_')[1]} trait layer`}
-              h="100%"
-              key={`composit-trait-image-${trait}`}
-              left={0}
-              objectFit="cover"
-              pos="absolute"
-              src={getImageUrl(trait)}
-              top={0}
-              w="100%"
-            />
-          );
-        })}
-      </Box>
-    </AspectRatio>
   );
 };

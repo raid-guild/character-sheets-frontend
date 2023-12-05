@@ -1,7 +1,7 @@
 import { capitalize } from 'lodash';
 
 import { uriToHttp } from '@/utils/helpers';
-import { Attribute } from '@/utils/types';
+import { Attribute, Item } from '@/utils/types';
 
 export enum BaseTraitType {
   BACKGROUND = 'BACKGROUND',
@@ -36,6 +36,17 @@ export type TraitsArray = [
   string,
   string,
   string,
+];
+
+export const DEFAULT_TRAITS: TraitsArray = [
+  '0_Clouds_a_64485b',
+  '1_Type1_a_ccb5aa',
+  '2_Type1_a_80a86c',
+  '3_Bald_a_c5c3bb',
+  '',
+  '5_Villager1_a_796e68',
+  '6_Basic_a',
+  '',
 ];
 
 export const LAYERS_CID =
@@ -317,4 +328,35 @@ export const getAttributesFromTraitsObject = (
       value: `${variant.toUpperCase()} ${color.toUpperCase()}`,
     };
   });
+};
+
+export const getEquippableTraitName = (
+  equippableTraitType: EquippableTraitType,
+  items: Item[],
+  traits: CharacterTraits,
+): CharacterTraits => {
+  if (
+    items[0]?.equippable_layer &&
+    !traits[equippableTraitType].includes('equip')
+  ) {
+    if (traits[equippableTraitType].includes('remove')) {
+      const [, name, image] = traits[equippableTraitType].split('_');
+
+      if (items[0].name === name && items[0].equippable_layer === image) {
+        traits[equippableTraitType] = items[1]
+          ? `equip_${items[1].name}_${items[1].equippable_layer}`
+          : '';
+      } else {
+        traits[
+          equippableTraitType
+        ] = `equip_${items[0].name}_${items[0].equippable_layer}`;
+      }
+    } else {
+      traits[
+        equippableTraitType
+      ] = `equip_${items[0].name}_${items[0].equippable_layer}`;
+    }
+  }
+
+  return traits;
 };

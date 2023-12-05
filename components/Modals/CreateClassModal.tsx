@@ -25,6 +25,7 @@ import { TransactionPending } from '@/components/TransactionPending';
 import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
+import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 
@@ -47,6 +48,10 @@ export const CreateClassModal: React.FC = () => {
 
   const [className, setClassName] = useState<string>('');
   const [classDescription, setClassDescription] = useState<string>('');
+  const characterLimitMessage = useCharacterLimitMessage({
+    characterLimit: 200,
+    currentCharacterCount: classDescription.length,
+  });
   const [isClaimable, setIsClaimable] = useState<boolean>(false);
 
   const [showError, setShowError] = useState<boolean>(false);
@@ -244,7 +249,7 @@ export const CreateClassModal: React.FC = () => {
           )}
         </FormControl>
         <FormControl isInvalid={showError && !classDescription}>
-          <FormLabel>Class Description (200 character limit)</FormLabel>
+          <FormLabel>Class Description ({characterLimitMessage})</FormLabel>
           <Textarea
             onChange={e => setClassDescription(e.target.value)}
             value={classDescription}
