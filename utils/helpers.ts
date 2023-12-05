@@ -19,7 +19,7 @@ import {
 } from './types';
 
 const IPFS_GATEWAYS = [
-  'https://dweb.link',
+  'https://character-sheets.infura-ipfs.io',
   'https://cloudflare-ipfs.com',
   'https://ipfs.io',
 ];
