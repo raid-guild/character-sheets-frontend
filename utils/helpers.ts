@@ -18,11 +18,7 @@ import {
   Metadata,
 } from './types';
 
-const IPFS_GATEWAYS = [
-  'https://cloudflare-ipfs.com',
-  'https://ipfs.io',
-  'https://w3s.link',
-];
+const IPFS_GATEWAYS = ['https://ipfs.io', 'https://cloudflare-ipfs.com'];
 
 /**
  * Given a URI that may be ipfs, ipns, http, https, ar, or data protocol, return the fetch-able http(s) URLs for the same content
