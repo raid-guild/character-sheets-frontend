@@ -30,7 +30,6 @@ import {
 } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
-import { EquippableTraitType } from '@/components/CompositeCharacterImage/traits';
 import { Dropdown } from '@/components/Dropdown';
 import { Switch } from '@/components/Switch';
 import { TransactionPending } from '@/components/TransactionPending';
@@ -41,6 +40,7 @@ import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import { EquippableTraitType } from '@/lib/traits';
 
 import {
   ClaimableAddress,
