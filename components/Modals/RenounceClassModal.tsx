@@ -23,8 +23,15 @@ import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { executeAsCharacter } from '@/utils/account';
+import { Class } from '@/utils/types';
 
-export const RenounceClassModal: React.FC = () => {
+type RenounceClassModalProps = {
+  classEntity?: Class;
+};
+
+export const RenounceClassModal: React.FC<RenounceClassModalProps> = ({
+  classEntity,
+}) => {
   const { character, game, reload: reloadGame } = useGame();
   const { renounceClassModal, selectedCharacter } = useCharacterActions();
 
@@ -40,10 +47,13 @@ export const RenounceClassModal: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
-  const options = useMemo(
-    () => selectedCharacter?.classes.map(c => c.classId) ?? [],
-    [selectedCharacter?.classes],
-  );
+  const options = useMemo(() => {
+    if (classEntity) {
+      return [classEntity.classId];
+    }
+    return selectedCharacter?.classes.map(c => c.classId) ?? [];
+  }, [classEntity, selectedCharacter?.classes]);
+
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
     defaultValue: options[0],
@@ -52,14 +62,19 @@ export const RenounceClassModal: React.FC = () => {
   const group = getRootProps();
 
   const resetData = useCallback(() => {
-    setValue(options[0]);
-    setClassId(options[0]);
+    if (classEntity) {
+      setValue(classEntity.classId);
+      setClassId(classEntity.classId);
+    } else {
+      setValue(options[0]);
+      setClassId(options[0]);
+    }
     setIsRenouncing(false);
     setTxHash(null);
     setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
-  }, [options, setValue]);
+  }, [classEntity, options, setValue]);
 
   useEffect(() => {
     if (!renounceClassModal?.isOpen) {

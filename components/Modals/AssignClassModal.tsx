@@ -45,7 +45,11 @@ export const AssignClassModal: React.FC = () => {
     return selectedCharacterClasses.includes(classId);
   }, [classId, selectedCharacter]);
 
-  const options = game?.classes.map(c => c.classId) ?? [];
+  const options = useMemo(
+    () => game?.classes.map(c => c.classId) ?? [],
+    [game?.classes],
+  );
+
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
     defaultValue: '0',

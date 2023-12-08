@@ -34,7 +34,7 @@ export enum GameMasterActions {
   TRANSFER_CHARACTER = 'Transfer character',
 }
 
-type ModalProps = Omit<ReturnType<typeof useDisclosure>, 'onOpen'> | undefined;
+type ModalProps = ReturnType<typeof useDisclosure> | undefined;
 
 type CharacterActionsContextType = {
   playerActions: PlayerActions[];

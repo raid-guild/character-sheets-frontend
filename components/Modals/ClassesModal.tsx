@@ -61,9 +61,7 @@ export const ClassesModal: React.FC<ClassesModalProps> = ({
           <VStack spacing={6} w="100%">
             {game &&
               classes.length > 0 &&
-              classes.map(_class => (
-                <ClassCard key={_class.id} chainId={game.chainId} {..._class} />
-              ))}
+              classes.map(_class => <ClassCard key={_class.id} {..._class} />)}
             {classes.length === 0 && (
               <Text align="center">No classes found.</Text>
             )}

@@ -54,6 +54,10 @@ import {
   useCharacterActions,
 } from '@/contexts/CharacterActionsContext';
 import {
+  ClassActionsProvider,
+  useClassActions,
+} from '@/contexts/ClassActionsContext';
+import {
   GameActionsProvider,
   GameMasterActions,
   useGameActions,
@@ -104,12 +108,14 @@ export default function GamePageOuter({ game }: Props): JSX.Element {
     <GameProvider chainId={chainId} gameId={gameId.toString()} game={game}>
       <GameActionsProvider>
         <CharacterActionsProvider>
-          <ItemActionsProvider>
-            <ImplementationsAlert />
-            {isConnectedAndMounted && <OldCharacterURIAlert />}
-            {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
-            <GamePage isConnectedAndMounted={isConnectedAndMounted} />
-          </ItemActionsProvider>
+          <ClassActionsProvider>
+            <ItemActionsProvider>
+              <ImplementationsAlert />
+              {isConnectedAndMounted && <OldCharacterURIAlert />}
+              {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
+              <GamePage isConnectedAndMounted={isConnectedAndMounted} />
+            </ItemActionsProvider>
+          </ClassActionsProvider>
         </CharacterActionsProvider>
       </GameActionsProvider>
     </GameProvider>
@@ -147,6 +153,8 @@ function GamePage({
     showEditCharacter,
     transferCharacterModal,
   } = useCharacterActions();
+
+  const { selectedClass } = useClassActions();
 
   const { equipItemModal, claimItemModal, editItemClaimableModal } =
     useItemActions();
@@ -486,14 +494,18 @@ function GamePage({
       {/*  CHARACTER ACTIONS */}
       {approveTransferModal && <ApproveTransferModal />}
       {assignClassModal && <AssignClassModal />}
-      {claimClassModal && <ClaimClassModal />}
+      {claimClassModal && (
+        <ClaimClassModal classEntity={selectedClass ?? undefined} />
+      )}
       {equipItemModal && <EquipItemModal />}
       {giveExpModal && <DropExperienceModal />}
       {giveItemsModal && <GiveItemsModal />}
       {jailPlayerModal && <JailPlayerModal />}
       {removeCharacterModal && <RemoveCharacterModal />}
       {renounceCharacterModal && <RenounceCharacterModal />}
-      {renounceClassModal && <RenounceClassModal />}
+      {renounceClassModal && (
+        <RenounceClassModal classEntity={selectedClass ?? undefined} />
+      )}
       {revokeClassModal && <RevokeClassModal />}
       {transferCharacterModal && <TransferCharacterModal />}
 

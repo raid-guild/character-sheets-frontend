@@ -23,8 +23,15 @@ import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { executeAsCharacter } from '@/utils/account';
+import { Class } from '@/utils/types';
 
-export const ClaimClassModal: React.FC = () => {
+type ClaimClassModalProps = {
+  classEntity?: Class;
+};
+
+export const ClaimClassModal: React.FC<ClaimClassModalProps> = ({
+  classEntity,
+}) => {
   const { character, game, reload: reloadGame } = useGame();
   const { claimClassModal } = useCharacterActions();
 
@@ -46,10 +53,12 @@ export const ClaimClassModal: React.FC = () => {
     return selectedCharacterClasses.includes(classId);
   }, [character, classId]);
 
-  const options = useMemo(
-    () => game?.classes.filter(c => c.claimable).map(c => c.classId) ?? [],
-    [game],
-  );
+  const options = useMemo(() => {
+    if (classEntity) {
+      return [classEntity.classId];
+    }
+    return game?.classes.filter(c => c.claimable).map(c => c.classId) ?? [];
+  }, [classEntity, game]);
 
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
@@ -59,14 +68,19 @@ export const ClaimClassModal: React.FC = () => {
   const group = getRootProps();
 
   const resetData = useCallback(() => {
-    setValue(options[0]);
-    setClassId(options[0]);
+    if (classEntity) {
+      setValue(classEntity.classId);
+      setClassId(classEntity.classId);
+    } else {
+      setValue(options[0]);
+      setClassId(options[0]);
+    }
     setIsClaiming(false);
     setTxHash(null);
     setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
-  }, [options, setValue]);
+  }, [classEntity, options, setValue]);
 
   useEffect(() => {
     if (!claimClassModal?.isOpen) {
