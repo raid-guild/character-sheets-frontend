@@ -66,7 +66,6 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
               items.map(item => (
                 <ItemCard
                   key={item.id}
-                  chainId={game.chainId}
                   holderId={character?.characterId}
                   {...item}
                 />
