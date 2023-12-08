@@ -38,6 +38,7 @@ import { EditItemClaimableModal } from '@/components/Modals/EditItemClaimableMod
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
 import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
+import { LevelClassModal } from '@/components/Modals/LevelClassModal';
 import { RemoveCharacterModal } from '@/components/Modals/RemoveCharacterModal';
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
 import { RenounceClassModal } from '@/components/Modals/RenounceClassModal';
@@ -146,6 +147,7 @@ function GamePage({
     giveExpModal,
     giveItemsModal,
     jailPlayerModal,
+    levelClassModal,
     removeCharacterModal,
     renounceCharacterModal,
     renounceClassModal,
@@ -503,6 +505,7 @@ function GamePage({
       {giveExpModal && <DropExperienceModal />}
       {giveItemsModal && <GiveItemsModal />}
       {jailPlayerModal && <JailPlayerModal />}
+      {levelClassModal && <LevelClassModal />}
       {removeCharacterModal && <RemoveCharacterModal />}
       {renounceCharacterModal && <RenounceCharacterModal />}
       {renounceClassModal && (

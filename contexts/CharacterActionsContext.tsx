@@ -25,10 +25,11 @@ export enum PlayerActions {
 
 export enum GameMasterActions {
   ASSIGN_CLASS = 'Assign class',
-  JAIL_PLAYER = 'Jail player',
   FREE_PLAYER = 'Free player',
   GIVE_ITEMS = 'Give items',
   GIVE_XP = 'Give XP',
+  JAIL_PLAYER = 'Jail player',
+  LEVEL_CLASS = 'Level class',
   REVOKE_CLASS = 'Revoke class',
   REMOVE_CHARACTER = 'Remove character',
   TRANSFER_CHARACTER = 'Transfer character',
@@ -53,6 +54,7 @@ type CharacterActionsContextType = {
   giveExpModal: ModalProps;
   giveItemsModal: ModalProps;
   jailPlayerModal: ModalProps;
+  levelClassModal: ModalProps;
   removeCharacterModal: ModalProps;
   renounceCharacterModal: ModalProps;
   renounceClassModal: ModalProps;
@@ -81,6 +83,7 @@ const CharacterActionsContext = createContext<CharacterActionsContextType>({
   giveExpModal: undefined,
   giveItemsModal: undefined,
   jailPlayerModal: undefined,
+  levelClassModal: undefined,
   removeCharacterModal: undefined,
   renounceCharacterModal: undefined,
   renounceClassModal: undefined,
@@ -113,6 +116,7 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
   const giveExpModal = useDisclosure();
   const giveItemsModal = useDisclosure();
   const jailPlayerModal = useDisclosure();
+  const levelClassModal = useDisclosure();
   const removeCharacterModal = useDisclosure();
   const renounceCharacterModal = useDisclosure();
   const renounceClassModal = useDisclosure();
@@ -224,6 +228,9 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
         case GameMasterActions.JAIL_PLAYER:
           jailPlayerModal.onOpen();
           break;
+        case GameMasterActions.LEVEL_CLASS:
+          levelClassModal.onOpen();
+          break;
         case GameMasterActions.REMOVE_CHARACTER:
           removeCharacterModal.onOpen();
           break;
@@ -261,6 +268,7 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
       giveExpModal,
       giveItemsModal,
       jailPlayerModal,
+      levelClassModal,
       removeCharacterModal,
       renounceCharacterModal,
       renounceClassModal,
@@ -288,6 +296,7 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
         giveExpModal,
         giveItemsModal,
         jailPlayerModal,
+        levelClassModal,
         removeCharacterModal,
         renounceCharacterModal,
         renounceClassModal,
