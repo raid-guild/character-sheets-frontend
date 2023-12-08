@@ -17,15 +17,24 @@ import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { RadioCard } from '@/components/RadioCard';
+import { SelectCharacterInput } from '@/components/SelectCharacterInput';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
+import { Class } from '@/utils/types';
 
-export const AssignClassModal: React.FC = () => {
+type AssignClassModalProps = {
+  classEntity?: Class;
+};
+
+export const AssignClassModal: React.FC<AssignClassModalProps> = ({
+  classEntity,
+}) => {
   const { game, reload: reloadGame, isMaster } = useGame();
-  const { selectedCharacter, assignClassModal } = useCharacterActions();
+  const { selectCharacter, selectedCharacter, assignClassModal } =
+    useCharacterActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -45,10 +54,12 @@ export const AssignClassModal: React.FC = () => {
     return selectedCharacterClasses.includes(classId);
   }, [classId, selectedCharacter]);
 
-  const options = useMemo(
-    () => game?.classes.map(c => c.classId) ?? [],
-    [game?.classes],
-  );
+  const options = useMemo(() => {
+    if (classEntity) {
+      return [classEntity.classId];
+    }
+    return game?.classes.map(c => c.classId) ?? [];
+  }, [classEntity, game?.classes]);
 
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
@@ -58,14 +69,19 @@ export const AssignClassModal: React.FC = () => {
   const group = getRootProps();
 
   const resetData = useCallback(() => {
-    setValue('0');
-    setClassId('0');
+    if (classEntity) {
+      setValue(classEntity.classId);
+      setClassId(classEntity.classId);
+    } else {
+      setValue(options[0]);
+      setClassId(options[0]);
+    }
     setIsAssigning(false);
     setTxHash(null);
     setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
-  }, [setValue]);
+  }, [classEntity, options, setValue]);
 
   useEffect(() => {
     if (!assignClassModal?.isOpen) {
@@ -209,6 +225,18 @@ export const AssignClassModal: React.FC = () => {
         </Flex>
         {invalidClass && (
           <Text color="red.500">This class is already assigned.</Text>
+        )}
+        {!!classEntity && !!game && (
+          <VStack align="flex-start" w="full">
+            <Text fontSize="sm" fontWeight={500}>
+              Select a character
+            </Text>
+            <SelectCharacterInput
+              characters={game.characters}
+              selectedCharacter={selectedCharacter}
+              setSelectedCharacter={selectCharacter}
+            />
+          </VStack>
         )}
         <Button
           isDisabled={isDisabled}

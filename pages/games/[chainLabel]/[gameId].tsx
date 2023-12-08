@@ -493,7 +493,9 @@ function GamePage({
 
       {/*  CHARACTER ACTIONS */}
       {approveTransferModal && <ApproveTransferModal />}
-      {assignClassModal && <AssignClassModal />}
+      {assignClassModal && (
+        <AssignClassModal classEntity={selectedClass ?? undefined} />
+      )}
       {claimClassModal && (
         <ClaimClassModal classEntity={selectedClass ?? undefined} />
       )}
@@ -506,7 +508,9 @@ function GamePage({
       {renounceClassModal && (
         <RenounceClassModal classEntity={selectedClass ?? undefined} />
       )}
-      {revokeClassModal && <RevokeClassModal />}
+      {revokeClassModal && (
+        <RevokeClassModal classEntity={selectedClass ?? undefined} />
+      )}
       {transferCharacterModal && <TransferCharacterModal />}
 
       {/*  ITEM ACTIONS */}

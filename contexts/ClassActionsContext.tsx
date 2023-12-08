@@ -1,4 +1,4 @@
-import { useDisclosure, useToast } from '@chakra-ui/react';
+import { useToast } from '@chakra-ui/react';
 import {
   createContext,
   useCallback,
@@ -19,10 +19,10 @@ export enum PlayerActions {
 }
 
 export enum GameMasterActions {
+  ASSIGN_CLASS = 'Assign class',
   EDIT_CLASS = 'Edit class',
+  REVOKE_CLASS = 'Revoke class',
 }
-
-type ModalProps = Omit<ReturnType<typeof useDisclosure>, 'onOpen'> | undefined;
 
 type ClassActionsContextType = {
   playerActions: PlayerActions[];
@@ -32,8 +32,6 @@ type ClassActionsContextType = {
   selectClass: (gamclassEntityeClass: Class) => void;
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
-  claimClassModal: ModalProps;
-  assignClassModal: ModalProps;
 };
 
 const ClassActionsContext = createContext<ClassActionsContextType>({
@@ -44,8 +42,6 @@ const ClassActionsContext = createContext<ClassActionsContextType>({
   selectClass: () => {},
 
   openActionModal: () => {},
-  claimClassModal: undefined,
-  assignClassModal: undefined,
 });
 
 export const useClassActions = (): ClassActionsContextType =>
@@ -56,8 +52,12 @@ export const ClassActionsProvider: React.FC<React.PropsWithChildren> = ({
 }) => {
   const { address } = useAccount();
   const { character, isMaster } = useGame();
-  const { assignClassModal, claimClassModal, renounceClassModal } =
-    useCharacterActions();
+  const {
+    assignClassModal,
+    claimClassModal,
+    renounceClassModal,
+    revokeClassModal,
+  } = useCharacterActions();
   const toast = useToast();
 
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
@@ -109,6 +109,9 @@ export const ClassActionsProvider: React.FC<React.PropsWithChildren> = ({
         case PlayerActions.RENOUNCE_CLASS:
           renounceClassModal?.onOpen();
           break;
+        case GameMasterActions.ASSIGN_CLASS:
+          assignClassModal?.onOpen();
+          break;
         case GameMasterActions.EDIT_CLASS:
           toast({
             title: 'Coming soon!',
@@ -116,16 +119,21 @@ export const ClassActionsProvider: React.FC<React.PropsWithChildren> = ({
             status: 'warning',
           });
           break;
+        case GameMasterActions.REVOKE_CLASS:
+          revokeClassModal?.onOpen();
+          break;
         default:
           break;
       }
     },
     [
+      assignClassModal,
       claimClassModal,
       toast,
       isWrongNetwork,
       renderNetworkError,
       renounceClassModal,
+      revokeClassModal,
     ],
   );
 
@@ -139,8 +147,6 @@ export const ClassActionsProvider: React.FC<React.PropsWithChildren> = ({
         selectClass: setSelectedClass,
 
         openActionModal,
-        claimClassModal,
-        assignClassModal,
       }}
     >
       {children}
