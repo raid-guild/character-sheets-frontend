@@ -7,14 +7,21 @@ type Size = 'sm' | 'md' | 'lg';
 type ClassTagProps = {
   name: string;
   image: string;
+  level: string;
   size?: Size | 'xs';
 };
 
-export const ClassTag: React.FC<ClassTagProps> = ({ size, name, image }) => {
+export const ClassTag: React.FC<ClassTagProps> = ({
+  size,
+  name,
+  image,
+  level,
+}) => {
+  const nameAndLevel = `${name} (lvl. ${level})`;
   if (size === 'xs') {
-    return <ClassTagInnerExtraSmall name={name} image={image} />;
+    return <ClassTagInnerExtraSmall name={nameAndLevel} image={image} />;
   }
-  return <ClassTagInner name={name} image={image} size={size} />;
+  return <ClassTagInner name={nameAndLevel} image={image} size={size} />;
 };
 
 export const VillagerClassTag: React.FC<{ size?: Size }> = ({ size }) => {
@@ -23,7 +30,7 @@ export const VillagerClassTag: React.FC<{ size?: Size }> = ({ size }) => {
 
 const fontSizeMap = {
   sm: 'xs',
-  md: 'sm',
+  md: 'xs',
   lg: 'md',
 };
 

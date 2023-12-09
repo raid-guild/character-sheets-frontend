@@ -61,7 +61,7 @@ export type Character = Metadata & {
   removed: boolean;
   experience: string;
   uri: string;
-  classes: Class[];
+  classes: ClaimedClass[];
   heldItems: Item[];
   equippedItems: EquippedItem[];
 };
@@ -72,6 +72,11 @@ export type Class = Metadata & {
   uri: string;
   claimable: boolean;
   holders: { id: string; characterId: string }[];
+};
+
+export type ClaimedClass = Class & {
+  level: string;
+  xpForNextLevel: string;
 };
 
 export type ItemRequirement = {

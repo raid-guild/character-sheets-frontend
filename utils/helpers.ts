@@ -10,6 +10,7 @@ import { ENVIRONMENT } from '@/utils/constants';
 
 import {
   Character,
+  ClaimedClass,
   Class,
   EquippedItem,
   Game,
@@ -128,9 +129,19 @@ export const formatCharacter = async (
 ): Promise<Character> => {
   const metadata = await fetchMetadata(character.uri);
 
-  const characterClasses = classes.filter(c =>
-    character.heldClasses.find(h => h.classEntity.classId === c.classId),
-  );
+  const claimedClasses: ClaimedClass[] = [];
+
+  classes.forEach(c => {
+    const held = character.heldClasses.find(
+      h => h.classEntity.classId === c.classId,
+    );
+    if (!held) return;
+    claimedClasses.push({
+      ...c,
+      level: BigInt(held.amount).toString(),
+      xpForNextLevel: BigInt(held.xpForNextLevel).toString(),
+    });
+  });
 
   const heldItems: Item[] = [];
   const equippedItems: EquippedItem[] = [];
@@ -167,7 +178,7 @@ export const formatCharacter = async (
     jailed: character.jailed,
     approved: character.approved,
     removed: character.removed,
-    classes: characterClasses,
+    classes: claimedClasses,
     heldItems,
     equippedItems,
     equippable_layer: null,
