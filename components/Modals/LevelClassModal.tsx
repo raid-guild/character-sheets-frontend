@@ -20,21 +20,16 @@ import { RadioCard } from '@/components/RadioCard';
 import { SelectCharacterInput } from '@/components/SelectCharacterInput';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
+import { useClassActions } from '@/contexts/ClassActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
-import { Class } from '@/utils/types';
 
-type LevelClassModalProps = {
-  classEntity?: Class;
-};
-
-export const LevelClassModal: React.FC<LevelClassModalProps> = ({
-  classEntity,
-}) => {
+export const LevelClassModal: React.FC = () => {
   const { game, reload: reloadGame, isMaster } = useGame();
   const { selectCharacter, selectedCharacter, levelClassModal } =
     useCharacterActions();
+  const { selectedClass } = useClassActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -54,7 +49,18 @@ export const LevelClassModal: React.FC<LevelClassModalProps> = ({
     return _class.xpForNextLevel;
   }, [classId, selectedCharacter]);
 
-  const invalidClass = useMemo(() => {
+  const characterWithoutClass = useMemo(() => {
+    if (selectedClass) {
+      return selectedCharacter?.classes.find(
+        c => c.classId === selectedClass.classId,
+      )
+        ? false
+        : true;
+    }
+    return false;
+  }, [selectedClass, selectedCharacter]);
+
+  const insufficientXp = useMemo(() => {
     if (BigInt(selectedCharacter?.experience ?? '0') < BigInt(xpForNextLevel)) {
       return true;
     }
@@ -62,11 +68,11 @@ export const LevelClassModal: React.FC<LevelClassModalProps> = ({
   }, [selectedCharacter, xpForNextLevel]);
 
   const options = useMemo(() => {
-    if (classEntity) {
-      return [classEntity.classId];
+    if (selectedClass) {
+      return [selectedClass.classId];
     }
     return game?.classes.map(c => c.classId) ?? [];
-  }, [classEntity, game?.classes]);
+  }, [selectedClass, game?.classes]);
 
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
@@ -76,9 +82,9 @@ export const LevelClassModal: React.FC<LevelClassModalProps> = ({
   const group = getRootProps();
 
   const resetData = useCallback(() => {
-    if (classEntity) {
-      setValue(classEntity.classId);
-      setClassId(classEntity.classId);
+    if (selectedClass) {
+      setValue(selectedClass.classId);
+      setClassId(selectedClass.classId);
     } else {
       setValue(options[0]);
       setClassId(options[0]);
@@ -88,7 +94,7 @@ export const LevelClassModal: React.FC<LevelClassModalProps> = ({
     setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
-  }, [classEntity, options, setValue]);
+  }, [selectedClass, options, setValue]);
 
   useEffect(() => {
     if (!levelClassModal?.isOpen) {
@@ -100,7 +106,7 @@ export const LevelClassModal: React.FC<LevelClassModalProps> = ({
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
-      if (invalidClass) {
+      if (insufficientXp || characterWithoutClass) {
         return;
       }
 
@@ -154,9 +160,10 @@ export const LevelClassModal: React.FC<LevelClassModalProps> = ({
       }
     },
     [
+      characterWithoutClass,
       classId,
+      insufficientXp,
       isMaster,
-      invalidClass,
       publicClient,
       game,
       reloadGame,
@@ -167,7 +174,8 @@ export const LevelClassModal: React.FC<LevelClassModalProps> = ({
   );
 
   const isLoading = isLeveling;
-  const isDisabled = isLoading || invalidClass;
+  const isDisabled =
+    isLoading || insufficientXp || characterWithoutClass || !selectedCharacter;
 
   const content = () => {
     if (txFailed) {
@@ -205,7 +213,18 @@ export const LevelClassModal: React.FC<LevelClassModalProps> = ({
 
     return (
       <VStack as="form" onSubmit={onLevelClass} spacing={8}>
-        <Text>Current XP: {selectedCharacter?.experience}</Text>
+        <Text>
+          Current XP:{' '}
+          {selectedCharacter
+            ? selectedCharacter.experience
+            : 'no character selected'}
+        </Text>
+        {selectedClass && selectedCharacter && characterWithoutClass && (
+          <Text color="red.500">
+            The selected character doesn&apos;t have the {selectedClass.name}{' '}
+            class.
+          </Text>
+        )}
         <Flex {...group} wrap="wrap" gap={4}>
           {options.map(value => {
             const radio = getRadioProps({ value });
@@ -233,23 +252,25 @@ export const LevelClassModal: React.FC<LevelClassModalProps> = ({
             );
           })}
         </Flex>
-        <Text>
-          To level this class,{' '}
-          <Text as="span" fontWeight={500}>
-            {xpForNextLevel} XP
-          </Text>{' '}
-          must be staked.{' '}
-          {invalidClass && selectedCharacter && (
-            <Text as="span" color="red.500">
-              An additional{' '}
-              {(
-                BigInt(xpForNextLevel) - BigInt(selectedCharacter.experience)
-              ).toString()}{' '}
-              XP is required.
-            </Text>
-          )}
-        </Text>
-        {!!classEntity && !!game && (
+        {selectedCharacter && (
+          <Text>
+            To level this class,{' '}
+            <Text as="span" fontWeight={500}>
+              {xpForNextLevel} XP
+            </Text>{' '}
+            must be staked.{' '}
+            {insufficientXp && (
+              <Text as="span" color="red.500">
+                An additional{' '}
+                {(
+                  BigInt(xpForNextLevel) - BigInt(selectedCharacter.experience)
+                ).toString()}{' '}
+                XP is required.
+              </Text>
+            )}
+          </Text>
+        )}
+        {selectedClass && game && (
           <VStack align="flex-start" w="full">
             <Text fontSize="sm" fontWeight={500}>
               Select a character

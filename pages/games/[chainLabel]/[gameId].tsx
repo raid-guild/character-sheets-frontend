@@ -54,10 +54,7 @@ import {
   CharacterActionsProvider,
   useCharacterActions,
 } from '@/contexts/CharacterActionsContext';
-import {
-  ClassActionsProvider,
-  useClassActions,
-} from '@/contexts/ClassActionsContext';
+import { ClassActionsProvider } from '@/contexts/ClassActionsContext';
 import {
   GameActionsProvider,
   GameMasterActions,
@@ -155,8 +152,6 @@ function GamePage({
     showEditCharacter,
     transferCharacterModal,
   } = useCharacterActions();
-
-  const { selectedClass } = useClassActions();
 
   const { equipItemModal, claimItemModal, editItemClaimableModal } =
     useItemActions();
@@ -495,12 +490,8 @@ function GamePage({
 
       {/*  CHARACTER ACTIONS */}
       {approveTransferModal && <ApproveTransferModal />}
-      {assignClassModal && (
-        <AssignClassModal classEntity={selectedClass ?? undefined} />
-      )}
-      {claimClassModal && (
-        <ClaimClassModal classEntity={selectedClass ?? undefined} />
-      )}
+      {assignClassModal && <AssignClassModal />}
+      {claimClassModal && <ClaimClassModal />}
       {equipItemModal && <EquipItemModal />}
       {giveExpModal && <DropExperienceModal />}
       {giveItemsModal && <GiveItemsModal />}
@@ -508,12 +499,8 @@ function GamePage({
       {levelClassModal && <LevelClassModal />}
       {removeCharacterModal && <RemoveCharacterModal />}
       {renounceCharacterModal && <RenounceCharacterModal />}
-      {renounceClassModal && (
-        <RenounceClassModal classEntity={selectedClass ?? undefined} />
-      )}
-      {revokeClassModal && (
-        <RevokeClassModal classEntity={selectedClass ?? undefined} />
-      )}
+      {renounceClassModal && <RenounceClassModal />}
+      {revokeClassModal && <RevokeClassModal />}
       {transferCharacterModal && <TransferCharacterModal />}
 
       {/*  ITEM ACTIONS */}

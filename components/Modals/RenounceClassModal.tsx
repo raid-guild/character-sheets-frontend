@@ -19,21 +19,16 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 import { RadioCard } from '@/components/RadioCard';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
+import { useClassActions } from '@/contexts/ClassActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { executeAsCharacter } from '@/utils/account';
-import { Class } from '@/utils/types';
 
-type RenounceClassModalProps = {
-  classEntity?: Class;
-};
-
-export const RenounceClassModal: React.FC<RenounceClassModalProps> = ({
-  classEntity,
-}) => {
+export const RenounceClassModal: React.FC = () => {
   const { character, game, reload: reloadGame } = useGame();
-  const { renounceClassModal, selectedCharacter } = useCharacterActions();
+  const { renounceClassModal } = useCharacterActions();
+  const { selectedClass } = useClassActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -48,11 +43,11 @@ export const RenounceClassModal: React.FC<RenounceClassModalProps> = ({
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
   const options = useMemo(() => {
-    if (classEntity) {
-      return [classEntity.classId];
+    if (selectedClass) {
+      return [selectedClass.classId];
     }
-    return selectedCharacter?.classes.map(c => c.classId) ?? [];
-  }, [classEntity, selectedCharacter?.classes]);
+    return character?.classes.map(c => c.classId) ?? [];
+  }, [selectedClass, character?.classes]);
 
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
@@ -62,9 +57,9 @@ export const RenounceClassModal: React.FC<RenounceClassModalProps> = ({
   const group = getRootProps();
 
   const resetData = useCallback(() => {
-    if (classEntity) {
-      setValue(classEntity.classId);
-      setClassId(classEntity.classId);
+    if (selectedClass) {
+      setValue(selectedClass.classId);
+      setClassId(selectedClass.classId);
     } else {
       setValue(options[0]);
       setClassId(options[0]);
@@ -74,7 +69,7 @@ export const RenounceClassModal: React.FC<RenounceClassModalProps> = ({
     setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
-  }, [classEntity, options, setValue]);
+  }, [selectedClass, options, setValue]);
 
   useEffect(() => {
     if (!renounceClassModal?.isOpen) {
@@ -88,10 +83,9 @@ export const RenounceClassModal: React.FC<RenounceClassModalProps> = ({
 
       try {
         if (!walletClient) throw new Error('Could not find a wallet client');
-        if (!selectedCharacter || selectedCharacter.id !== character?.id)
-          throw new Error('Character address not found');
+        if (!character) throw new Error('Character address not found');
         if (!game?.classesAddress) throw new Error('Missing game data');
-        if (selectedCharacter?.classes.length === 0)
+        if (character?.classes.length === 0)
           throw new Error('No classes found');
 
         setIsRenouncing(true);
@@ -141,7 +135,6 @@ export const RenounceClassModal: React.FC<RenounceClassModalProps> = ({
       game,
       reloadGame,
       renderError,
-      selectedCharacter,
       walletClient,
     ],
   );
@@ -172,7 +165,7 @@ export const RenounceClassModal: React.FC<RenounceClassModalProps> = ({
       );
     }
 
-    if (txHash && selectedCharacter) {
+    if (txHash && character) {
       return (
         <TransactionPending
           isSyncing={isSyncing}

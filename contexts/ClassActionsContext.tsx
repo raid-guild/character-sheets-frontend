@@ -21,6 +21,7 @@ export enum PlayerActions {
 export enum GameMasterActions {
   ASSIGN_CLASS = 'Assign class',
   EDIT_CLASS = 'Edit class',
+  LEVEL_CLASS = 'Level class',
   REVOKE_CLASS = 'Revoke class',
 }
 
@@ -29,7 +30,7 @@ type ClassActionsContextType = {
   gmActions: GameMasterActions[];
 
   selectedClass: Class | null;
-  selectClass: (gamclassEntityeClass: Class) => void;
+  selectClass: (gamclassEntityeClass: Class | null) => void;
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
 };
@@ -55,6 +56,7 @@ export const ClassActionsProvider: React.FC<React.PropsWithChildren> = ({
   const {
     assignClassModal,
     claimClassModal,
+    levelClassModal,
     renounceClassModal,
     revokeClassModal,
   } = useCharacterActions();
@@ -119,6 +121,9 @@ export const ClassActionsProvider: React.FC<React.PropsWithChildren> = ({
             status: 'warning',
           });
           break;
+        case GameMasterActions.LEVEL_CLASS:
+          levelClassModal?.onOpen();
+          break;
         case GameMasterActions.REVOKE_CLASS:
           revokeClassModal?.onOpen();
           break;
@@ -131,6 +136,7 @@ export const ClassActionsProvider: React.FC<React.PropsWithChildren> = ({
       claimClassModal,
       toast,
       isWrongNetwork,
+      levelClassModal,
       renderNetworkError,
       renounceClassModal,
       revokeClassModal,

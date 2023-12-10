@@ -42,7 +42,7 @@ type CharacterActionsContextType = {
   gmActions: GameMasterActions[];
 
   selectedCharacter: Character | null;
-  selectCharacter: (character: Character) => void;
+  selectCharacter: (character: Character | null) => void;
 
   selectedItem: Item | null;
   selectItem: (item: Item) => void;
