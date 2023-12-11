@@ -118,8 +118,8 @@ const ClassTagInner: React.FC<{
       <Box bg={isElder ? 'softyellow' : bgColor} my={py} w="6px" />
       <HStack
         borderBottom={isElder ? '6px solid' : '6px solid'}
-        borderColor={isElder ? 'softyellow' : bgColor}
         borderTop={isElder ? '6px solid' : '6px solid'}
+        borderColor={isElder ? 'softyellow' : bgColor}
         spacing={spacing}
         bg={bgColor}
         py={py}
