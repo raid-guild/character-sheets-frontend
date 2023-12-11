@@ -19,6 +19,7 @@
     "@emotion/styled": "^11.11.0",
     "@fontsource/tektur": "^5.0.3",
     "@fontsource/unbounded": "^5.0.15",
+    "@hatsprotocol/sdk-v1-subgraph": "^0.4.1",
     "@openzeppelin/merkle-tree": "^1.0.5",
     "@rainbow-me/rainbowkit": "^1.1.1",
     "@types/node": "20.8.4",

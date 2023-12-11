@@ -1,3 +1,5 @@
+import { HatsSubgraphClient } from '@hatsprotocol/sdk-v1-subgraph';
+
 import {
   CharacterInfoFragment,
   ClassInfoFragment,
@@ -6,6 +8,7 @@ import {
   ItemInfoFragment,
   ItemRequirementInfoFragment,
 } from '@/graphql/autogen/types';
+import { HATS_SUBGRAPH_URLS } from '@/lib/web3/constants';
 import { ENVIRONMENT } from '@/utils/constants';
 
 import {
@@ -126,6 +129,7 @@ export const formatCharacter = async (
   character: CharacterInfoFragment,
   classes: Class[],
   items: Item[],
+  elderHatWearersByClassIds: { [classId: number]: string[] },
 ): Promise<Character> => {
   const metadata = await fetchMetadata(character.uri);
 
@@ -140,6 +144,10 @@ export const formatCharacter = async (
       ...c,
       level: BigInt(held.amount).toString(),
       xpForNextLevel: BigInt(held.xpForNextLevel).toString(),
+      isElder:
+        elderHatWearersByClassIds[Number(c.classId)]?.includes(
+          character.player,
+        ) ?? false,
     });
   });
 
@@ -267,15 +275,43 @@ export const formatGameMeta = async (
   };
 };
 
+const getElderHatWearersByClassIds = async (
+  chainId: number,
+): Promise<{ [classId: number]: string[] }> => {
+  const hatsSubgraphClient = new HatsSubgraphClient({
+    config: HATS_SUBGRAPH_URLS,
+  });
+
+  const hats = await hatsSubgraphClient.getHatsByIds({
+    chainId,
+    hatIds: [
+      // TODO: Change this to an env
+      BigInt(
+        '0x000000b900010001000200020000000000000000000000000000000000000000',
+      ),
+    ],
+    props: {
+      wearers: {
+        props: {},
+      },
+    },
+  });
+  return {
+    [0]: hats.map(h => h.wearers?.map(w => w.id.toLowerCase()) ?? []).flat(),
+  };
+};
+
 export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
   const metadata = await fetchMetadata(game.uri);
+  const chainId = Number(game.chainId);
+  const elderHatWearersByClassIds = await getElderHatWearersByClassIds(chainId);
   const classes = await Promise.all(game.classes.map(formatClass));
   const items = await Promise.all(game.items.map(formatItem));
 
   return {
     id: game.id,
     startedAt: Number(game.startedAt) * 1000,
-    chainId: Number(game.chainId),
+    chainId,
     classesAddress: game.classesAddress,
     itemsAddress: game.itemsAddress,
     itemsManager: game.itemsManager,
@@ -293,7 +329,9 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
     characters: await Promise.all(
-      game.characters.map(c => formatCharacter(c, classes, items)),
+      game.characters.map(c =>
+        formatCharacter(c, classes, items, elderHatWearersByClassIds),
+      ),
     ),
     classes,
     items,

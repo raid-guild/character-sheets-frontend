@@ -77,6 +77,7 @@ export type Class = Metadata & {
 export type ClaimedClass = Class & {
   level: string;
   xpForNextLevel: string;
+  isElder: boolean;
 };
 
 export type ItemRequirement = {

@@ -8,6 +8,7 @@ type ClassTagProps = {
   name: string;
   image: string;
   level: string;
+  isElder: boolean;
   size?: Size | 'xs';
 };
 
@@ -16,16 +17,37 @@ export const ClassTag: React.FC<ClassTagProps> = ({
   name,
   image,
   level,
+  isElder,
 }) => {
   const nameAndLevel = `${name} (lvl. ${level})`;
   if (size === 'xs') {
-    return <ClassTagInnerExtraSmall name={nameAndLevel} image={image} />;
+    return (
+      <ClassTagInnerExtraSmall
+        name={nameAndLevel}
+        image={image}
+        isElder={isElder}
+      />
+    );
   }
-  return <ClassTagInner name={nameAndLevel} image={image} size={size} />;
+  return (
+    <ClassTagInner
+      name={nameAndLevel}
+      image={image}
+      isElder={isElder}
+      size={size}
+    />
+  );
 };
 
 export const VillagerClassTag: React.FC<{ size?: Size }> = ({ size }) => {
-  return <ClassTagInner name="Villager" image="/villager.png" size={size} />;
+  return (
+    <ClassTagInner
+      name="Villager"
+      image="/villager.png"
+      isElder={false}
+      size={size}
+    />
+  );
 };
 
 const fontSizeMap = {
@@ -64,19 +86,14 @@ const spacingMap = {
   lg: 4,
 };
 
-const colors = [
-  'softgreen',
-  'softpurple',
-  'softblue',
-  'softyellow',
-  'softorange',
-];
+const colors = ['softgreen', 'softpurple', 'softblue', 'softorange', 'softred'];
 
 const ClassTagInner: React.FC<{
   name: string;
   image: string;
+  isElder: boolean;
   size?: Size;
-}> = ({ name, image, size = 'md' }) => {
+}> = ({ name, image, isElder, size = 'md' }) => {
   const { fontSize, imageWidth, imageHeight, px, py, spacing } = useMemo(
     () => ({
       fontSize: fontSizeMap[size],
@@ -98,8 +115,16 @@ const ClassTagInner: React.FC<{
 
   return (
     <HStack spacing={0} p={0} w="100%" align="stretch">
-      <Box bg={bgColor} my={py} w="6px" />
-      <HStack spacing={spacing} bg={bgColor} py={py} px={px}>
+      <Box bg={isElder ? 'softyellow' : bgColor} my={py} w="6px" />
+      <HStack
+        borderBottom={isElder ? '6px solid' : '6px solid'}
+        borderColor={isElder ? 'softyellow' : bgColor}
+        borderTop={isElder ? '6px solid' : '6px solid'}
+        spacing={spacing}
+        bg={bgColor}
+        py={py}
+        px={px}
+      >
         {image && (
           <Image
             alt="class emblem"
@@ -110,10 +135,13 @@ const ClassTagInner: React.FC<{
           />
         )}
         <Text color="dark" fontSize={fontSize} fontWeight="bold">
+          <Text as="span" color="softyellow">
+            {isElder && '★'}
+          </Text>{' '}
           {name}
         </Text>
       </HStack>
-      <Box bg={bgColor} my={py} w="6px" />
+      <Box bg={isElder ? 'softyellow' : bgColor} my={py} w="6px" />
     </HStack>
   );
 };
@@ -121,7 +149,8 @@ const ClassTagInner: React.FC<{
 const ClassTagInnerExtraSmall: React.FC<{
   name: string;
   image: string;
-}> = ({ name, image }) => {
+  isElder: boolean;
+}> = ({ name, image, isElder }) => {
   const bgColor = useMemo(() => {
     // TODO take bgColor from classEntity
     const hexValue = keccak256(toBytes(name));
@@ -130,8 +159,17 @@ const ClassTagInnerExtraSmall: React.FC<{
   }, [name]);
 
   return (
-    <Tooltip aria-label={name} label={name}>
-      <Box bg={bgColor} borderRadius="50%" p={1.5}>
+    <Tooltip
+      aria-label={isElder ? `★ ${name}` : name}
+      label={isElder ? `★ ${name}` : name}
+    >
+      <Box
+        bg={bgColor}
+        border="2px solid"
+        borderColor={isElder ? 'softyellow' : bgColor}
+        borderRadius="50%"
+        p={1.5}
+      >
         {image && (
           <Image
             alt="class emblem"

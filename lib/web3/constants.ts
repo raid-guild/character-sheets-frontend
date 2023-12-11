@@ -16,7 +16,18 @@ export const EXPLORER_URLS: { [key: number]: string } = {
 export const SUBGRAPH_URLS: { [key: number]: string } = {
   [100]:
     'https://api.thegraph.com/subgraphs/name/dan13ram/character-sheets-gnosis',
-  [5]: 'https://api.thegraph.com/subgraphs/name/dan13ram/character-sheets-goerli',
+  [5]: 'https://api.thegraph.com/subgraphs/name/ecwireless/character-sheets-goerli',
+};
+
+export const HATS_SUBGRAPH_URLS: { [key: number]: { endpoint: string } } = {
+  [100]: {
+    endpoint:
+      'https://api.thegraph.com/subgraphs/name/hats-protocol/hats-v1-gnosis-chain',
+  },
+  [5]: {
+    endpoint:
+      'https://api.thegraph.com/subgraphs/name/hats-protocol/hats-v1-goerli',
+  },
 };
 
 export const RPC_URLS: { [key: number]: string } = {
