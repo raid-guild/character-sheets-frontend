@@ -285,7 +285,7 @@ const getElderHatWearersByClassIds = async (
   const hats = await hatsSubgraphClient.getHatsByIds({
     chainId,
     hatIds: [
-      // TODO: Change this to an env
+      // TODO: get elder hat IDs dynamically
       BigInt(
         '0x000000b900010001000200020000000000000000000000000000000000000000',
       ),

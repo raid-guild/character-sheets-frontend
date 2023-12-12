@@ -21,6 +21,7 @@ import { isAddress } from 'viem';
 
 import { CharacterCard } from '@/components/CharacterCard';
 import { CharactersPanel } from '@/components/CharactersPanel';
+import { ClaimElderHatAlert } from '@/components/ClaimElderHatAlert';
 import { EditCharacter } from '@/components/EditCharacter';
 import { GameActions } from '@/components/GameActions';
 import { GameTotals } from '@/components/GameTotals';
@@ -30,6 +31,7 @@ import { AddGameMasterModal } from '@/components/Modals/AddGameMasterModal';
 import { ApproveTransferModal } from '@/components/Modals/ApproveTransferModal';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { ClaimClassModal } from '@/components/Modals/ClaimClassModal';
+import { ClaimElderHatModal } from '@/components/Modals/ClaimElderHatModal';
 import { ClaimItemModal } from '@/components/Modals/ClaimItemModal';
 import { CreateClassModal } from '@/components/Modals/CreateClassModal';
 import { CreateItemModal } from '@/components/Modals/CreateItemModal';
@@ -109,6 +111,7 @@ export default function GamePageOuter({ game }: Props): JSX.Element {
           <ClassActionsProvider>
             <ItemActionsProvider>
               <ImplementationsAlert />
+              <ClaimElderHatAlert />
               {isConnectedAndMounted && <OldCharacterURIAlert />}
               {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
               <GamePage isConnectedAndMounted={isConnectedAndMounted} />
@@ -141,6 +144,7 @@ function GamePage({
     assignClassModal,
     approveTransferModal,
     claimClassModal,
+    claimElderHatModal,
     giveExpModal,
     giveItemsModal,
     jailPlayerModal,
@@ -492,6 +496,7 @@ function GamePage({
       {approveTransferModal && <ApproveTransferModal />}
       {assignClassModal && <AssignClassModal />}
       {claimClassModal && <ClaimClassModal />}
+      {claimElderHatModal && <ClaimElderHatModal />}
       {equipItemModal && <EquipItemModal />}
       {giveExpModal && <DropExperienceModal />}
       {giveItemsModal && <GiveItemsModal />}

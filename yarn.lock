@@ -2157,6 +2157,24 @@
   resolved "https://registry.yarnpkg.com/@graphql-typed-document-node/core/-/core-3.2.0.tgz#5f3d96ec6b2354ad6d8a28bf216a1d97b5426861"
   integrity sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==
 
+"@hatsprotocol/sdk-v1-core@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@hatsprotocol/sdk-v1-core/-/sdk-v1-core-0.8.0.tgz#e8485b284ba0c519b20469981c142edd3264907d"
+  integrity sha512-w9SacXKR5uP9Fm3Au949NNOc+R7vqXBicTme5u1AanRsqMpr8JlLg488HNJSHwcYkh5li3nod+S+g07iYOjjew==
+  dependencies:
+    "@hatsprotocol/sdk-v1-subgraph" "0.4.0"
+    graphql "^16.6.0"
+    graphql-request "^6.1.0"
+
+"@hatsprotocol/sdk-v1-subgraph@0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@hatsprotocol/sdk-v1-subgraph/-/sdk-v1-subgraph-0.4.0.tgz#5127982f04538de7e48aae094de19275bed6a855"
+  integrity sha512-3C2Ck3cal/xVAiGUepKRIZLafgutiPixEvXs7ps/DGLLtKY5eWhKQqTiCHeYeT12MJflMlV3FLQ42BMOVUI2zw==
+  dependencies:
+    graphql "^16.6.0"
+    graphql-request "^6.1.0"
+    zod "^3.22.4"
+
 "@hatsprotocol/sdk-v1-subgraph@^0.4.1":
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/@hatsprotocol/sdk-v1-subgraph/-/sdk-v1-subgraph-0.4.1.tgz#2fa1312c9f004d1f47db6cb7fcec093f933f0299"
