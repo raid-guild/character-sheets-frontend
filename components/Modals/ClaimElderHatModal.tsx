@@ -181,7 +181,7 @@ export const ClaimElderHatModal: React.FC = () => {
       <VStack as="form" onSubmit={onClaimElderHat} spacing={8}>
         {selectedClass && (
           <>
-            <Text maxW="450px" textAlign="center">
+            <Text maxW="500px" textAlign="center">
               Claiming the {selectedClass?.name} Elder Hat will grant you
               abilities only available to the top{' '}
               {selectedClass?.name?.toLowerCase()}s in the guild.
