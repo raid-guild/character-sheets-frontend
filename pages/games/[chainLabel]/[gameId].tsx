@@ -111,7 +111,7 @@ export default function GamePageOuter({ game }: Props): JSX.Element {
           <ClassActionsProvider>
             <ItemActionsProvider>
               <ImplementationsAlert />
-              <ClaimElderHatAlert />
+              {isConnectedAndMounted && <ClaimElderHatAlert />}
               {isConnectedAndMounted && <OldCharacterURIAlert />}
               {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
               <GamePage isConnectedAndMounted={isConnectedAndMounted} />
