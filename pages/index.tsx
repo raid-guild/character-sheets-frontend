@@ -23,6 +23,7 @@ const createDummyClass = (name: string): ClaimedClass => ({
   attributes: [],
   level: BigInt(1).toString(),
   xpForNextLevel: BigInt(0).toString(),
+  isElder: false,
 });
 
 const createDummyItem = (name: string, image: string): Item => ({

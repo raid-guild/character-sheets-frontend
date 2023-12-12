@@ -367,6 +367,7 @@ export const theme = extendTheme({
     softyellow: '#FFEBA4',
     softblue: '#7B91DD',
     softorange: '#BA9179',
+    softred: '#BA7987',
   },
   components: {
     Button,

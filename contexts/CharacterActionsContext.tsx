@@ -18,6 +18,7 @@ import { Character, Item } from '@/utils/types';
 export enum PlayerActions {
   APPROVE_TRANSFER = 'Approve transfer',
   CLAIM_CLASS = 'Claim class',
+  CLAIM_ELDER_HAT = 'Claim elder hat',
   EDIT_CHARACTER = 'Edit character',
   RENOUNCE_CHARACTER = 'Renounce character',
   RENOUNCE_CLASS = 'Renounce class',
@@ -51,6 +52,7 @@ type CharacterActionsContextType = {
   approveTransferModal: ModalProps;
   assignClassModal: ModalProps;
   claimClassModal: ModalProps;
+  claimElderHatModal: ModalProps;
   giveExpModal: ModalProps;
   giveItemsModal: ModalProps;
   jailPlayerModal: ModalProps;
@@ -80,6 +82,7 @@ const CharacterActionsContext = createContext<CharacterActionsContextType>({
   approveTransferModal: undefined,
   assignClassModal: undefined,
   claimClassModal: undefined,
+  claimElderHatModal: undefined,
   giveExpModal: undefined,
   giveItemsModal: undefined,
   jailPlayerModal: undefined,
@@ -113,6 +116,7 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
   const approveTransferModal = useDisclosure();
   const assignClassModal = useDisclosure();
   const claimClassModal = useDisclosure();
+  const claimElderHatModal = useDisclosure();
   const giveExpModal = useDisclosure();
   const giveItemsModal = useDisclosure();
   const jailPlayerModal = useDisclosure();
@@ -154,6 +158,10 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
     let actions = Object.keys(PlayerActions).map(
       key => PlayerActions[key as keyof typeof PlayerActions],
     );
+
+    // Remove elder hat claim so it doesn't appear in action menu
+    actions = actions.filter(a => a !== PlayerActions.CLAIM_ELDER_HAT);
+
     if (selectedCharacter?.classes.length === 0) {
       actions = actions.filter(a => a !== PlayerActions.RENOUNCE_CLASS);
     }
@@ -246,6 +254,9 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
         case PlayerActions.CLAIM_CLASS:
           claimClassModal.onOpen();
           break;
+        case PlayerActions.CLAIM_ELDER_HAT:
+          claimElderHatModal.onOpen();
+          break;
         case PlayerActions.EDIT_CHARACTER:
           setShowEditCharacter(true);
           break;
@@ -265,6 +276,7 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
       approveTransferModal,
       assignClassModal,
       claimClassModal,
+      claimElderHatModal,
       giveExpModal,
       giveItemsModal,
       jailPlayerModal,
@@ -293,6 +305,7 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
         approveTransferModal,
         assignClassModal,
         claimClassModal,
+        claimElderHatModal,
         giveExpModal,
         giveItemsModal,
         jailPlayerModal,

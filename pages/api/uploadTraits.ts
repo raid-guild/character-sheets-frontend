@@ -73,7 +73,12 @@ export default async function uploadTraits(
         ),
       );
 
-      const character = await formatCharacter(unformattedCharacter, [], items);
+      const character = await formatCharacter(
+        unformattedCharacter,
+        [],
+        items,
+        [],
+      );
 
       const equippedItem1s = character.equippedItems
         .filter(
