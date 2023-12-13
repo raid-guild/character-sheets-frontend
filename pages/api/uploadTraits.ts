@@ -159,7 +159,7 @@ export default async function uploadTraits(
 
     const fileContents = await imageComposite
       .quality(85)
-      .resize(700, 925)
+      .resize(700, Jimp.AUTO)
       .getBufferAsync(Jimp.MIME_JPEG);
 
     const file = new File([fileContents], 'characterAvater.jpg');
