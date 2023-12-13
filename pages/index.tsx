@@ -8,9 +8,9 @@ import { CreateGameModal } from '@/components/Modals/CreateGameModal';
 import { useGamesContext } from '@/contexts/GamesContext';
 import { useToast } from '@/hooks/useToast';
 import { SUPPORTED_CHAINS } from '@/lib/web3';
-import { Character, Class, EquippedItem, Item } from '@/utils/types';
+import { Character, ClaimedClass, EquippedItem, Item } from '@/utils/types';
 
-const createDummyClass = (name: string): Class => ({
+const createDummyClass = (name: string): ClaimedClass => ({
   id: '',
   classId: '',
   uri: '',
@@ -21,6 +21,8 @@ const createDummyClass = (name: string): Class => ({
   claimable: false,
   equippable_layer: null,
   attributes: [],
+  level: BigInt(1).toString(),
+  xpForNextLevel: BigInt(0).toString(),
 });
 
 const createDummyItem = (name: string, image: string): Item => ({

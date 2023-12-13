@@ -25,9 +25,9 @@ import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
-export const RevokeClassModal: React.FC = () => {
-  const { game, isMaster, reload: reloadGame } = useGame();
-  const { selectCharacter, selectedCharacter, revokeClassModal } =
+export const LevelClassModal: React.FC = () => {
+  const { game, reload: reloadGame, isMaster } = useGame();
+  const { selectCharacter, selectedCharacter, levelClassModal } =
     useCharacterActions();
   const { selectedClass } = useClassActions();
 
@@ -35,30 +35,48 @@ export const RevokeClassModal: React.FC = () => {
   const publicClient = usePublicClient();
   const { renderError } = useToast();
 
-  const [classId, setClassId] = useState<string>('1');
+  const [classId, setClassId] = useState<string>('0');
 
-  const [isRevoking, setIsRevoking] = useState<boolean>(false);
+  const [isLeveling, setIsLeveling] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
-  const invalidClass = useMemo(() => {
-    const selectedCharacterClasses =
-      selectedCharacter?.classes.map(c => c.classId) ?? [];
-    return !selectedCharacterClasses.includes(classId);
+  const xpForNextLevel = useMemo(() => {
+    const _class = selectedCharacter?.classes.find(c => c.classId === classId);
+    if (!_class) return '0';
+    return _class.xpForNextLevel;
   }, [classId, selectedCharacter]);
+
+  const characterWithoutClass = useMemo(() => {
+    if (selectedClass) {
+      return selectedCharacter?.classes.find(
+        c => c.classId === selectedClass.classId,
+      )
+        ? false
+        : true;
+    }
+    return false;
+  }, [selectedClass, selectedCharacter]);
+
+  const insufficientXp = useMemo(() => {
+    if (BigInt(selectedCharacter?.experience ?? '0') < BigInt(xpForNextLevel)) {
+      return true;
+    }
+    return false;
+  }, [selectedCharacter, xpForNextLevel]);
 
   const options = useMemo(() => {
     if (selectedClass) {
       return [selectedClass.classId];
     }
-    return selectedCharacter?.classes.map(c => c.classId) ?? [];
-  }, [selectedClass, selectedCharacter?.classes]);
+    return game?.classes.map(c => c.classId) ?? [];
+  }, [selectedClass, game?.classes]);
 
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
-    defaultValue: options[0],
+    defaultValue: '0',
     onChange: setClassId,
   });
   const group = getRootProps();
@@ -71,7 +89,7 @@ export const RevokeClassModal: React.FC = () => {
       setValue(options[0]);
       setClassId(options[0]);
     }
-    setIsRevoking(false);
+    setIsLeveling(false);
     setTxHash(null);
     setTxFailed(false);
     setIsSyncing(false);
@@ -79,40 +97,42 @@ export const RevokeClassModal: React.FC = () => {
   }, [selectedClass, options, setValue]);
 
   useEffect(() => {
-    if (!revokeClassModal?.isOpen) {
+    if (!levelClassModal?.isOpen) {
       resetData();
     }
-  }, [resetData, revokeClassModal?.isOpen]);
+  }, [resetData, levelClassModal?.isOpen]);
 
-  const onRevokeClass = useCallback(
+  const onLevelClass = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
 
-      if (invalidClass) {
+      if (insufficientXp || characterWithoutClass) {
         return;
       }
 
       try {
         if (!walletClient) throw new Error('Could not find a wallet client');
+
         if (!selectedCharacter) throw new Error('Character address not found');
+
         if (!game?.classesAddress) throw new Error('Missing game data');
-        if (selectedCharacter?.classes.length === 0)
-          throw new Error('No classes found');
-        if (!isMaster) throw new Error('Only a GameMaster can revoke classes');
 
-        setIsRevoking(true);
+        if (game?.classes.length === 0) throw new Error('No classes found');
+        if (!isMaster) throw new Error('Not the game master');
 
-        const { account } = selectedCharacter;
+        setIsLeveling(true);
+
         const transactionhash = await walletClient.writeContract({
           chain: walletClient.chain,
           account: walletClient.account?.address as Address,
           address: game.classesAddress as Address,
           abi: parseAbi([
-            'function revokeClass(address character, uint256 classId) public',
+            'function levelClass(address character, uint256 classId) public',
           ]),
-          functionName: 'revokeClass',
-          args: [account as `0x${string}`, BigInt(classId)],
+          functionName: 'levelClass',
+          args: [selectedCharacter.account as `0x${string}`, BigInt(classId)],
         });
+
         setTxHash(transactionhash);
 
         const client = publicClient ?? walletClient;
@@ -122,7 +142,7 @@ export const RevokeClassModal: React.FC = () => {
 
         if (status === 'reverted') {
           setTxFailed(true);
-          setIsRevoking(false);
+          setIsLeveling(false);
           throw new Error('Transaction failed');
         }
 
@@ -133,18 +153,19 @@ export const RevokeClassModal: React.FC = () => {
         setIsSynced(true);
         reloadGame();
       } catch (e) {
-        renderError(e, 'Something went wrong revoking class');
+        renderError(e, `Something went wrong leveling  class`);
       } finally {
         setIsSyncing(false);
-        setIsRevoking(false);
+        setIsLeveling(false);
       }
     },
     [
+      characterWithoutClass,
       classId,
-      game,
-      invalidClass,
+      insufficientXp,
       isMaster,
       publicClient,
+      game,
       reloadGame,
       renderError,
       selectedCharacter,
@@ -152,15 +173,16 @@ export const RevokeClassModal: React.FC = () => {
     ],
   );
 
-  const isLoading = isRevoking;
-  const isDisabled = isLoading || invalidClass || !selectedCharacter;
+  const isLoading = isLeveling;
+  const isDisabled =
+    isLoading || insufficientXp || characterWithoutClass || !selectedCharacter;
 
   const content = () => {
     if (txFailed) {
       return (
         <VStack py={10} spacing={4}>
           <Text>Transaction failed.</Text>
-          <Button onClick={revokeClassModal?.onClose} variant="outline">
+          <Button onClick={levelClassModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -170,8 +192,8 @@ export const RevokeClassModal: React.FC = () => {
     if (isSynced) {
       return (
         <VStack py={10} spacing={4}>
-          <Text>Class successfully revoked!</Text>
-          <Button onClick={revokeClassModal?.onClose} variant="outline">
+          <Text>Class successfully leveled!</Text>
+          <Button onClick={levelClassModal?.onClose} variant="outline">
             Close
           </Button>
         </VStack>
@@ -182,7 +204,7 @@ export const RevokeClassModal: React.FC = () => {
       return (
         <TransactionPending
           isSyncing={isSyncing}
-          text={`Revoking class...`}
+          text={`Leveling class for ${selectedCharacter.name}...`}
           txHash={txHash}
           chainId={game?.chainId}
         />
@@ -190,12 +212,25 @@ export const RevokeClassModal: React.FC = () => {
     }
 
     return (
-      <VStack as="form" onSubmit={onRevokeClass} spacing={8}>
-        {!selectedCharacter && <Text>No character selected.</Text>}
+      <VStack as="form" onSubmit={onLevelClass} spacing={8}>
+        <Text>
+          Current XP:{' '}
+          {selectedCharacter
+            ? selectedCharacter.experience
+            : 'no character selected'}
+        </Text>
+        {selectedClass && selectedCharacter && characterWithoutClass && (
+          <Text color="red.500">
+            The selected character doesn&apos;t have the {selectedClass.name}{' '}
+            class.
+          </Text>
+        )}
         <Flex {...group} wrap="wrap" gap={4}>
           {options.map(value => {
             const radio = getRadioProps({ value });
-            const _class = game?.classes.find(c => c.classId === value);
+            const _class = selectedCharacter?.classes.find(
+              c => c.classId === value,
+            );
             if (!_class) return null;
 
             return (
@@ -209,14 +244,30 @@ export const RevokeClassModal: React.FC = () => {
                     w="100%"
                   />
                   <Text textAlign="center">{_class.name}</Text>
+                  <Text fontSize="xs" textAlign="center">
+                    Level {_class.level}
+                  </Text>
                 </VStack>
               </RadioCard>
             );
           })}
         </Flex>
-        {selectedCharacter && invalidClass && (
-          <Text color="red.500">
-            The selected character does not have this class.
+        {selectedCharacter && (
+          <Text>
+            To level this class,{' '}
+            <Text as="span" fontWeight={500}>
+              {xpForNextLevel} XP
+            </Text>{' '}
+            must be staked.{' '}
+            {insufficientXp && (
+              <Text as="span" color="red.500">
+                An additional{' '}
+                {(
+                  BigInt(xpForNextLevel) - BigInt(selectedCharacter.experience)
+                ).toString()}{' '}
+                XP is required.
+              </Text>
+            )}
           </Text>
         )}
         {selectedClass && game && (
@@ -234,12 +285,12 @@ export const RevokeClassModal: React.FC = () => {
         <Button
           isDisabled={isDisabled}
           isLoading={isLoading}
-          loadingText="Revoking..."
+          loadingText="Leveling..."
           type="submit"
           variant="solid"
           alignSelf="flex-end"
         >
-          Revoke
+          Level
         </Button>
       </VStack>
     );
@@ -249,13 +300,13 @@ export const RevokeClassModal: React.FC = () => {
     <Modal
       closeOnEsc={!isLoading}
       closeOnOverlayClick={!isLoading}
-      isOpen={revokeClassModal?.isOpen ?? false}
-      onClose={revokeClassModal?.onClose ?? (() => {})}
+      isOpen={levelClassModal?.isOpen ?? false}
+      onClose={levelClassModal?.onClose ?? (() => {})}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
-          <Text>Revoke a Class</Text>
+          <Text>Level Class</Text>
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>{content()}</ModalBody>

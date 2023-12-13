@@ -6,11 +6,7 @@ import { Class } from '@/utils/types';
 
 import { ClassActionMenu } from './ActionMenus/ClassActionMenu';
 
-type ClassCardProps = Class & {
-  chainId: number;
-};
-
-export const ClassCard: React.FC<ClassCardProps> = ({ ...classEntity }) => {
+export const ClassCard: React.FC<Class> = ({ ...classEntity }) => {
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const { claimable, classId, name, description, image, holders } = classEntity;
@@ -68,7 +64,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({ ...classEntity }) => {
         </SimpleGrid>
       </VStack>
       {isConnectedAndMounted && (
-        <ClassActionMenu variant="solid" {...classEntity} />
+        <ClassActionMenu classEntity={classEntity as Class} variant="solid" />
       )}
     </VStack>
   );

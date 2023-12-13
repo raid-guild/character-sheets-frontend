@@ -8,6 +8,7 @@ import {
 } from '@chakra-ui/react';
 
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
+import { useClassActions } from '@/contexts/ClassActionsContext';
 import { Character } from '@/utils/types';
 
 type CharacterActionMenuProps = {
@@ -21,10 +22,16 @@ export const CharacterActionMenu: React.FC<CharacterActionMenuProps> = ({
 }) => {
   const { selectCharacter, playerActions, gmActions, openActionModal } =
     useCharacterActions();
+  const { selectClass } = useClassActions();
 
   return (
     <>
-      <Menu onOpen={() => selectCharacter(character)}>
+      <Menu
+        onOpen={() => {
+          selectCharacter(character);
+          selectClass(null);
+        }}
+      >
         <MenuButton as={Button} size="sm" variant={variant} w="100%">
           Actions
         </MenuButton>
