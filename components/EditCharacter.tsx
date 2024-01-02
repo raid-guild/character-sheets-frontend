@@ -20,17 +20,6 @@ import { parseAbi } from 'viem';
 import { Address, useNetwork, usePublicClient, useWalletClient } from 'wagmi';
 
 import { CompositeCharacterImage } from '@/components/CompositeCharacterImage';
-import {
-  BaseTraitType,
-  CharacterTraits,
-  DEFAULT_TRAITS,
-  EquippableTraitType,
-  getEquippableTraitName,
-  getTraitsObjectFromAttributes,
-  traitPositionToIndex,
-  TRAITS,
-  TraitsArray,
-} from '@/components/CompositeCharacterImage/traits';
 import { Switch } from '@/components/Switch';
 import { TraitVariantControls } from '@/components/TraitVariantControls';
 import { TransactionPending } from '@/components/TransactionPending';
@@ -41,6 +30,17 @@ import { waitUntilBlock } from '@/graphql/health';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import {
+  BaseTraitType,
+  CharacterTraits,
+  DEFAULT_TRAITS,
+  EquippableTraitType,
+  getEquippableTraitName,
+  getTraitsObjectFromAttributes,
+  traitPositionToIndex,
+  TRAITS,
+  TraitsArray,
+} from '@/lib/traits';
 import { getChainLabelFromId } from '@/lib/web3';
 import { shortenText } from '@/utils/helpers';
 import { Attribute } from '@/utils/types';
@@ -440,7 +440,7 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
       .filter(
         i =>
           i.attributes &&
-          i.attributes[0].value === EquippableTraitType.EQUIPPED_ITEM_1,
+          i.attributes[0]?.value === EquippableTraitType.EQUIPPED_ITEM_1,
       )
       .sort((a, b) => {
         if (!a.equippedAt || !b.equippedAt) return 0;
@@ -451,7 +451,7 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
       .filter(
         i =>
           i.attributes &&
-          i.attributes[0].value === EquippableTraitType.EQUIPPED_WEARABLE,
+          i.attributes[0]?.value === EquippableTraitType.EQUIPPED_WEARABLE,
       )
       .sort((a, b) => {
         if (!a.equippedAt || !b.equippedAt) return 0;
@@ -462,7 +462,7 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
       .filter(
         i =>
           i.attributes &&
-          i.attributes[0].value === EquippableTraitType.EQUIPPED_ITEM_2,
+          i.attributes[0]?.value === EquippableTraitType.EQUIPPED_ITEM_2,
       )
       .sort((a, b) => {
         if (!a.equippedAt || !b.equippedAt) return 0;
