@@ -1,6 +1,6 @@
 import formidable from 'formidable';
+import Jimp from 'jimp';
 import type { NextApiRequest, NextApiResponse, PageConfig } from 'next';
-import { Writable } from 'stream';
 import { File } from 'web3.storage';
 
 import { uploadToWeb3Storage } from '@/lib/fileStorage';
@@ -11,40 +11,10 @@ export const config: PageConfig = {
   },
 };
 
-const formidableConfig = {
-  keepExtensions: true,
-  maxFileSize: 1_000_000,
-  maxFieldsSize: 1_000_000,
-  maxFields: 2,
-  allowEmptyFiles: false,
-  multiples: false,
-};
-
-const formidablePromise = (
-  req: NextApiRequest,
-  opts?: Parameters<typeof formidable>[0],
-): Promise<{ fields: formidable.Fields; files: formidable.Files }> => {
-  return new Promise((accept, reject) => {
-    const form = formidable(opts);
-
-    form.parse(req, (err, fields, files) => {
-      if (err) {
-        return reject(err);
-      }
-      return accept({ fields, files });
-    });
-  });
-};
-
-const fileConsumer = <T = unknown>(acc: T[]) => {
-  const writable = new Writable({
-    write: (chunk, _enc, next) => {
-      acc.push(chunk);
-      next();
-    },
-  });
-
-  return writable;
+type FormFile = {
+  _writeStream: {
+    path: string;
+  };
 };
 
 type ResponseData = {
@@ -57,24 +27,26 @@ export default async function uploadFile(
   res: NextApiResponse<ResponseData>,
 ) {
   const fileName = req.query.name as string;
-  const chunks: never[] = [];
+  const form = formidable({});
 
   try {
-    const { files } = await formidablePromise(req, {
-      ...formidableConfig,
-      // consume this, otherwise formidable tries to save the file to disk
-      fileWriteStreamHandler: () => fileConsumer(chunks),
-    });
+    const [, files] = await form.parse(req);
+    const formFile = files[fileName] as [FormFile] | undefined;
 
-    const fileExtension = Object.keys(files)[0].split('.').pop();
-    const fileContents = Buffer.concat(chunks);
-    const file = new File([fileContents], `${fileName}.${fileExtension}`);
+    if (!formFile) {
+      return res.status(400).json({ error: 'No file provided' });
+    }
 
+    const image = await Jimp.read(formFile[0]._writeStream.path);
+    const fileContents = await image
+      .resize(700, Jimp.AUTO)
+      .getBufferAsync(Jimp.MIME_PNG);
+    const file = new File([fileContents], `${fileName}.png`);
     const cid = await uploadToWeb3Storage(file);
 
-    res.status(200).json({ cid });
+    return res.status(200).json({ cid });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Something went wrong' });
+    return res.status(500).json({ error: 'Something went wrong' });
   }
 }

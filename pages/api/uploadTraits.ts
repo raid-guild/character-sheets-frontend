@@ -157,9 +157,12 @@ export default async function uploadTraits(
       return acc.composite(image, 0, 0);
     });
 
-    const fileContents = await imageComposite.getBufferAsync(Jimp.MIME_PNG);
+    const fileContents = await imageComposite
+      .quality(85)
+      .resize(700, Jimp.AUTO)
+      .getBufferAsync(Jimp.MIME_JPEG);
 
-    const file = new File([fileContents], 'characterAvater.png');
+    const file = new File([fileContents], 'characterAvater.jpg');
 
     const attributes = getAttributesFromTraitsObject(traits);
     const cid = await uploadToWeb3Storage(file);
