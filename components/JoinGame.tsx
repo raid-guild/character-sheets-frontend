@@ -20,14 +20,6 @@ import { parseAbi, toHex } from 'viem';
 import { Address, useNetwork, usePublicClient, useWalletClient } from 'wagmi';
 
 import { CompositeCharacterImage } from '@/components/CompositeCharacterImage';
-import {
-  BaseTraitType,
-  CharacterTraits,
-  DEFAULT_TRAITS,
-  EquippableTraitType,
-  TRAITS,
-  TraitsArray,
-} from '@/components/CompositeCharacterImage/traits';
 import { Switch } from '@/components/Switch';
 import { TraitVariantControls } from '@/components/TraitVariantControls';
 import { TransactionPending } from '@/components/TransactionPending';
@@ -37,6 +29,14 @@ import { waitUntilBlock } from '@/graphql/health';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import {
+  BaseTraitType,
+  CharacterTraits,
+  DEFAULT_TRAITS,
+  EquippableTraitType,
+  TRAITS,
+  TraitsArray,
+} from '@/lib/traits';
 import { getChainLabelFromId } from '@/lib/web3';
 import { BASE_CHARACTER_URI } from '@/utils/constants';
 import { shortenText } from '@/utils/helpers';

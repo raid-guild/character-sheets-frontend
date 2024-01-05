@@ -2,11 +2,7 @@ import { Box, Button, Flex, Image, Text, VStack } from '@chakra-ui/react';
 import { capitalize } from 'lodash';
 import { useCallback, useMemo, useState } from 'react';
 
-import {
-  BaseTraitType,
-  EquippableTraitType,
-  TraitsArray,
-} from './CompositeCharacterImage/traits';
+import { BaseTraitType, EquippableTraitType, TraitsArray } from '../lib/traits';
 
 type TraitVariantControlsProps = {
   index: number;

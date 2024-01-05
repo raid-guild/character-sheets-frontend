@@ -3,6 +3,12 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { File } from 'web3.storage';
 
 import {
+  CharacterInfoFragment,
+  GetCharacterInfoByIdDocument,
+} from '@/graphql/autogen/types';
+import { getGraphClient } from '@/graphql/client';
+import { uploadToWeb3Storage } from '@/lib/fileStorage';
+import {
   BaseTraitType,
   CharacterTraits,
   EquippableTraitType,
@@ -11,13 +17,7 @@ import {
   getImageUrl,
   traitPositionToIndex,
   TraitsArray,
-} from '@/components/CompositeCharacterImage/traits';
-import {
-  CharacterInfoFragment,
-  GetCharacterInfoByIdDocument,
-} from '@/graphql/autogen/types';
-import { getGraphClient } from '@/graphql/client';
-import { uploadToWeb3Storage } from '@/lib/fileStorage';
+} from '@/lib/traits';
 import { formatCharacter, formatItem } from '@/utils/helpers';
 import { Attribute } from '@/utils/types';
 
@@ -79,7 +79,7 @@ export default async function uploadTraits(
         .filter(
           i =>
             i.attributes &&
-            i.attributes[0].value === EquippableTraitType.EQUIPPED_ITEM_1,
+            i.attributes[0]?.value === EquippableTraitType.EQUIPPED_ITEM_1,
         )
         .sort((a, b) => {
           if (!a.equippedAt || !b.equippedAt) return 0;
@@ -90,7 +90,7 @@ export default async function uploadTraits(
         .filter(
           i =>
             i.attributes &&
-            i.attributes[0].value === EquippableTraitType.EQUIPPED_WEARABLE,
+            i.attributes[0]?.value === EquippableTraitType.EQUIPPED_WEARABLE,
         )
         .sort((a, b) => {
           if (!a.equippedAt || !b.equippedAt) return 0;
@@ -101,7 +101,7 @@ export default async function uploadTraits(
         .filter(
           i =>
             i.attributes &&
-            i.attributes[0].value === EquippableTraitType.EQUIPPED_ITEM_2,
+            i.attributes[0]?.value === EquippableTraitType.EQUIPPED_ITEM_2,
         )
         .sort((a, b) => {
           if (!a.equippedAt || !b.equippedAt) return 0;
@@ -157,9 +157,12 @@ export default async function uploadTraits(
       return acc.composite(image, 0, 0);
     });
 
-    const fileContents = await imageComposite.getBufferAsync(Jimp.MIME_PNG);
+    const fileContents = await imageComposite
+      .quality(85)
+      .resize(700, Jimp.AUTO)
+      .getBufferAsync(Jimp.MIME_JPEG);
 
-    const file = new File([fileContents], 'characterAvater.png');
+    const file = new File([fileContents], 'characterAvater.jpg');
 
     const attributes = getAttributesFromTraitsObject(traits);
     const cid = await uploadToWeb3Storage(file);

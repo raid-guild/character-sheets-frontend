@@ -14,15 +14,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
-import {
-  EquippableTraitType,
-  getTraitsObjectFromAttributes,
-} from '@/components/CompositeCharacterImage/traits';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
+import {
+  EquippableTraitType,
+  getTraitsObjectFromAttributes,
+} from '@/lib/traits';
 import { getChainLabelFromId } from '@/lib/web3';
 import { executeAsCharacter } from '@/utils/account';
 
