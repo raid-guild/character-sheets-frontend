@@ -1,4 +1,5 @@
 import formidable from 'formidable';
+import fs from 'fs';
 import Jimp from 'jimp';
 import type { NextApiRequest, NextApiResponse, PageConfig } from 'next';
 
@@ -28,6 +29,15 @@ export default async function uploadFile(
   const fileName = req.query.name as string;
   const form = formidable({});
 
+  let isSvg = false;
+  form.on('file', (_, file) => {
+    const mimeType = file.mimetype;
+
+    if (mimeType === 'image/svg+xml') {
+      isSvg = true;
+    }
+  });
+
   try {
     const [, files] = await form.parse(req);
     const formFile = files[fileName] as [FormFile] | undefined;
@@ -36,10 +46,16 @@ export default async function uploadFile(
       return res.status(400).json({ error: 'No file provided' });
     }
 
-    const image = await Jimp.read(formFile[0]._writeStream.path);
-    const fileContents = await image
-      .resize(700, Jimp.AUTO)
-      .getBufferAsync(Jimp.MIME_PNG);
+    let fileContents: Buffer;
+
+    if (isSvg) {
+      fileContents = fs.readFileSync(formFile[0]._writeStream.path);
+    } else {
+      const image = await Jimp.read(formFile[0]._writeStream.path);
+      fileContents = await image
+        .resize(700, Jimp.AUTO)
+        .getBufferAsync(Jimp.MIME_PNG);
+    }
 
     const cid = await uploadToPinata(fileContents, `${fileName}.png`);
     if (!cid) {
