@@ -1,9 +1,8 @@
 import formidable from 'formidable';
 import Jimp from 'jimp';
 import type { NextApiRequest, NextApiResponse, PageConfig } from 'next';
-import { File } from 'web3.storage';
 
-import { uploadToWeb3Storage } from '@/lib/fileStorage';
+import { uploadToPinata } from '@/lib/fileStorage';
 
 export const config: PageConfig = {
   api: {
@@ -41,8 +40,11 @@ export default async function uploadFile(
     const fileContents = await image
       .resize(700, Jimp.AUTO)
       .getBufferAsync(Jimp.MIME_PNG);
-    const file = new File([fileContents], `${fileName}.png`);
-    const cid = await uploadToWeb3Storage(file);
+
+    const cid = await uploadToPinata(fileContents, `${fileName}.png`);
+    if (!cid) {
+      return res.status(500).json({ error: 'Error uploading file' });
+    }
 
     return res.status(200).json({ cid });
   } catch (error) {

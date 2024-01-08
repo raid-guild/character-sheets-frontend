@@ -20,6 +20,7 @@
     "@fontsource/tektur": "^5.0.3",
     "@fontsource/unbounded": "^5.0.15",
     "@openzeppelin/merkle-tree": "^1.0.5",
+    "@pinata/sdk": "^2.1.0",
     "@rainbow-me/rainbowkit": "^1.1.1",
     "@types/node": "20.8.4",
     "@types/react": "18.2.28",
