@@ -1,13 +1,12 @@
 import Jimp from 'jimp';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { File } from 'web3.storage';
 
 import {
   CharacterInfoFragment,
   GetCharacterInfoByIdDocument,
 } from '@/graphql/autogen/types';
 import { getGraphClient } from '@/graphql/client';
-import { uploadToWeb3Storage } from '@/lib/fileStorage';
+import { uploadToPinata } from '@/lib/fileStorage';
 import {
   BaseTraitType,
   CharacterTraits,
@@ -162,10 +161,11 @@ export default async function uploadTraits(
       .resize(700, Jimp.AUTO)
       .getBufferAsync(Jimp.MIME_JPEG);
 
-    const file = new File([fileContents], 'characterAvater.jpg');
-
     const attributes = getAttributesFromTraitsObject(traits);
-    const cid = await uploadToWeb3Storage(file);
+    const cid = await uploadToPinata(fileContents, 'characterAvater.jpg');
+    if (!cid) {
+      return res.status(500).json({ error: 'Something went wrong' });
+    }
 
     return res.status(200).json({ attributes, cid });
   } catch (error) {
