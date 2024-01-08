@@ -35,6 +35,7 @@ import {
   CharacterTraits,
   DEFAULT_TRAITS,
   EquippableTraitType,
+  formatTraitsForUpload,
   getEquippableTraitName,
   getTraitsObjectFromAttributes,
   traitPositionToIndex,
@@ -278,12 +279,20 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
             [EquippableTraitType.EQUIPPED_ITEM_2]: '',
           };
 
+          const traitsArray = await formatTraitsForUpload(
+            traitsObject,
+            game.chainId,
+            character.id,
+          );
+
+          if (!traitsArray)
+            throw new Error('Something went wrong uploading your character');
+
           const response = await fetch(`/api/uploadTraits`, {
             method: 'POST',
             body: JSON.stringify({
-              characterId: character.id,
-              chainId: game.chainId,
-              traits: traitsObject,
+              traitsArray,
+              traitsObject,
             }),
           });
 
