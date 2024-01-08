@@ -34,6 +34,7 @@ import {
   CharacterTraits,
   DEFAULT_TRAITS,
   EquippableTraitType,
+  formatTraitsForUpload,
   TRAITS,
   TraitsArray,
 } from '@/lib/traits';
@@ -160,10 +161,15 @@ export const JoinGame: React.FC<JoinGameProps> = ({
             [EquippableTraitType.EQUIPPED_ITEM_2]: '',
           };
 
+          const traitsArray = await formatTraitsForUpload(traitsObject);
+          if (!traitsArray)
+            throw new Error('Something went wrong uploading your character');
+
           const response = await fetch(`/api/uploadTraits`, {
             method: 'POST',
             body: JSON.stringify({
-              traits: traitsObject,
+              traitsArray,
+              traitsObject,
             }),
           });
 
