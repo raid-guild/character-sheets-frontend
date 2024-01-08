@@ -21,6 +21,7 @@ import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import {
   EquippableTraitType,
+  formatTraitsForUpload,
   getTraitsObjectFromAttributes,
 } from '@/lib/traits';
 import { getChainLabelFromId } from '@/lib/web3';
@@ -108,12 +109,20 @@ export const EquipItemModal: React.FC = () => {
             : `equip_${itemName}_${equippable_layer}`;
           traits[itemAttributes[0].value as EquippableTraitType] = newTrait;
 
+          const traitsArray = await formatTraitsForUpload(
+            traits,
+            game.chainId,
+            character.id,
+          );
+
+          if (!traitsArray)
+            throw new Error('Something went wrong uploading your character');
+
           const response = await fetch(`/api/uploadTraits`, {
             method: 'POST',
             body: JSON.stringify({
-              characterId: id,
-              chainId: game.chainId,
-              traits,
+              traitsArray,
+              traitsObject: traits,
             }),
           });
 

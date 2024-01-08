@@ -1,6 +1,11 @@
 import { capitalize } from 'lodash';
 
-import { uriToHttp } from '@/utils/helpers';
+import {
+  CharacterInfoFragment,
+  GetCharacterInfoByIdDocument,
+} from '@/graphql/autogen/types';
+import { getGraphClient } from '@/graphql/client';
+import { formatCharacter, formatItem, uriToHttp } from '@/utils/helpers';
 import { Attribute, Item } from '@/utils/types';
 
 export enum BaseTraitType {
@@ -359,4 +364,111 @@ export const getEquippableTraitName = (
   }
 
   return traits;
+};
+
+export const formatTraitsForUpload = async (
+  traits: CharacterTraits,
+  chainId?: number,
+  extendedCharacterId?: string,
+): Promise<string[] | null> => {
+  try {
+    // If extendedCharacterId and chainId are not provided, then a new character is being created
+    if (extendedCharacterId && chainId) {
+      const { data, error } = await getGraphClient(chainId).query(
+        GetCharacterInfoByIdDocument,
+        {
+          characterId: extendedCharacterId.toLowerCase(),
+        },
+      );
+
+      if (error) {
+        console.error('Error getting character info', error);
+        throw new Error('Error getting character info');
+      }
+
+      const unformattedCharacter =
+        data?.character as CharacterInfoFragment | null;
+      if (!unformattedCharacter) throw new Error('Character not found');
+
+      const items = await Promise.all(
+        unformattedCharacter.equippedItems.map(equippedItem =>
+          formatItem(equippedItem.item),
+        ),
+      );
+
+      const character = await formatCharacter(unformattedCharacter, [], items);
+
+      const equippedItem1s = character.equippedItems
+        .filter(
+          i =>
+            i.attributes &&
+            i.attributes[0]?.value === EquippableTraitType.EQUIPPED_ITEM_1,
+        )
+        .sort((a, b) => {
+          if (!a.equippedAt || !b.equippedAt) return 0;
+          return b.equippedAt - a.equippedAt;
+        });
+
+      const equippedWearables = character.equippedItems
+        .filter(
+          i =>
+            i.attributes &&
+            i.attributes[0]?.value === EquippableTraitType.EQUIPPED_WEARABLE,
+        )
+        .sort((a, b) => {
+          if (!a.equippedAt || !b.equippedAt) return 0;
+          return b.equippedAt - a.equippedAt;
+        });
+
+      const equippedItem2s = character.equippedItems
+        .filter(
+          i =>
+            i.attributes &&
+            i.attributes[0]?.value === EquippableTraitType.EQUIPPED_ITEM_2,
+        )
+        .sort((a, b) => {
+          if (!a.equippedAt || !b.equippedAt) return 0;
+          return b.equippedAt - a.equippedAt;
+        });
+
+      traits = getEquippableTraitName(
+        EquippableTraitType.EQUIPPED_ITEM_1,
+        equippedItem1s,
+        traits,
+      );
+
+      traits = getEquippableTraitName(
+        EquippableTraitType.EQUIPPED_WEARABLE,
+        equippedWearables,
+        traits,
+      );
+
+      traits = getEquippableTraitName(
+        EquippableTraitType.EQUIPPED_ITEM_2,
+        equippedItem2s,
+        traits,
+      );
+    }
+
+    const traitsArray: TraitsArray = ['', '', '', '', '', '', '', ''];
+    Object.keys(traits).forEach(traitType => {
+      const trait = traits[traitType as keyof CharacterTraits];
+      const index = traitPositionToIndex(traitType as keyof CharacterTraits);
+
+      if (
+        traitType === BaseTraitType.CLOTHING &&
+        !!traits[EquippableTraitType.EQUIPPED_WEARABLE]
+      ) {
+        return;
+      }
+
+      if (!trait) return;
+      traitsArray[index] = trait;
+    });
+
+    return traitsArray.filter(trait => trait !== '');
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
 };
