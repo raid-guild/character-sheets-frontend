@@ -36,7 +36,7 @@ export default async function uploadTraits(
       traitsArray.map(async trait => {
         const url = getImageUrl(trait);
         const image = await Jimp.read(url);
-        return image;
+        return image.resize(700, Jimp.AUTO);
       }),
     );
 
@@ -46,7 +46,6 @@ export default async function uploadTraits(
 
     const fileContents = await imageComposite
       .quality(85)
-      .resize(700, Jimp.AUTO)
       .getBufferAsync(Jimp.MIME_JPEG);
 
     const attributes = getAttributesFromTraitsObject(traitsObject);
