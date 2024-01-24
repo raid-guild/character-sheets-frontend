@@ -6,7 +6,6 @@ import {
   ItemInfoFragment,
   ItemRequirementInfoFragment,
 } from '@/graphql/autogen/types';
-import { ENVIRONMENT } from '@/utils/constants';
 
 import {
   Character,
@@ -21,9 +20,9 @@ import {
 
 const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
 
-if (ENVIRONMENT === 'main') {
-  IPFS_GATEWAYS.unshift('https://character-sheets.infura-ipfs.io');
-}
+// if (ENVIRONMENT === 'main') {
+//   IPFS_GATEWAYS.unshift('https://character-sheets.infura-ipfs.io');
+// }
 
 /**
  * Given a URI that may be ipfs, ipns, http, https, ar, or data protocol, return the fetch-able http(s) URLs for the same content
