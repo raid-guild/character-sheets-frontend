@@ -18,7 +18,11 @@ import {
   Metadata,
 } from './types';
 
-const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
+const IPFS_GATEWAYS = [
+  'https://gateway.pinata.cloud',
+  'https://cloudflare-ipfs.com',
+  'https://ipfs.io',
+];
 
 // if (ENVIRONMENT === 'main') {
 //   IPFS_GATEWAYS.unshift('https://character-sheets.infura-ipfs.io');
