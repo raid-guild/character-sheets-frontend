@@ -219,7 +219,7 @@ export const RevokeClassModal: React.FC = () => {
             The selected character does not have this class.
           </Text>
         )}
-        {selectedCharacter && game && (
+        {selectedClass && game && (
           <VStack align="flex-start" w="full">
             <Text fontSize="sm" fontWeight={500}>
               Select a character
