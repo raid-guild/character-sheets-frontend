@@ -19,21 +19,16 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 import { RadioCard } from '@/components/RadioCard';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
+import { useClassActions } from '@/contexts/ClassActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 import { executeAsCharacter } from '@/utils/account';
-import { Class } from '@/utils/types';
 
-type ClaimClassModalProps = {
-  classEntity?: Class;
-};
-
-export const ClaimClassModal: React.FC<ClaimClassModalProps> = ({
-  classEntity,
-}) => {
+export const ClaimClassModal: React.FC = () => {
   const { character, game, reload: reloadGame } = useGame();
   const { claimClassModal } = useCharacterActions();
+  const { selectedClass } = useClassActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -54,11 +49,11 @@ export const ClaimClassModal: React.FC<ClaimClassModalProps> = ({
   }, [character, classId]);
 
   const options = useMemo(() => {
-    if (classEntity) {
-      return [classEntity.classId];
+    if (selectedClass) {
+      return [selectedClass.classId];
     }
     return game?.classes.filter(c => c.claimable).map(c => c.classId) ?? [];
-  }, [classEntity, game]);
+  }, [game, selectedClass]);
 
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
@@ -68,9 +63,9 @@ export const ClaimClassModal: React.FC<ClaimClassModalProps> = ({
   const group = getRootProps();
 
   const resetData = useCallback(() => {
-    if (classEntity) {
-      setValue(classEntity.classId);
-      setClassId(classEntity.classId);
+    if (selectedClass) {
+      setValue(selectedClass.classId);
+      setClassId(selectedClass.classId);
     } else {
       setValue(options[0]);
       setClassId(options[0]);
@@ -80,7 +75,7 @@ export const ClaimClassModal: React.FC<ClaimClassModalProps> = ({
     setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
-  }, [classEntity, options, setValue]);
+  }, [options, selectedClass, setValue]);
 
   useEffect(() => {
     if (!claimClassModal?.isOpen) {

@@ -29,7 +29,7 @@ type ClassActionsContextType = {
   gmActions: GameMasterActions[];
 
   selectedClass: Class | null;
-  selectClass: (gamclassEntityeClass: Class) => void;
+  selectClass: (gamclassEntityeClass: Class | null) => void;
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
 };

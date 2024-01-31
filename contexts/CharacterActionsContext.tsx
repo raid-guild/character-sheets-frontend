@@ -25,10 +25,10 @@ export enum PlayerActions {
 
 export enum GameMasterActions {
   ASSIGN_CLASS = 'Assign class',
-  JAIL_PLAYER = 'Jail player',
   FREE_PLAYER = 'Free player',
   GIVE_ITEMS = 'Give items',
   GIVE_XP = 'Give XP',
+  JAIL_PLAYER = 'Jail player',
   REVOKE_CLASS = 'Revoke class',
   REMOVE_CHARACTER = 'Remove character',
   TRANSFER_CHARACTER = 'Transfer character',
@@ -41,7 +41,7 @@ type CharacterActionsContextType = {
   gmActions: GameMasterActions[];
 
   selectedCharacter: Character | null;
-  selectCharacter: (character: Character) => void;
+  selectCharacter: (character: Character | null) => void;
 
   selectedItem: Item | null;
   selectItem: (item: Item) => void;

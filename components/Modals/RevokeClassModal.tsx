@@ -20,21 +20,16 @@ import { RadioCard } from '@/components/RadioCard';
 import { SelectCharacterInput } from '@/components/SelectCharacterInput';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
+import { useClassActions } from '@/contexts/ClassActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
-import { Class } from '@/utils/types';
 
-type RevokeClassModalProps = {
-  classEntity?: Class;
-};
-
-export const RevokeClassModal: React.FC<RevokeClassModalProps> = ({
-  classEntity,
-}) => {
+export const RevokeClassModal: React.FC = () => {
   const { game, isMaster, reload: reloadGame } = useGame();
   const { selectCharacter, selectedCharacter, revokeClassModal } =
     useCharacterActions();
+  const { selectedClass } = useClassActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -55,11 +50,11 @@ export const RevokeClassModal: React.FC<RevokeClassModalProps> = ({
   }, [classId, selectedCharacter]);
 
   const options = useMemo(() => {
-    if (classEntity) {
-      return [classEntity.classId];
+    if (selectedClass) {
+      return [selectedClass.classId];
     }
     return selectedCharacter?.classes.map(c => c.classId) ?? [];
-  }, [classEntity, selectedCharacter?.classes]);
+  }, [selectedClass, selectedCharacter?.classes]);
 
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
@@ -69,9 +64,9 @@ export const RevokeClassModal: React.FC<RevokeClassModalProps> = ({
   const group = getRootProps();
 
   const resetData = useCallback(() => {
-    if (classEntity) {
-      setValue(classEntity.classId);
-      setClassId(classEntity.classId);
+    if (selectedClass) {
+      setValue(selectedClass.classId);
+      setClassId(selectedClass.classId);
     } else {
       setValue(options[0]);
       setClassId(options[0]);
@@ -81,7 +76,7 @@ export const RevokeClassModal: React.FC<RevokeClassModalProps> = ({
     setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
-  }, [classEntity, options, setValue]);
+  }, [options, selectedClass, setValue]);
 
   useEffect(() => {
     if (!revokeClassModal?.isOpen) {
@@ -196,6 +191,7 @@ export const RevokeClassModal: React.FC<RevokeClassModalProps> = ({
 
     return (
       <VStack as="form" onSubmit={onRevokeClass} spacing={8}>
+        {!selectedCharacter && <Text>No character selected.</Text>}
         <Flex {...group} wrap="wrap" gap={4}>
           {options.map(value => {
             const radio = getRadioProps({ value });
@@ -218,12 +214,12 @@ export const RevokeClassModal: React.FC<RevokeClassModalProps> = ({
             );
           })}
         </Flex>
-        {invalidClass && (
+        {selectedCharacter && invalidClass && (
           <Text color="red.500">
             The selected character does not have this class.
           </Text>
         )}
-        {!!classEntity && !!game && (
+        {selectedCharacter && game && (
           <VStack align="flex-start" w="full">
             <Text fontSize="sm" fontWeight={500}>
               Select a character
