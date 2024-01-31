@@ -1,9 +1,6 @@
 import { AspectRatio, Box, Image } from '@chakra-ui/react';
 
-import {
-  getImageUrl,
-  TraitsArray,
-} from '@/components/CompositeCharacterImage/traits';
+import { getImageUrl, TraitsArray } from '@/lib/traits';
 
 export const CompositeCharacterImage: React.FC<{ traits: TraitsArray }> = ({
   traits,

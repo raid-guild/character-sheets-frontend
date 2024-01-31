@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { File } from 'web3.storage';
 
-import { uploadToWeb3Storage } from '@/lib/fileStorage';
+import { uploadToPinata } from '@/lib/fileStorage';
 
 type ResponseData = {
   cid?: string;
@@ -17,13 +16,15 @@ export default async function uploadMetadata(
     const metadata = req.body;
 
     const fileContents = Buffer.from(metadata);
-    const file = new File([fileContents], fileName);
 
-    const cid = await uploadToWeb3Storage(file);
+    const cid = await uploadToPinata(fileContents, fileName);
+    if (!cid) {
+      return res.status(500).json({ error: 'Error uploading file' });
+    }
 
-    res.status(200).json({ cid });
+    return res.status(200).json({ cid });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Something went wrong' });
+    return res.status(500).json({ error: 'Something went wrong' });
   }
 }

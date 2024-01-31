@@ -10,19 +10,20 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
-import {
-  EquippableTraitType,
-  getTraitsObjectFromAttributes,
-} from '@/components/CompositeCharacterImage/traits';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
+import {
+  EquippableTraitType,
+  formatTraitsForUpload,
+  getTraitsObjectFromAttributes,
+} from '@/lib/traits';
 import { getChainLabelFromId } from '@/lib/web3';
 import { executeAsCharacter } from '@/utils/account';
 
@@ -39,8 +40,9 @@ export const EquipItemModal: React.FC = () => {
   const [txFailed, setTxFailed] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
+  const [isEquipped, setIsEquipped] = useState<boolean>(false);
 
-  const isEquipped = useMemo(() => {
+  const onSetIsEquipped = useCallback(() => {
     if (!selectedItem || !character) {
       return false;
     }
@@ -50,6 +52,11 @@ export const EquipItemModal: React.FC = () => {
       undefined
     );
   }, [character, selectedItem]);
+
+  useEffect(() => {
+    if (!!txHash) return;
+    setIsEquipped(onSetIsEquipped());
+  }, [onSetIsEquipped, txHash]);
 
   const resetData = useCallback(() => {
     setTxHash(null);
@@ -62,7 +69,7 @@ export const EquipItemModal: React.FC = () => {
     if (!equipItemModal?.isOpen) {
       resetData();
     }
-  }, [resetData, equipItemModal?.isOpen]);
+  }, [equipItemModal?.isOpen, resetData]);
 
   const onEquipItem = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
@@ -108,12 +115,20 @@ export const EquipItemModal: React.FC = () => {
             : `equip_${itemName}_${equippable_layer}`;
           traits[itemAttributes[0].value as EquippableTraitType] = newTrait;
 
+          const traitsArray = await formatTraitsForUpload(
+            traits,
+            game.chainId,
+            character.id,
+          );
+
+          if (!traitsArray)
+            throw new Error('Something went wrong uploading your character');
+
           const response = await fetch(`/api/uploadTraits`, {
             method: 'POST',
             body: JSON.stringify({
-              characterId: id,
-              chainId: game.chainId,
-              traits,
+              traitsArray,
+              traitsObject: traits,
             }),
           });
 
