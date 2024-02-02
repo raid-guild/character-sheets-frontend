@@ -6,45 +6,35 @@ import {
   FormLabel,
   Image,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Text,
   Textarea,
   Tooltip,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { encodeAbiParameters, isAddress, parseAbi, zeroAddress } from 'viem';
 import {
-  Address,
-  useAccount,
-  useNetwork,
-  usePublicClient,
-  useWalletClient,
-} from 'wagmi';
+  encodeAbiParameters,
+  Hex,
+  isAddress,
+  parseAbi,
+  zeroAddress,
+} from 'viem';
+import { Address, useAccount, useNetwork, useWalletClient } from 'wagmi';
 
-import { TransactionPending } from '@/components/TransactionPending';
 import { useGamesContext } from '@/contexts/GamesContext';
-import { waitUntilBlock } from '@/graphql/health';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useGlobalForChain } from '@/hooks/useGlobal';
-import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { getChainLabelFromId } from '@/lib/web3';
 import { BASE_CHARACTER_URI } from '@/utils/constants';
+
+import { ActionModal } from './ActionModal';
 
 export const CreateGameModal: React.FC = () => {
   const { address } = useAccount();
   const { chain } = useNetwork();
   const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
   const { data: globalInfo } = useGlobalForChain();
   const { gameFactory } = globalInfo || {};
-  const { renderError } = useToast();
   const { createGameModal: { isOpen, onClose } = {}, reload: reloadGames } =
     useGamesContext();
 
@@ -68,10 +58,6 @@ export const CreateGameModal: React.FC = () => {
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
-  const [txFailed, setTxFailed] = useState<boolean>(false);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [isSynced, setIsSynced] = useState<boolean>(false);
 
   const invalidGameDescription = useMemo(() => {
     return gameDescription.length > 200 && !!gameDescription;
@@ -122,243 +108,180 @@ export const CreateGameModal: React.FC = () => {
     setShowError(false);
 
     setIsCreating(false);
-    setTxHash(null);
-    setTxFailed(false);
-    setIsSyncing(false);
-    setIsSynced(false);
   }, [address, setGameEmblem]);
 
-  useEffect(() => {
-    if (!isOpen) {
-      resetData();
+  const onCreateGame = useCallback(async (): Promise<Hex | null> => {
+    if (hasError) {
+      setShowError(true);
+      return null;
     }
-  }, [resetData, isOpen]);
 
-  const onCreateGame = useCallback(
-    async (e: React.FormEvent<HTMLDivElement>) => {
-      e.preventDefault();
+    if (!walletClient) throw new Error('Could not find a wallet client');
+    if (!chain) throw new Error('Could not find connected chain');
+    if (!gameFactory)
+      throw new Error(
+        `Missing game factory address for the ${walletClient.chain.name} network`,
+      );
 
-      if (hasError) {
-        setShowError(true);
-        return;
-      }
+    const trimmedGameMasterAddresses = gameMasters
+      .split(',')
+      .map(address => address.trim()) as Address[];
 
-      try {
-        if (!walletClient) throw new Error('Could not find a wallet client');
-        if (!chain) throw new Error('Could not find connected chain');
-        if (!gameFactory)
-          throw new Error(
-            `Missing game factory address for the ${walletClient.chain.name} network`,
-          );
+    const trimmedDaoAddress = (daoAddress.trim() as Address) || zeroAddress;
 
-        const trimmedGameMasterAddresses = gameMasters
-          .split(',')
-          .map(address => address.trim()) as Address[];
+    const cid = await onUpload();
+    if (!cid)
+      throw new Error('Something went wrong uploading your game emblem');
 
-        const trimmedDaoAddress = (daoAddress.trim() as Address) || zeroAddress;
+    const gameMetadata = {
+      name: gameName,
+      description: gameDescription,
+      image: `ipfs://${cid}`,
+    };
 
-        const cid = await onUpload();
-        if (!cid)
-          throw new Error('Something went wrong uploading your game emblem');
+    setIsCreating(true);
 
-        const gameMetadata = {
-          name: gameName,
-          description: gameDescription,
-          image: `ipfs://${cid}`,
-        };
+    const res = await fetch('/api/uploadMetadata?name=gameMetadata.json', {
+      method: 'POST',
+      body: JSON.stringify(gameMetadata),
+    });
+    if (!res.ok)
+      throw new Error('Something went wrong uploading your game metadata');
 
-        setIsCreating(true);
+    const { cid: gameMetadataCid } = await res.json();
+    if (!gameMetadataCid)
+      throw new Error('Something went wrong uploading your game metadata');
 
-        const res = await fetch('/api/uploadMetadata?name=gameMetadata.json', {
-          method: 'POST',
-          body: JSON.stringify(gameMetadata),
-        });
-        if (!res.ok)
-          throw new Error('Something went wrong uploading your game metadata');
+    const encodedGameCreationData = encodeAbiParameters(
+      [
+        {
+          name: 'characterSheetsMetadataUri',
+          type: 'string',
+        },
+        {
+          name: 'characterSheetsBaseUri',
+          type: 'string',
+        },
+        {
+          name: 'experienceBaseUri',
+          type: 'string',
+        },
+        {
+          name: 'classesBaseUri',
+          type: 'string',
+        },
+      ],
+      [
+        `ipfs://${gameMetadataCid}`,
+        `${BASE_CHARACTER_URI}${getChainLabelFromId(chain.id)}/`,
+        'ipfs://',
+        'ipfs://',
+      ],
+    );
 
-        const { cid: gameMetadataCid } = await res.json();
-        if (!gameMetadataCid)
-          throw new Error('Something went wrong uploading your game metadata');
+    const encodedHatsData = encodeAbiParameters(
+      [
+        {
+          name: 'hatsImgUri',
+          type: 'string',
+        },
+        { name: 'topHatDescription', type: 'string' },
+        {
+          name: 'adminHatUri',
+          type: 'string',
+        },
+        {
+          name: 'adminHatDescription',
+          type: 'string',
+        },
+        {
+          name: 'gameHatUri',
+          type: 'string',
+        },
+        {
+          name: 'gameHatDescription',
+          type: 'string',
+        },
+        {
+          name: 'playerHatUri',
+          type: 'string',
+        },
+        {
+          name: 'playerHatDescription',
+          type: 'string',
+        },
+        {
+          name: 'characterHatUri',
+          type: 'string',
+        },
+        {
+          name: 'characterHatDescription',
+          type: 'string',
+        },
+      ],
+      [
+        gameMetadata.image,
+        'Top Hat',
+        'ipfs://',
+        'Admin Hat',
+        'ipfs://',
+        'Game Hat',
+        'ipfs://',
+        'Player Hat',
+        'ipfs://',
+        'Character Hat',
+      ],
+    );
 
-        const encodedGameCreationData = encodeAbiParameters(
-          [
-            {
-              name: 'characterSheetsMetadataUri',
-              type: 'string',
-            },
-            {
-              name: 'characterSheetsBaseUri',
-              type: 'string',
-            },
-            {
-              name: 'experienceBaseUri',
-              type: 'string',
-            },
-            {
-              name: 'classesBaseUri',
-              type: 'string',
-            },
-          ],
-          [
-            `ipfs://${gameMetadataCid}`,
-            `${BASE_CHARACTER_URI}${getChainLabelFromId(chain.id)}/`,
-            'ipfs://',
-            'ipfs://',
-          ],
-        );
+    const adminAddresses = [walletClient.account?.address as Address];
 
-        const encodedHatsData = encodeAbiParameters(
-          [
-            {
-              name: 'hatsImgUri',
-              type: 'string',
-            },
-            { name: 'topHatDescription', type: 'string' },
-            {
-              name: 'adminHatUri',
-              type: 'string',
-            },
-            {
-              name: 'adminHatDescription',
-              type: 'string',
-            },
-            {
-              name: 'gameHatUri',
-              type: 'string',
-            },
-            {
-              name: 'gameHatDescription',
-              type: 'string',
-            },
-            {
-              name: 'playerHatUri',
-              type: 'string',
-            },
-            {
-              name: 'playerHatDescription',
-              type: 'string',
-            },
-            {
-              name: 'characterHatUri',
-              type: 'string',
-            },
-            {
-              name: 'characterHatDescription',
-              type: 'string',
-            },
-          ],
-          [
-            gameMetadata.image,
-            'Top Hat',
-            'ipfs://',
-            'Admin Hat',
-            'ipfs://',
-            'Game Hat',
-            'ipfs://',
-            'Player Hat',
-            'ipfs://',
-            'Character Hat',
-          ],
-        );
-
-        const adminAddresses = [walletClient.account?.address as Address];
-
-        const transactionhash = await walletClient.writeContract({
-          chain: walletClient.chain,
-          account: walletClient.account?.address as Address,
-          address: gameFactory as Address,
-          abi: parseAbi([
-            'function createAndInitialize(address dao,address[] calldata admins,address[] calldata dungeonMasters,bytes calldata encodedHatsStrings,bytes calldata sheetsStrings) public returns (address)',
-          ]),
-          functionName: 'createAndInitialize',
-          args: [
-            trimmedDaoAddress,
-            adminAddresses,
-            trimmedGameMasterAddresses,
-            encodedHatsData,
-            encodedGameCreationData,
-          ],
-        });
-        setTxHash(transactionhash);
-
-        const client = publicClient ?? walletClient;
-        const { blockNumber, status } = await client.waitForTransactionReceipt({
-          hash: transactionhash,
-        });
-
-        if (status === 'reverted') {
-          setTxFailed(true);
-          setIsCreating(false);
-          throw new Error('Transaction failed');
-        }
-
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(client.chain.id, blockNumber);
-        if (!synced) throw new Error('Something went wrong while syncing');
-
-        setIsSynced(true);
-        reloadGames();
-      } catch (e) {
-        renderError(e, 'Something went wrong creating your game');
-      } finally {
-        setIsSyncing(false);
-        setIsCreating(false);
-      }
-    },
-    [
-      chain,
-      daoAddress,
-      gameDescription,
-      gameFactory,
-      gameMasters,
-      gameName,
-      hasError,
-      onUpload,
-      publicClient,
-      reloadGames,
-      renderError,
-      walletClient,
-    ],
-  );
+    return walletClient.writeContract({
+      chain: walletClient.chain,
+      account: walletClient.account?.address as Address,
+      address: gameFactory as Address,
+      abi: parseAbi([
+        'function createAndInitialize(address dao,address[] calldata admins,address[] calldata dungeonMasters,bytes calldata encodedHatsStrings,bytes calldata sheetsStrings) public returns (address)',
+      ]),
+      functionName: 'createAndInitialize',
+      args: [
+        trimmedDaoAddress,
+        adminAddresses,
+        trimmedGameMasterAddresses,
+        encodedHatsData,
+        encodedGameCreationData,
+      ],
+    });
+  }, [
+    chain,
+    daoAddress,
+    gameDescription,
+    gameFactory,
+    gameMasters,
+    gameName,
+    hasError,
+    onUpload,
+    walletClient,
+  ]);
 
   const isLoading = isCreating;
   const isDisabled = isLoading || isUploading;
 
-  const content = () => {
-    if (txFailed) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Transaction failed.</Text>
-          <Button onClick={onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (isSynced) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Your game was successfully created!</Text>
-          <Button onClick={onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (txHash) {
-      return (
-        <TransactionPending
-          isSyncing={isSyncing}
-          text="Your game is being created."
-          txHash={txHash}
-        />
-      );
-    }
-
-    return (
-      <VStack as="form" onSubmit={onCreateGame} spacing={8}>
+  return (
+    <ActionModal
+      {...{
+        isOpen,
+        onClose,
+        header: 'Create a Game',
+        loadingText: 'Your game is being created...',
+        successText: 'Your game was successfully created!',
+        errorText: 'There was an error creating your game',
+        resetData,
+        chainId: chain?.id,
+        onAction: onCreateGame,
+        onComplete: reloadGames,
+      }}
+    >
+      <VStack spacing={8}>
         <FormControl isInvalid={showError && !gameName}>
           <FormLabel>Game Name</FormLabel>
           <Input
@@ -489,24 +412,6 @@ export const CreateGameModal: React.FC = () => {
           Create
         </Button>
       </VStack>
-    );
-  };
-
-  return (
-    <Modal
-      closeOnEsc={!isLoading}
-      closeOnOverlayClick={!isLoading}
-      isOpen={isOpen ?? false}
-      onClose={onClose ?? (() => undefined)}
-    >
-      <ModalOverlay />
-      <ModalContent mt={{ base: 0, md: '84px' }}>
-        <ModalHeader>
-          <Text>Create a Game</Text>
-          <ModalCloseButton size="lg" />
-        </ModalHeader>
-        <ModalBody>{content()}</ModalBody>
-      </ModalContent>
-    </Modal>
+    </ActionModal>
   );
 };
