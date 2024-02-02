@@ -4,41 +4,27 @@ import {
   FormHelperText,
   FormLabel,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Text,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { isAddress, parseAbi } from 'viem';
-import { Address, usePublicClient, useWalletClient } from 'wagmi';
+import { Address, useWalletClient } from 'wagmi';
 
-import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/graphql/health';
-import { useToast } from '@/hooks/useToast';
+
+import { ActionModal } from './ActionModal';
 
 export const TransferCharacterModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
   const { selectedCharacter, transferCharacterModal } = useCharacterActions();
 
   const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
-  const { renderError } = useToast();
 
   const [newPlayer, setNewPlayer] = useState<string>('');
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isTransferring, setIsTransferring] = useState<boolean>(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
-  const [txFailed, setTxFailed] = useState<boolean>(false);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [isSynced, setIsSynced] = useState<boolean>(false);
 
   const invalidPlayerAddress = useMemo(() => {
     return !isAddress(newPlayer) && !!newPlayer;
@@ -66,140 +52,69 @@ export const TransferCharacterModal: React.FC = () => {
 
     setShowError(false);
     setIsTransferring(false);
-    setTxHash(null);
-    setTxFailed(false);
-    setIsSyncing(false);
-    setIsSynced(false);
   }, []);
-
-  useEffect(() => {
-    if (!transferCharacterModal?.isOpen) {
-      resetData();
-    }
-  }, [resetData, transferCharacterModal?.isOpen]);
 
   const gameOwner = useMemo(() => {
     if (!game) return null;
     return game.owner as Address;
   }, [game]);
 
-  const onTransferCharacter = useCallback(
-    async (e: React.FormEvent<HTMLDivElement>) => {
-      e.preventDefault();
+  const onTransferCharacter = useCallback(async () => {
+    if (hasError) {
+      setShowError(true);
+      return null;
+    }
 
-      if (hasError) {
-        setShowError(true);
-        return;
-      }
+    try {
+      if (!walletClient) throw new Error('Could not find a wallet client');
+      if (!game) throw new Error('Missing game data');
+      if (!selectedCharacter) throw new Error('Character not found');
 
-      try {
-        if (!walletClient) throw new Error('Could not find a wallet client');
-        if (!game) throw new Error('Missing game data');
-        if (!selectedCharacter) throw new Error('Character not found');
+      if (!gameOwner) throw new Error('Game owner not found');
 
-        if (!gameOwner) throw new Error('Game owner not found');
+      setIsTransferring(true);
 
-        setIsTransferring(true);
-
-        const transactionhash = await walletClient.writeContract({
-          chain: walletClient.chain,
-          account: walletClient.account?.address as Address,
-          address: game.id as Address,
-          abi: parseAbi([
-            'function safeTransferFrom(address from, address to, uint256 characterId, bytes memory) public',
-          ]),
-          functionName: 'safeTransferFrom',
-          args: [
-            selectedCharacter.player as Address,
-            newPlayer as Address,
-            BigInt(selectedCharacter.characterId),
-            '0x',
-          ],
-        });
-        setTxHash(transactionhash);
-
-        const client = publicClient ?? walletClient;
-        const { blockNumber, status } = await client.waitForTransactionReceipt({
-          hash: transactionhash,
-        });
-
-        if (status === 'reverted') {
-          setTxFailed(true);
-          setIsTransferring(false);
-          throw new Error('Transaction failed');
-        }
-
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(client.chain.id, blockNumber);
-        if (!synced) throw new Error('Something went wrong while syncing');
-
-        setIsSynced(true);
-        reloadGame();
-      } catch (e) {
-        renderError(
-          e,
-          `Something went wrong while transferring character to a new player`,
-        );
-      } finally {
-        setIsSyncing(false);
-        setIsTransferring(false);
-      }
-    },
-    [
-      game,
-      gameOwner,
-      hasError,
-      newPlayer,
-      publicClient,
-      reloadGame,
-      renderError,
-      selectedCharacter,
-      walletClient,
-    ],
-  );
+      const transactionhash = await walletClient.writeContract({
+        chain: walletClient.chain,
+        account: walletClient.account?.address as Address,
+        address: game.id as Address,
+        abi: parseAbi([
+          'function safeTransferFrom(address from, address to, uint256 characterId, bytes memory) public',
+        ]),
+        functionName: 'safeTransferFrom',
+        args: [
+          selectedCharacter.player as Address,
+          newPlayer as Address,
+          BigInt(selectedCharacter.characterId),
+          '0x',
+        ],
+      });
+      return transactionhash;
+    } catch (e) {
+      throw e;
+    } finally {
+      setIsTransferring(false);
+    }
+  }, [game, gameOwner, hasError, newPlayer, selectedCharacter, walletClient]);
 
   const isLoading = isTransferring;
   const isDisabled = isLoading;
 
-  const content = () => {
-    if (txFailed) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Transaction failed.</Text>
-          <Button onClick={transferCharacterModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (isSynced) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>
-            The character {selectedCharacter?.name} has been transferred to a
-            new player!
-          </Text>
-          <Button onClick={transferCharacterModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (txHash && selectedCharacter) {
-      return (
-        <TransactionPending
-          isSyncing={isSyncing}
-          text="Transferring character..."
-          txHash={txHash}
-          chainId={game?.chainId}
-        />
-      );
-    }
-
-    return (
-      <VStack as="form" onSubmit={onTransferCharacter} spacing={8}>
+  return (
+    <ActionModal
+      {...{
+        isOpen: transferCharacterModal?.isOpen,
+        onClose: transferCharacterModal?.onClose,
+        header: `Transfer Character to New Player`,
+        loadingText: `Transferring character...`,
+        successText: `The character ${selectedCharacter?.name} has been transferred to a new player!`,
+        errorText: `There was an error transferring the character to a new player.`,
+        resetData,
+        onAction: onTransferCharacter,
+        onComplete: reloadGame,
+      }}
+    >
+      <VStack spacing={8}>
         <FormControl isInvalid={showError && invalidPlayerAddress}>
           <FormLabel>New player address</FormLabel>
           <Input
@@ -233,24 +148,6 @@ export const TransferCharacterModal: React.FC = () => {
           Transfer
         </Button>
       </VStack>
-    );
-  };
-
-  return (
-    <Modal
-      closeOnEsc={!isLoading}
-      closeOnOverlayClick={!isLoading}
-      isOpen={transferCharacterModal?.isOpen ?? false}
-      onClose={transferCharacterModal?.onClose ?? (() => {})}
-    >
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>
-          <Text>Transfer Character to New Player</Text>
-          <ModalCloseButton size="lg" />
-        </ModalHeader>
-        <ModalBody>{content()}</ModalBody>
-      </ModalContent>
-    </Modal>
+    </ActionModal>
   );
 };

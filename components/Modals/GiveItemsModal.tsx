@@ -6,44 +6,31 @@ import {
   FormLabel,
   Image,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
   Text,
   useRadioGroup,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { parseAbi } from 'viem';
-import { Address, usePublicClient, useWalletClient } from 'wagmi';
+import { Address, useWalletClient } from 'wagmi';
 
 import { RadioCard } from '@/components/RadioCard';
-import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/graphql/health';
-import { useToast } from '@/hooks/useToast';
+
+import { ActionModal } from './ActionModal';
 
 export const GiveItemsModal: React.FC = () => {
   const { game, reload: reloadGame, isMaster } = useGame();
   const { selectedCharacter, giveItemsModal } = useCharacterActions();
 
   const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
-  const { renderError } = useToast();
 
   const [itemId, setItemId] = useState<string>('0');
   const [amount, setAmount] = useState<string>('');
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isGiving, setIsGiving] = useState<boolean>(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
-  const [txFailed, setTxFailed] = useState<boolean>(false);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [isSynced, setIsSynced] = useState<boolean>(false);
 
   const selectedItem = useMemo(() => {
     const item = game?.items.find(c => c.itemId === itemId);
@@ -84,137 +71,76 @@ export const GiveItemsModal: React.FC = () => {
     setValue('0');
     setItemId('0');
     setIsGiving(false);
-    setTxHash(null);
-    setTxFailed(false);
-    setIsSyncing(false);
-    setIsSynced(false);
   }, [setValue]);
 
-  useEffect(() => {
-    if (!giveItemsModal?.isOpen) {
-      resetData();
+  const onGiveItems = useCallback(async () => {
+    if (invalidItem) {
+      return null;
     }
-  }, [resetData, giveItemsModal?.isOpen]);
 
-  const onGiveItems = useCallback(
-    async (e: React.FormEvent<HTMLDivElement>) => {
-      e.preventDefault();
+    if (hasError) {
+      setShowError(true);
+      return null;
+    }
 
-      if (invalidItem) {
-        return;
-      }
+    try {
+      if (!walletClient) throw new Error('Wallet client is not connected');
+      if (!selectedCharacter) throw new Error('Character address not found');
+      if (!game?.itemsAddress) throw new Error('Missing game data');
+      if (game?.items.length === 0) throw new Error('No items found');
+      if (!isMaster) throw new Error('Not the game master');
 
-      if (hasError) {
-        setShowError(true);
-        return;
-      }
+      setIsGiving(true);
 
-      try {
-        if (!walletClient) throw new Error('Wallet client is not connected');
-        if (!selectedCharacter) throw new Error('Character address not found');
-        if (!game?.itemsAddress) throw new Error('Missing game data');
-        if (game?.items.length === 0) throw new Error('No items found');
-        if (!isMaster) throw new Error('Not the game master');
+      const characters = [selectedCharacter.account as Address];
+      const itemIds = [[BigInt(itemId)]];
+      const amounts = [[BigInt(amount)]];
 
-        setIsGiving(true);
-
-        const characters = [selectedCharacter.account as Address];
-        const itemIds = [[BigInt(itemId)]];
-        const amounts = [[BigInt(amount)]];
-
-        const transactionhash = await walletClient.writeContract({
-          chain: walletClient.chain,
-          account: walletClient.account?.address as Address,
-          address: game.itemsAddress as Address,
-          abi: parseAbi([
-            'function dropLoot(address[] calldata nftAddress, uint256[][] calldata itemIds, uint256[][] calldata amounts) external',
-          ]),
-          functionName: 'dropLoot',
-          args: [characters, itemIds, amounts],
-        });
-        setTxHash(transactionhash);
-
-        const client = publicClient ?? walletClient;
-        const { blockNumber, status } = await client.waitForTransactionReceipt({
-          hash: transactionhash,
-        });
-
-        if (status === 'reverted') {
-          setTxFailed(true);
-          setIsGiving(false);
-          throw new Error('Transaction failed');
-        }
-
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(client.chain.id, blockNumber);
-        if (!synced) throw new Error('Something went wrong while syncing');
-
-        setIsSynced(true);
-        reloadGame();
-      } catch (e) {
-        renderError(
-          e,
-          `Something went wrong giving item(s) to ${selectedCharacter?.name}`,
-        );
-      } finally {
-        setIsSyncing(false);
-        setIsGiving(false);
-      }
-    },
-    [
-      hasError,
-      amount,
-      itemId,
-      isMaster,
-      invalidItem,
-      publicClient,
-      game,
-      reloadGame,
-      renderError,
-      selectedCharacter,
-      walletClient,
-    ],
-  );
+      const transactionhash = await walletClient.writeContract({
+        chain: walletClient.chain,
+        account: walletClient.account?.address as Address,
+        address: game.itemsAddress as Address,
+        abi: parseAbi([
+          'function dropLoot(address[] calldata nftAddress, uint256[][] calldata itemIds, uint256[][] calldata amounts) external',
+        ]),
+        functionName: 'dropLoot',
+        args: [characters, itemIds, amounts],
+      });
+      return transactionhash;
+    } catch (e) {
+      throw e;
+    } finally {
+      setIsGiving(false);
+    }
+  }, [
+    hasError,
+    amount,
+    itemId,
+    isMaster,
+    invalidItem,
+    game,
+    selectedCharacter,
+    walletClient,
+  ]);
 
   const isLoading = isGiving;
   const isDisabled = isLoading || invalidItem;
 
-  const content = () => {
-    if (txFailed) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Transaction failed.</Text>
-          <Button onClick={giveItemsModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (isSynced) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Item(s) successfully given!</Text>
-          <Button onClick={giveItemsModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (txHash && selectedCharacter) {
-      return (
-        <TransactionPending
-          isSyncing={isSyncing}
-          text={`Giving the item(s) to ${selectedCharacter.name}...`}
-          txHash={txHash}
-          chainId={game?.chainId}
-        />
-      );
-    }
-
-    return (
-      <VStack as="form" onSubmit={onGiveItems} spacing={8}>
+  return (
+    <ActionModal
+      {...{
+        isOpen: giveItemsModal?.isOpen,
+        onClose: giveItemsModal?.onClose,
+        header: `Give items to ${selectedCharacter?.name}`,
+        loadingText: `Giving item(s) to ${selectedCharacter?.name}...`,
+        successText: `Item(s) successfully given to ${selectedCharacter?.name}!`,
+        errorText: `There was an error giving the item(s) to ${selectedCharacter?.name}.`,
+        resetData,
+        onAction: onGiveItems,
+        onComplete: reloadGame,
+      }}
+    >
+      <VStack spacing={8}>
         <Flex {...group} wrap="wrap" gap={4}>
           {options.map(value => {
             const radio = getRadioProps({ value });
@@ -270,24 +196,6 @@ export const GiveItemsModal: React.FC = () => {
           Give
         </Button>
       </VStack>
-    );
-  };
-
-  return (
-    <Modal
-      closeOnEsc={!isLoading}
-      closeOnOverlayClick={!isLoading}
-      isOpen={giveItemsModal?.isOpen ?? false}
-      onClose={giveItemsModal?.onClose ?? (() => {})}
-    >
-      <ModalOverlay />
-      <ModalContent mt={{ base: 0, md: '84px' }}>
-        <ModalHeader>
-          <Text>Give items</Text>
-          <ModalCloseButton size="lg" />
-        </ModalHeader>
-        <ModalBody>{content()}</ModalBody>
-      </ModalContent>
-    </Modal>
+    </ActionModal>
   );
 };

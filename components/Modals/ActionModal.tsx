@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
 import { Hex } from 'viem';
-import { usePublicClient, useWalletClient } from 'wagmi';
+import { useNetwork, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
 import { waitUntilBlock } from '@/graphql/health';
@@ -24,11 +24,11 @@ export type ActionModalProps = {
   onComplete?: (() => void) | undefined;
   header: string;
   loadingText: string;
-  successText: string;
+  successText: string | React.ReactNode;
   failureText?: string;
   errorText?: string;
   resetData: () => void;
-  chainId: number | undefined;
+  chainId?: number | undefined;
 };
 
 export const ActionModal: React.FC<
@@ -43,11 +43,13 @@ export const ActionModal: React.FC<
   failureText = 'Transaction failed',
   errorText = 'Something went wrong',
   resetData,
-  chainId,
   onAction,
   onComplete,
 }) => {
   const { renderError } = useToast();
+
+  const { chain } = useNetwork();
+  const chainId = chain?.id;
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -132,7 +134,11 @@ export const ActionModal: React.FC<
                 </VStack>
               ) : isSynced ? (
                 <VStack py={10} spacing={4}>
-                  <Text>{successText}</Text>
+                  {typeof successText === 'string' ? (
+                    <Text>{successText}</Text>
+                  ) : (
+                    successText
+                  )}
                   <Button onClick={onClose} variant="outline">
                     Close
                   </Button>

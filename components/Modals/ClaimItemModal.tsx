@@ -12,45 +12,32 @@ import {
   Image,
   Input,
   ListItem,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
   Text,
   UnorderedList,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getAddress, pad, parseAbi } from 'viem';
-import { Address, usePublicClient, useWalletClient } from 'wagmi';
+import { Address, useWalletClient } from 'wagmi';
 
-import { TransactionPending } from '@/components/TransactionPending';
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
-import { waitUntilBlock } from '@/graphql/health';
 import { ClaimableItemLeaf, useClaimableTree } from '@/hooks/useClaimableTree';
-import { useToast } from '@/hooks/useToast';
 import { executeAsCharacter } from '@/utils/account';
+
+import { ActionModal } from './ActionModal';
 
 export const ClaimItemModal: React.FC = () => {
   const { character, game, reload: reloadGame } = useGame();
   const { selectedItem, claimItemModal } = useItemActions();
 
   const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
-  const { renderError } = useToast();
 
   const [openDetails, setOpenDetails] = useState(-1); // -1 = closed, 0 = open
   const [amount, setAmount] = useState<string>('1');
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isClaiming, setIsClaiming] = useState<boolean>(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
-  const [txFailed, setTxFailed] = useState<boolean>(false);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [isSynced, setIsSynced] = useState<boolean>(false);
 
   const existingAmount = useMemo(() => {
     if (!selectedItem || !character) return BigInt(0);
@@ -87,16 +74,6 @@ export const ClaimItemModal: React.FC = () => {
     return '';
   }, [amount, selectedItem, distributionLeftToClaim]);
 
-  const resetData = useCallback(() => {
-    setOpenDetails(-1);
-    setAmount('1');
-    setIsClaiming(false);
-    setTxHash(null);
-    setTxFailed(false);
-    setIsSyncing(false);
-    setIsSynced(false);
-  }, []);
-
   useEffect(() => {
     setShowError(false);
   }, [amount]);
@@ -124,13 +101,12 @@ export const ClaimItemModal: React.FC = () => {
     reload: reloadTree,
   } = useClaimableTree(selectedItem?.itemId);
 
-  useEffect(() => {
-    if (claimItemModal?.isOpen) {
-      resetData();
-    } else {
-      reloadTree();
-    }
-  }, [resetData, claimItemModal?.isOpen, reloadTree]);
+  const resetData = useCallback(() => {
+    setOpenDetails(-1);
+    setAmount('1');
+    setIsClaiming(false);
+    reloadTree();
+  }, [reloadTree]);
 
   const claimableLeaves: Array<ClaimableItemLeaf> = useMemo(() => {
     if (!tree) return [];
@@ -183,170 +159,121 @@ export const ClaimItemModal: React.FC = () => {
     return claimableAmount > BigInt(0);
   }, [selectedItem, claimableAmount]);
 
-  const onClaimItem = useCallback(
-    async (e: React.FormEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      try {
-        if (noSupply) {
-          throw new Error('This item has zero supply.');
-        }
+  const onClaimItem = useCallback(async () => {
+    if (noSupply) {
+      throw new Error('This item has zero supply.');
+    }
 
-        if (hasError && isClaimableByPublic) {
-          setShowError(true);
-          return;
-        }
+    if (hasError && isClaimableByPublic) {
+      setShowError(true);
+      return null;
+    }
 
-        if (insufficientClasses) {
-          setOpenDetails(0);
-          throw new Error('You do not have the required classes');
-        }
+    if (insufficientClasses) {
+      setOpenDetails(0);
+      throw new Error('You do not have the required classes');
+    }
 
-        if (!walletClient) {
-          throw new Error('Could not find a wallet client');
-        }
+    if (!walletClient) {
+      throw new Error('Could not find a wallet client');
+    }
 
-        if (!game?.itemsAddress) {
-          throw new Error('Missing game data');
-        }
+    if (!game?.itemsAddress) {
+      throw new Error('Missing game data');
+    }
 
-        if (!character) {
-          throw new Error('Character address not found');
-        }
+    if (!character) {
+      throw new Error('Character address not found');
+    }
 
-        if (!selectedItem) {
-          throw new Error('Item not found');
-        }
+    if (!selectedItem) {
+      throw new Error('Item not found');
+    }
 
-        setIsClaiming(true);
+    setIsClaiming(true);
 
-        if (!isClaimableByPublic && !tree) {
-          console.error('Could not find the claimable tree.');
-          throw new Error(
-            `Something went wrong while claiming ${selectedItem.name}.`,
-          );
-        }
+    if (!isClaimableByPublic && !tree) {
+      console.error('Could not find the claimable tree.');
+      throw new Error(
+        `Something went wrong while claiming ${selectedItem.name}.`,
+      );
+    }
 
-        const itemId = BigInt(selectedItem.itemId);
+    const itemId = BigInt(selectedItem.itemId);
 
-        let proof: string[] = [];
-        let claimingAmount = BigInt(amount);
+    let proof: string[] = [];
+    let claimingAmount = BigInt(amount);
 
-        if (
-          isClaimableByMerkleProof &&
-          tree &&
-          claimableAmount > BigInt(0) &&
-          claimableLeaf
-        ) {
-          proof = tree.getProof(claimableLeaf);
-          claimingAmount = claimableAmount;
-        } else if (!isClaimableByPublic) {
-          console.error('Not claimable by public or merkle proof.');
-          throw new Error(
-            `Something went wrong while claiming ${selectedItem.name}.`,
-          );
-        }
+    if (
+      isClaimableByMerkleProof &&
+      tree &&
+      claimableAmount > BigInt(0) &&
+      claimableLeaf
+    ) {
+      proof = tree.getProof(claimableLeaf);
+      claimingAmount = claimableAmount;
+    } else if (!isClaimableByPublic) {
+      console.error('Not claimable by public or merkle proof.');
+      throw new Error(
+        `Something went wrong while claiming ${selectedItem.name}.`,
+      );
+    }
 
-        const transactionhash = await executeAsCharacter(
-          character,
-          walletClient,
-          {
-            chain: walletClient.chain,
-            account: walletClient.account?.address as Address,
-            address: game.itemsAddress as Address,
-            abi: parseAbi([
-              'function claimItems(uint256[] calldata itemIds, uint256[] calldata amounts, bytes32[][] calldata proofs) external',
-            ]),
-            functionName: 'claimItems',
-            args: [[itemId], [claimingAmount], [proof]],
-          },
-        );
-        setTxHash(transactionhash);
-
-        const client = publicClient ?? walletClient;
-        const { blockNumber, status } = await client.waitForTransactionReceipt({
-          hash: transactionhash,
-        });
-
-        if (status === 'reverted') {
-          setTxFailed(true);
-          setIsClaiming(false);
-          throw new Error('Transaction failed');
-        }
-
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(client.chain.id, blockNumber);
-
-        if (!synced) {
-          throw new Error('Something went wrong while syncing.');
-        }
-        setIsSynced(true);
-        reloadGame();
-      } catch (e) {
-        renderError(e, 'An error occurred while claiming');
-      } finally {
-        setIsSyncing(false);
-        setIsClaiming(false);
-      }
-    },
-    [
-      amount,
-      character,
-      game,
-      hasError,
-      insufficientClasses,
-      noSupply,
-      publicClient,
-      selectedItem,
-      reloadGame,
-      renderError,
-      walletClient,
-      tree,
-      isClaimableByPublic,
-      claimableAmount,
-      claimableLeaf,
-      isClaimableByMerkleProof,
-    ],
-  );
+    try {
+      const transactionhash = await executeAsCharacter(
+        character,
+        walletClient,
+        {
+          chain: walletClient.chain,
+          account: walletClient.account?.address as Address,
+          address: game.itemsAddress as Address,
+          abi: parseAbi([
+            'function claimItems(uint256[] calldata itemIds, uint256[] calldata amounts, bytes32[][] calldata proofs) external',
+          ]),
+          functionName: 'claimItems',
+          args: [[itemId], [claimingAmount], [proof]],
+        },
+      );
+      return transactionhash;
+    } catch (e) {
+      throw e;
+    } finally {
+      setIsClaiming(false);
+    }
+  }, [
+    amount,
+    character,
+    game,
+    hasError,
+    insufficientClasses,
+    noSupply,
+    selectedItem,
+    walletClient,
+    tree,
+    isClaimableByPublic,
+    claimableAmount,
+    claimableLeaf,
+    isClaimableByMerkleProof,
+  ]);
 
   const isLoading = isClaiming;
 
   const isDisabled = isLoading;
 
-  const content = () => {
-    if (txFailed) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Transaction failed.</Text>
-          <Button onClick={claimItemModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (isSynced && selectedItem) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>{selectedItem.name} has been claimed!</Text>
-          <Button onClick={claimItemModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (txHash && selectedItem) {
-      return (
-        <TransactionPending
-          isSyncing={isSyncing}
-          text={`Claiming ${selectedItem.name}...`}
-          txHash={txHash}
-          chainId={game?.chainId}
-        />
-      );
-    }
-
-    return (
+  return (
+    <ActionModal
+      {...{
+        isOpen: claimItemModal?.isOpen,
+        onClose: claimItemModal?.onClose,
+        header: `Claim ${selectedItem?.name ?? 'Item'}`,
+        loadingText: `Claiming item...`,
+        successText: 'Item successfully claimed!',
+        errorText: 'There was an error claiming this item.',
+        resetData,
+        onAction: onClaimItem,
+        onComplete: reloadGame,
+      }}
+    >
       <VStack as="form" onSubmit={onClaimItem} spacing={8}>
         <VStack justify="space-between" h="100%" spacing={6}>
           <Image
@@ -470,24 +397,6 @@ export const ClaimItemModal: React.FC = () => {
           </Button>
         )}
       </VStack>
-    );
-  };
-
-  return (
-    <Modal
-      closeOnEsc={!isLoading}
-      closeOnOverlayClick={!isLoading}
-      isOpen={claimItemModal?.isOpen ?? false}
-      onClose={claimItemModal?.onClose ?? (() => {})}
-    >
-      <ModalOverlay />
-      <ModalContent mt={{ base: 0, md: '84px' }}>
-        <ModalHeader>
-          <Text>Claim {selectedItem?.name ?? 'Item'}</Text>
-          <ModalCloseButton size="lg" />
-        </ModalHeader>
-        <ModalBody>{content()}</ModalBody>
-      </ModalContent>
-    </Modal>
+    </ActionModal>
   );
 };

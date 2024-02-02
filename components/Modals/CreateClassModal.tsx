@@ -6,34 +6,24 @@ import {
   FormLabel,
   Image,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Text,
   Textarea,
   VStack,
 } from '@chakra-ui/react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { encodeAbiParameters, parseAbi } from 'viem';
-import { Address, usePublicClient, useWalletClient } from 'wagmi';
+import { Address, useWalletClient } from 'wagmi';
 
 import { Switch } from '@/components/Switch';
-import { TransactionPending } from '@/components/TransactionPending';
 import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/graphql/health';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
-import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
+
+import { ActionModal } from './ActionModal';
 
 export const CreateClassModal: React.FC = () => {
   const { createClassModal } = useGameActions();
   const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
-  const { renderError } = useToast();
 
   const { game, reload: reloadGame } = useGame();
 
@@ -56,10 +46,6 @@ export const CreateClassModal: React.FC = () => {
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
-  const [txFailed, setTxFailed] = useState<boolean>(false);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [isSynced, setIsSynced] = useState<boolean>(false);
 
   const invalidClassDescription = useMemo(() => {
     return classDescription.length > 200 && !!classDescription;
@@ -80,161 +66,103 @@ export const CreateClassModal: React.FC = () => {
     setShowError(false);
 
     setIsCreating(false);
-    setTxHash(null);
-    setTxFailed(false);
-    setIsSyncing(false);
-    setIsSynced(false);
   }, [setClassEmblem]);
 
-  useEffect(() => {
-    if (!createClassModal?.isOpen) {
-      resetData();
+  const onCreateClass = useCallback(async () => {
+    if (hasError) {
+      setShowError(true);
+      return null;
     }
-  }, [resetData, createClassModal?.isOpen]);
 
-  const onCreateClass = useCallback(
-    async (e: React.FormEvent<HTMLDivElement>) => {
-      e.preventDefault();
+    if (!walletClient) throw new Error('Could not find a wallet client');
 
-      if (hasError) {
-        setShowError(true);
-        return;
-      }
+    if (!game?.classesAddress)
+      throw new Error(
+        `Missing class factory address for the ${walletClient.chain.name} network`,
+      );
 
-      try {
-        if (!walletClient) throw new Error('Could not find a wallet client');
+    const cid = await onUpload();
+    if (!cid)
+      throw new Error('Something went wrong uploading your class emblem');
 
-        if (!game?.classesAddress)
-          throw new Error(
-            `Missing class factory address for the ${walletClient.chain.name} network`,
-          );
+    const classMetadata = {
+      name: className,
+      description: classDescription,
+      image: `ipfs://${cid}`,
+    };
 
-        const cid = await onUpload();
-        if (!cid)
-          throw new Error('Something went wrong uploading your class emblem');
+    setIsCreating(true);
 
-        const classMetadata = {
-          name: className,
-          description: classDescription,
-          image: `ipfs://${cid}`,
-        };
+    const res = await fetch('/api/uploadMetadata?name=classMetadata.json', {
+      method: 'POST',
+      body: JSON.stringify(classMetadata),
+    });
+    if (!res.ok)
+      throw new Error('Something went wrong uploading your class metadata');
 
-        setIsCreating(true);
+    const { cid: classMetadataCid } = await res.json();
+    if (!classMetadataCid)
+      throw new Error('Something went wrong uploading your class metadata');
 
-        const res = await fetch('/api/uploadMetadata?name=classMetadata.json', {
-          method: 'POST',
-          body: JSON.stringify(classMetadata),
-        });
-        if (!res.ok)
-          throw new Error('Something went wrong uploading your class metadata');
+    const encodedClassCreationData = encodeAbiParameters(
+      [
+        {
+          name: 'claimable',
+          type: 'bool',
+        },
+        {
+          name: 'classesUri',
+          type: 'string',
+        },
+      ],
+      [isClaimable, classMetadataCid],
+    );
 
-        const { cid: classMetadataCid } = await res.json();
-        if (!classMetadataCid)
-          throw new Error('Something went wrong uploading your class metadata');
-
-        const encodedClassCreationData = encodeAbiParameters(
-          [
-            {
-              name: 'claimable',
-              type: 'bool',
-            },
-            {
-              name: 'classesUri',
-              type: 'string',
-            },
-          ],
-          [isClaimable, classMetadataCid],
-        );
-
-        const transactionhash = await walletClient.writeContract({
-          chain: walletClient.chain,
-          account: walletClient.account?.address as Address,
-          address: game.classesAddress as Address,
-          abi: parseAbi([
-            'function createClassType(bytes calldata classData) external returns (uint256)',
-          ]),
-          functionName: 'createClassType',
-          args: [encodedClassCreationData],
-        });
-        setTxHash(transactionhash);
-
-        const client = publicClient ?? walletClient;
-        const { blockNumber, status } = await client.waitForTransactionReceipt({
-          hash: transactionhash,
-        });
-
-        if (status === 'reverted') {
-          setTxFailed(true);
-          setIsCreating(false);
-          throw new Error('Transaction failed');
-        }
-
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(client.chain.id, blockNumber);
-        if (!synced) throw new Error('Something went wrong while syncing');
-
-        setIsSynced(true);
-        reloadGame();
-      } catch (e) {
-        renderError(e, 'Something went wrong creating your class');
-      } finally {
-        setIsSyncing(false);
-        setIsCreating(false);
-      }
-    },
-    [
-      classDescription,
-      className,
-      game,
-      hasError,
-      isClaimable,
-      onUpload,
-      publicClient,
-      reloadGame,
-      renderError,
-      walletClient,
-    ],
-  );
+    try {
+      const transactionhash = await walletClient.writeContract({
+        chain: walletClient.chain,
+        account: walletClient.account?.address as Address,
+        address: game.classesAddress as Address,
+        abi: parseAbi([
+          'function createClassType(bytes calldata classData) external returns (uint256)',
+        ]),
+        functionName: 'createClassType',
+        args: [encodedClassCreationData],
+      });
+      return transactionhash;
+    } catch (e) {
+      throw e;
+    } finally {
+      setIsCreating(false);
+    }
+  }, [
+    classDescription,
+    className,
+    game,
+    hasError,
+    isClaimable,
+    onUpload,
+    walletClient,
+  ]);
 
   const isLoading = isCreating;
   const isDisabled = isLoading || isUploading;
 
-  const content = () => {
-    if (txFailed) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Transaction failed.</Text>
-          <Button onClick={createClassModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (isSynced) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Your class was successfully created!</Text>
-          <Button onClick={createClassModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (txHash) {
-      return (
-        <TransactionPending
-          isSyncing={isSyncing}
-          text="Your class is being created."
-          txHash={txHash}
-          chainId={game?.chainId}
-        />
-      );
-    }
-
-    return (
-      <VStack as="form" onSubmit={onCreateClass} spacing={8}>
+  return (
+    <ActionModal
+      {...{
+        isOpen: createClassModal?.isOpen,
+        onClose: createClassModal?.onClose,
+        header: 'Create an Class',
+        loadingText: `Your class is being created...`,
+        successText: 'Your class was successfully created!',
+        errorText: 'There was an error creating your class.',
+        resetData,
+        onAction: onCreateClass,
+        onComplete: reloadGame,
+      }}
+    >
+      <VStack spacing={8}>
         <FormControl isInvalid={showError && !className}>
           <FormLabel>Class Name</FormLabel>
           <Input
@@ -321,24 +249,6 @@ export const CreateClassModal: React.FC = () => {
           Create
         </Button>
       </VStack>
-    );
-  };
-
-  return (
-    <Modal
-      closeOnEsc={!isLoading}
-      closeOnOverlayClick={!isLoading}
-      isOpen={createClassModal?.isOpen ?? false}
-      onClose={createClassModal?.onClose ?? (() => {})}
-    >
-      <ModalOverlay />
-      <ModalContent mt={{ base: 0, md: '84px' }}>
-        <ModalHeader>
-          <Text>Create a Class</Text>
-          <ModalCloseButton size="lg" />
-        </ModalHeader>
-        <ModalBody>{content()}</ModalBody>
-      </ModalContent>
-    </Modal>
+    </ActionModal>
   );
 };

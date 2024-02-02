@@ -8,11 +8,10 @@ import {
 } from '@chakra-ui/react';
 import { useCallback, useMemo, useState } from 'react';
 import { parseAbi } from 'viem';
-import { Address, useNetwork, useWalletClient } from 'wagmi';
+import { Address, useWalletClient } from 'wagmi';
 
 import { RadioCard } from '@/components/RadioCard';
 import { SelectCharacterInput } from '@/components/SelectCharacterInput';
-import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useClassActions } from '@/contexts/ClassActionsContext';
 import { useGame } from '@/contexts/GameContext';
@@ -78,25 +77,27 @@ export const AssignClassModal: React.FC = () => {
 
     setIsAssigning(true);
 
-    const txHash = await walletClient.writeContract({
-      chain: walletClient.chain,
-      account: walletClient.account?.address as Address,
-      address: game.classesAddress as Address,
-      abi: parseAbi([
-        'function assignClass(address character, uint256 classId) public',
-      ]),
-      functionName: 'assignClass',
-      args: [selectedCharacter.account as `0x${string}`, BigInt(classId)],
-    });
-
-    setIsAssigning(false);
-    return txHash;
+    try {
+      const txHash = await walletClient.writeContract({
+        chain: walletClient.chain,
+        account: walletClient.account?.address as Address,
+        address: game.classesAddress as Address,
+        abi: parseAbi([
+          'function assignClass(address character, uint256 classId) public',
+        ]),
+        functionName: 'assignClass',
+        args: [selectedCharacter.account as `0x${string}`, BigInt(classId)],
+      });
+      return txHash;
+    } catch (e) {
+      throw e;
+    } finally {
+      setIsAssigning(false);
+    }
   }, [classId, isMaster, invalidClass, game, selectedCharacter, walletClient]);
 
   const isLoading = isAssigning;
   const isDisabled = isLoading || invalidClass || !selectedCharacter;
-
-  const { chain } = useNetwork();
 
   return (
     <ActionModal
@@ -108,7 +109,6 @@ export const AssignClassModal: React.FC = () => {
         successText: 'Class successfully assigned!',
         errorText: 'There was an error assigning the class.',
         resetData,
-        chainId: chain?.id,
         onAction: onAssignClass,
         onComplete: reloadGame,
       }}

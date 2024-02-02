@@ -235,24 +235,29 @@ export const CreateGameModal: React.FC = () => {
 
     const adminAddresses = [walletClient.account?.address as Address];
 
-    const txHash = await walletClient.writeContract({
-      chain: walletClient.chain,
-      account: walletClient.account?.address as Address,
-      address: gameFactory as Address,
-      abi: parseAbi([
-        'function createAndInitialize(address dao,address[] calldata admins,address[] calldata dungeonMasters,bytes calldata encodedHatsStrings,bytes calldata sheetsStrings) public returns (address)',
-      ]),
-      functionName: 'createAndInitialize',
-      args: [
-        trimmedDaoAddress,
-        adminAddresses,
-        trimmedGameMasterAddresses,
-        encodedHatsData,
-        encodedGameCreationData,
-      ],
-    });
-    setIsCreating(false);
-    return txHash;
+    try {
+      const txHash = await walletClient.writeContract({
+        chain: walletClient.chain,
+        account: walletClient.account?.address as Address,
+        address: gameFactory as Address,
+        abi: parseAbi([
+          'function createAndInitialize(address dao,address[] calldata admins,address[] calldata dungeonMasters,bytes calldata encodedHatsStrings,bytes calldata sheetsStrings) public returns (address)',
+        ]),
+        functionName: 'createAndInitialize',
+        args: [
+          trimmedDaoAddress,
+          adminAddresses,
+          trimmedGameMasterAddresses,
+          encodedHatsData,
+          encodedGameCreationData,
+        ],
+      });
+      return txHash;
+    } catch (e) {
+      throw e;
+    } finally {
+      setIsCreating(false);
+    }
   }, [
     chain,
     daoAddress,
@@ -278,7 +283,6 @@ export const CreateGameModal: React.FC = () => {
         successText: 'Your game was successfully created!',
         errorText: 'There was an error creating your game',
         resetData,
-        chainId: chain?.id,
         onAction: onCreateGame,
         onComplete: reloadGames,
       }}
