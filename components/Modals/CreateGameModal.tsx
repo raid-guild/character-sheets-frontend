@@ -235,7 +235,7 @@ export const CreateGameModal: React.FC = () => {
 
     const adminAddresses = [walletClient.account?.address as Address];
 
-    return walletClient.writeContract({
+    const txHash = await walletClient.writeContract({
       chain: walletClient.chain,
       account: walletClient.account?.address as Address,
       address: gameFactory as Address,
@@ -251,6 +251,8 @@ export const CreateGameModal: React.FC = () => {
         encodedGameCreationData,
       ],
     });
+    setIsCreating(false);
+    return txHash;
   }, [
     chain,
     daoAddress,
