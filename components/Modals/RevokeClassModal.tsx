@@ -17,15 +17,19 @@ import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { RadioCard } from '@/components/RadioCard';
+import { SelectCharacterInput } from '@/components/SelectCharacterInput';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
+import { useClassActions } from '@/contexts/ClassActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
 export const RevokeClassModal: React.FC = () => {
   const { game, isMaster, reload: reloadGame } = useGame();
-  const { selectedCharacter, revokeClassModal } = useCharacterActions();
+  const { selectCharacter, selectedCharacter, revokeClassModal } =
+    useCharacterActions();
+  const { selectedClass } = useClassActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -39,10 +43,19 @@ export const RevokeClassModal: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isSynced, setIsSynced] = useState<boolean>(false);
 
-  const options = useMemo(
-    () => selectedCharacter?.classes.map(c => c.classId) ?? [],
-    [selectedCharacter?.classes],
-  );
+  const invalidClass = useMemo(() => {
+    const selectedCharacterClasses =
+      selectedCharacter?.classes.map(c => c.classId) ?? [];
+    return !selectedCharacterClasses.includes(classId);
+  }, [classId, selectedCharacter]);
+
+  const options = useMemo(() => {
+    if (selectedClass) {
+      return [selectedClass.classId];
+    }
+    return selectedCharacter?.classes.map(c => c.classId) ?? [];
+  }, [selectedClass, selectedCharacter?.classes]);
+
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
     defaultValue: options[0],
@@ -51,14 +64,19 @@ export const RevokeClassModal: React.FC = () => {
   const group = getRootProps();
 
   const resetData = useCallback(() => {
-    setValue(options[0]);
-    setClassId(options[0]);
+    if (selectedClass) {
+      setValue(selectedClass.classId);
+      setClassId(selectedClass.classId);
+    } else {
+      setValue(options[0]);
+      setClassId(options[0]);
+    }
     setIsRevoking(false);
     setTxHash(null);
     setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
-  }, [options, setValue]);
+  }, [options, selectedClass, setValue]);
 
   useEffect(() => {
     if (!revokeClassModal?.isOpen) {
@@ -69,6 +87,10 @@ export const RevokeClassModal: React.FC = () => {
   const onRevokeClass = useCallback(
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
+
+      if (invalidClass) {
+        return;
+      }
 
       try {
         if (!walletClient) throw new Error('Could not find a wallet client');
@@ -120,6 +142,7 @@ export const RevokeClassModal: React.FC = () => {
     [
       classId,
       game,
+      invalidClass,
       isMaster,
       publicClient,
       reloadGame,
@@ -130,7 +153,7 @@ export const RevokeClassModal: React.FC = () => {
   );
 
   const isLoading = isRevoking;
-  const isDisabled = isLoading;
+  const isDisabled = isLoading || invalidClass || !selectedCharacter;
 
   const content = () => {
     if (txFailed) {
@@ -168,6 +191,7 @@ export const RevokeClassModal: React.FC = () => {
 
     return (
       <VStack as="form" onSubmit={onRevokeClass} spacing={8}>
+        {!selectedCharacter && <Text>No character selected.</Text>}
         <Flex {...group} wrap="wrap" gap={4}>
           {options.map(value => {
             const radio = getRadioProps({ value });
@@ -190,6 +214,23 @@ export const RevokeClassModal: React.FC = () => {
             );
           })}
         </Flex>
+        {selectedCharacter && invalidClass && (
+          <Text color="red.500">
+            The selected character does not have this class.
+          </Text>
+        )}
+        {selectedClass && game && (
+          <VStack align="flex-start" w="full">
+            <Text fontSize="sm" fontWeight={500}>
+              Select a character
+            </Text>
+            <SelectCharacterInput
+              characters={game.characters}
+              selectedCharacter={selectedCharacter}
+              setSelectedCharacter={selectCharacter}
+            />
+          </VStack>
+        )}
         <Button
           isDisabled={isDisabled}
           isLoading={isLoading}

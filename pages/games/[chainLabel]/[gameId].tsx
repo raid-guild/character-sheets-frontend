@@ -53,6 +53,7 @@ import {
   CharacterActionsProvider,
   useCharacterActions,
 } from '@/contexts/CharacterActionsContext';
+import { ClassActionsProvider } from '@/contexts/ClassActionsContext';
 import {
   GameActionsProvider,
   GameMasterActions,
@@ -104,12 +105,14 @@ export default function GamePageOuter({ game }: Props): JSX.Element {
     <GameProvider chainId={chainId} gameId={gameId.toString()} game={game}>
       <GameActionsProvider>
         <CharacterActionsProvider>
-          <ItemActionsProvider>
-            <ImplementationsAlert />
-            {isConnectedAndMounted && <OldCharacterURIAlert />}
-            {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
-            <GamePage isConnectedAndMounted={isConnectedAndMounted} />
-          </ItemActionsProvider>
+          <ClassActionsProvider>
+            <ItemActionsProvider>
+              <ImplementationsAlert />
+              {isConnectedAndMounted && <OldCharacterURIAlert />}
+              {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
+              <GamePage isConnectedAndMounted={isConnectedAndMounted} />
+            </ItemActionsProvider>
+          </ClassActionsProvider>
         </CharacterActionsProvider>
       </GameActionsProvider>
     </GameProvider>

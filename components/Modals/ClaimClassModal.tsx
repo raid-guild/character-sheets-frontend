@@ -19,6 +19,7 @@ import { Address, usePublicClient, useWalletClient } from 'wagmi';
 import { RadioCard } from '@/components/RadioCard';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
+import { useClassActions } from '@/contexts/ClassActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
@@ -27,6 +28,7 @@ import { executeAsCharacter } from '@/utils/account';
 export const ClaimClassModal: React.FC = () => {
   const { character, game, reload: reloadGame } = useGame();
   const { claimClassModal } = useCharacterActions();
+  const { selectedClass } = useClassActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -46,10 +48,12 @@ export const ClaimClassModal: React.FC = () => {
     return selectedCharacterClasses.includes(classId);
   }, [character, classId]);
 
-  const options = useMemo(
-    () => game?.classes.filter(c => c.claimable).map(c => c.classId) ?? [],
-    [game],
-  );
+  const options = useMemo(() => {
+    if (selectedClass) {
+      return [selectedClass.classId];
+    }
+    return game?.classes.filter(c => c.claimable).map(c => c.classId) ?? [];
+  }, [game, selectedClass]);
 
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
@@ -59,14 +63,19 @@ export const ClaimClassModal: React.FC = () => {
   const group = getRootProps();
 
   const resetData = useCallback(() => {
-    setValue(options[0]);
-    setClassId(options[0]);
+    if (selectedClass) {
+      setValue(selectedClass.classId);
+      setClassId(selectedClass.classId);
+    } else {
+      setValue(options[0]);
+      setClassId(options[0]);
+    }
     setIsClaiming(false);
     setTxHash(null);
     setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
-  }, [options, setValue]);
+  }, [options, selectedClass, setValue]);
 
   useEffect(() => {
     if (!claimClassModal?.isOpen) {

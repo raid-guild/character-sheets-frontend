@@ -17,15 +17,19 @@ import { parseAbi } from 'viem';
 import { Address, usePublicClient, useWalletClient } from 'wagmi';
 
 import { RadioCard } from '@/components/RadioCard';
+import { SelectCharacterInput } from '@/components/SelectCharacterInput';
 import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
+import { useClassActions } from '@/contexts/ClassActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { waitUntilBlock } from '@/graphql/health';
 import { useToast } from '@/hooks/useToast';
 
 export const AssignClassModal: React.FC = () => {
   const { game, reload: reloadGame, isMaster } = useGame();
-  const { selectedCharacter, assignClassModal } = useCharacterActions();
+  const { selectCharacter, selectedCharacter, assignClassModal } =
+    useCharacterActions();
+  const { selectedClass } = useClassActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -45,7 +49,13 @@ export const AssignClassModal: React.FC = () => {
     return selectedCharacterClasses.includes(classId);
   }, [classId, selectedCharacter]);
 
-  const options = game?.classes.map(c => c.classId) ?? [];
+  const options = useMemo(() => {
+    if (selectedClass) {
+      return [selectedClass.classId];
+    }
+    return game?.classes.map(c => c.classId) ?? [];
+  }, [game?.classes, selectedClass]);
+
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
     defaultValue: '0',
@@ -54,14 +64,19 @@ export const AssignClassModal: React.FC = () => {
   const group = getRootProps();
 
   const resetData = useCallback(() => {
-    setValue('0');
-    setClassId('0');
+    if (selectedClass) {
+      setValue(selectedClass.classId);
+      setClassId(selectedClass.classId);
+    } else {
+      setValue(options[0]);
+      setClassId(options[0]);
+    }
     setIsAssigning(false);
     setTxHash(null);
     setTxFailed(false);
     setIsSyncing(false);
     setIsSynced(false);
-  }, [setValue]);
+  }, [options, selectedClass, setValue]);
 
   useEffect(() => {
     if (!assignClassModal?.isOpen) {
@@ -143,7 +158,7 @@ export const AssignClassModal: React.FC = () => {
   );
 
   const isLoading = isAssigning;
-  const isDisabled = isLoading || invalidClass;
+  const isDisabled = isLoading || invalidClass || !selectedCharacter;
 
   const content = () => {
     if (txFailed) {
@@ -181,6 +196,7 @@ export const AssignClassModal: React.FC = () => {
 
     return (
       <VStack as="form" onSubmit={onAssignClass} spacing={8}>
+        {!selectedCharacter && <Text>No character selected.</Text>}
         <Flex {...group} wrap="wrap" gap={4}>
           {options.map(value => {
             const radio = getRadioProps({ value });
@@ -205,6 +221,18 @@ export const AssignClassModal: React.FC = () => {
         </Flex>
         {invalidClass && (
           <Text color="red.500">This class is already assigned.</Text>
+        )}
+        {selectedClass && game && (
+          <VStack align="flex-start" w="full">
+            <Text fontSize="sm" fontWeight={500}>
+              Select a character
+            </Text>
+            <SelectCharacterInput
+              characters={game.characters}
+              selectedCharacter={selectedCharacter}
+              setSelectedCharacter={selectCharacter}
+            />
+          </VStack>
         )}
         <Button
           isDisabled={isDisabled}

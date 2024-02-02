@@ -17,7 +17,6 @@ import { shortenText } from '@/utils/helpers';
 import { Item } from '@/utils/types';
 
 type ItemCardProps = Item & {
-  chainId: number;
   holderId?: string;
 };
 
