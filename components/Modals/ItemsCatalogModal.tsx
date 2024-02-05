@@ -1,6 +1,8 @@
 import {
   Flex,
+  GridItem,
   HStack,
+  IconButton,
   Image,
   Modal,
   ModalBody,
@@ -8,14 +10,17 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  SimpleGrid,
   Text,
-  VStack,
 } from '@chakra-ui/react';
+import { useState } from 'react';
 
 import { useGame } from '@/contexts/GameContext';
 import { Character } from '@/utils/types';
 
-import { ItemCard } from '../ItemCard';
+import { SquareIcon } from '../icons/SquareIcon';
+import { VerticalListIcon } from '../icons/VerticalListIcon';
+import { ItemCard, ItemCardSmall } from '../ItemCard';
 
 type ItemsCatalogModalProps = {
   isOpen: boolean;
@@ -29,6 +34,10 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
   onClose,
 }) => {
   const { game } = useGame();
+
+  const [displayType, setDisplayType] = useState<
+    'FULL_CARDS' | 'VERITICAL_LIST'
+  >('VERITICAL_LIST');
 
   const items = character?.heldItems || game?.items || [];
 
@@ -60,18 +69,57 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
           <ModalCloseButton size="lg" />
         </ModalHeader>
         <ModalBody>
-          <VStack spacing={6} w="100%">
+          <HStack justifyContent="flex-end" mb={6} w="100%">
+            <IconButton
+              aria-label="Full Cards"
+              color={displayType === 'FULL_CARDS' ? 'softblue' : 'white'}
+              icon={<SquareIcon />}
+              minW={4}
+              onClick={() => setDisplayType('FULL_CARDS')}
+              variant="unstyled"
+              _hover={
+                displayType === 'FULL_CARDS' ? {} : { color: 'whiteAlpha.500' }
+              }
+            />
+            <IconButton
+              aria-label="Vertical List"
+              color={displayType === 'VERITICAL_LIST' ? 'softblue' : 'white'}
+              icon={<VerticalListIcon />}
+              minW={4}
+              onClick={() => setDisplayType('VERITICAL_LIST')}
+              variant="unstyled"
+              _hover={
+                displayType === 'VERITICAL_LIST'
+                  ? {}
+                  : { color: 'whiteAlpha.500' }
+              }
+            />
+          </HStack>{' '}
+          <SimpleGrid
+            alignItems="stretch"
+            columns={
+              displayType === 'FULL_CARDS' ? 1 : { base: 1, sm: 2, md: 3 }
+            }
+            spacing={{ base: 4, sm: 6, md: 8 }}
+            w="100%"
+          >
             {game &&
               items.length > 0 &&
               items.map(item => (
-                <ItemCard
-                  key={item.id}
-                  holderId={character?.characterId}
-                  {...item}
-                />
+                <GridItem key={item.id} w="100%">
+                  {displayType === 'VERITICAL_LIST' && (
+                    <ItemCardSmall
+                      holderId={character?.characterId}
+                      {...item}
+                    />
+                  )}
+                  {displayType === 'FULL_CARDS' && (
+                    <ItemCard holderId={character?.characterId} {...item} />
+                  )}
+                </GridItem>
               ))}
             {items.length === 0 && <Text align="center">No items found.</Text>}
-          </VStack>
+          </SimpleGrid>
         </ModalBody>
       </ModalContent>
     </Modal>

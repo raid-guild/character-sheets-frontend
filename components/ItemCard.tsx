@@ -9,6 +9,7 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
+import { useState } from 'react';
 
 import { ItemActionMenu } from '@/components/ActionMenus/ItemActionMenu';
 import { useGame } from '@/contexts/GameContext';
@@ -132,6 +133,160 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
           />
           */}
         </SimpleGrid>
+      </VStack>
+      {isConnectedAndMounted && !!character && (
+        <ItemActionMenu item={item} variant="solid" />
+      )}
+    </VStack>
+  );
+};
+
+export const ItemCardSmall: React.FC<ItemCardProps> = ({
+  holderId,
+  ...item
+}) => {
+  const isConnectedAndMounted = useIsConnectedAndMounted();
+
+  const {
+    itemId,
+    name,
+    description,
+    image,
+    supply,
+    totalSupply,
+    holders,
+    equippers,
+    soulbound,
+  } = item;
+
+  const { character } = useGame();
+
+  const [showDetails, setShowDetails] = useState(false);
+
+  const isEquipped =
+    equippers.length > 0 &&
+    equippers.some(equippedBy => equippedBy.characterId === holderId);
+
+  return (
+    <VStack h="100%" spacing={3} w="100%">
+      <VStack
+        borderRadius="md"
+        bg="whiteAlpha.100"
+        flexGrow={1}
+        justify="space-between"
+        p={{ base: 4, md: 6 }}
+        spacing={3}
+        w="100%"
+      >
+        <VStack spacing={3} w="100%">
+          <Text fontSize="sm" fontWeight="500" textAlign="center" w="100%">
+            {name}
+          </Text>
+          <AspectRatio
+            h="10rem"
+            maxH="10rem"
+            ratio={1}
+            w="100%"
+            _before={{
+              h: '10rem',
+              maxH: '10rem',
+            }}
+          >
+            <Image
+              alt={name}
+              src={image}
+              style={{
+                objectFit: 'contain',
+              }}
+              w="100%"
+            />
+          </AspectRatio>
+          {!isEquipped && (
+            <Text
+              fontSize="xs"
+              onClick={() => setShowDetails(!showDetails)}
+              textDecor="underline"
+              transition="color 0.2s ease"
+              _hover={{
+                color: 'whiteAlpha.500',
+                cursor: 'pointer',
+              }}
+            >
+              {showDetails ? 'Hide Details' : 'Show Details'}
+            </Text>
+          )}
+          {showDetails && (
+            <Text fontSize="xs" w="100%">
+              {shortenText(description, 130)}
+            </Text>
+          )}
+          {isConnectedAndMounted && isEquipped && (
+            <>
+              <HStack w="100%" spacing={4}>
+                <Flex
+                  align="center"
+                  bg="dark"
+                  borderRadius="50%"
+                  h="1.5rem"
+                  justify="center"
+                  right={2}
+                  top={2}
+                  w="1.5rem"
+                >
+                  <CheckIcon color="white" w="0.75rem" />
+                </Flex>
+                <Text
+                  fontSize="2xs"
+                  letterSpacing="2px"
+                  textTransform="uppercase"
+                >
+                  Equipped
+                </Text>
+              </HStack>
+              <Divider borderColor="whiteAlpha.300" />
+              <Text
+                fontSize="xs"
+                onClick={() => setShowDetails(!showDetails)}
+                textDecor="underline"
+                transition="color 0.2s ease"
+                _hover={{
+                  cursor: 'pointer',
+                  color: 'whiteAlpha.500',
+                }}
+              >
+                {showDetails ? 'Hide Details' : 'Show Details'}
+              </Text>
+            </>
+          )}
+        </VStack>
+        {showDetails && (
+          <SimpleGrid columns={{ base: 2 }} mt="4" spacing={3} w="100%">
+            <ItemValue label="Item ID" value={itemId} />
+            <ItemValue
+              label="Held By"
+              value={`${holders.length} character${
+                holders.length !== 1 ? 's' : ''
+              }`}
+            />
+            <ItemValue label="Soulbound?" value={soulbound ? 'Yes' : 'No'} />
+            <ItemValue
+              label="Item Supply"
+              value={`${supply.toString()} / ${totalSupply.toString()}`}
+            />
+            <ItemValue
+              label="Equipped By"
+              value={`${equippers.length} character${
+                equippers.length !== 1 ? 's' : ''
+              }`}
+            />
+            {/*
+          <ItemValue
+            label="Can I Claim?"
+            value={isConnected ? '?' : 'Wallet not connected'}
+          />
+          */}
+          </SimpleGrid>
+        )}
       </VStack>
       {isConnectedAndMounted && !!character && (
         <ItemActionMenu item={item} variant="solid" />
