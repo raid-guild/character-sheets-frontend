@@ -94,7 +94,7 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
                   : { color: 'whiteAlpha.500' }
               }
             />
-          </HStack>{' '}
+          </HStack>
           <SimpleGrid
             alignItems="stretch"
             columns={

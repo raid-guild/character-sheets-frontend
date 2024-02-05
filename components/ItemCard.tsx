@@ -1,6 +1,7 @@
 import { CheckIcon } from '@chakra-ui/icons';
 import {
   AspectRatio,
+  Button,
   Divider,
   Flex,
   HStack,
@@ -202,18 +203,18 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
             />
           </AspectRatio>
           {!isEquipped && (
-            <Text
+            <Button
               fontSize="xs"
               onClick={() => setShowDetails(!showDetails)}
               textDecor="underline"
               transition="color 0.2s ease"
+              variant="link"
               _hover={{
                 color: 'whiteAlpha.500',
-                cursor: 'pointer',
               }}
             >
               {showDetails ? 'Hide Details' : 'Show Details'}
-            </Text>
+            </Button>
           )}
           {showDetails && (
             <Text fontSize="xs" w="100%">
@@ -244,18 +245,18 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
                 </Text>
               </HStack>
               <Divider borderColor="whiteAlpha.300" />
-              <Text
+              <Button
                 fontSize="xs"
                 onClick={() => setShowDetails(!showDetails)}
                 textDecor="underline"
                 transition="color 0.2s ease"
+                variant="link"
                 _hover={{
-                  cursor: 'pointer',
                   color: 'whiteAlpha.500',
                 }}
               >
                 {showDetails ? 'Hide Details' : 'Show Details'}
-              </Text>
+              </Button>
             </>
           )}
         </VStack>
