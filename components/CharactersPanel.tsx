@@ -20,8 +20,8 @@ export const CharactersPanel: React.FC = () => {
   const characters = game?.characters.filter(c => !c.removed) ?? [];
 
   const [displayType, setDisplayType] = useState<
-    'FULL_CARDS' | 'VERITICAL_LIST'
-  >('VERITICAL_LIST');
+    'FULL_CARDS' | 'VERTICAL_LIST'
+  >('VERTICAL_LIST');
 
   if (!game || characters.length === 0) {
     return (
@@ -62,13 +62,11 @@ export const CharactersPanel: React.FC = () => {
             aria-label="Vertical List"
             icon={<VerticalListIcon />}
             variant="unstyled"
-            color={displayType === 'VERITICAL_LIST' ? 'softblue' : 'white'}
+            color={displayType === 'VERTICAL_LIST' ? 'softblue' : 'white'}
             _hover={
-              displayType === 'VERITICAL_LIST'
-                ? {}
-                : { color: 'whiteAlpha.500' }
+              displayType === 'VERTICAL_LIST' ? {} : { color: 'whiteAlpha.500' }
             }
-            onClick={() => setDisplayType('VERITICAL_LIST')}
+            onClick={() => setDisplayType('VERTICAL_LIST')}
           />
         </HStack>
       </HStack>
@@ -82,7 +80,7 @@ export const CharactersPanel: React.FC = () => {
       >
         {characters.map(c => (
           <GridItem key={c.id} w="100%">
-            {displayType === 'VERITICAL_LIST' && (
+            {displayType === 'VERTICAL_LIST' && (
               <CharacterCardSmall chainId={game.chainId} character={c} />
             )}
             {displayType === 'FULL_CARDS' && (

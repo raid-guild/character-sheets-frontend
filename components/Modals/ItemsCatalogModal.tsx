@@ -36,8 +36,8 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
   const { game } = useGame();
 
   const [displayType, setDisplayType] = useState<
-    'FULL_CARDS' | 'VERITICAL_LIST'
-  >('VERITICAL_LIST');
+    'FULL_CARDS' | 'VERTICAL_LIST'
+  >('VERTICAL_LIST');
 
   const items = character?.heldItems || game?.items || [];
 
@@ -83,13 +83,13 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
             />
             <IconButton
               aria-label="Vertical List"
-              color={displayType === 'VERITICAL_LIST' ? 'softblue' : 'white'}
+              color={displayType === 'VERTICAL_LIST' ? 'softblue' : 'white'}
               icon={<VerticalListIcon />}
               minW={4}
-              onClick={() => setDisplayType('VERITICAL_LIST')}
+              onClick={() => setDisplayType('VERTICAL_LIST')}
               variant="unstyled"
               _hover={
-                displayType === 'VERITICAL_LIST'
+                displayType === 'VERTICAL_LIST'
                   ? {}
                   : { color: 'whiteAlpha.500' }
               }
@@ -107,7 +107,7 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
               items.length > 0 &&
               items.map(item => (
                 <GridItem key={item.id} w="100%">
-                  {displayType === 'VERITICAL_LIST' && (
+                  {displayType === 'VERTICAL_LIST' && (
                     <ItemCardSmall
                       holderId={character?.characterId}
                       {...item}
