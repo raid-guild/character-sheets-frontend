@@ -16,8 +16,8 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { parseAbi, toHex } from 'viem';
-import { Address, useNetwork, usePublicClient, useWalletClient } from 'wagmi';
+import { Address, parseAbi, toHex } from 'viem';
+import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
 
 import { CompositeCharacterImage } from '@/components/CompositeCharacterImage';
 import { Switch } from '@/components/Switch';
@@ -54,7 +54,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 }) => {
   const { game, character, reload: reloadGame } = useGame();
   const { data: walletClient } = useWalletClient();
-  const { chain } = useNetwork();
+  const { chain } = useAccount();
   const publicClient = usePublicClient();
   const { renderError } = useToast();
   const useSmallXp = useBreakpointValue({ base: true, md: false });
@@ -139,6 +139,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 
       try {
         if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!publicClient) throw new Error('Could not find a public client');
         if (!chain) throw new Error('Could not find a connected chain');
         if (!game) throw new Error('Missing game data');
         if (character) throw new Error('Character already exists');
@@ -284,10 +285,10 @@ export const JoinGame: React.FC<JoinGameProps> = ({
         });
         setTxHash(transactionhash);
 
-        const client = publicClient ?? walletClient;
-        const { blockNumber, status } = await client.waitForTransactionReceipt({
-          hash: transactionhash,
-        });
+        const { blockNumber, status } =
+          await publicClient.waitForTransactionReceipt({
+            hash: transactionhash,
+          });
 
         if (status === 'reverted') {
           setTxFailed(true);
@@ -296,7 +297,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(client.chain.id, blockNumber);
+        const synced = await waitUntilBlock(publicClient.chain.id, blockNumber);
 
         if (!synced) throw new Error('Something went wrong while syncing');
 

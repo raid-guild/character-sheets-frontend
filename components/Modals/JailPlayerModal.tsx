@@ -1,7 +1,7 @@
 import { Button, Text, VStack } from '@chakra-ui/react';
 import { useCallback, useState } from 'react';
-import { parseAbi } from 'viem';
-import { Address, useWalletClient } from 'wagmi';
+import { Address, parseAbi } from 'viem';
+import { useWalletClient } from 'wagmi';
 
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
@@ -59,9 +59,9 @@ export const JailPlayerModal: React.FC = () => {
         header: jailed ? 'Free Character' : 'Jail Character',
         loadingText: `Approving character transfer...`,
         successText: `Success!`,
-        errorText: `There was an error ${
-          jailed ? 'freeing' : 'jailing'
-        } ${selectedCharacter?.name}'s player.`,
+        errorText: `There was an error ${jailed ? 'freeing' : 'jailing'} ${
+          selectedCharacter?.name
+        }'s player.`,
         resetData,
         onAction: onJailPlayer,
         onComplete: reloadGame,

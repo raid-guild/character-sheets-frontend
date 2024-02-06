@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
 import { Hex } from 'viem';
-import { useNetwork, usePublicClient, useWalletClient } from 'wagmi';
+import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
 import { waitUntilBlock } from '@/graphql/health';
@@ -48,7 +48,7 @@ export const ActionModal: React.FC<
 }) => {
   const { renderError } = useToast();
 
-  const { chain } = useNetwork();
+  const { chain } = useAccount();
   const chainId = chain?.id;
 
   const { data: walletClient } = useWalletClient();
@@ -76,15 +76,17 @@ export const ActionModal: React.FC<
     async (e: React.FormEvent<HTMLDivElement>) => {
       e.preventDefault();
       try {
+        if (!publicClient || !walletClient)
+          throw new Error('No wallet connected');
         setIsLoading(true);
         const txHash = await onAction();
         if (!txHash) return;
         setTxHash(txHash);
 
-        const client = publicClient ?? walletClient;
-        const { blockNumber, status } = await client.waitForTransactionReceipt({
-          hash: txHash,
-        });
+        const { blockNumber, status } =
+          await publicClient.waitForTransactionReceipt({
+            hash: txHash,
+          });
 
         if (status === 'reverted') {
           setTxFailed(true);
@@ -93,7 +95,7 @@ export const ActionModal: React.FC<
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(client.chain.id, blockNumber);
+        const synced = await waitUntilBlock(publicClient.chain.id, blockNumber);
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);

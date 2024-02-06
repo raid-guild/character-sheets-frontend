@@ -15,6 +15,7 @@ import {
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import { useCallback, useMemo, useState } from 'react';
 import {
+  Address,
   encodeAbiParameters,
   getAddress,
   isAddress,
@@ -22,7 +23,7 @@ import {
   pad,
   parseAbi,
 } from 'viem';
-import { Address, useWalletClient } from 'wagmi';
+import { useWalletClient } from 'wagmi';
 
 import { Dropdown } from '@/components/Dropdown';
 import { Switch } from '@/components/Switch';

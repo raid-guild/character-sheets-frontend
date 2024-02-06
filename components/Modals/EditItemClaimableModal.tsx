@@ -12,8 +12,15 @@ import {
 } from '@chakra-ui/react';
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getAddress, isAddress, maxUint256, pad, parseAbi } from 'viem';
-import { Address, usePublicClient, useWalletClient } from 'wagmi';
+import {
+  Address,
+  getAddress,
+  isAddress,
+  maxUint256,
+  pad,
+  parseAbi,
+} from 'viem';
+import { usePublicClient, useWalletClient } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
@@ -31,6 +38,10 @@ const getClaimNonce = async (
   itemId: bigint,
   account: Address,
 ) => {
+  if (!publicClient) {
+    throw new Error('Could not find a public client');
+  }
+
   const nonce = (await publicClient.readContract({
     address: itemsAddress,
     abi: parseAbi([

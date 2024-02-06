@@ -1,7 +1,7 @@
 import { Button, Image, Text, VStack } from '@chakra-ui/react';
 import { useCallback, useMemo, useState } from 'react';
-import { parseAbi } from 'viem';
-import { Address, useWalletClient } from 'wagmi';
+import { Address, parseAbi } from 'viem';
+import { useWalletClient } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';

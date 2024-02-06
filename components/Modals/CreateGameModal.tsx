@@ -12,13 +12,14 @@ import {
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Address,
   encodeAbiParameters,
   Hex,
   isAddress,
   parseAbi,
   zeroAddress,
 } from 'viem';
-import { Address, useAccount, useNetwork, useWalletClient } from 'wagmi';
+import { useAccount, useWalletClient } from 'wagmi';
 
 import { useGamesContext } from '@/contexts/GamesContext';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
@@ -30,8 +31,7 @@ import { BASE_CHARACTER_URI } from '@/utils/constants';
 import { ActionModal } from './ActionModal';
 
 export const CreateGameModal: React.FC = () => {
-  const { address } = useAccount();
-  const { chain } = useNetwork();
+  const { address, chain } = useAccount();
   const { data: walletClient } = useWalletClient();
   const { data: globalInfo } = useGlobalForChain();
   const { gameFactory } = globalInfo || {};

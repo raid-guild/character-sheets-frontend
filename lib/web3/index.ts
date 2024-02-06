@@ -1,8 +1,6 @@
-import { getDefaultWallets } from '@rainbow-me/rainbowkit';
-import { createConfig } from 'wagmi';
+import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 
-import { chains, publicClient, webSocketPublicClient } from './config';
-import { WALLET_CONNECT_PROJECT_ID } from './constants';
+import { SUPPORTED_CHAINS, WALLET_CONNECT_PROJECT_ID } from './constants';
 
 // Required for BigInt serialization
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -11,20 +9,12 @@ BigInt.prototype.toJSON = function () {
   return this.toString();
 };
 
-const { connectors } = getDefaultWallets({
+export const wagmiConfig = getDefaultConfig({
   appName: 'CharacterSheets',
   projectId: WALLET_CONNECT_PROJECT_ID,
-  chains,
+  chains: SUPPORTED_CHAINS,
 });
 
-export const wagmiConfig = createConfig({
-  autoConnect: true,
-  connectors,
-  publicClient,
-  webSocketPublicClient,
-});
-
-export * from './config';
 export { SUPPORTED_CHAINS } from './constants';
 export * from './helpers';
 export * from './readClients';

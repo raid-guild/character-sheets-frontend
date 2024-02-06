@@ -18,16 +18,17 @@ import '@/styles.css';
 import { ChakraProvider } from '@chakra-ui/react';
 import { Global } from '@emotion/react';
 import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Analytics } from '@vercel/analytics/react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
-import { WagmiConfig } from 'wagmi';
+import { WagmiProvider } from 'wagmi';
 
 import { Layout } from '@/components/Layout';
 import { GamesProvider } from '@/contexts/GamesContext';
-import { SUPPORTED_CHAINS, wagmiConfig } from '@/lib/web3';
+import { wagmiConfig } from '@/lib/web3';
 import { RAIDGUILD_GAME_URL } from '@/utils/constants';
 import { globalStyles, theme } from '@/utils/theme';
 
@@ -35,6 +36,8 @@ const TITLE = 'CharacterSheets';
 const DESCRIPTION =
   'Build a character through your work as a web3 mercenary. Slay moloch, earn XP.';
 const BASE_URL = 'https://character-sheets.vercel.app';
+
+const queryClient = new QueryClient();
 
 export default function App({
   Component,
@@ -78,16 +81,18 @@ export default function App({
       </Head>
       <ChakraProvider resetCSS theme={theme}>
         <Global styles={globalStyles} />
-        <WagmiConfig config={wagmiConfig}>
-          <RainbowKitProvider chains={SUPPORTED_CHAINS} theme={darkTheme()}>
-            <Analytics />
-            <GamesProvider>
-              <Layout>
-                <Component {...pageProps} />
-              </Layout>
-            </GamesProvider>
-          </RainbowKitProvider>
-        </WagmiConfig>
+        <WagmiProvider config={wagmiConfig}>
+          <QueryClientProvider client={queryClient}>
+            <RainbowKitProvider theme={darkTheme()}>
+              <Analytics />
+              <GamesProvider>
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+              </GamesProvider>
+            </RainbowKitProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
       </ChakraProvider>
     </>
   );
