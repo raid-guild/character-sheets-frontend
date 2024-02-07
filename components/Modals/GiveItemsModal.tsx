@@ -131,7 +131,7 @@ export const GiveItemsModal: React.FC = () => {
       {...{
         isOpen: giveItemsModal?.isOpen,
         onClose: giveItemsModal?.onClose,
-        header: `Give items to ${selectedCharacter?.name}`,
+        header: `Give item(s) to ${selectedCharacter?.name}`,
         loadingText: `Giving item(s) to ${selectedCharacter?.name}...`,
         successText: `Item(s) successfully given to ${selectedCharacter?.name}!`,
         errorText: `There was an error giving the item(s) to ${selectedCharacter?.name}.`,

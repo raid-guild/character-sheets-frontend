@@ -1,5 +1,5 @@
 import { Button, Image, Text, VStack } from '@chakra-ui/react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { parseAbi } from 'viem';
 import { Address, useWalletClient } from 'wagmi';
 
@@ -22,8 +22,9 @@ export const EquipItemModal: React.FC = () => {
   const { selectedItem, equipItemModal } = useItemActions();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isEquipped, setIsEquipped] = useState<boolean>(false);
 
-  const isEquipped = useMemo(() => {
+  const onGetIsEquipped = useCallback(() => {
     if (!selectedItem || !character) {
       return false;
     }
@@ -35,8 +36,9 @@ export const EquipItemModal: React.FC = () => {
   }, [character, selectedItem]);
 
   const resetData = useCallback(() => {
+    setIsEquipped(onGetIsEquipped());
     setIsLoading(false);
-  }, []);
+  }, [onGetIsEquipped]);
 
   const onEquipItem = useCallback(async () => {
     try {

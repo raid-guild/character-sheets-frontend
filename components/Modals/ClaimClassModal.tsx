@@ -105,7 +105,7 @@ export const ClaimClassModal: React.FC = () => {
       {...{
         isOpen: claimClassModal?.isOpen,
         onClose: claimClassModal?.onClose,
-        header: 'Claim an Class',
+        header: 'Claim a Class',
         loadingText: `Claiming class...`,
         successText: 'Class successfully claimed!',
         errorText: 'There was an error claiming this class.',
