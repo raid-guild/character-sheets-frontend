@@ -6,12 +6,6 @@ import {
   FormLabel,
   Image,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
   SimpleGrid,
   Text,
   Textarea,
@@ -19,7 +13,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   encodeAbiParameters,
   getAddress,
@@ -28,17 +22,14 @@ import {
   pad,
   parseAbi,
 } from 'viem';
-import { Address, usePublicClient, useWalletClient } from 'wagmi';
+import { Address, useWalletClient } from 'wagmi';
 
 import { Dropdown } from '@/components/Dropdown';
 import { Switch } from '@/components/Switch';
-import { TransactionPending } from '@/components/TransactionPending';
 import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/graphql/health';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
-import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { EquippableTraitType } from '@/lib/traits';
 
@@ -46,12 +37,11 @@ import {
   ClaimableAddress,
   ClaimableAddressListInput,
 } from '../ClaimableAddressListInput';
+import { ActionModal } from './ActionModal';
 
 export const CreateItemModal: React.FC = () => {
   const { createItemModal } = useGameActions();
   const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
-  const { renderError } = useToast();
 
   const { game, reload: reloadGame } = useGame();
 
@@ -97,10 +87,6 @@ export const CreateItemModal: React.FC = () => {
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
-  const [txFailed, setTxFailed] = useState<boolean>(false);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [isSynced, setIsSynced] = useState<boolean>(false);
 
   const invalidItemDescription = useMemo(() => {
     return itemDescription.length > 200 && !!itemDescription;
@@ -179,308 +165,245 @@ export const CreateItemModal: React.FC = () => {
     setShowError(false);
 
     setIsCreating(false);
-    setTxHash(null);
-    setIsSyncing(false);
-    setIsSynced(false);
   }, [setItemEmblem, setItemLayer]);
 
-  useEffect(() => {
-    if (!createItemModal?.isOpen) {
-      resetData();
+  const onCreateItem = useCallback(async () => {
+    if (hasError) {
+      setShowError(true);
+      return null;
     }
-  }, [resetData, createItemModal?.isOpen]);
 
-  const onCreateItem = useCallback(
-    async (e: React.FormEvent<HTMLDivElement>) => {
-      e.preventDefault();
+    if (!walletClient) throw new Error('Wallet client is not connected');
+    if (!(game && game.itemsAddress))
+      throw new Error(
+        `Missing item factory address for the ${walletClient.chain.name} network`,
+      );
 
-      if (hasError) {
-        setShowError(true);
-        return;
-      }
+    const emblemCID = await onUploadEmblem();
+    if (!emblemCID)
+      throw new Error('Something went wrong uploading your item emblem');
 
-      try {
-        if (!walletClient) throw new Error('Wallet client is not connected');
-        if (!(game && game.itemsAddress))
-          throw new Error(
-            `Missing item factory address for the ${walletClient.chain.name} network`,
-          );
+    let layerCID = emblemCID;
+    if (itemLayer) {
+      layerCID = await onUploadLayer();
+      if (!layerCID)
+        throw new Error('Something went wrong uploading your item thumbnail');
+    }
 
-        const emblemCID = await onUploadEmblem();
-        if (!emblemCID)
-          throw new Error('Something went wrong uploading your item emblem');
+    const itemMetadata = {
+      name: itemName,
+      description: itemDescription,
+      image: `ipfs://${emblemCID}`,
+      equippable_layer: `ipfs://${layerCID}`,
+      attributes: [
+        {
+          trait_type: 'EQUIPPABLE TYPE',
+          value: equippableType,
+        },
+      ],
+    };
 
-        let layerCID = emblemCID;
-        if (itemLayer) {
-          layerCID = await onUploadLayer();
-          if (!layerCID)
-            throw new Error(
-              'Something went wrong uploading your item thumbnail',
-            );
-        }
+    setIsCreating(true);
 
-        const itemMetadata = {
-          name: itemName,
-          description: itemDescription,
-          image: `ipfs://${emblemCID}`,
-          equippable_layer: `ipfs://${layerCID}`,
-          attributes: [
-            {
-              trait_type: 'EQUIPPABLE TYPE',
-              value: equippableType,
-            },
-          ],
+    const res = await fetch('/api/uploadMetadata?name=itemMetadata.json', {
+      method: 'POST',
+      body: JSON.stringify(itemMetadata),
+    });
+    if (!res.ok)
+      throw new Error('Something went wrong uploading your item metadata');
+
+    const { cid: itemMetadataCid } = await res.json();
+    if (!itemMetadataCid)
+      throw new Error('Something went wrong uploading your item metadata');
+
+    let claimable = pad('0x01');
+
+    if (claimableToggle) {
+      if (claimableAddressList.length === 0) {
+        claimable = pad('0x00');
+      } else {
+        const itemId = BigInt(game.items.length);
+        const leaves: ClaimableItemLeaf[] = claimableAddressList.map(
+          ({ address, amount }) => {
+            return [
+              BigInt(itemId),
+              getAddress(address),
+              BigInt(0),
+              BigInt(amount),
+            ];
+          },
+        );
+
+        const tree = StandardMerkleTree.of(leaves, [
+          'uint256',
+          'address',
+          'uint256',
+          'uint256',
+        ]);
+
+        claimable = tree.root as `0x${string}`;
+
+        const jsonTree = JSON.stringify(tree.dump());
+        const data = {
+          itemId: game.items.length,
+          gameAddress: game.id,
+          tree: jsonTree,
+          chainId: game.chainId,
         };
 
-        setIsCreating(true);
-
-        const res = await fetch('/api/uploadMetadata?name=itemMetadata.json', {
-          method: 'POST',
-          body: JSON.stringify(itemMetadata),
-        });
-        if (!res.ok)
-          throw new Error('Something went wrong uploading your item metadata');
-
-        const { cid: itemMetadataCid } = await res.json();
-        if (!itemMetadataCid)
-          throw new Error('Something went wrong uploading your item metadata');
-
-        let claimable = pad('0x01');
-
-        if (claimableToggle) {
-          if (claimableAddressList.length === 0) {
-            claimable = pad('0x00');
-          } else {
-            const itemId = BigInt(game.items.length);
-            const leaves: ClaimableItemLeaf[] = claimableAddressList.map(
-              ({ address, amount }) => {
-                return [
-                  BigInt(itemId),
-                  getAddress(address),
-                  BigInt(0),
-                  BigInt(amount),
-                ];
-              },
-            );
-
-            const tree = StandardMerkleTree.of(leaves, [
-              'uint256',
-              'address',
-              'uint256',
-              'uint256',
-            ]);
-
-            claimable = tree.root as `0x${string}`;
-
-            const jsonTree = JSON.stringify(tree.dump());
-            const data = {
-              itemId: game.items.length,
-              gameAddress: game.id,
-              tree: jsonTree,
-              chainId: game.chainId,
-            };
-
-            const signature = await walletClient.signMessage({
-              message: '/api/setTree',
-              account: walletClient.account?.address as Address,
-            });
-
-            const res = await fetch('/api/setTree', {
-              headers: {
-                'x-account-address': walletClient.account?.address as Address,
-                'x-account-signature': signature,
-                'x-account-chain-id': walletClient.chain.id.toString(),
-              },
-              method: 'POST',
-              body: JSON.stringify(data),
-            });
-
-            if (!res.ok) {
-              console.error(
-                'Something went wrong uploading your claimable tree.',
-              );
-              throw new Error(
-                'Something went wrong uploading your claimable tree',
-              );
-            }
-          }
-        }
-
-        const requiredClassIds = classRequirements.map(cr => BigInt(cr));
-        const requiredClassCategories = requiredClassIds.map(() => 2);
-        const requiredClassAddresses = requiredClassIds.map(
-          () => game.classesAddress as Address,
-        );
-        // TODO: Make amount dynamic when class levels are added
-        const requiredClassAmounts = requiredClassIds.map(() => BigInt(1));
-
-        // TODO: item and XP requirements still need added
-        const requiredAssetsBytes = encodeAbiParameters(
-          [
-            {
-              name: 'requiredAssetCategories',
-              type: 'uint8[]',
-            },
-            {
-              name: 'requiredAssetAddresses',
-              type: 'address[]',
-            },
-            {
-              name: 'requiredAssetIds',
-              type: 'uint256[]',
-            },
-            {
-              name: 'requiredAssetAmounts',
-              type: 'uint256[]',
-            },
-          ],
-          [
-            [...requiredClassCategories],
-            [...requiredClassAddresses],
-            [...requiredClassIds],
-            [...requiredClassAmounts],
-          ],
-        );
-
-        const encodedItemCreationData = encodeAbiParameters(
-          [
-            {
-              name: 'craftable',
-              type: 'bool',
-            },
-            {
-              name: 'soulbound',
-              type: 'bool',
-            },
-            {
-              name: 'claimable',
-              type: 'bytes32',
-            },
-            {
-              name: 'distribution',
-              type: 'uint256',
-            },
-            {
-              name: 'supply',
-              type: 'uint256',
-            },
-            {
-              name: 'cid',
-              type: 'string',
-            },
-            {
-              name: 'requiredAssets',
-              type: 'bytes',
-            },
-          ],
-          [
-            false,
-            soulboundToggle,
-            claimable,
-            BigInt(itemDistribution),
-            BigInt(itemSupply),
-            itemMetadataCid,
-            requiredAssetsBytes,
-          ],
-        );
-
-        const transactionhash = await walletClient.writeContract({
-          chain: walletClient.chain,
+        const signature = await walletClient.signMessage({
+          message: '/api/setTree',
           account: walletClient.account?.address as Address,
-          address: game.itemsAddress as Address,
-          abi: parseAbi([
-            'function createItemType(bytes calldata itemData) external returns (uint256)',
-          ]),
-          functionName: 'createItemType',
-          args: [encodedItemCreationData],
-        });
-        setTxHash(transactionhash);
-
-        const client = publicClient ?? walletClient;
-        const { blockNumber, status } = await client.waitForTransactionReceipt({
-          hash: transactionhash,
         });
 
-        if (status === 'reverted') {
-          setTxFailed(true);
-          setIsCreating(false);
-          throw new Error('Transaction failed');
+        const res = await fetch('/api/setTree', {
+          headers: {
+            'x-account-address': walletClient.account?.address as Address,
+            'x-account-signature': signature,
+            'x-account-chain-id': walletClient.chain.id.toString(),
+          },
+          method: 'POST',
+          body: JSON.stringify(data),
+        });
+
+        if (!res.ok) {
+          console.error('Something went wrong uploading your claimable tree.');
+          throw new Error('Something went wrong uploading your claimable tree');
         }
-
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(client.chain.id, blockNumber);
-        if (!synced) throw new Error('Something went wrong while syncing');
-
-        setIsSynced(true);
-        reloadGame();
-      } catch (e) {
-        renderError(e, 'Something went wrong creating your item');
-      } finally {
-        setIsSyncing(false);
-        setIsCreating(false);
       }
-    },
-    [
-      claimableAddressList,
-      claimableToggle,
-      classRequirements,
-      equippableType,
-      itemName,
-      itemDescription,
-      itemLayer,
-      itemSupply,
-      itemDistribution,
-      game,
-      reloadGame,
-      hasError,
-      onUploadEmblem,
-      onUploadLayer,
-      publicClient,
-      renderError,
-      soulboundToggle,
-      walletClient,
-    ],
-  );
+    }
+
+    const requiredClassIds = classRequirements.map(cr => BigInt(cr));
+    const requiredClassCategories = requiredClassIds.map(() => 2);
+    const requiredClassAddresses = requiredClassIds.map(
+      () => game.classesAddress as Address,
+    );
+    // TODO: Make amount dynamic when class levels are added
+    const requiredClassAmounts = requiredClassIds.map(() => BigInt(1));
+
+    // TODO: item and XP requirements still need added
+    const requiredAssetsBytes = encodeAbiParameters(
+      [
+        {
+          name: 'requiredAssetCategories',
+          type: 'uint8[]',
+        },
+        {
+          name: 'requiredAssetAddresses',
+          type: 'address[]',
+        },
+        {
+          name: 'requiredAssetIds',
+          type: 'uint256[]',
+        },
+        {
+          name: 'requiredAssetAmounts',
+          type: 'uint256[]',
+        },
+      ],
+      [
+        [...requiredClassCategories],
+        [...requiredClassAddresses],
+        [...requiredClassIds],
+        [...requiredClassAmounts],
+      ],
+    );
+
+    const encodedItemCreationData = encodeAbiParameters(
+      [
+        {
+          name: 'craftable',
+          type: 'bool',
+        },
+        {
+          name: 'soulbound',
+          type: 'bool',
+        },
+        {
+          name: 'claimable',
+          type: 'bytes32',
+        },
+        {
+          name: 'distribution',
+          type: 'uint256',
+        },
+        {
+          name: 'supply',
+          type: 'uint256',
+        },
+        {
+          name: 'cid',
+          type: 'string',
+        },
+        {
+          name: 'requiredAssets',
+          type: 'bytes',
+        },
+      ],
+      [
+        false,
+        soulboundToggle,
+        claimable,
+        BigInt(itemDistribution),
+        BigInt(itemSupply),
+        itemMetadataCid,
+        requiredAssetsBytes,
+      ],
+    );
+
+    try {
+      const transactionhash = await walletClient.writeContract({
+        chain: walletClient.chain,
+        account: walletClient.account?.address as Address,
+        address: game.itemsAddress as Address,
+        abi: parseAbi([
+          'function createItemType(bytes calldata itemData) external returns (uint256)',
+        ]),
+        functionName: 'createItemType',
+        args: [encodedItemCreationData],
+      });
+      return transactionhash;
+    } catch (e) {
+      throw e;
+    } finally {
+      setIsCreating(false);
+    }
+  }, [
+    claimableAddressList,
+    claimableToggle,
+    classRequirements,
+    equippableType,
+    itemName,
+    itemDescription,
+    itemLayer,
+    itemSupply,
+    itemDistribution,
+    game,
+    hasError,
+    onUploadEmblem,
+    onUploadLayer,
+    soulboundToggle,
+    walletClient,
+  ]);
 
   const isLoading = isCreating;
   const isDisabled = isLoading || isUploadingEmblem || isUploadingLayer;
 
-  const content = () => {
-    if (txFailed) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Transaction failed.</Text>
-          <Button onClick={createItemModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (isSynced) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Your item was successfully created!</Text>
-          <Button onClick={createItemModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (txHash) {
-      return (
-        <TransactionPending
-          isSyncing={isSyncing}
-          text="Your item is being created."
-          txHash={txHash}
-          chainId={game?.chainId}
-        />
-      );
-    }
-
-    return (
-      <VStack as="form" onSubmit={onCreateItem} spacing={8}>
+  return (
+    <ActionModal
+      {...{
+        isOpen: createItemModal?.isOpen,
+        onClose: createItemModal?.onClose,
+        header: 'Create an Item',
+        loadingText: `Your item is being created...`,
+        successText: 'Your item was successfully created!',
+        errorText: 'There was an error creating your item.',
+        resetData,
+        onAction: onCreateItem,
+        onComplete: reloadGame,
+      }}
+    >
+      <VStack spacing={8}>
         <FormControl isInvalid={showError && !itemName}>
           <FormLabel>Item Name</FormLabel>
           <Input
@@ -779,24 +702,6 @@ export const CreateItemModal: React.FC = () => {
           Create
         </Button>
       </VStack>
-    );
-  };
-
-  return (
-    <Modal
-      closeOnEsc={!isLoading}
-      closeOnOverlayClick={!isLoading}
-      isOpen={createItemModal?.isOpen ?? false}
-      onClose={createItemModal?.onClose ?? (() => {})}
-    >
-      <ModalOverlay />
-      <ModalContent mt={{ base: 0, md: '84px' }}>
-        <ModalHeader>
-          <Text>Create an Item</Text>
-          <ModalCloseButton size="lg" />
-        </ModalHeader>
-        <ModalBody>{content()}</ModalBody>
-      </ModalContent>
-    </Modal>
+    </ActionModal>
   );
 };

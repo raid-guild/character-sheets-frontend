@@ -2,28 +2,21 @@ import {
   Button,
   Flex,
   Image,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
   Text,
   useRadioGroup,
   VStack,
 } from '@chakra-ui/react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { parseAbi } from 'viem';
-import { Address, usePublicClient, useWalletClient } from 'wagmi';
+import { Address, useWalletClient } from 'wagmi';
 
 import { RadioCard } from '@/components/RadioCard';
-import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useClassActions } from '@/contexts/ClassActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/graphql/health';
-import { useToast } from '@/hooks/useToast';
 import { executeAsCharacter } from '@/utils/account';
+
+import { ActionModal } from './ActionModal';
 
 export const ClaimClassModal: React.FC = () => {
   const { character, game, reload: reloadGame } = useGame();
@@ -31,16 +24,10 @@ export const ClaimClassModal: React.FC = () => {
   const { selectedClass } = useClassActions();
 
   const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
-  const { renderError } = useToast();
 
   const [classId, setClassId] = useState<string>('0');
 
   const [isClaiming, setIsClaiming] = useState<boolean>(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
-  const [txFailed, setTxFailed] = useState<boolean>(false);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [isSynced, setIsSynced] = useState<boolean>(false);
 
   const invalidClass = useMemo(() => {
     const selectedCharacterClasses =
@@ -71,130 +58,63 @@ export const ClaimClassModal: React.FC = () => {
       setClassId(options[0]);
     }
     setIsClaiming(false);
-    setTxHash(null);
-    setTxFailed(false);
-    setIsSyncing(false);
-    setIsSynced(false);
   }, [options, selectedClass, setValue]);
 
-  useEffect(() => {
-    if (!claimClassModal?.isOpen) {
-      resetData();
+  const onClaimClass = useCallback(async () => {
+    if (invalidClass) {
+      return null;
     }
-  }, [resetData, claimClassModal?.isOpen]);
 
-  const onClaimClass = useCallback(
-    async (e: React.FormEvent<HTMLDivElement>) => {
-      e.preventDefault();
+    if (!walletClient) throw new Error('Could not find a wallet client');
 
-      if (invalidClass) {
-        return;
-      }
+    if (!character) throw new Error('Character address not found');
 
-      try {
-        if (!walletClient) throw new Error('Could not find a wallet client');
+    if (!game?.classesAddress) throw new Error('Missing game data');
 
-        if (!character) throw new Error('Character address not found');
+    if (game?.classes.length === 0) throw new Error('No classes found');
 
-        if (!game?.classesAddress) throw new Error('Missing game data');
+    setIsClaiming(true);
 
-        if (game?.classes.length === 0) throw new Error('No classes found');
+    try {
+      const transactionhash = await executeAsCharacter(
+        character,
+        walletClient,
+        {
+          chain: walletClient.chain,
+          account: walletClient.account?.address as Address,
+          address: game.classesAddress as Address,
+          abi: parseAbi(['function claimClass(uint256 classId) external']),
+          functionName: 'claimClass',
+          args: [BigInt(classId)],
+        },
+      );
 
-        setIsClaiming(true);
-
-        const transactionhash = await executeAsCharacter(
-          character,
-          walletClient,
-          {
-            chain: walletClient.chain,
-            account: walletClient.account?.address as Address,
-            address: game.classesAddress as Address,
-            abi: parseAbi(['function claimClass(uint256 classId) external']),
-            functionName: 'claimClass',
-            args: [BigInt(classId)],
-          },
-        );
-
-        setTxHash(transactionhash);
-
-        const client = publicClient ?? walletClient;
-        const { blockNumber, status } = await client.waitForTransactionReceipt({
-          hash: transactionhash,
-        });
-
-        if (status === 'reverted') {
-          setTxFailed(true);
-          setIsClaiming(false);
-          throw new Error('Transaction failed');
-        }
-
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(client.chain.id, blockNumber);
-        if (!synced) throw new Error('Something went wrong while syncing');
-
-        setIsSynced(true);
-        reloadGame();
-      } catch (e) {
-        renderError(
-          e,
-          `Something went wrong claiming ${character?.name} class.`,
-        );
-      } finally {
-        setIsSyncing(false);
-        setIsClaiming(false);
-      }
-    },
-    [
-      character,
-      classId,
-      invalidClass,
-      publicClient,
-      game,
-      reloadGame,
-      renderError,
-      walletClient,
-    ],
-  );
+      return transactionhash;
+    } catch (e) {
+      throw e;
+    } finally {
+      setIsClaiming(false);
+    }
+  }, [character, classId, invalidClass, game, walletClient]);
 
   const isLoading = isClaiming;
   const isDisabled = isLoading || invalidClass;
 
-  const content = () => {
-    if (txFailed) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Transaction failed.</Text>
-          <Button onClick={claimClassModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (isSynced) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Class successfully claimed!</Text>
-          <Button onClick={claimClassModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (txHash) {
-      return (
-        <TransactionPending
-          isSyncing={isSyncing}
-          text="Claiming class..."
-          txHash={txHash}
-          chainId={game?.chainId}
-        />
-      );
-    }
-
-    return (
-      <VStack as="form" onSubmit={onClaimClass} spacing={8}>
+  return (
+    <ActionModal
+      {...{
+        isOpen: claimClassModal?.isOpen,
+        onClose: claimClassModal?.onClose,
+        header: 'Claim a Class',
+        loadingText: `Claiming class...`,
+        successText: 'Class successfully claimed!',
+        errorText: 'There was an error claiming this class.',
+        resetData,
+        onAction: onClaimClass,
+        onComplete: reloadGame,
+      }}
+    >
+      <VStack spacing={8}>
         <Flex {...group} wrap="wrap" gap={4}>
           {options.map(value => {
             const radio = getRadioProps({ value });
@@ -231,24 +151,6 @@ export const ClaimClassModal: React.FC = () => {
           Claim
         </Button>
       </VStack>
-    );
-  };
-
-  return (
-    <Modal
-      closeOnEsc={!isLoading}
-      closeOnOverlayClick={!isLoading}
-      isOpen={claimClassModal?.isOpen ?? false}
-      onClose={claimClassModal?.onClose ?? (() => {})}
-    >
-      <ModalOverlay />
-      <ModalContent mt={{ base: 0, md: '84px' }}>
-        <ModalHeader>
-          <Text>Claim a Class</Text>
-          <ModalCloseButton size="lg" />
-        </ModalHeader>
-        <ModalBody>{content()}</ModalBody>
-      </ModalContent>
-    </Modal>
+    </ActionModal>
   );
 };

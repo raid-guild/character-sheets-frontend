@@ -7,35 +7,25 @@ import {
   HStack,
   Image,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Text,
   Textarea,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { parseAbi } from 'viem';
-import { Address, usePublicClient, useWalletClient } from 'wagmi';
+import { Address, useWalletClient } from 'wagmi';
 
-import { TransactionPending } from '@/components/TransactionPending';
 import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/graphql/health';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
-import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
+
+import { ActionModal } from './ActionModal';
 
 export const UpdateGameMetadataModal: React.FC = () => {
   const { updateGameMetadataModal } = useGameActions();
   const { game, reload: reloadGame } = useGame();
 
   const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
-  const { renderError } = useToast();
 
   const {
     file: newGameEmblemFile,
@@ -58,10 +48,6 @@ export const UpdateGameMetadataModal: React.FC = () => {
 
   const [showError, setShowError] = useState<boolean>(false);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
-  const [txFailed, setTxFailed] = useState<boolean>(false);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [isSynced, setIsSynced] = useState<boolean>(false);
 
   const sameName = useMemo(
     () => newGameName === game?.name && !!newGameName,
@@ -112,10 +98,6 @@ export const UpdateGameMetadataModal: React.FC = () => {
     onRemove();
 
     setIsUpdating(false);
-    setTxHash(null);
-    setTxFailed(false);
-    setIsSyncing(false);
-    setIsSynced(false);
   }, [game, onRemove]);
 
   useEffect(() => {
@@ -129,100 +111,67 @@ export const UpdateGameMetadataModal: React.FC = () => {
     onRemove();
   }, [onRemove]);
 
-  useEffect(() => {
-    if (!updateGameMetadataModal?.isOpen) {
-      resetData();
+  const onUpdateGameMetadata = useCallback(async () => {
+    if (hasError) {
+      setShowError(true);
+      return null;
     }
-  }, [resetData, updateGameMetadataModal?.isOpen]);
 
-  const onUpdateGameMetadata = useCallback(
-    async (e: React.FormEvent<HTMLDivElement>) => {
-      e.preventDefault();
+    try {
+      if (!walletClient) throw new Error('Wallet client is not connected');
+      if (!game) throw new Error('Missing game data');
 
-      if (hasError) {
-        setShowError(true);
-        return;
-      }
+      const cid = newGameEmblemFile
+        ? await onUpload()
+        : game?.image
+            .split('/')
+            .filter(s => !!s)
+            .pop();
+      if (!cid)
+        throw new Error('Something went wrong uploading your game emblem');
 
-      try {
-        if (!walletClient) throw new Error('Wallet client is not connected');
-        if (!game) throw new Error('Missing game data');
+      const gameMetadata = {
+        name: newGameName,
+        description: newGameDescription,
+        image: `ipfs://${cid}`,
+      };
 
-        const cid = newGameEmblemFile
-          ? await onUpload()
-          : game?.image
-              .split('/')
-              .filter(s => !!s)
-              .pop();
-        if (!cid)
-          throw new Error('Something went wrong uploading your game emblem');
+      const res = await fetch('/api/uploadMetadata?name=gameMetadata.json', {
+        method: 'POST',
+        body: JSON.stringify(gameMetadata),
+      });
+      if (!res.ok)
+        throw new Error('Something went wrong uploading game metadata');
 
-        const gameMetadata = {
-          name: newGameName,
-          description: newGameDescription,
-          image: `ipfs://${cid}`,
-        };
+      const { cid: newCid } = await res.json();
+      if (!newCid)
+        throw new Error('Something went wrong uploading game metadata');
 
-        const res = await fetch('/api/uploadMetadata?name=gameMetadata.json', {
-          method: 'POST',
-          body: JSON.stringify(gameMetadata),
-        });
-        if (!res.ok)
-          throw new Error('Something went wrong uploading game metadata');
-
-        const { cid: newCid } = await res.json();
-        if (!newCid)
-          throw new Error('Something went wrong uploading game metadata');
-
-        const transactionhash = await walletClient.writeContract({
-          chain: walletClient.chain,
-          account: walletClient.account?.address as Address,
-          address: game.id as Address,
-          abi: parseAbi([
-            'function updateMetadataUri(string memory _uri) public',
-          ]),
-          functionName: 'updateMetadataUri',
-          args: [`ipfs://${newCid}`],
-        });
-        setTxHash(transactionhash);
-
-        const client = publicClient ?? walletClient;
-        const { blockNumber, status } = await client.waitForTransactionReceipt({
-          hash: transactionhash,
-        });
-
-        if (status === 'reverted') {
-          setTxFailed(true);
-          setIsUpdating(false);
-          throw new Error('Transaction failed');
-        }
-
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(client.chain.id, blockNumber);
-        if (!synced) throw new Error('Something went wrong while syncing');
-
-        setIsSynced(true);
-        reloadGame();
-      } catch (e) {
-        renderError(e, 'Something went wrong updating game metadata');
-      } finally {
-        setIsSyncing(false);
-        setIsUpdating(false);
-      }
-    },
-    [
-      game,
-      hasError,
-      newGameName,
-      newGameEmblemFile,
-      newGameDescription,
-      onUpload,
-      publicClient,
-      reloadGame,
-      renderError,
-      walletClient,
-    ],
-  );
+      const transactionhash = await walletClient.writeContract({
+        chain: walletClient.chain,
+        account: walletClient.account?.address as Address,
+        address: game.id as Address,
+        abi: parseAbi([
+          'function updateMetadataUri(string memory _uri) public',
+        ]),
+        functionName: 'updateMetadataUri',
+        args: [`ipfs://${newCid}`],
+      });
+      return transactionhash;
+    } catch (e) {
+      throw e;
+    } finally {
+      setIsUpdating(false);
+    }
+  }, [
+    game,
+    hasError,
+    newGameName,
+    newGameEmblemFile,
+    newGameDescription,
+    onUpload,
+    walletClient,
+  ]);
 
   const isLoading = isUpdating;
   const isDisabled = isLoading;
@@ -231,42 +180,21 @@ export const UpdateGameMetadataModal: React.FC = () => {
     return sameName && sameDescription && sameEmblem;
   }, [sameName, sameDescription, sameEmblem]);
 
-  const content = () => {
-    if (txFailed) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Transaction failed.</Text>
-          <Button onClick={updateGameMetadataModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (isSynced) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Your game has been updated!</Text>
-          <Button onClick={updateGameMetadataModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (txHash) {
-      return (
-        <TransactionPending
-          isSyncing={isSyncing}
-          text="Updating your game metadata..."
-          txHash={txHash}
-          chainId={game?.chainId}
-        />
-      );
-    }
-
-    return (
-      <VStack as="form" onSubmit={onUpdateGameMetadata} spacing={8}>
+  return (
+    <ActionModal
+      {...{
+        isOpen: updateGameMetadataModal?.isOpen,
+        onClose: updateGameMetadataModal?.onClose,
+        header: `Update Game`,
+        loadingText: `Updating game...`,
+        successText: `Game successfully updated!`,
+        errorText: `There was an error updating your game.`,
+        resetData,
+        onAction: onUpdateGameMetadata,
+        onComplete: reloadGame,
+      }}
+    >
+      <VStack spacing={8}>
         <FormControl isInvalid={showError && (!newGameName || noChanges)}>
           <FormLabel>Game Name</FormLabel>
           <Input
@@ -380,24 +308,6 @@ export const UpdateGameMetadataModal: React.FC = () => {
           </Button>
         </HStack>
       </VStack>
-    );
-  };
-
-  return (
-    <Modal
-      closeOnEsc={!isLoading}
-      closeOnOverlayClick={!isLoading}
-      isOpen={updateGameMetadataModal?.isOpen ?? false}
-      onClose={updateGameMetadataModal?.onClose ?? (() => undefined)}
-    >
-      <ModalOverlay />
-      <ModalContent mt={{ base: 0, md: '84px' }}>
-        <ModalHeader>
-          <Text>Update Game</Text>
-          <ModalCloseButton size="lg" />
-        </ModalHeader>
-        <ModalBody>{content()}</ModalBody>
-      </ModalContent>
-    </Modal>
+    </ActionModal>
   );
 };
