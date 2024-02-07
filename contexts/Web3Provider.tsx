@@ -1,13 +1,14 @@
 'use client';
 
 import {
-  darkTheme,
-  RainbowKitProvider,
-  getDefaultWallets,
   connectorsForWallets,
+  darkTheme,
+  getDefaultWallets,
+  RainbowKitProvider,
 } from '@rainbow-me/rainbowkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { http, createConfig, WagmiProvider } from 'wagmi';
+import { createConfig, http, WagmiProvider } from 'wagmi';
+
 import {
   SUPPORTED_CHAINS,
   WALLET_CONNECT_PROJECT_ID,

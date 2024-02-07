@@ -182,8 +182,8 @@ export const EquipItemModal: React.FC = () => {
   const error = !character
     ? 'Character not found'
     : !selectedItem || !heldItem
-    ? 'Item not found'
-    : null;
+      ? 'Item not found'
+      : null;
 
   return (
     <ActionModal
