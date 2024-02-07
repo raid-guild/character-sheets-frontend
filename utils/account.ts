@@ -13,7 +13,12 @@ import { Character } from './types';
 export const executeAsCharacter = (
   character: Character,
   walletClient: WalletClient,
-  args: WriteContractParameters<Abi, string, Chain, Account, Chain>,
+  args: WriteContractParameters<
+    Abi,
+    string,
+    readonly unknown[],
+    Chain | undefined
+  >,
 ): Promise<`0x${string}`> => {
   const data = encodeFunctionData({
     abi: args.abi,

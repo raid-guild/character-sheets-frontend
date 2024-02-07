@@ -1,4 +1,5 @@
-import { Chain, gnosis, goerli, mainnet } from 'wagmi/chains';
+import { Chain } from '@rainbow-me/rainbowkit';
+import { gnosis, goerli, mainnet } from 'wagmi/chains';
 
 import { ENVIRONMENT } from '@/utils/constants';
 
@@ -56,15 +57,21 @@ export const CHAIN_ID_TO_LABEL: { [key: number]: string } = {
   5: 'goerli',
 };
 
-const ALL_SUPPORTED_CHAINS: Chain[] = [gnosis, goerli];
+type _chains = readonly [Chain, ...Chain[]];
 
-export const SUPPORTED_CHAINS: Chain[] = (() => {
+const ALL_SUPPORTED_CHAINS: _chains = [gnosis, goerli];
+
+export const SUPPORTED_CHAINS: _chains = (() => {
   switch (ENVIRONMENT) {
     case 'main':
-      return ALL_SUPPORTED_CHAINS.filter(chain => !!chain.testnet === false);
+      return ALL_SUPPORTED_CHAINS.filter(
+        chain => !!chain.testnet === false,
+      ) as unknown as _chains;
     case 'dev':
     default:
-      return ALL_SUPPORTED_CHAINS.filter(chain => chain.testnet === true);
+      return ALL_SUPPORTED_CHAINS.filter(
+        chain => chain.testnet === true,
+      ) as unknown as _chains;
   }
 })();
 

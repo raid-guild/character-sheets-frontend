@@ -1,6 +1,6 @@
 import { Button, Spinner, Text, VStack } from '@chakra-ui/react';
 import { useCallback } from 'react';
-import { useNetwork } from 'wagmi';
+import { useAccount } from 'wagmi';
 
 import { GameCard } from '@/components/GameCard';
 import { CreateGameModal } from '@/components/Modals/CreateGameModal';
@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/useToast';
 import { isSupportedChain } from '@/lib/web3';
 
 export default function MyGames(): JSX.Element {
-  const { chain } = useNetwork();
+  const { chain } = useAccount();
   const { createGameModal, loading, myGames } = useGamesContext();
   const { renderError } = useToast();
 

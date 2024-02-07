@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getAddress } from 'viem';
-import { useNetwork } from 'wagmi';
+import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 import { getAddressUrl } from '@/lib/web3';
@@ -43,7 +43,7 @@ export const ClaimableAddressListInput: React.FC<Props> = ({
   setClaimableAddressList,
 }) => {
   const { game } = useGame();
-  const { chain } = useNetwork();
+  const { chain } = useAccount();
 
   const { characters, chainId } = game || {
     characters: [],

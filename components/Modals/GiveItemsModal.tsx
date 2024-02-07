@@ -11,8 +11,8 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { parseAbi } from 'viem';
-import { Address, useWalletClient } from 'wagmi';
+import { Address, parseAbi } from 'viem';
+import { useWalletClient } from 'wagmi';
 
 import { RadioCard } from '@/components/RadioCard';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';

@@ -17,17 +17,15 @@ import '@/styles.css';
 
 import { ChakraProvider } from '@chakra-ui/react';
 import { Global } from '@emotion/react';
-import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { Analytics } from '@vercel/analytics/react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
-import { WagmiConfig } from 'wagmi';
 
 import { Layout } from '@/components/Layout';
 import { GamesProvider } from '@/contexts/GamesContext';
-import { SUPPORTED_CHAINS, wagmiConfig } from '@/lib/web3';
+import { Web3Provider } from '@/contexts/Web3Provider';
 import { RAIDGUILD_GAME_URL } from '@/utils/constants';
 import { globalStyles, theme } from '@/utils/theme';
 
@@ -78,16 +76,15 @@ export default function App({
       </Head>
       <ChakraProvider resetCSS theme={theme}>
         <Global styles={globalStyles} />
-        <WagmiConfig config={wagmiConfig}>
-          <RainbowKitProvider chains={SUPPORTED_CHAINS} theme={darkTheme()}>
-            <Analytics />
-            <GamesProvider>
-              <Layout>
-                <Component {...pageProps} />
-              </Layout>
-            </GamesProvider>
-          </RainbowKitProvider>
-        </WagmiConfig>
+
+        <Web3Provider>
+          <Analytics />
+          <GamesProvider>
+            <Layout>
+              <Component {...pageProps} />
+            </Layout>
+          </GamesProvider>
+        </Web3Provider>
       </ChakraProvider>
     </>
   );

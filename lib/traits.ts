@@ -352,14 +352,12 @@ export const getEquippableTraitName = (
           ? `equip_${items[1].name}_${items[1].equippable_layer}`
           : '';
       } else {
-        traits[
-          equippableTraitType
-        ] = `equip_${items[0].name}_${items[0].equippable_layer}`;
+        traits[equippableTraitType] =
+          `equip_${items[0].name}_${items[0].equippable_layer}`;
       }
     } else {
-      traits[
-        equippableTraitType
-      ] = `equip_${items[0].name}_${items[0].equippable_layer}`;
+      traits[equippableTraitType] =
+        `equip_${items[0].name}_${items[0].equippable_layer}`;
     }
   }
 

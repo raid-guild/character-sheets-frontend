@@ -1,5 +1,5 @@
 import { Button, Text } from '@chakra-ui/react';
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi';
+import { useAccount, useSwitchChain } from 'wagmi';
 
 import { Alert } from './Alert';
 import { NetworkDisplay } from './NetworkDisplay';
@@ -9,9 +9,8 @@ type NetworkAlertProps = {
 };
 
 export const NetworkAlert: React.FC<NetworkAlertProps> = ({ chainId }) => {
-  const { chain } = useNetwork();
-  const { address } = useAccount();
-  const { switchNetwork } = useSwitchNetwork();
+  const { address, chain } = useAccount();
+  const { switchChain } = useSwitchChain();
 
   if (!address || chain?.id === chainId) return null;
 
@@ -19,9 +18,9 @@ export const NetworkAlert: React.FC<NetworkAlertProps> = ({ chainId }) => {
     <Alert>
       <Text>This game is on </Text>
       <NetworkDisplay chainId={chainId} textProps={{ color: 'dark' }} />
-      {switchNetwork ? (
+      {switchChain ? (
         <Button
-          onClick={() => switchNetwork(chainId)}
+          onClick={() => switchChain({ chainId })}
           size="xs"
           ml={4}
           variant="outline-dark"
