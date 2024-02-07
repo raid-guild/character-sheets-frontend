@@ -57,11 +57,15 @@ export const JailPlayerModal: React.FC = () => {
         isOpen: jailPlayerModal?.isOpen,
         onClose: jailPlayerModal?.onClose,
         header: jailed ? 'Free Character' : 'Jail Character',
-        loadingText: `Approving character transfer...`,
-        successText: `Success!`,
-        errorText: `There was an error ${jailed ? 'freeing' : 'jailing'} ${
-          selectedCharacter?.name
-        }'s player.`,
+        loadingText: `${
+          jailed ? 'Freeing ' : 'Jailing '
+        }${selectedCharacter?.name}'s player...`,
+        successText: `Successfully ${
+          jailed ? 'freed' : 'jailed'
+        } ${selectedCharacter?.name}'s player!`,
+        errorText: `There was an error ${
+          jailed ? 'freeing' : 'jailing'
+        } ${selectedCharacter?.name}'s player.`,
         resetData,
         onAction: onJailPlayer,
         onComplete: reloadGame,

@@ -274,129 +274,127 @@ export const ClaimItemModal: React.FC = () => {
         onComplete: reloadGame,
       }}
     >
-      <VStack as="form" onSubmit={onClaimItem} spacing={8}>
-        <VStack justify="space-between" h="100%" spacing={6}>
-          <Image
-            alt={`${selectedItem?.name} image`}
-            h="140px"
-            objectFit="contain"
-            src={selectedItem?.image}
-            w="100%"
-          />
-          <Text>
-            Supply: {selectedItem?.supply.toString()} /{' '}
-            {selectedItem?.totalSupply.toString()}
-          </Text>
-        </VStack>
-        <Accordion allowToggle w="100%" index={openDetails}>
-          <AccordionItem>
-            <AccordionButton
-              id="item-details-button"
-              onClick={() => setOpenDetails(openDetails === 0 ? -1 : 0)}
-            >
-              <HStack justify="space-between" w="100%">
-                <div />
-                <Text>View Details</Text>
-                <AccordionIcon />
-              </HStack>
-            </AccordionButton>
-            <AccordionPanel>
-              <VStack spacing={2}>
-                <Text fontSize="sm">
-                  Soulbound: {selectedItem?.soulbound ? 'true' : 'false'}
-                </Text>
-                <Text fontSize="sm" fontWeight="bold">
-                  Required classes:
-                </Text>
-                {selectedItem && selectedItem.requirements.length > 0 ? (
-                  <UnorderedList>
-                    {selectedItem?.requirements.map((r, i) => {
-                      const className = game?.classes.find(
+      <VStack justify="space-between" h="100%" spacing={6}>
+        <Image
+          alt={`${selectedItem?.name} image`}
+          h="140px"
+          objectFit="contain"
+          src={selectedItem?.image}
+          w="100%"
+        />
+        <Text>
+          Supply: {selectedItem?.supply.toString()} /{' '}
+          {selectedItem?.totalSupply.toString()}
+        </Text>
+      </VStack>
+      <Accordion allowToggle w="100%" index={openDetails}>
+        <AccordionItem>
+          <AccordionButton
+            id="item-details-button"
+            onClick={() => setOpenDetails(openDetails === 0 ? -1 : 0)}
+          >
+            <HStack justify="space-between" w="100%">
+              <div />
+              <Text>View Details</Text>
+              <AccordionIcon />
+            </HStack>
+          </AccordionButton>
+          <AccordionPanel>
+            <VStack spacing={2}>
+              <Text fontSize="sm">
+                Soulbound: {selectedItem?.soulbound ? 'true' : 'false'}
+              </Text>
+              <Text fontSize="sm" fontWeight="bold">
+                Required classes:
+              </Text>
+              {selectedItem && selectedItem.requirements.length > 0 ? (
+                <UnorderedList>
+                  {selectedItem?.requirements.map((r, i) => {
+                    const className = game?.classes.find(
+                      c => BigInt(c.classId) === BigInt(r.assetId),
+                    )?.name;
+                    const classNotAssigned =
+                      character?.classes.find(
                         c => BigInt(c.classId) === BigInt(r.assetId),
-                      )?.name;
-                      const classNotAssigned =
-                        character?.classes.find(
-                          c => BigInt(c.classId) === BigInt(r.assetId),
-                        ) === undefined;
+                      ) === undefined;
 
-                      if (classNotAssigned) {
-                        return (
-                          <ListItem key={i}>
-                            <Text fontSize="sm" color="red.500">
-                              {className} (not assigned)
-                            </Text>
-                          </ListItem>
-                        );
-                      }
+                    if (classNotAssigned) {
                       return (
                         <ListItem key={i}>
-                          <Text fontSize="sm">{className}</Text>
+                          <Text fontSize="sm" color="red.500">
+                            {className} (not assigned)
+                          </Text>
                         </ListItem>
                       );
-                    })}
-                  </UnorderedList>
-                ) : (
-                  <Text fontSize="sm">None</Text>
-                )}
-              </VStack>
-            </AccordionPanel>
-          </AccordionItem>
-        </Accordion>
-        {!isLoadingTree && (
-          <>
-            {noSupply ? (
-              <Text color="red.500">This item has zero supply.</Text>
-            ) : isClaimableByPublic ? (
-              <FormControl isInvalid={showError}>
-                <FormLabel>Amount</FormLabel>
-                <Input
-                  onChange={e => setAmount(e.target.value)}
-                  type="number"
-                  value={amount}
-                  max={distributionLeftToClaim.toString()}
-                />
-                {showError && (
-                  <FormHelperText color="red">{errorText}</FormHelperText>
-                )}
-              </FormControl>
-            ) : (
-              <FormControl isInvalid={!isClaimableByMerkleProof}>
-                <FormLabel>Amount</FormLabel>
-                <Input
-                  isDisabled
-                  type="number"
-                  value={
-                    claimableAmount === distributionLeftToClaim
-                      ? claimableAmount.toString()
-                      : '0'
-                  }
-                />
-                {(claimableAmount === BigInt(0) ||
-                  claimableAmount !== distributionLeftToClaim) && (
-                  <FormHelperText color="red">
-                    You cannot claim this item.
-                  </FormHelperText>
-                )}
-              </FormControl>
-            )}
-          </>
-        )}
-        {isLoadingTree ? (
-          <Text>Loading...</Text>
-        ) : (
-          <Button
-            autoFocus
-            isDisabled={isDisabled}
-            isLoading={isLoading}
-            loadingText="Claiming..."
-            type="submit"
-            variant="solid"
-            alignSelf="flex-end"
-          >
-            Claim
-          </Button>
-        )}
-      </VStack>
+                    }
+                    return (
+                      <ListItem key={i}>
+                        <Text fontSize="sm">{className}</Text>
+                      </ListItem>
+                    );
+                  })}
+                </UnorderedList>
+              ) : (
+                <Text fontSize="sm">None</Text>
+              )}
+            </VStack>
+          </AccordionPanel>
+        </AccordionItem>
+      </Accordion>
+      {!isLoadingTree && (
+        <>
+          {noSupply ? (
+            <Text color="red.500">This item has zero supply.</Text>
+          ) : isClaimableByPublic ? (
+            <FormControl isInvalid={showError}>
+              <FormLabel>Amount</FormLabel>
+              <Input
+                onChange={e => setAmount(e.target.value)}
+                type="number"
+                value={amount}
+                max={distributionLeftToClaim.toString()}
+              />
+              {showError && (
+                <FormHelperText color="red">{errorText}</FormHelperText>
+              )}
+            </FormControl>
+          ) : (
+            <FormControl isInvalid={!isClaimableByMerkleProof}>
+              <FormLabel>Amount</FormLabel>
+              <Input
+                isDisabled
+                type="number"
+                value={
+                  claimableAmount === distributionLeftToClaim
+                    ? claimableAmount.toString()
+                    : '0'
+                }
+              />
+              {(claimableAmount === BigInt(0) ||
+                claimableAmount !== distributionLeftToClaim) && (
+                <FormHelperText color="red">
+                  You cannot claim this item.
+                </FormHelperText>
+              )}
+            </FormControl>
+          )}
+        </>
+      )}
+      {isLoadingTree ? (
+        <Text>Loading...</Text>
+      ) : (
+        <Button
+          autoFocus
+          isDisabled={isDisabled}
+          isLoading={isLoading}
+          loadingText="Claiming..."
+          type="submit"
+          variant="solid"
+          alignSelf="flex-end"
+        >
+          Claim
+        </Button>
+      )}
     </ActionModal>
   );
 };

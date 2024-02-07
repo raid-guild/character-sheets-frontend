@@ -153,7 +153,7 @@ export const CreateClassModal: React.FC = () => {
       {...{
         isOpen: createClassModal?.isOpen,
         onClose: createClassModal?.onClose,
-        header: 'Create an Class',
+        header: 'Create a Class',
         loadingText: `Your class is being created...`,
         successText: 'Your class was successfully created!',
         errorText: 'There was an error creating your class.',
