@@ -114,7 +114,7 @@ export const ClaimClassModal: React.FC = () => {
         onComplete: reloadGame,
       }}
     >
-      <VStack spacing={8}>
+      <VStack spacing={8} w="100%">
         <Flex {...group} wrap="wrap" gap={4}>
           {options.map(value => {
             const radio = getRadioProps({ value });

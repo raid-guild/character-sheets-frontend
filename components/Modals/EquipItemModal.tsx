@@ -209,7 +209,7 @@ export const EquipItemModal: React.FC = () => {
           </Button>
         </VStack>
       ) : (
-        <VStack spacing={8}>
+        <VStack spacing={8} w="100%">
           <Text>
             Are you sure you want to {isEquipped ? 'unequip' : 'equip'} this
             item?

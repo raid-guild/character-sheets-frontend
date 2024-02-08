@@ -31,6 +31,7 @@ import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
+import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { EquippableTraitType } from '@/lib/traits';
 
@@ -43,8 +44,8 @@ import { ActionModal } from './ActionModal';
 export const CreateItemModal: React.FC = () => {
   const { createItemModal } = useGameActions();
   const { data: walletClient } = useWalletClient();
-
   const { game, reload: reloadGame } = useGame();
+  const { renderError } = useToast();
 
   const {
     file: itemEmblem,
@@ -75,6 +76,9 @@ export const CreateItemModal: React.FC = () => {
   const [classRequirementsToggle, setClassRequirementsToggle] =
     useState<boolean>(false);
   const [classRequirements, setClassRequirements] = useState<string[]>([]);
+  const [xpRequirementToggle, setXpRequirementToggle] =
+    useState<boolean>(false);
+  const [xpRequiredAmount, setXpRequiredAmount] = useState<string>('');
   const [soulboundToggle, setSoulboundToggle] = useState<boolean>(false);
   const [claimableToggle, setClaimableToggle] = useState<boolean>(false);
 
@@ -112,6 +116,16 @@ export const CreateItemModal: React.FC = () => {
     );
   }, [itemDistribution, itemSupply]);
 
+  const invalidXpRequiredAmount = useMemo(() => {
+    return (
+      xpRequirementToggle &&
+      (!xpRequiredAmount ||
+        BigInt(xpRequiredAmount).toString() === 'NaN' ||
+        BigInt(xpRequiredAmount) <= BigInt(0) ||
+        BigInt(xpRequiredAmount) > maxUint256)
+    );
+  }, [xpRequiredAmount, xpRequirementToggle]);
+
   const invalidClaimableAddressList = useMemo(() => {
     const totalAmount = claimableAddressList.reduce(
       (acc, { amount }) => acc + BigInt(amount),
@@ -137,6 +151,7 @@ export const CreateItemModal: React.FC = () => {
       invalidItemDescription ||
       invalidItemSupply ||
       invalidItemDistribution ||
+      invalidXpRequiredAmount ||
       invalidClaimableAddressList
     );
   }, [
@@ -147,6 +162,7 @@ export const CreateItemModal: React.FC = () => {
     invalidItemDescription,
     invalidItemSupply,
     invalidItemDistribution,
+    invalidXpRequiredAmount,
   ]);
 
   const resetData = useCallback(() => {
@@ -156,6 +172,8 @@ export const CreateItemModal: React.FC = () => {
     setItemDistribution('1');
     setClassRequirementsToggle(false);
     setClassRequirements([]);
+    setXpRequirementToggle(false);
+    setXpRequiredAmount('');
     setSoulboundToggle(false);
     setClaimableToggle(false);
     setClaimableAddressList([]);
@@ -171,6 +189,7 @@ export const CreateItemModal: React.FC = () => {
   const onCreateItem = useCallback(async () => {
     if (hasError) {
       setShowError(true);
+      renderError('Please fix the errors in the form');
       return null;
     }
 
@@ -275,12 +294,25 @@ export const CreateItemModal: React.FC = () => {
     }
 
     const requiredClassIds = classRequirements.map(cr => BigInt(cr));
-    const requiredClassCategories = requiredClassIds.map(() => 2);
-    const requiredClassAddresses = requiredClassIds.map(
-      () => game.classesAddress as Address,
-    );
-    // TODO: Make amount dynamic when class levels are added
-    const requiredClassAmounts = requiredClassIds.map(() => BigInt(1));
+    const requiredAssetCategories = [
+      ...(xpRequirementToggle ? [0] : []),
+      ...requiredClassIds.map(() => 2),
+    ];
+    const requiredAssetAddresses = [
+      ...(xpRequirementToggle ? [game.experienceAddress as Address] : []),
+      ...requiredClassIds.map(() => game.classesAddress as Address),
+    ];
+
+    const requiredAssetIds = [
+      ...(xpRequirementToggle ? [BigInt(0)] : []),
+      ...requiredClassIds,
+    ];
+
+    // TODO: Make class amounts dynamic when class levels are added
+    const requiredAssetAmounts = [
+      ...(xpRequirementToggle ? [BigInt(xpRequiredAmount)] : []),
+      ...requiredClassIds.map(() => BigInt(1)),
+    ];
 
     // TODO: item and XP requirements still need added
     const requiredAssetsBytes = encodeAbiParameters(
@@ -303,10 +335,10 @@ export const CreateItemModal: React.FC = () => {
         },
       ],
       [
-        [...requiredClassCategories],
-        [...requiredClassAddresses],
-        [...requiredClassIds],
-        [...requiredClassAmounts],
+        [...requiredAssetCategories],
+        [...requiredAssetAddresses],
+        [...requiredAssetIds],
+        [...requiredAssetAmounts],
       ],
     );
 
@@ -383,8 +415,11 @@ export const CreateItemModal: React.FC = () => {
     hasError,
     onUploadEmblem,
     onUploadLayer,
+    renderError,
     soulboundToggle,
     walletClient,
+    xpRequiredAmount,
+    xpRequirementToggle,
   ]);
 
   const isLoading = isCreating;
@@ -404,7 +439,7 @@ export const CreateItemModal: React.FC = () => {
         onComplete: reloadGame,
       }}
     >
-      <VStack spacing={8}>
+      <VStack spacing={8} w="100%">
         <FormControl isInvalid={showError && !itemName}>
           <FormLabel>Item Name</FormLabel>
           <Input
@@ -447,6 +482,11 @@ export const CreateItemModal: React.FC = () => {
               An item supply is required
             </FormHelperText>
           )}
+          {showError && invalidItemSupply && (
+            <FormHelperText color="red">
+              Item supply must be a number greater than 0
+            </FormHelperText>
+          )}
         </FormControl>
         <FormControl isInvalid={showError && !itemDistribution}>
           <Flex align="center">
@@ -469,6 +509,12 @@ export const CreateItemModal: React.FC = () => {
           {showError && !itemDistribution && (
             <FormHelperText color="red">
               An item distribution is required
+            </FormHelperText>
+          )}
+          {showError && invalidItemDistribution && (
+            <FormHelperText color="red">
+              Item distribution must be a number greater than 0 and less than or
+              equal to the item supply
             </FormHelperText>
           )}
         </FormControl>
@@ -543,6 +589,35 @@ export const CreateItemModal: React.FC = () => {
             ))}
           </SimpleGrid>
         )}
+
+        <FormControl
+          isInvalid={showError && xpRequirementToggle && !xpRequiredAmount}
+        >
+          <FormLabel>Require a certain amount of XP?</FormLabel>
+          <Switch
+            isChecked={xpRequirementToggle}
+            onChange={() => setXpRequirementToggle(!xpRequirementToggle)}
+          />
+          {xpRequirementToggle && (
+            <Input
+              mt={2}
+              onChange={e => setXpRequiredAmount(e.target.value)}
+              type="number"
+              value={xpRequiredAmount}
+            />
+          )}
+          {showError && xpRequirementToggle && !xpRequiredAmount && (
+            <FormHelperText color="red">
+              An XP amount is required
+            </FormHelperText>
+          )}
+          {showError && invalidXpRequiredAmount && (
+            <FormHelperText color="red">
+              XP amount must be a number greater than 0
+            </FormHelperText>
+          )}
+        </FormControl>
+
         <FormControl isInvalid={showError && !itemSupply}>
           <Flex align="center">
             <FormLabel>Is this item soulbound?</FormLabel>

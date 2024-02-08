@@ -10,7 +10,7 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { ItemActionMenu } from '@/components/ActionMenus/ItemActionMenu';
 import { useGame } from '@/contexts/GameContext';
@@ -26,22 +26,34 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const {
+    description,
+    equippers,
+    holders,
+    image,
     itemId,
     name,
-    description,
-    image,
+    soulbound,
     supply,
     totalSupply,
-    holders,
-    equippers,
-    soulbound,
+    requirements,
   } = item;
 
-  const { character } = useGame();
+  const { character, game } = useGame();
 
   const isEquipped =
     equippers.length > 0 &&
     equippers.some(equippedBy => equippedBy.characterId === holderId);
+
+  const requiredXp = useMemo(() => {
+    return BigInt(
+      requirements.filter(
+        r =>
+          r.assetCategory === 'ERC20' &&
+          r.assetAddress.toLowerCase() ===
+            game?.experienceAddress.toLowerCase(),
+      )[0]?.amount ?? '0',
+    );
+  }, [requirements, game]);
 
   return (
     <VStack spacing={3} w="100%" h="100%">
@@ -127,6 +139,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
               equippers.length !== 1 ? 's' : ''
             }`}
           />
+          <ItemValue label="Required XP" value={requiredXp.toLocaleString()} />
           {/*
           <ItemValue
             label="Can I Claim?"
@@ -149,24 +162,36 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const {
+    description,
+    equippers,
+    holders,
+    image,
     itemId,
     name,
-    description,
-    image,
+    requirements,
+    soulbound,
     supply,
     totalSupply,
-    holders,
-    equippers,
-    soulbound,
   } = item;
 
-  const { character } = useGame();
+  const { character, game } = useGame();
 
   const [showDetails, setShowDetails] = useState(false);
 
   const isEquipped =
     equippers.length > 0 &&
     equippers.some(equippedBy => equippedBy.characterId === holderId);
+
+  const requiredXp = useMemo(() => {
+    return BigInt(
+      requirements.filter(
+        r =>
+          r.assetCategory === 'ERC20' &&
+          r.assetAddress.toLowerCase() ===
+            game?.experienceAddress.toLowerCase(),
+      )[0]?.amount ?? '0',
+    );
+  }, [requirements, game]);
 
   return (
     <VStack h="100%" spacing={3} w="100%">
@@ -279,6 +304,10 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
               value={`${equippers.length} character${
                 equippers.length !== 1 ? 's' : ''
               }`}
+            />
+            <ItemValue
+              label="Required XP"
+              value={requiredXp.toLocaleString()}
             />
             {/*
           <ItemValue

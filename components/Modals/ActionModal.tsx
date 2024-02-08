@@ -102,7 +102,7 @@ export const ActionModal: React.FC<
 
         onComplete?.();
       } catch (error) {
-        renderError(e, errorText);
+        renderError(error, errorText);
       } finally {
         setIsSyncing(false);
         setIsLoading(false);
