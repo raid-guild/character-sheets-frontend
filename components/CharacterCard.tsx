@@ -30,6 +30,7 @@ import { ItemsCatalogModal } from '@/components/Modals/ItemsCatalogModal';
 import { useGame } from '@/contexts/GameContext';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { getAddressUrl } from '@/lib/web3';
+import { JAILED_CHARACTER_IMAGE } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character, Item } from '@/utils/types';
 
@@ -97,7 +98,7 @@ export const CharacterCard: React.FC<{
             borderRadius="lg"
             objectFit="cover"
             objectPosition="center"
-            src={image}
+            src={jailed ? JAILED_CHARACTER_IMAGE : image}
           />
         </AspectRatio>
         {jailed && (
@@ -238,7 +239,7 @@ export const CharacterCardSmall: React.FC<{
               filter={jailed ? 'grayscale(100%)' : 'none'}
               h="100%"
               objectFit="cover"
-              src={image}
+              src={jailed ? JAILED_CHARACTER_IMAGE : image}
               w="100%"
             />
           </AspectRatio>
