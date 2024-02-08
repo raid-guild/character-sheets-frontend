@@ -8,10 +8,12 @@ import {
   FormControl,
   FormHelperText,
   FormLabel,
+  GridItem,
   HStack,
   Image,
   Input,
   ListItem,
+  SimpleGrid,
   Text,
   UnorderedList,
   VStack,
@@ -95,6 +97,19 @@ export const ClaimItemModal: React.FC = () => {
     );
   }, [selectedItem, character]);
 
+  const requiredXp = useMemo(() => {
+    if (!selectedItem) return BigInt(0);
+    return BigInt(
+      selectedItem.requirements.filter(r => r.assetCategory === 'ERC20')[0]
+        ?.amount ?? '0',
+    );
+  }, [selectedItem]);
+
+  const insufficientXp = useMemo(() => {
+    if (!character) return false;
+    return BigInt(character.experience) < requiredXp;
+  }, [character, requiredXp]);
+
   const {
     tree,
     loading: isLoadingTree,
@@ -174,6 +189,11 @@ export const ClaimItemModal: React.FC = () => {
       throw new Error('You do not have the required classes');
     }
 
+    if (insufficientXp) {
+      setOpenDetails(0);
+      throw new Error('You do not have the required XP');
+    }
+
     if (!walletClient) {
       throw new Error('Could not find a wallet client');
     }
@@ -246,6 +266,7 @@ export const ClaimItemModal: React.FC = () => {
     game,
     hasError,
     insufficientClasses,
+    insufficientXp,
     noSupply,
     selectedItem,
     walletClient,
@@ -300,44 +321,66 @@ export const ClaimItemModal: React.FC = () => {
             </HStack>
           </AccordionButton>
           <AccordionPanel>
-            <VStack spacing={2}>
-              <Text fontSize="sm">
-                Soulbound: {selectedItem?.soulbound ? 'true' : 'false'}
-              </Text>
-              <Text fontSize="sm" fontWeight="bold">
-                Required classes:
-              </Text>
-              {selectedItem && selectedItem.requirements.length > 0 ? (
-                <UnorderedList>
-                  {selectedItem?.requirements.map((r, i) => {
-                    const className = game?.classes.find(
-                      c => BigInt(c.classId) === BigInt(r.assetId),
-                    )?.name;
-                    const classNotAssigned =
-                      character?.classes.find(
-                        c => BigInt(c.classId) === BigInt(r.assetId),
-                      ) === undefined;
+            <SimpleGrid columns={{ base: 1, sm: 3 }} spacing={4}>
+              <GridItem>
+                <Text fontSize="sm" fontWeight="bold">
+                  Required classes:
+                </Text>
+                {selectedItem && selectedItem.requirements.length > 0 ? (
+                  <UnorderedList>
+                    {selectedItem?.requirements
+                      .filter(req => req.assetCategory === 'ERC1155')
+                      .map((r, i) => {
+                        const className = game?.classes.find(
+                          c => BigInt(c.classId) === BigInt(r.assetId),
+                        )?.name;
+                        const classNotAssigned =
+                          character?.classes.find(
+                            c => BigInt(c.classId) === BigInt(r.assetId),
+                          ) === undefined;
 
-                    if (classNotAssigned) {
-                      return (
-                        <ListItem key={i}>
-                          <Text fontSize="sm" color="red.500">
-                            {className} (not assigned)
-                          </Text>
-                        </ListItem>
-                      );
-                    }
-                    return (
-                      <ListItem key={i}>
-                        <Text fontSize="sm">{className}</Text>
-                      </ListItem>
-                    );
-                  })}
-                </UnorderedList>
-              ) : (
-                <Text fontSize="sm">None</Text>
-              )}
-            </VStack>
+                        if (classNotAssigned) {
+                          return (
+                            <ListItem key={i}>
+                              <Text fontSize="sm" color="red.500">
+                                {className} (not assigned)
+                              </Text>
+                            </ListItem>
+                          );
+                        }
+                        return (
+                          <ListItem key={i}>
+                            <Text fontSize="sm">{className}</Text>
+                          </ListItem>
+                        );
+                      })}
+                  </UnorderedList>
+                ) : (
+                  <Text fontSize="sm">None</Text>
+                )}
+              </GridItem>
+
+              <GridItem>
+                <Text fontSize="sm" fontWeight="bold">
+                  Required XP:
+                </Text>
+                <Text
+                  color={insufficientXp ? 'red.500' : 'white'}
+                  fontSize="sm"
+                >
+                  {requiredXp.toString()}
+                </Text>
+              </GridItem>
+
+              <GridItem>
+                <Text fontSize="sm" fontWeight="bold">
+                  Soulbound:
+                </Text>
+                <Text fontSize="sm">
+                  {selectedItem?.soulbound ? 'True' : 'False'}
+                </Text>
+              </GridItem>
+            </SimpleGrid>
           </AccordionPanel>
         </AccordionItem>
       </Accordion>

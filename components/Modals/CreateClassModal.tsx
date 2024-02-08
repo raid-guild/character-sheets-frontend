@@ -162,7 +162,7 @@ export const CreateClassModal: React.FC = () => {
         onComplete: reloadGame,
       }}
     >
-      <VStack spacing={8}>
+      <VStack spacing={8} w="100%">
         <FormControl isInvalid={showError && !className}>
           <FormLabel>Class Name</FormLabel>
           <Input

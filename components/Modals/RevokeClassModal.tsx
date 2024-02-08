@@ -112,7 +112,7 @@ export const RevokeClassModal: React.FC = () => {
         onComplete: reloadGame,
       }}
     >
-      <VStack spacing={8}>
+      <VStack spacing={8} w="100%">
         {!selectedCharacter && <Text>No character selected.</Text>}
         <Flex {...group} wrap="wrap" gap={4}>
           {options.map(value => {
