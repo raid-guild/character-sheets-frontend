@@ -1,3 +1,5 @@
+import { uriToHttp } from './helpers';
+
 const HOSTNAME =
   typeof window !== 'undefined' ? window.location.hostname : 'localhost';
 
@@ -31,3 +33,10 @@ export const BASE_CHARACTER_URI =
 if (!ENVIRONMENT || !['main', 'dev'].includes(ENVIRONMENT)) {
   throw new Error('NEXT_PUBLIC_ENVIRONMENT is not set');
 }
+
+export const JAILED_CHARACTER_CID =
+  'QmSa8YUZnAJM6YjrwoC9JTDtCVYDi6saS9fuzPCSiqaWQn';
+
+export const JAILED_CHARACTER_IMAGE = uriToHttp(
+  `ipfs://${JAILED_CHARACTER_CID}`,
+)[0];
