@@ -38,7 +38,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
     requirements,
   } = item;
 
-  const { character } = useGame();
+  const { character, game } = useGame();
 
   const isEquipped =
     equippers.length > 0 &&
@@ -46,9 +46,14 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
 
   const requiredXp = useMemo(() => {
     return BigInt(
-      requirements.filter(r => r.assetCategory === 'ERC20')[0]?.amount ?? '0',
+      requirements.filter(
+        r =>
+          r.assetCategory === 'ERC20' &&
+          r.assetAddress.toLowerCase() ===
+            game?.experienceAddress.toLowerCase(),
+      )[0]?.amount ?? '0',
     );
-  }, [requirements]);
+  }, [requirements, game]);
 
   return (
     <VStack spacing={3} w="100%" h="100%">
@@ -169,7 +174,7 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
     totalSupply,
   } = item;
 
-  const { character } = useGame();
+  const { character, game } = useGame();
 
   const [showDetails, setShowDetails] = useState(false);
 
@@ -179,9 +184,14 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
 
   const requiredXp = useMemo(() => {
     return BigInt(
-      requirements.filter(r => r.assetCategory === 'ERC20')[0]?.amount ?? '0',
+      requirements.filter(
+        r =>
+          r.assetCategory === 'ERC20' &&
+          r.assetAddress.toLowerCase() ===
+            game?.experienceAddress.toLowerCase(),
+      )[0]?.amount ?? '0',
     );
-  }, [requirements]);
+  }, [requirements, game]);
 
   return (
     <VStack h="100%" spacing={3} w="100%">

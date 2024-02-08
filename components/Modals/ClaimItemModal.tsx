@@ -98,12 +98,15 @@ export const ClaimItemModal: React.FC = () => {
   }, [selectedItem, character]);
 
   const requiredXp = useMemo(() => {
-    if (!selectedItem) return BigInt(0);
     return BigInt(
-      selectedItem.requirements.filter(r => r.assetCategory === 'ERC20')[0]
-        ?.amount ?? '0',
+      selectedItem?.requirements.filter(
+        r =>
+          r.assetCategory === 'ERC20' &&
+          r.assetAddress.toLowerCase() ===
+            game?.experienceAddress.toLowerCase(),
+      )[0]?.amount ?? '0',
     );
-  }, [selectedItem]);
+  }, [selectedItem, game]);
 
   const insufficientXp = useMemo(() => {
     if (!character) return false;
