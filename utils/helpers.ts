@@ -120,10 +120,63 @@ const fetchMetadata = async (ipfsUri: string): Promise<Metadata> => {
   };
 };
 
+export const formatFullCharacter = async (
+  character: CharacterInfoFragment,
+  chainId: number,
+): Promise<Character> => {
+  const metadata = await fetchMetadata(character.uri);
+
+  const heldClasses = await Promise.all(
+    character.heldClasses.map(async c => formatClass(c.classEntity)),
+  );
+  const heldItems = await Promise.all(
+    character.heldItems.map(async i => {
+      const info = await formatItem(i.item);
+      return {
+        ...info,
+        amount: BigInt(i.amount).toString(),
+      };
+    }),
+  );
+
+  const equippedItems: EquippedItem[] = [];
+  character.equippedItems.map(e => {
+    const info = heldItems.find(i => i.itemId === e.item.itemId);
+    if (!info) return;
+    equippedItems.push({
+      ...info,
+      amount: BigInt(e.heldItem.amount).toString(),
+      equippedAt: Number(e.equippedAt) * 1000,
+    });
+  });
+
+  return {
+    id: character.id,
+    chainId,
+    uri: character.uri,
+    name: metadata.name,
+    description: metadata.description,
+    image: uriToHttp(metadata.image)[0],
+    attributes: metadata.attributes,
+    experience: character.experience,
+    characterId: character.characterId,
+    account: character.account,
+    player: character.player,
+    jailed: character.jailed,
+    approved: character.approved,
+    removed: character.removed,
+    classes: heldClasses,
+    heldItems,
+    equippedItems,
+    equippable_layer: null,
+  };
+};
+
 export const formatCharacter = async (
   character: CharacterInfoFragment,
   classes: Class[],
   items: Item[],
+  chainId: number,
 ): Promise<Character> => {
   const metadata = await fetchMetadata(character.uri);
 
@@ -154,6 +207,7 @@ export const formatCharacter = async (
 
   return {
     id: character.id,
+    chainId,
     uri: character.uri,
     name: metadata.name,
     description: metadata.description,
@@ -281,7 +335,7 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
     description: metadata.description,
     image: uriToHttp(metadata.image)[0],
     characters: await Promise.all(
-      game.characters.map(c => formatCharacter(c, classes, items)),
+      game.characters.map(c => formatCharacter(c, classes, items, Number(game.chainId))),
     ),
     classes,
     items,

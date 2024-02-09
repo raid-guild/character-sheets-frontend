@@ -41,3 +41,20 @@ query GetCharacterMetaByURI($characterURI: String!) {
     ...CharacterMetaInfo
   }
 }
+
+query GetTopCharactersFromGame($gameId: String!, $limit: Int!) {
+  characters(
+    first: $limit
+    orderBy: experience
+    orderDirection: desc
+    where: { game: $gameId }
+  ) {
+    ...CharacterInfo
+  }
+}
+
+query GetTopCharacters($limit: Int) {
+  characters(first: $limit, orderBy: experience, orderDirection: desc) {
+    ...CharacterInfo
+  }
+}

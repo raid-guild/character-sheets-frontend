@@ -52,6 +52,7 @@ export type Game = Metadata & {
 
 export type Character = Metadata & {
   id: string;
+  chainId: number;
   name: string;
   characterId: string;
   account: string;
