@@ -27,6 +27,7 @@ import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { ItemsCatalogModal } from '@/components/Modals/ItemsCatalogModal';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { getAddressUrl } from '@/lib/web3';
@@ -46,6 +47,7 @@ export const CharacterCard: React.FC<{
   const { address } = useAccount();
   const { isMaster } = useGame();
   const itemsCatalogModal = useDisclosure();
+  const { selectedCharacter } = useCharacterActions();
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const {
@@ -148,6 +150,7 @@ export const CharacterCard: React.FC<{
           {shortenText(description, 100)}
         </Text>
         {isConnectedAndMounted &&
+          selectedCharacter &&
           (isMaster || address?.toLowerCase() === character.player) && (
             <CharacterActionMenu character={character} variant="solid" />
           )}

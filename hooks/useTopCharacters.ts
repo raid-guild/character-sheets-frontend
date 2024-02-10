@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { getTopCharactersForChainId } from '@/graphql/characters';
-import { SUPPORTED_CHAINS, getChainIdFromLabel } from '@/lib/web3';
-import { Character } from '@/utils/types';
+import { getChainIdFromLabel, SUPPORTED_CHAINS } from '@/lib/web3';
 import {
   ENVIRONMENT,
   RAIDGUILD_GAME_ADDRESS,
   RAIDGUILD_GAME_CHAIN_LABEL,
 } from '@/utils/constants';
+import { Character } from '@/utils/types';
 
 export const getTopCharacters = async (
   limit: number,

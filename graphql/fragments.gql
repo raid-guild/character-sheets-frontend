@@ -25,6 +25,10 @@ fragment CharacterMetaInfo on Character {
 fragment CharacterInfo on Character {
   id
   characterId
+  game {
+    id
+    chainId
+  }
   account
   player
   jailed

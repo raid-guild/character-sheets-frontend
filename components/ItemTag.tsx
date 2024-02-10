@@ -9,7 +9,7 @@ import {
 } from '@chakra-ui/react';
 import { useMemo } from 'react';
 
-import { useGame } from '@/contexts/GameContext';
+import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { PlayerActions, useItemActions } from '@/contexts/ItemActionsContext';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { Item } from '@/utils/types';
@@ -20,7 +20,7 @@ type ItemTagProps = {
 };
 
 export const ItemTag: React.FC<ItemTagProps> = ({ item, holderId }) => {
-  const { character } = useGame();
+  const { selectedCharacter } = useCharacterActions();
 
   const { itemId, name, image, amount } = item;
 
@@ -29,20 +29,20 @@ export const ItemTag: React.FC<ItemTagProps> = ({ item, holderId }) => {
   const isHolder = useMemo(
     () =>
       !!holderId &&
-      !!character &&
-      holderId === character.characterId &&
+      !!selectedCharacter &&
+      holderId === selectedCharacter.characterId &&
       isConnectedAndMounted,
-    [character, holderId, isConnectedAndMounted],
+    [holderId, isConnectedAndMounted, selectedCharacter],
   );
 
   const isEquipped = useMemo(() => {
     return (
       !!holderId &&
-      !!character &&
-      holderId === character.characterId &&
-      character.equippedItems.find(h => h.itemId === itemId)
+      !!selectedCharacter &&
+      holderId === selectedCharacter.characterId &&
+      selectedCharacter.equippedItems.find(h => h.itemId === itemId)
     );
-  }, [character, holderId, itemId]);
+  }, [holderId, itemId, selectedCharacter]);
 
   const { openActionModal, selectItem } = useItemActions();
 

@@ -3,6 +3,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from 'react';
@@ -122,6 +123,12 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null,
   );
+
+  useEffect(() => {
+    if (character) {
+      setSelectedCharacter(character);
+    }
+  }, [character]);
 
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 

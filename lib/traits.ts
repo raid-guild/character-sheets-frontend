@@ -394,12 +394,7 @@ export const formatTraitsForUpload = async (
         ),
       );
 
-      const character = await formatCharacter(
-        unformattedCharacter,
-        [],
-        items,
-        chainId,
-      );
+      const character = await formatCharacter(unformattedCharacter, [], items);
 
       const equippedItem1s = character.equippedItems
         .filter(
