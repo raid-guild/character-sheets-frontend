@@ -15,10 +15,12 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import FuzzySearch from 'fuzzy-search';
+import { useEffect, useMemo, useState } from 'react';
 
 import { CharacterCard, CharacterCardSmall } from '@/components/CharacterCard';
 import { useGame } from '@/contexts/GameContext';
+import { Character } from '@/utils/types';
 
 import { SquareIcon } from './icons/SquareIcon';
 import { VerticalListIcon } from './icons/VerticalListIcon';
@@ -26,7 +28,29 @@ import { VerticalListIcon } from './icons/VerticalListIcon';
 export const CharactersPanel: React.FC = () => {
   const { game } = useGame();
 
-  const characters = game?.characters.filter(c => !c.removed) ?? [];
+  const [searchedCharacters, setSearchedCharacters] = useState<Character[]>([]);
+  const [searchText, setSearchText] = useState('');
+
+  const characters = useMemo(
+    () => game?.characters.filter(c => !c.removed) ?? [],
+    [game],
+  );
+
+  useEffect(() => {
+    if (searchText === '') {
+      setSearchedCharacters(characters);
+      return;
+    }
+
+    const searcher = new FuzzySearch(
+      characters,
+      ['name', 'description', 'classes.name', 'heldItems.name'],
+      {
+        caseSensitive: false,
+      },
+    );
+    setSearchedCharacters(searcher.search(searchText));
+  }, [characters, searchText]);
 
   const [displayType, setDisplayType] = useState<
     'FULL_CARDS' | 'VERTICAL_LIST'
@@ -88,9 +112,11 @@ export const CharactersPanel: React.FC = () => {
           <Input
             fontSize="xs"
             h="40px"
+            maxW={{ base: '100%', md: '400px' }}
+            onChange={e => setSearchText(e.target.value)}
             placeholder="Search characters by name, description, etc."
             type="text"
-            maxW={{ base: '100%', md: '400px' }}
+            value={searchText}
           />
           <Menu closeOnSelect={false}>
             <MenuButton as={Button} size="xs">
@@ -165,7 +191,7 @@ export const CharactersPanel: React.FC = () => {
         }
         alignItems="stretch"
       >
-        {characters.map(c => (
+        {searchedCharacters.map(c => (
           <GridItem key={c.id} w="100%">
             {displayType === 'VERTICAL_LIST' && (
               <CharacterCardSmall chainId={game.chainId} character={c} />
