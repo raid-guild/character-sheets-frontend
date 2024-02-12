@@ -31,26 +31,46 @@ export const CharactersPanel: React.FC = () => {
   const [searchedCharacters, setSearchedCharacters] = useState<Character[]>([]);
   const [searchText, setSearchText] = useState('');
 
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortAttribute, setSortAttribute] = useState<
+    'characterId' | 'name' | 'experience'
+  >('characterId');
+
   const characters = useMemo(
     () => game?.characters.filter(c => !c.removed) ?? [],
     [game],
   );
 
   useEffect(() => {
+    const sortedCharacters = characters.slice().sort((a, b) => {
+      const numeric =
+        sortAttribute === 'characterId' || sortAttribute === 'experience';
+      if (sortOrder === 'asc') {
+        if (numeric) {
+          return Number(a[sortAttribute]) - Number(b[sortAttribute]);
+        }
+        return a[sortAttribute].localeCompare(b[sortAttribute]);
+      } else {
+        if (numeric) {
+          return Number(b[sortAttribute]) - Number(a[sortAttribute]);
+        }
+        return b[sortAttribute].localeCompare(a[sortAttribute]);
+      }
+    });
     if (searchText === '') {
-      setSearchedCharacters(characters);
+      setSearchedCharacters(sortedCharacters);
       return;
     }
 
     const searcher = new FuzzySearch(
-      characters,
+      sortedCharacters,
       ['name', 'description', 'classes.name', 'heldItems.name'],
       {
         caseSensitive: false,
       },
     );
     setSearchedCharacters(searcher.search(searchText));
-  }, [characters, searchText]);
+  }, [characters, searchText, sortAttribute, sortOrder]);
 
   const [displayType, setDisplayType] = useState<
     'FULL_CARDS' | 'VERTICAL_LIST'
@@ -123,7 +143,13 @@ export const CharactersPanel: React.FC = () => {
               Sort
             </MenuButton>
             <MenuList minWidth="240px">
-              <MenuOptionGroup defaultValue="asc" title="Order" type="radio">
+              <MenuOptionGroup
+                defaultValue="asc"
+                onChange={v => setSortOrder(v as 'asc' | 'desc')}
+                title="Order"
+                type="radio"
+                value={sortOrder}
+              >
                 <MenuItemOption fontSize="sm" value="asc">
                   Ascending
                 </MenuItemOption>
@@ -133,21 +159,22 @@ export const CharactersPanel: React.FC = () => {
               </MenuOptionGroup>
               <MenuDivider />
               <MenuOptionGroup
-                defaultValue="id"
+                defaultValue="characterId"
                 title="Attribute"
-                type="checkbox"
+                onChange={v =>
+                  setSortAttribute(v as 'name' | 'characterId' | 'experience')
+                }
+                type="radio"
+                value={sortAttribute}
               >
-                <MenuItemOption fontSize="sm" value="id">
+                <MenuItemOption fontSize="sm" value="characterId">
                   ID
                 </MenuItemOption>
                 <MenuItemOption fontSize="sm" value="name">
                   Name
                 </MenuItemOption>
-                <MenuItemOption fontSize="sm" value="description">
-                  Description
-                </MenuItemOption>
-                <MenuItemOption fontSize="sm" value="classes">
-                  Classes
+                <MenuItemOption fontSize="sm" value="experience">
+                  XP
                 </MenuItemOption>
               </MenuOptionGroup>
             </MenuList>
