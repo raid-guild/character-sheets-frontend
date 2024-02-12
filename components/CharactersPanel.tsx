@@ -1,7 +1,16 @@
 import {
+  Button,
   GridItem,
   HStack,
   IconButton,
+  Input,
+  Menu,
+  MenuButton,
+  MenuDivider,
+  MenuItemOption,
+  MenuList,
+  MenuOptionGroup,
+  Select,
   SimpleGrid,
   Text,
   VStack,
@@ -70,6 +79,76 @@ export const CharactersPanel: React.FC = () => {
           />
         </HStack>
       </HStack>
+      <VStack alignItems="flex-start" spacing={4} w="100%">
+        <HStack spacing={4} w="100%">
+          <Input
+            fontSize="xs"
+            h="40px"
+            placeholder="Search characters by name, description, etc."
+            type="text"
+            maxW="400px"
+          />
+          <Menu closeOnSelect={false}>
+            <MenuButton as={Button} size="xs">
+              Sort
+            </MenuButton>
+            <MenuList minWidth="240px">
+              <MenuOptionGroup defaultValue="asc" title="Order" type="radio">
+                <MenuItemOption fontSize="sm" value="asc">
+                  Ascending
+                </MenuItemOption>
+                <MenuItemOption fontSize="sm" value="desc">
+                  Descending
+                </MenuItemOption>
+              </MenuOptionGroup>
+              <MenuDivider />
+              <MenuOptionGroup
+                defaultValue="id"
+                title="Attribute"
+                type="checkbox"
+              >
+                <MenuItemOption fontSize="sm" value="id">
+                  ID
+                </MenuItemOption>
+                <MenuItemOption fontSize="sm" value="name">
+                  Name
+                </MenuItemOption>
+                <MenuItemOption fontSize="sm" value="description">
+                  Description
+                </MenuItemOption>
+                <MenuItemOption fontSize="sm" value="classes">
+                  Classes
+                </MenuItemOption>
+              </MenuOptionGroup>
+            </MenuList>
+          </Menu>
+        </HStack>
+        <HStack spacing={2} w="100%">
+          <Text>Has</Text>
+          <Select placeholder="OPERATOR" size="xs" variant="outline">
+            <option value="option1">more than</option>
+            <option value="option2">less than</option>
+            <option value="option3">equal to</option>
+          </Select>
+          <Input
+            h="30px"
+            fontSize="xs"
+            minW="40px"
+            placeholder="amount"
+            type="number"
+          />
+          <Select placeholder="CATEGORY" size="xs" variant="outline">
+            <option value="option1">xp</option>
+            <option value="option2">item</option>
+            <option value="option3">class</option>
+          </Select>
+          <Select placeholder="ID" size="xs" variant="outline">
+            <option value="option1">1</option>
+            <option value="option2">2</option>
+            <option value="option3">3</option>
+          </Select>
+        </HStack>
+      </VStack>
       <SimpleGrid
         spacing={{ base: 4, sm: 6, md: 8 }}
         w="100%"
