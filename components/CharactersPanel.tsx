@@ -80,13 +80,17 @@ export const CharactersPanel: React.FC = () => {
         </HStack>
       </HStack>
       <VStack alignItems="flex-start" spacing={4} w="100%">
-        <HStack spacing={4} w="100%">
+        <HStack
+          flexDirection={{ base: 'column-reverse', md: 'row' }}
+          spacing={4}
+          w="100%"
+        >
           <Input
             fontSize="xs"
             h="40px"
             placeholder="Search characters by name, description, etc."
             type="text"
-            maxW="400px"
+            maxW={{ base: '100%', md: '400px' }}
           />
           <Menu closeOnSelect={false}>
             <MenuButton as={Button} size="xs">
@@ -123,7 +127,11 @@ export const CharactersPanel: React.FC = () => {
             </MenuList>
           </Menu>
         </HStack>
-        <HStack spacing={2} w="100%">
+        <HStack
+          flexDirection={{ base: 'column', md: 'row' }}
+          spacing={2}
+          w="100%"
+        >
           <Text>Has</Text>
           <Select placeholder="OPERATOR" size="xs" variant="outline">
             <option value="option1">more than</option>
