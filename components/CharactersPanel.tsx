@@ -29,20 +29,87 @@ export const CharactersPanel: React.FC = () => {
   const { game } = useGame();
 
   const [searchedCharacters, setSearchedCharacters] = useState<Character[]>([]);
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState<string>('');
 
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [sortAttribute, setSortAttribute] = useState<
     'characterId' | 'name' | 'experience'
   >('characterId');
 
+  const [operatorFilter, setOperatorFilter] = useState<
+    'more' | 'less' | 'equal'
+  >('more');
+  const [amountFilter, setAmountFilter] = useState<string>('');
+  const [categoryFilter, setCategoryFilter] = useState<
+    'experience' | 'heldItem' | 'class'
+  >('experience');
+  const [idFilter, setIdFilter] = useState<string>('');
+
   const characters = useMemo(
     () => game?.characters.filter(c => !c.removed) ?? [],
     [game],
   );
 
+  const idOptions = useMemo(() => {
+    if (categoryFilter === 'heldItem') {
+      return game?.items.map(i => i) ?? [];
+    }
+    if (categoryFilter === 'class') {
+      return game?.classes.map(c => c) ?? [];
+    }
+    return [];
+  }, [categoryFilter, game]);
+
   useEffect(() => {
-    const sortedCharacters = characters.slice().sort((a, b) => {
+    const filteredCharacters = characters.filter(c => {
+      if (amountFilter === '') return true;
+      if (Number(amountFilter) < 0) return false;
+
+      if (categoryFilter === 'experience') {
+        if (operatorFilter === 'more') {
+          return Number(c.experience) > Number(amountFilter);
+        }
+        if (operatorFilter === 'less') {
+          return Number(c.experience) < Number(amountFilter);
+        }
+        return Number(c.experience) === Number(amountFilter);
+      }
+      if (categoryFilter === 'heldItem') {
+        const itemById = c.heldItems.find(i => i.id === idFilter);
+        if (itemById) {
+          if (operatorFilter === 'more') {
+            return Number(itemById.amount) > Number(amountFilter);
+          }
+          if (operatorFilter === 'less') {
+            return Number(itemById.amount) < Number(amountFilter);
+          }
+          return Number(itemById.amount) === Number(amountFilter);
+        }
+      }
+      if (categoryFilter === 'class') {
+        const classById = c.classes.find(cl => cl.id === idFilter);
+        if (classById) {
+          // TODO: use actual class amounts when leveling is added
+          if (operatorFilter === 'more') {
+            return Number(amountFilter) < 1;
+          }
+          if (operatorFilter === 'less') {
+            return Number(amountFilter) > 1;
+          }
+          return Number(amountFilter) === 1;
+        }
+        if (operatorFilter === 'more') {
+          return false;
+        }
+        if (operatorFilter === 'less') {
+          return Number(amountFilter) !== 0;
+        }
+        return Number(amountFilter) === 0;
+      }
+      return false;
+    });
+
+    const sortedCharacters = filteredCharacters.slice().sort((a, b) => {
       const numeric =
         sortAttribute === 'characterId' || sortAttribute === 'experience';
       if (sortOrder === 'asc') {
@@ -70,7 +137,16 @@ export const CharactersPanel: React.FC = () => {
       },
     );
     setSearchedCharacters(searcher.search(searchText));
-  }, [characters, searchText, sortAttribute, sortOrder]);
+  }, [
+    amountFilter,
+    categoryFilter,
+    characters,
+    idFilter,
+    operatorFilter,
+    searchText,
+    sortAttribute,
+    sortOrder,
+  ]);
 
   const [displayType, setDisplayType] = useState<
     'FULL_CARDS' | 'VERTICAL_LIST'
@@ -186,27 +262,55 @@ export const CharactersPanel: React.FC = () => {
           w="100%"
         >
           <Text>Has</Text>
-          <Select placeholder="OPERATOR" size="xs" variant="outline">
-            <option value="option1">more than</option>
-            <option value="option2">less than</option>
-            <option value="option3">equal to</option>
+          <Select
+            onChange={({ target }) =>
+              setOperatorFilter(target.value as 'more' | 'less' | 'equal')
+            }
+            placeholder="OPERATOR"
+            size="xs"
+            value={operatorFilter}
+            variant="outline"
+          >
+            <option value="more">more than</option>
+            <option value="less">less than</option>
+            <option value="equal">equal to</option>
           </Select>
           <Input
             h="30px"
             fontSize="xs"
             minW="40px"
+            onChange={e => setAmountFilter(e.target.value)}
             placeholder="amount"
             type="number"
+            value={amountFilter}
           />
-          <Select placeholder="CATEGORY" size="xs" variant="outline">
-            <option value="option1">xp</option>
-            <option value="option2">item</option>
-            <option value="option3">class</option>
+          <Select
+            onChange={({ target }) =>
+              setCategoryFilter(
+                target.value as 'experience' | 'heldItem' | 'class',
+              )
+            }
+            placeholder="CATEGORY"
+            size="xs"
+            value={categoryFilter}
+            variant="outline"
+          >
+            <option value="experience">xp</option>
+            <option value="heldItem">item</option>
+            <option value="class">class</option>
           </Select>
-          <Select placeholder="ID" size="xs" variant="outline">
-            <option value="option1">1</option>
-            <option value="option2">2</option>
-            <option value="option3">3</option>
+          <Select
+            onChange={({ target }) => setIdFilter(target.value)}
+            placeholder="ID"
+            size="xs"
+            value={idFilter}
+            variant="outline"
+          >
+            {idOptions.map(o => (
+              <option key={`item-or-class-id-${o.id}`} value={o.id}>
+                {o.name}
+              </option>
+            ))}
           </Select>
         </HStack>
       </VStack>
