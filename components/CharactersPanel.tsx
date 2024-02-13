@@ -29,7 +29,7 @@ import { Character } from '@/utils/types';
 import { SquareIcon } from './icons/SquareIcon';
 import { VerticalListIcon } from './icons/VerticalListIcon';
 
-export const CHARACTERS_PANEL_KEY = 'characters-panel';
+const CHARACTERS_PANEL_KEY = 'characters-panel';
 
 export const CharactersPanel: React.FC = () => {
   const { game } = useGame();
@@ -71,7 +71,10 @@ export const CharactersPanel: React.FC = () => {
   }, [categoryFilter, game]);
 
   useEffect(() => {
-    const charactersPanelData = localStorage.getItem(CHARACTERS_PANEL_KEY);
+    if (!game) return;
+    const charactersPanelData = localStorage.getItem(
+      `${CHARACTERS_PANEL_KEY}-${game.id}`,
+    );
     if (charactersPanelData) {
       const {
         displayType: _displayType,
@@ -82,7 +85,7 @@ export const CharactersPanel: React.FC = () => {
       setSortOrder(_sortOrder);
       setSortAttribute(_sortAttribute);
     }
-  }, []);
+  }, [game]);
 
   useEffect(() => {
     const filteredCharacters = characters.filter(c => {
@@ -175,8 +178,9 @@ export const CharactersPanel: React.FC = () => {
   const onSelectDisplayType = useCallback(
     (type: 'FULL_CARDS' | 'SMALL_CARDS' | 'VERTICAL_LIST') => {
       setDisplayType(type);
+      if (!game) return;
       localStorage.setItem(
-        CHARACTERS_PANEL_KEY,
+        `${CHARACTERS_PANEL_KEY}-${game.id}`,
         JSON.stringify({
           displayType: type,
           sortOrder,
@@ -184,7 +188,7 @@ export const CharactersPanel: React.FC = () => {
         }),
       );
     },
-    [sortOrder, sortAttribute],
+    [game, sortOrder, sortAttribute],
   );
 
   if (!game || characters.length === 0) {
@@ -235,11 +239,11 @@ export const CharactersPanel: React.FC = () => {
           <IconButton
             aria-label="Vertical List"
             color={displayType === 'VERTICAL_LIST' ? 'softblue' : 'white'}
-            minW={4}
-            onClick={() => onSelectDisplayType('VERTICAL_LIST')}
-            variant="unstyled"
-            transform="rotate(90deg) translateX(1.5px)"
             icon={<VerticalListIcon />}
+            onClick={() => onSelectDisplayType('VERTICAL_LIST')}
+            minW={4}
+            transform="rotate(90deg) translateX(1.5px)"
+            variant="unstyled"
             _active={{ transform: 'rotate(90deg)  translateX(1.5px)' }}
             _hover={
               displayType === 'VERTICAL_LIST' ? {} : { color: 'whiteAlpha.500' }
@@ -272,7 +276,7 @@ export const CharactersPanel: React.FC = () => {
                 onChange={v => {
                   setSortOrder(v as 'asc' | 'desc');
                   localStorage.setItem(
-                    CHARACTERS_PANEL_KEY,
+                    `${CHARACTERS_PANEL_KEY}-${game.id}`,
                     JSON.stringify({
                       displayType,
                       sortOrder: v as 'asc' | 'desc',
@@ -298,7 +302,7 @@ export const CharactersPanel: React.FC = () => {
                 onChange={v => {
                   setSortAttribute(v as 'characterId' | 'name' | 'experience');
                   localStorage.setItem(
-                    CHARACTERS_PANEL_KEY,
+                    `${CHARACTERS_PANEL_KEY}-${game.id}`,
                     JSON.stringify({
                       displayType,
                       sortOrder,
