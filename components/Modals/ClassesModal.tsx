@@ -46,8 +46,8 @@ export const ClassesModal: React.FC<ClassesModalProps> = ({
   const { game } = useGame();
 
   const [displayType, setDisplayType] = useState<
-    'FULL_CARDS' | 'SMALL_CARDS' | 'VERTICAL_LIST'
-  >('VERTICAL_LIST');
+    'FULL_CARDS' | 'SMALL_CARDS' | 'TABLE_VIEW'
+  >('SMALL_CARDS');
 
   const [searchedClasses, setSearchedClasses] = useState<Class[]>([]);
   const [searchText, setSearchText] = useState<string>('');
@@ -61,15 +61,15 @@ export const ClassesModal: React.FC<ClassesModalProps> = ({
 
   useEffect(() => {
     if (!game) return;
-    const charactersPanelData = localStorage.getItem(
+    const classesModalData = localStorage.getItem(
       `${CLASSES_MODAL_KEY}-${game.id}`,
     );
-    if (charactersPanelData) {
+    if (classesModalData) {
       const {
         displayType: _displayType,
         sortOrder: _sortOrder,
         sortAttribute: _sortAttribute,
-      } = JSON.parse(charactersPanelData);
+      } = JSON.parse(classesModalData);
       setDisplayType(_displayType);
       setSortOrder(_sortOrder);
       setSortAttribute(_sortAttribute);
@@ -114,7 +114,7 @@ export const ClassesModal: React.FC<ClassesModalProps> = ({
   }, [classes, searchText, sortAttribute, sortOrder]);
 
   const onSelectDisplayType = useCallback(
-    (type: 'FULL_CARDS' | 'SMALL_CARDS' | 'VERTICAL_LIST') => {
+    (type: 'FULL_CARDS' | 'SMALL_CARDS' | 'TABLE_VIEW') => {
       setDisplayType(type);
       if (!game) return;
       localStorage.setItem(
@@ -182,17 +182,15 @@ export const ClassesModal: React.FC<ClassesModalProps> = ({
             />
             <IconButton
               aria-label="Vertical List"
-              color={displayType === 'VERTICAL_LIST' ? 'softblue' : 'white'}
+              color={displayType === 'TABLE_VIEW' ? 'softblue' : 'white'}
               icon={<VerticalListIcon />}
-              onClick={() => onSelectDisplayType('VERTICAL_LIST')}
+              onClick={() => onSelectDisplayType('TABLE_VIEW')}
               minW={4}
               transform="rotate(90deg) translateX(1.5px)"
               variant="unstyled"
               _active={{ transform: 'rotate(90deg)  translateX(1.5px)' }}
               _hover={
-                displayType === 'VERTICAL_LIST'
-                  ? {}
-                  : { color: 'whiteAlpha.500' }
+                displayType === 'TABLE_VIEW' ? {} : { color: 'whiteAlpha.500' }
               }
             />
           </HStack>
@@ -208,7 +206,7 @@ export const ClassesModal: React.FC<ClassesModalProps> = ({
                 h="40px"
                 maxW={{ base: '100%', md: '400px' }}
                 onChange={e => setSearchText(e.target.value)}
-                placeholder="Search characters by name, description, etc."
+                placeholder="Search classes by name or description"
                 type="text"
                 value={searchText}
               />
@@ -294,13 +292,13 @@ export const ClassesModal: React.FC<ClassesModalProps> = ({
                     {displayType === 'FULL_CARDS' && <ClassCard {..._class} />}
                   </GridItem>
                 ))}
-              {searchedClasses.length === 0 && (
-                <Text align="center">No classes found.</Text>
-              )}
             </SimpleGrid>
           )}
-          {displayType === 'VERTICAL_LIST' && (
+          {displayType === 'TABLE_VIEW' && searchedClasses.length > 0 && (
             <ClassesTable classes={searchedClasses} />
+          )}
+          {searchedClasses.length === 0 && (
+            <Text align="center">No classes found.</Text>
           )}
         </ModalBody>
       </ModalContent>
