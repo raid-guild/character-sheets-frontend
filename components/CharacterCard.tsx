@@ -15,15 +15,22 @@ import {
   ModalHeader,
   ModalOverlay,
   SimpleGrid,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
   Text,
+  Th,
+  Thead,
   Tooltip,
+  Tr,
   useDisclosure,
   VStack,
   Wrap,
   WrapItem,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
@@ -353,5 +360,77 @@ export const CharacterCardSmall: React.FC<{
         </ModalContent>
       </Modal>
     </VStack>
+  );
+};
+
+export const CharactersTable: React.FC<{
+  chainId: number;
+  characters: Character[];
+}> = ({ chainId, characters }) => {
+  const { isOpen, onClose, onOpen } = useDisclosure();
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
+    null,
+  );
+
+  return (
+    <TableContainer w="100%">
+      <Table size="sm" w={{ base: '800px', md: '100%' }}>
+        <Thead>
+          <Tr>
+            <Th>ID</Th>
+            <Th>Name</Th>
+            <Th>Description</Th>
+            <Th>XP</Th>
+            <Th>Classes</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {characters.map(c => (
+            <Tr
+              key={c.id}
+              onClick={() => {
+                setSelectedCharacter(c);
+                onOpen();
+              }}
+              _hover={{ cursor: 'pointer' }}
+            >
+              <Td minH="60px">{c.characterId}</Td>
+              <Td alignItems="center" display="flex" gap={4}>
+                <Image alt={c.name} h="40px" src={c.image} />
+                <Text>{c.name}</Text>
+              </Td>
+              <Td>
+                <Text fontSize="xs">{shortenText(c.description, 20)}</Text>
+              </Td>
+              <Td>{c.experience}</Td>
+              <Td alignItems="center" display="flex" gap={2}>
+                {c.classes.map(cl => (
+                  <ClassTag key={cl.id} size="xs" {...cl} />
+                ))}
+              </Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+      {selectedCharacter && (
+        <Modal
+          autoFocus={false}
+          isOpen={isOpen}
+          onClose={onClose}
+          returnFocusOnClose={false}
+        >
+          <ModalOverlay />
+          <ModalContent mt={{ base: 0, md: '84px' }}>
+            <ModalHeader>
+              <Text>Character: {selectedCharacter.name}</Text>
+              <ModalCloseButton size="lg" />
+            </ModalHeader>
+            <ModalBody>
+              <CharacterCard chainId={chainId} character={selectedCharacter} />
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
+    </TableContainer>
   );
 };

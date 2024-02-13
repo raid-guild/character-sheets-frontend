@@ -18,7 +18,11 @@ import {
 import FuzzySearch from 'fuzzy-search';
 import { useEffect, useMemo, useState } from 'react';
 
-import { CharacterCard, CharacterCardSmall } from '@/components/CharacterCard';
+import {
+  CharacterCard,
+  CharacterCardSmall,
+  CharactersTable,
+} from '@/components/CharacterCard';
 import { useGame } from '@/contexts/GameContext';
 import { Character } from '@/utils/types';
 
@@ -27,6 +31,10 @@ import { VerticalListIcon } from './icons/VerticalListIcon';
 
 export const CharactersPanel: React.FC = () => {
   const { game } = useGame();
+
+  const [displayType, setDisplayType] = useState<
+    'FULL_CARDS' | 'SMALL_CARDS' | 'VERTICAL_LIST'
+  >('SMALL_CARDS');
 
   const [searchedCharacters, setSearchedCharacters] = useState<Character[]>([]);
   const [searchText, setSearchText] = useState<string>('');
@@ -148,10 +156,6 @@ export const CharactersPanel: React.FC = () => {
     sortOrder,
   ]);
 
-  const [displayType, setDisplayType] = useState<
-    'FULL_CARDS' | 'VERTICAL_LIST'
-  >('VERTICAL_LIST');
-
   if (!game || characters.length === 0) {
     return (
       <VStack as="main" py={20} w="100%" align="stretch" spacing={8}>
@@ -164,7 +168,7 @@ export const CharactersPanel: React.FC = () => {
   }
 
   return (
-    <VStack w="100%" pb={10} spacing={6}>
+    <VStack pb={10} spacing={6} w="100%">
       <HStack w="100%" justifyContent="space-between">
         <Text
           letterSpacing="3px"
@@ -187,15 +191,28 @@ export const CharactersPanel: React.FC = () => {
             onClick={() => setDisplayType('FULL_CARDS')}
           />
           <IconButton
-            minW={4}
-            aria-label="Vertical List"
+            aria-label="Small Cards"
+            color={displayType === 'SMALL_CARDS' ? 'softblue' : 'white'}
             icon={<VerticalListIcon />}
+            minW={4}
+            onClick={() => setDisplayType('SMALL_CARDS')}
             variant="unstyled"
+            _hover={
+              displayType === 'SMALL_CARDS' ? {} : { color: 'whiteAlpha.500' }
+            }
+          />
+          <IconButton
+            aria-label="Vertical List"
             color={displayType === 'VERTICAL_LIST' ? 'softblue' : 'white'}
+            minW={4}
+            onClick={() => setDisplayType('VERTICAL_LIST')}
+            variant="unstyled"
+            transform="rotate(90deg) translateX(1.5px)"
+            icon={<VerticalListIcon />}
+            _active={{ transform: 'rotate(90deg)  translateX(1.5px)' }}
             _hover={
               displayType === 'VERTICAL_LIST' ? {} : { color: 'whiteAlpha.500' }
             }
-            onClick={() => setDisplayType('VERTICAL_LIST')}
           />
         </HStack>
       </HStack>
@@ -314,25 +331,33 @@ export const CharactersPanel: React.FC = () => {
           </Select>
         </HStack>
       </VStack>
-      <SimpleGrid
-        spacing={{ base: 4, sm: 6, md: 8 }}
-        w="100%"
-        columns={
-          displayType === 'FULL_CARDS' ? 1 : { base: 1, sm: 2, md: 3, xl: 4 }
-        }
-        alignItems="stretch"
-      >
-        {searchedCharacters.map(c => (
-          <GridItem key={c.id} w="100%">
-            {displayType === 'VERTICAL_LIST' && (
-              <CharacterCardSmall chainId={game.chainId} character={c} />
-            )}
-            {displayType === 'FULL_CARDS' && (
-              <CharacterCard chainId={game.chainId} character={c} />
-            )}
-          </GridItem>
-        ))}
-      </SimpleGrid>
+      {(displayType === 'FULL_CARDS' || displayType === 'SMALL_CARDS') && (
+        <SimpleGrid
+          alignItems="stretch"
+          columns={
+            displayType === 'FULL_CARDS' ? 1 : { base: 1, sm: 2, md: 3, xl: 4 }
+          }
+          spacing={{ base: 4, sm: 6, md: 8 }}
+          w="100%"
+        >
+          {searchedCharacters.map(c => (
+            <GridItem key={c.id} w="100%">
+              {displayType === 'SMALL_CARDS' && (
+                <CharacterCardSmall chainId={game.chainId} character={c} />
+              )}
+              {displayType === 'FULL_CARDS' && (
+                <CharacterCard chainId={game.chainId} character={c} />
+              )}
+            </GridItem>
+          ))}
+        </SimpleGrid>
+      )}
+      {displayType === 'VERTICAL_LIST' && (
+        <CharactersTable
+          chainId={game.chainId}
+          characters={searchedCharacters}
+        />
+      )}
     </VStack>
   );
 };
