@@ -3,7 +3,14 @@ import {
   Button,
   Image,
   SimpleGrid,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
   Text,
+  Th,
+  Thead,
+  Tr,
   VStack,
 } from '@chakra-ui/react';
 import { useState } from 'react';
@@ -172,5 +179,41 @@ const ClassValue: React.FC<{ label: string; value: string }> = ({
         {value}
       </Text>
     </VStack>
+  );
+};
+
+export const ClassesTable: React.FC<{
+  classes: Class[];
+}> = ({ classes }) => {
+  return (
+    <TableContainer w="100%">
+      <Table size="sm" w={{ base: '800px', md: '100%' }}>
+        <Thead>
+          <Tr>
+            <Th>ID</Th>
+            <Th>Name</Th>
+            <Th>Description</Th>
+            <Th>Holders</Th>
+            <Th>Claimable</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {classes.map(c => (
+            <Tr key={c.id}>
+              <Td minH="60px">{c.classId}</Td>
+              <Td alignItems="center" display="flex" gap={4}>
+                <Image alt={c.name} h="40px" src={c.image} />
+                <Text>{c.name}</Text>
+              </Td>
+              <Td>
+                <Text fontSize="xs">{shortenText(c.description, 20)}</Text>
+              </Td>
+              <Td>{c.holders.length}</Td>
+              <Td>{c.claimable ? 'Yes' : 'No'}</Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+    </TableContainer>
   );
 };
