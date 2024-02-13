@@ -16,7 +16,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import FuzzySearch from 'fuzzy-search';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   CharacterCard,
@@ -28,6 +28,8 @@ import { Character } from '@/utils/types';
 
 import { SquareIcon } from './icons/SquareIcon';
 import { VerticalListIcon } from './icons/VerticalListIcon';
+
+export const CHARACTERS_PANEL_KEY = 'characters-panel';
 
 export const CharactersPanel: React.FC = () => {
   const { game } = useGame();
@@ -67,6 +69,20 @@ export const CharactersPanel: React.FC = () => {
     }
     return [];
   }, [categoryFilter, game]);
+
+  useEffect(() => {
+    const charactersPanelData = localStorage.getItem(CHARACTERS_PANEL_KEY);
+    if (charactersPanelData) {
+      const {
+        displayType: _displayType,
+        sortOrder: _sortOrder,
+        sortAttribute: _sortAttribute,
+      } = JSON.parse(charactersPanelData);
+      setDisplayType(_displayType);
+      setSortOrder(_sortOrder);
+      setSortAttribute(_sortAttribute);
+    }
+  }, []);
 
   useEffect(() => {
     const filteredCharacters = characters.filter(c => {
@@ -156,6 +172,21 @@ export const CharactersPanel: React.FC = () => {
     sortOrder,
   ]);
 
+  const onSelectDisplayType = useCallback(
+    (type: 'FULL_CARDS' | 'SMALL_CARDS' | 'VERTICAL_LIST') => {
+      setDisplayType(type);
+      localStorage.setItem(
+        CHARACTERS_PANEL_KEY,
+        JSON.stringify({
+          displayType: type,
+          sortOrder,
+          sortAttribute,
+        }),
+      );
+    },
+    [sortOrder, sortAttribute],
+  );
+
   if (!game || characters.length === 0) {
     return (
       <VStack as="main" py={20} w="100%" align="stretch" spacing={8}>
@@ -188,14 +219,14 @@ export const CharactersPanel: React.FC = () => {
             _hover={
               displayType === 'FULL_CARDS' ? {} : { color: 'whiteAlpha.500' }
             }
-            onClick={() => setDisplayType('FULL_CARDS')}
+            onClick={() => onSelectDisplayType('FULL_CARDS')}
           />
           <IconButton
             aria-label="Small Cards"
             color={displayType === 'SMALL_CARDS' ? 'softblue' : 'white'}
             icon={<VerticalListIcon />}
             minW={4}
-            onClick={() => setDisplayType('SMALL_CARDS')}
+            onClick={() => onSelectDisplayType('SMALL_CARDS')}
             variant="unstyled"
             _hover={
               displayType === 'SMALL_CARDS' ? {} : { color: 'whiteAlpha.500' }
@@ -205,7 +236,7 @@ export const CharactersPanel: React.FC = () => {
             aria-label="Vertical List"
             color={displayType === 'VERTICAL_LIST' ? 'softblue' : 'white'}
             minW={4}
-            onClick={() => setDisplayType('VERTICAL_LIST')}
+            onClick={() => onSelectDisplayType('VERTICAL_LIST')}
             variant="unstyled"
             transform="rotate(90deg) translateX(1.5px)"
             icon={<VerticalListIcon />}
@@ -238,7 +269,17 @@ export const CharactersPanel: React.FC = () => {
             <MenuList minWidth="240px">
               <MenuOptionGroup
                 defaultValue="asc"
-                onChange={v => setSortOrder(v as 'asc' | 'desc')}
+                onChange={v => {
+                  setSortOrder(v as 'asc' | 'desc');
+                  localStorage.setItem(
+                    CHARACTERS_PANEL_KEY,
+                    JSON.stringify({
+                      displayType,
+                      sortOrder: v as 'asc' | 'desc',
+                      sortAttribute,
+                    }),
+                  );
+                }}
                 title="Order"
                 type="radio"
                 value={sortOrder}
@@ -254,9 +295,17 @@ export const CharactersPanel: React.FC = () => {
               <MenuOptionGroup
                 defaultValue="characterId"
                 title="Attribute"
-                onChange={v =>
-                  setSortAttribute(v as 'name' | 'characterId' | 'experience')
-                }
+                onChange={v => {
+                  setSortAttribute(v as 'characterId' | 'name' | 'experience');
+                  localStorage.setItem(
+                    CHARACTERS_PANEL_KEY,
+                    JSON.stringify({
+                      displayType,
+                      sortOrder,
+                      sortAttribute: v as 'characterId' | 'name' | 'experience',
+                    }),
+                  );
+                }}
                 type="radio"
                 value={sortAttribute}
               >
