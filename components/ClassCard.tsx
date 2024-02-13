@@ -203,7 +203,7 @@ export const ClassesTable: React.FC<{
               <Td minH="60px">{c.classId}</Td>
               <Td alignItems="center" display="flex" gap={4}>
                 <Image alt={c.name} h="40px" src={c.image} />
-                <Text>{c.name}</Text>
+                <Text>{shortenText(c.name, 20)}</Text>
               </Td>
               <Td>
                 <Text fontSize="xs">{shortenText(c.description, 20)}</Text>
