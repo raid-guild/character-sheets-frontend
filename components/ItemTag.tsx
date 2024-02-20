@@ -15,11 +15,16 @@ import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { Item } from '@/utils/types';
 
 type ItemTagProps = {
+  displayOnly?: boolean;
   holderId?: string;
   item: Item;
 };
 
-export const ItemTag: React.FC<ItemTagProps> = ({ item, holderId }) => {
+export const ItemTag: React.FC<ItemTagProps> = ({
+  item,
+  holderId,
+  displayOnly = false,
+}) => {
   const { character } = useGame();
 
   const { itemId, name, image, amount } = item;
@@ -88,7 +93,7 @@ export const ItemTag: React.FC<ItemTagProps> = ({ item, holderId }) => {
         </Text>
       </VStack>
 
-      {isHolder && (
+      {isHolder && !displayOnly && (
         <Button
           onClick={() => {
             selectItem(item);

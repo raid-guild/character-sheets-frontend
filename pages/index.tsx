@@ -1,75 +1,17 @@
 import { Button, Flex, Heading, Text, VStack } from '@chakra-ui/react';
+import { GetStaticProps, InferGetStaticPropsType } from 'next';
 import NextLink from 'next/link';
-import { zeroAddress } from 'viem';
 import { useAccount } from 'wagmi';
 
 import { CharacterCard } from '@/components/CharacterCard';
 import { CreateGameModal } from '@/components/Modals/CreateGameModal';
 import { useGamesContext } from '@/contexts/GamesContext';
 import { useToast } from '@/hooks/useToast';
-import { SUPPORTED_CHAINS } from '@/lib/web3';
-import { Character, Class, EquippedItem, Item } from '@/utils/types';
+import { getTopCharacters } from '@/hooks/useTopCharacters';
 
-const createDummyClass = (name: string): Class => ({
-  id: '',
-  classId: '',
-  uri: '',
-  name,
-  description: '',
-  image: '',
-  holders: [],
-  claimable: false,
-  equippable_layer: null,
-  attributes: [],
-});
+type Props = InferGetStaticPropsType<typeof getStaticProps>;
 
-const createDummyItem = (name: string, image: string): Item => ({
-  id: '',
-  itemId: '',
-  uri: '',
-  name,
-  description: '',
-  image,
-  soulbound: false,
-  supply: BigInt(0).toString(),
-  distribution: BigInt(0).toString(),
-  totalSupply: BigInt(0).toString(),
-  amount: BigInt(2).toString(),
-  requirements: [],
-  holders: [{ id: '1', characterId: '1' }],
-  equippers: [{ id: '1', characterId: '1' }],
-  merkleRoot: '',
-  equippable_layer: null,
-  attributes: [],
-});
-
-const dummyCharacter: Character = {
-  id: '1',
-  name: 'McLizard the Hizard',
-  description: 'A lizard wizard',
-  image: '/RG_CharacterSheet_CharacterBuild__v3_ex2.png',
-  characterId: '1',
-  account: '0x1234567890123456789012345678901234567890',
-  player: '0x1234567890123456789012345678901234567890',
-  jailed: false,
-  removed: false,
-  approved: zeroAddress,
-  experience: '28930',
-  uri: '',
-  heldItems: [
-    createDummyItem('Sword of Undhur', '/sword.png'),
-    createDummyItem('Wooden Staff', '/staff.png'),
-  ],
-  equippedItems: [
-    createDummyItem('Sword of Undhur', '/sword.png') as EquippedItem,
-    createDummyItem('Wooden Staff', '/staff.png') as EquippedItem,
-  ],
-  classes: [createDummyClass('Wizard'), createDummyClass('Warrior')],
-  equippable_layer: null,
-  attributes: [],
-};
-
-export default function Home(): JSX.Element {
+export default function Home({ character }: Props): JSX.Element {
   const { createGameModal } = useGamesContext();
   const { address } = useAccount();
   const { renderError } = useToast();
@@ -128,24 +70,38 @@ export default function Home(): JSX.Element {
             Create game
           </Button>
         </Flex>
-        <Text
-          color="whiteAlpha.700"
-          fontSize="14px"
-          mt={20}
-          mb={6}
-          textTransform="uppercase"
-        >
-          Most recent :
-        </Text>
+        {character && (
+          <>
+            <Text
+              color="whiteAlpha.700"
+              fontSize="14px"
+              mt={20}
+              mb={6}
+              textTransform="uppercase"
+            >
+              Featured :
+            </Text>
 
-        <CharacterCard
-          character={dummyCharacter}
-          chainId={SUPPORTED_CHAINS[0].id}
-          dummy
-        />
+            <CharacterCard
+              character={character}
+              chainId={character.chainId}
+              displayOnly
+            />
+          </>
+        )}
       </VStack>
 
       {createGameModal && <CreateGameModal />}
     </Flex>
   );
 }
+
+export const getStaticProps: GetStaticProps = async () => {
+  const { characters } = await getTopCharacters(1);
+  return {
+    props: {
+      character: characters?.[0] || null,
+    },
+    revalidate: 86400, // every 24 hours
+  };
+};
