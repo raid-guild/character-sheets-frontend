@@ -82,7 +82,11 @@ export default function Home({ character }: Props): JSX.Element {
               Featured :
             </Text>
 
-            <CharacterCard character={character} chainId={character.chainId} />
+            <CharacterCard
+              character={character}
+              chainId={character.chainId}
+              displayOnly
+            />
           </>
         )}
       </VStack>

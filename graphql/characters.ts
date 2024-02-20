@@ -28,7 +28,7 @@ export const getTopCharactersForChainId = async (
 
     const characters = await Promise.all(
       data?.characters.map((character: CharacterInfoFragment) =>
-        formatFullCharacter(character, chainId),
+        formatFullCharacter(character),
       ) || [],
     );
 
