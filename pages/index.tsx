@@ -1,34 +1,17 @@
 import { Button, Flex, Heading, Text, VStack } from '@chakra-ui/react';
-import { GetStaticProps } from 'next';
+import { GetStaticProps, InferGetStaticPropsType } from 'next';
 import NextLink from 'next/link';
 import { useAccount } from 'wagmi';
 
 import { CharacterCard } from '@/components/CharacterCard';
 import { CreateGameModal } from '@/components/Modals/CreateGameModal';
-import { GameProvider } from '@/contexts/GameContext';
 import { useGamesContext } from '@/contexts/GamesContext';
-import { getGameForChainId } from '@/graphql/games';
 import { useToast } from '@/hooks/useToast';
 import { getTopCharacters } from '@/hooks/useTopCharacters';
-import { Character, Game } from '@/utils/types';
 
-export default function HomePageOuter({
-  character,
-  game,
-}: {
-  character: Character;
-  game: Game;
-}): JSX.Element {
-  const { chainId } = character;
+type Props = InferGetStaticPropsType<typeof getStaticProps>;
 
-  return (
-    <GameProvider chainId={chainId} gameId={game?.id.toString()} game={game}>
-      <Home character={character} />
-    </GameProvider>
-  );
-}
-
-function Home({ character }: { character: Character }): JSX.Element {
+export default function Home({ character }: Props): JSX.Element {
   const { createGameModal } = useGamesContext();
   const { address } = useAccount();
   const { renderError } = useToast();
@@ -99,7 +82,11 @@ function Home({ character }: { character: Character }): JSX.Element {
               Featured :
             </Text>
 
-            <CharacterCard character={character} chainId={character.chainId} />
+            <CharacterCard
+              character={character}
+              chainId={character.chainId}
+              displayOnly
+            />
           </>
         )}
       </VStack>
@@ -111,15 +98,9 @@ function Home({ character }: { character: Character }): JSX.Element {
 
 export const getStaticProps: GetStaticProps = async () => {
   const { characters } = await getTopCharacters(1);
-  const chainId = characters?.[0]?.chainId;
-  const gameId = characters?.[0]?.gameId;
-  const game =
-    !!chainId && !!gameId ? await getGameForChainId(chainId, gameId) : null;
-
   return {
     props: {
       character: characters?.[0] || null,
-      game,
     },
     revalidate: 86400, // every 24 hours
   };

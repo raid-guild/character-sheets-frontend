@@ -22,15 +22,15 @@ import {
   Wrap,
   WrapItem,
 } from '@chakra-ui/react';
+import NextLink from 'next/link';
 import { useMemo } from 'react';
 import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { ItemsCatalogModal } from '@/components/Modals/ItemsCatalogModal';
-import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
-import { getAddressUrl } from '@/lib/web3';
+import { getAddressUrl, getChainLabelFromId } from '@/lib/web3';
 import { JAILED_CHARACTER_IMAGE } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character, Item } from '@/utils/types';
@@ -42,12 +42,11 @@ import { XPDisplay, XPDisplaySmall } from './XPDisplay';
 export const CharacterCard: React.FC<{
   chainId: number;
   character: Character;
-  dummy?: boolean;
-}> = ({ chainId, character, dummy }) => {
+  displayOnly?: boolean;
+}> = ({ chainId, character, displayOnly }) => {
   const { address } = useAccount();
   const { isMaster } = useGame();
   const itemsCatalogModal = useDisclosure();
-  const { selectedCharacter } = useCharacterActions();
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const {
@@ -122,7 +121,21 @@ export const CharacterCard: React.FC<{
         </HStack>
       </Box>
       <VStack align="flex-start" spacing={6}>
-        <Heading>{name}</Heading>
+        {displayOnly ? (
+          <NextLink
+            as={`/games/${getChainLabelFromId(
+              character.chainId,
+            )}/${character.gameId.toLowerCase()}`}
+            href={`/games/[chainLabel]/[gameId]`}
+            passHref
+          >
+            <Link _hover={{ textDecoration: 'none', color: 'accent' }}>
+              <Heading>{name}</Heading>
+            </Link>
+          </NextLink>
+        ) : (
+          <Heading>{name}</Heading>
+        )}
         <Text fontSize="xs">Character ID: {characterId}</Text>
         <Link
           alignItems="center"
@@ -130,7 +143,7 @@ export const CharacterCard: React.FC<{
           display="flex"
           fontSize="sm"
           gap={2}
-          href={dummy ? '/' : getAddressUrl(chainId, account)}
+          href={getAddressUrl(chainId, account)}
           isExternal
           p={0}
         >
@@ -150,7 +163,7 @@ export const CharacterCard: React.FC<{
           {shortenText(description, 100)}
         </Text>
         {isConnectedAndMounted &&
-          selectedCharacter &&
+          !displayOnly &&
           (isMaster || address?.toLowerCase() === character.player) && (
             <CharacterActionMenu character={character} variant="solid" />
           )}
@@ -172,7 +185,7 @@ export const CharacterCard: React.FC<{
                   Inventory ({itemTotal})
                 </Text>
               </HStack>
-              {items.length > 2 && (
+              {items.length > 2 && !displayOnly ? (
                 <Button
                   variant="ghost"
                   size="xs"
@@ -180,12 +193,28 @@ export const CharacterCard: React.FC<{
                 >
                   show all
                 </Button>
+              ) : (
+                <NextLink
+                  as={`/games/${getChainLabelFromId(
+                    character.chainId,
+                  )}/${character.gameId.toLowerCase()}`}
+                  href={`/games/[chainLabel]/[gameId]`}
+                  passHref
+                >
+                  <Button variant="ghost" size="xs">
+                    show all
+                  </Button>
+                </NextLink>
               )}
             </HStack>
             <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4} w="full">
               {items.slice(0, 2).map(item => (
                 <GridItem key={item.itemId + item.name}>
-                  <ItemTag item={item} holderId={characterId} />
+                  <ItemTag
+                    item={item}
+                    holderId={characterId}
+                    displayOnly={displayOnly}
+                  />
                 </GridItem>
               ))}
             </SimpleGrid>
@@ -194,7 +223,7 @@ export const CharacterCard: React.FC<{
       </VStack>
       <ItemsCatalogModal
         character={character}
-        isOpen={!!items.length && itemsCatalogModal.isOpen}
+        isOpen={!!items.length && itemsCatalogModal.isOpen && !displayOnly}
         onClose={itemsCatalogModal.onClose}
       />
     </SimpleGrid>

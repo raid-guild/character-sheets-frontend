@@ -9,18 +9,23 @@ import {
 } from '@chakra-ui/react';
 import { useMemo } from 'react';
 
-import { useCharacterActions } from '@/contexts/CharacterActionsContext';
+import { useGame } from '@/contexts/GameContext';
 import { PlayerActions, useItemActions } from '@/contexts/ItemActionsContext';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { Item } from '@/utils/types';
 
 type ItemTagProps = {
+  displayOnly?: boolean;
   holderId?: string;
   item: Item;
 };
 
-export const ItemTag: React.FC<ItemTagProps> = ({ item, holderId }) => {
-  const { selectedCharacter } = useCharacterActions();
+export const ItemTag: React.FC<ItemTagProps> = ({
+  item,
+  holderId,
+  displayOnly = false,
+}) => {
+  const { character } = useGame();
 
   const { itemId, name, image, amount } = item;
 
@@ -29,20 +34,20 @@ export const ItemTag: React.FC<ItemTagProps> = ({ item, holderId }) => {
   const isHolder = useMemo(
     () =>
       !!holderId &&
-      !!selectedCharacter &&
-      holderId === selectedCharacter.characterId &&
+      !!character &&
+      holderId === character.characterId &&
       isConnectedAndMounted,
-    [holderId, isConnectedAndMounted, selectedCharacter],
+    [character, holderId, isConnectedAndMounted],
   );
 
   const isEquipped = useMemo(() => {
     return (
       !!holderId &&
-      !!selectedCharacter &&
-      holderId === selectedCharacter.characterId &&
-      selectedCharacter.equippedItems.find(h => h.itemId === itemId)
+      !!character &&
+      holderId === character.characterId &&
+      character.equippedItems.find(h => h.itemId === itemId)
     );
-  }, [holderId, itemId, selectedCharacter]);
+  }, [character, holderId, itemId]);
 
   const { openActionModal, selectItem } = useItemActions();
 
@@ -88,7 +93,7 @@ export const ItemTag: React.FC<ItemTagProps> = ({ item, holderId }) => {
         </Text>
       </VStack>
 
-      {isHolder && (
+      {isHolder && !displayOnly && (
         <Button
           onClick={() => {
             selectItem(item);
