@@ -138,9 +138,9 @@ export const CharacterCard: React.FC<{
             href={`/games/[chainLabel]/[gameId]`}
             passHref
           >
-            <Link _hover={{ textDecoration: 'none', color: 'accent' }}>
-              <Heading>{name}</Heading>
-            </Link>
+            <Heading _hover={{ textDecoration: 'none', color: 'accent' }}>
+              {name}
+            </Heading>
           </NextLink>
         ) : (
           <Heading>{name}</Heading>
