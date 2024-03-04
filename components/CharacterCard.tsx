@@ -34,7 +34,9 @@ import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { ItemsCatalogModal } from '@/components/Modals/ItemsCatalogModal';
+import { useClassActions } from '@/contexts/ClassActionsContext';
 import { useGame } from '@/contexts/GameContext';
+import { useItemActions } from '@/contexts/ItemActionsContext';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { getAddressUrl } from '@/lib/web3';
 import { JAILED_CHARACTER_IMAGE } from '@/utils/constants';
@@ -212,6 +214,8 @@ export const CharacterCardSmall: React.FC<{
   const { address } = useAccount();
   const { isMaster } = useGame();
   const { isOpen, onClose, onOpen } = useDisclosure();
+  const { areAnyClassModalsOpen } = useClassActions();
+  const { areAnyItemModalsOpen } = useItemActions();
 
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
@@ -312,7 +316,7 @@ export const CharacterCardSmall: React.FC<{
         )}
       <Modal
         autoFocus={false}
-        isOpen={isOpen}
+        isOpen={isOpen && !areAnyClassModalsOpen && !areAnyItemModalsOpen}
         onClose={onClose}
         returnFocusOnClose={false}
       >
@@ -336,6 +340,9 @@ export const CharactersTable: React.FC<{
   characters: Character[];
 }> = ({ chainId, characters }) => {
   const { isOpen, onClose, onOpen } = useDisclosure();
+  const { areAnyClassModalsOpen } = useClassActions();
+  const { areAnyItemModalsOpen } = useItemActions();
+
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null,
   );
@@ -383,7 +390,7 @@ export const CharactersTable: React.FC<{
       {selectedCharacter && (
         <Modal
           autoFocus={false}
-          isOpen={isOpen}
+          isOpen={isOpen && !areAnyClassModalsOpen && !areAnyItemModalsOpen}
           onClose={onClose}
           returnFocusOnClose={false}
         >

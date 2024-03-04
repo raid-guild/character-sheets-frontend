@@ -27,6 +27,7 @@ import FuzzySearch from 'fuzzy-search';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useGame } from '@/contexts/GameContext';
+import { useItemActions } from '@/contexts/ItemActionsContext';
 import { Character, Item } from '@/utils/types';
 
 import { SquareIcon } from '../icons/SquareIcon';
@@ -47,6 +48,7 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
   onClose,
 }) => {
   const { game } = useGame();
+  const { areAnyItemModalsOpen } = useItemActions();
 
   const [displayType, setDisplayType] = useState<
     'FULL_CARDS' | 'SMALL_CARDS' | 'TABLE_VIEW'
@@ -226,7 +228,12 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
   );
 
   return (
-    <Modal closeOnEsc closeOnOverlayClick isOpen={isOpen} onClose={onClose}>
+    <Modal
+      closeOnEsc
+      closeOnOverlayClick
+      isOpen={isOpen && !areAnyItemModalsOpen}
+      onClose={onClose}
+    >
       <ModalOverlay />
       <ModalContent mt={{ base: 0, md: '84px' }}>
         <ModalHeader>
