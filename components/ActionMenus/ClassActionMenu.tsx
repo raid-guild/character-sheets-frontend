@@ -13,11 +13,13 @@ import { Class } from '@/utils/types';
 
 type ActionMenuProps = {
   classEntity: Class;
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   variant?: 'outline' | 'solid' | 'ghost';
 };
 
 export const ClassActionMenu: React.FC<ActionMenuProps> = ({
   classEntity,
+  size = 'sm',
   variant = 'outline',
 }) => {
   const { selectCharacter } = useCharacterActions();
@@ -31,7 +33,7 @@ export const ClassActionMenu: React.FC<ActionMenuProps> = ({
         selectClass(classEntity);
       }}
     >
-      <MenuButton as={Button} size="sm" variant={variant} w="100%">
+      <MenuButton as={Button} size={size} variant={variant} w="100%">
         Actions
       </MenuButton>
       <MenuList>

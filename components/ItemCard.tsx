@@ -356,6 +356,7 @@ export const ItemsTable: React.FC<{
       <Table size="sm" w={{ base: '800px', md: '100%' }}>
         <Thead>
           <Tr>
+            <Th>Actions</Th>
             <Th>ID</Th>
             <Th>Name</Th>
             <Th>Description</Th>
@@ -366,8 +367,11 @@ export const ItemsTable: React.FC<{
         <Tbody>
           {items.map(item => (
             <Tr key={item.id}>
+              <Td>
+                <ItemActionMenu item={item} size="xs" variant="solid" />
+              </Td>
               <Td minH="60px">{item.itemId}</Td>
-              <Td alignItems="center" display="flex" gap={4}>
+              <Td alignItems="center" display="flex" gap={4} w="240px">
                 <Image alt={item.name} h="40px" src={item.image} />
                 <Text>{shortenText(item.name, 20)}</Text>
               </Td>

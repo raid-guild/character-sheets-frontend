@@ -12,11 +12,13 @@ import { Item } from '@/utils/types';
 
 type ItemActionMenuProps = {
   item: Item;
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   variant?: 'outline' | 'solid' | 'ghost';
 };
 
 export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
   item,
+  size = 'sm',
   variant = 'outline',
 }) => {
   const { gmActions, openActionModal, playerActions, selectItem } =
@@ -24,7 +26,7 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
 
   return (
     <Menu onOpen={() => selectItem(item)}>
-      <MenuButton as={Button} size="sm" variant={variant} w="100%">
+      <MenuButton as={Button} size={size} variant={variant} w="100%">
         Actions
       </MenuButton>
       <MenuList>
