@@ -403,10 +403,12 @@ export const CharactersTable: React.FC<{
                 <Text fontSize="xs">{shortenText(c.description, 20)}</Text>
               </Td>
               <Td>{c.experience}</Td>
-              <Td alignItems="center" display="flex" gap={2}>
-                {c.classes.map(cl => (
-                  <ClassTag key={cl.id} size="xs" {...cl} />
-                ))}
+              <Td>
+                <HStack gap={2}>
+                  {c.classes.map(cl => (
+                    <ClassTag key={cl.id} size="xs" {...cl} />
+                  ))}
+                </HStack>
               </Td>
             </Tr>
           ))}

@@ -352,6 +352,26 @@ const Tooltip = {
   },
 };
 
+const Table = {
+  variants: {
+    simple: {
+      table: {},
+      thead: {},
+      tr: {
+        borderBottom: '1px solid',
+        borderColor: 'gray.700',
+      },
+      th: {
+        border: 'none',
+        py: 2,
+      },
+      td: {
+        border: 'none',
+      },
+    },
+  },
+};
+
 export const theme = extendTheme({
   config: { initialColorMode: 'light', useSystemColorMode: false },
   fonts: {
@@ -381,5 +401,6 @@ export const theme = extendTheme({
     Text,
     Textarea,
     Tooltip,
+    Table,
   },
 });
