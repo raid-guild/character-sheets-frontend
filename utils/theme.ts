@@ -352,8 +352,28 @@ const Tooltip = {
   },
 };
 
+const Table = {
+  variants: {
+    simple: {
+      table: {},
+      thead: {},
+      tr: {
+        borderBottom: '1px solid',
+        borderColor: 'gray.700',
+      },
+      th: {
+        border: 'none',
+        py: 2,
+      },
+      td: {
+        border: 'none',
+      },
+    },
+  },
+};
+
 export const theme = extendTheme({
-  config: { initialColorMode: 'light', useSystemColorMode: false },
+  config: { initialColorMode: 'dark', useSystemColorMode: false },
   fonts: {
     body: `'Unbounded', sans-serif`,
     heading: `'Unbounded', sans-serif`,
@@ -381,5 +401,6 @@ export const theme = extendTheme({
     Text,
     Textarea,
     Tooltip,
+    Table,
   },
 });

@@ -7,7 +7,14 @@ import {
   HStack,
   Image,
   SimpleGrid,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
   Text,
+  Th,
+  Thead,
+  Tr,
   VStack,
 } from '@chakra-ui/react';
 import { useMemo, useState } from 'react';
@@ -338,5 +345,51 @@ const ItemValue: React.FC<{ label: string; value: string }> = ({
         {value}
       </Text>
     </VStack>
+  );
+};
+
+export const ItemsTable: React.FC<{
+  items: Item[];
+}> = ({ items }) => {
+  const isConnectedAndMounted = useIsConnectedAndMounted();
+
+  return (
+    <TableContainer w="100%">
+      <Table size="sm" w={{ base: '800px', md: '100%' }}>
+        <Thead>
+          <Tr>
+            {isConnectedAndMounted && <Th>Actions</Th>}
+            <Th>ID</Th>
+            <Th>Name</Th>
+            <Th>Description</Th>
+            <Th>Holders</Th>
+            <Th>Supply</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {items.map(item => (
+            <Tr key={item.id}>
+              {isConnectedAndMounted && (
+                <Td>
+                  <ItemActionMenu item={item} size="xs" variant="solid" />
+                </Td>
+              )}
+              <Td minH="60px">{item.itemId}</Td>
+              <Td alignItems="center" display="flex" gap={4} w="240px">
+                <Image alt={item.name} h="40px" src={item.image} />
+                <Text>{shortenText(item.name, 20)}</Text>
+              </Td>
+              <Td>
+                <Text fontSize="xs">{shortenText(item.description, 20)}</Text>
+              </Td>
+              <Td>{item.holders.length}</Td>
+              <Td>
+                {item.supply.toString()} / {item.totalSupply.toString()}
+              </Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+    </TableContainer>
   );
 };

@@ -200,7 +200,7 @@ function GamePage({
 
     return (
       <Grid
-        templateColumns={{ base: '1fr', lg: '3fr 1fr' }}
+        templateColumns={{ base: '100%', lg: '3fr 1fr' }}
         gridGap="5px"
         w="100%"
       >
@@ -469,9 +469,7 @@ function GamePage({
             <CharactersPanel />
           </VStack>
         </VStack>
-        {isConnectedAndMounted && (
-          <GameActions display={{ base: 'none', lg: 'flex' }} />
-        )}
+        <GameActions display={{ base: 'none', lg: 'flex' }} />
       </Grid>
     );
   };

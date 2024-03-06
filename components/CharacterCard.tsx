@@ -15,20 +15,29 @@ import {
   ModalHeader,
   ModalOverlay,
   SimpleGrid,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
   Text,
+  Th,
+  Thead,
   Tooltip,
+  Tr,
   useDisclosure,
   VStack,
   Wrap,
   WrapItem,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { ItemsCatalogModal } from '@/components/Modals/ItemsCatalogModal';
+import { useClassActions } from '@/contexts/ClassActionsContext';
 import { useGame } from '@/contexts/GameContext';
+import { useItemActions } from '@/contexts/ItemActionsContext';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { getAddressUrl, getChainLabelFromId } from '@/lib/web3';
 import { JAILED_CHARACTER_IMAGE } from '@/utils/constants';
@@ -129,9 +138,9 @@ export const CharacterCard: React.FC<{
             href={`/games/[chainLabel]/[gameId]`}
             passHref
           >
-            <Link _hover={{ textDecoration: 'none', color: 'accent' }}>
-              <Heading>{name}</Heading>
-            </Link>
+            <Heading _hover={{ textDecoration: 'none', color: 'accent' }}>
+              {name}
+            </Heading>
           </NextLink>
         ) : (
           <Heading>{name}</Heading>
@@ -237,6 +246,8 @@ export const CharacterCardSmall: React.FC<{
   const { address } = useAccount();
   const { isMaster } = useGame();
   const { isOpen, onClose, onOpen } = useDisclosure();
+  const { areAnyClassModalsOpen } = useClassActions();
+  const { areAnyItemModalsOpen } = useItemActions();
 
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
@@ -337,7 +348,7 @@ export const CharacterCardSmall: React.FC<{
         )}
       <Modal
         autoFocus={false}
-        isOpen={isOpen}
+        isOpen={isOpen && !areAnyClassModalsOpen && !areAnyItemModalsOpen}
         onClose={onClose}
         returnFocusOnClose={false}
       >
@@ -353,5 +364,82 @@ export const CharacterCardSmall: React.FC<{
         </ModalContent>
       </Modal>
     </VStack>
+  );
+};
+
+export const CharactersTable: React.FC<{
+  chainId: number;
+  characters: Character[];
+}> = ({ chainId, characters }) => {
+  const { isOpen, onClose, onOpen } = useDisclosure();
+  const { areAnyClassModalsOpen } = useClassActions();
+  const { areAnyItemModalsOpen } = useItemActions();
+
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
+    null,
+  );
+
+  return (
+    <TableContainer w="100%">
+      <Table size="sm" w={{ base: '800px', md: '100%' }}>
+        <Thead>
+          <Tr>
+            <Th>ID</Th>
+            <Th>Name</Th>
+            <Th>Description</Th>
+            <Th>XP</Th>
+            <Th>Classes</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {characters.map(c => (
+            <Tr
+              key={c.id}
+              onClick={() => {
+                setSelectedCharacter(c);
+                onOpen();
+              }}
+              _hover={{ cursor: 'pointer' }}
+            >
+              <Td minH="60px">{c.characterId}</Td>
+              <Td alignItems="center" display="flex" gap={4}>
+                <Image alt={c.name} h="40px" src={c.image} />
+                <Text>{shortenText(c.name, 20)}</Text>
+              </Td>
+              <Td>
+                <Text fontSize="xs">{shortenText(c.description, 20)}</Text>
+              </Td>
+              <Td>{c.experience}</Td>
+              <Td>
+                <HStack gap={2}>
+                  {c.classes.map(cl => (
+                    <ClassTag key={cl.id} size="xs" {...cl} />
+                  ))}
+                </HStack>
+              </Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+      {selectedCharacter && (
+        <Modal
+          autoFocus={false}
+          isOpen={isOpen && !areAnyClassModalsOpen && !areAnyItemModalsOpen}
+          onClose={onClose}
+          returnFocusOnClose={false}
+        >
+          <ModalOverlay />
+          <ModalContent mt={{ base: 0, md: '84px' }}>
+            <ModalHeader>
+              <Text>Character: {selectedCharacter.name}</Text>
+              <ModalCloseButton size="lg" />
+            </ModalHeader>
+            <ModalBody>
+              <CharacterCard chainId={chainId} character={selectedCharacter} />
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
+    </TableContainer>
   );
 };
