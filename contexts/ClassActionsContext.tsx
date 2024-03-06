@@ -25,6 +25,8 @@ export enum GameMasterActions {
 }
 
 type ClassActionsContextType = {
+  areAnyClassModalsOpen: boolean;
+
   playerActions: PlayerActions[];
   gmActions: GameMasterActions[];
 
@@ -35,6 +37,8 @@ type ClassActionsContextType = {
 };
 
 const ClassActionsContext = createContext<ClassActionsContextType>({
+  areAnyClassModalsOpen: false,
+
   playerActions: [],
   gmActions: [],
 
@@ -137,9 +141,20 @@ export const ClassActionsProvider: React.FC<React.PropsWithChildren> = ({
     ],
   );
 
+  const areAnyClassModalsOpen = useMemo(() => {
+    return (
+      !!claimClassModal?.isOpen ||
+      !!renounceClassModal?.isOpen ||
+      !!assignClassModal?.isOpen ||
+      !!revokeClassModal?.isOpen
+    );
+  }, [claimClassModal, renounceClassModal, assignClassModal, revokeClassModal]);
+
   return (
     <ClassActionsContext.Provider
       value={{
+        areAnyClassModalsOpen,
+
         playerActions,
         gmActions,
 

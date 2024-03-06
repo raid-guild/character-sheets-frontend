@@ -28,6 +28,8 @@ export enum GameMasterActions {
 type ModalProps = Omit<ReturnType<typeof useDisclosure>, 'onOpen'> | undefined;
 
 type ItemActionsContextType = {
+  areAnyItemModalsOpen: boolean;
+
   playerActions: PlayerActions[];
   gmActions: GameMasterActions[];
 
@@ -41,6 +43,8 @@ type ItemActionsContextType = {
 };
 
 const ItemActionsContext = createContext<ItemActionsContextType>({
+  areAnyItemModalsOpen: false,
+
   playerActions: [],
   gmActions: [],
 
@@ -151,9 +155,23 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
     ],
   );
 
+  const areAnyItemModalsOpen = useMemo(
+    () =>
+      claimItemModal.isOpen ||
+      equipItemModal.isOpen ||
+      editItemClaimableModal.isOpen,
+    [
+      claimItemModal.isOpen,
+      editItemClaimableModal.isOpen,
+      equipItemModal.isOpen,
+    ],
+  );
+
   return (
     <ItemActionsContext.Provider
       value={{
+        areAnyItemModalsOpen,
+
         playerActions,
         gmActions,
 
