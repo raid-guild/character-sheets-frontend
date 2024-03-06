@@ -169,7 +169,7 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
         if (numeric) {
           if (sortAttribute === 'holders') {
             return (
-              Number(b[sortAttribute].length) - Number(a[sortAttribute].length)
+              Number(a[sortAttribute].length) - Number(b[sortAttribute].length)
             );
           }
           return Number(a[sortAttribute]) - Number(b[sortAttribute]);
@@ -179,7 +179,7 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
         if (numeric) {
           if (sortAttribute === 'holders') {
             return (
-              Number(a[sortAttribute].length) - Number(b[sortAttribute].length)
+              Number(b[sortAttribute].length) - Number(a[sortAttribute].length)
             );
           }
           return Number(b[sortAttribute]) - Number(a[sortAttribute]);
@@ -224,6 +224,14 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
     },
     [game, sortOrder, sortAttribute],
   );
+
+  const sortedLabel = useMemo(() => {
+    if (sortAttribute === 'itemId') return 'ID';
+    if (sortAttribute === 'name') return 'Name';
+    if (sortAttribute === 'holders') return 'Holders';
+    if (sortAttribute === 'supply') return 'Supply';
+    return 'ID';
+  }, [sortAttribute]);
 
   return (
     <Modal closeOnEsc closeOnOverlayClick isOpen={isOpen} onClose={onClose}>
@@ -306,8 +314,10 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
                 value={searchText}
               />
               <Menu closeOnSelect={false}>
-                <MenuButton as={Button} size="xs">
-                  Sort
+                <MenuButton as={Button} size="sm">
+                  {`Sorted by ${sortedLabel} ${
+                    sortOrder === 'asc' ? '▲' : '▼'
+                  }`}
                 </MenuButton>
                 <MenuList minWidth="240px">
                   <MenuOptionGroup
@@ -329,10 +339,10 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
                     value={sortOrder}
                   >
                     <MenuItemOption fontSize="sm" value="asc">
-                      Ascending
+                      Low to High
                     </MenuItemOption>
                     <MenuItemOption fontSize="sm" value="desc">
-                      Descending
+                      High to Low
                     </MenuItemOption>
                   </MenuOptionGroup>
                   <MenuDivider />
@@ -386,8 +396,8 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
                 onChange={({ target }) =>
                   setOperatorFilter(target.value as 'more' | 'less' | 'equal')
                 }
-                placeholder="OPERATOR"
-                size="xs"
+                // placeholder="OPERATOR"
+                size="sm"
                 value={operatorFilter}
                 variant="outline"
               >
@@ -399,6 +409,7 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
                 fontSize="xs"
                 h="30px"
                 minW="40px"
+                maxW="100px"
                 onChange={e => setAmountFilter(e.target.value)}
                 placeholder="amount"
                 type="number"
@@ -410,28 +421,33 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
                     target.value as 'experience' | 'item' | 'class',
                   )
                 }
-                placeholder="CATEGORY"
-                size="xs"
+                // placeholder="CATEGORY"
+                size="sm"
                 value={categoryFilter}
                 variant="outline"
               >
-                <option value="experience">xp</option>
-                <option value="item">item</option>
-                <option value="class">class</option>
+                <option value="experience">XP</option>
+                <option value="item">items</option>
+                <option value="class">classes</option>
               </Select>
-              <Select
-                onChange={({ target }) => setIdFilter(target.value)}
-                placeholder="ID"
-                size="xs"
-                value={idFilter}
-                variant="outline"
-              >
-                {idOptions.map(o => (
-                  <option key={`item-or-class-id-${o.id}`} value={o.id}>
-                    {o.name}
-                  </option>
-                ))}
-              </Select>
+              {idOptions.length > 0 && (
+                <>
+                  <Text>of</Text>
+                  <Select
+                    onChange={({ target }) => setIdFilter(target.value)}
+                    // placeholder="ID"
+                    size="sm"
+                    value={idFilter}
+                    variant="outline"
+                  >
+                    {idOptions.map(o => (
+                      <option key={`item-or-class-id-${o.id}`} value={o.id}>
+                        {o.name}
+                      </option>
+                    ))}
+                  </Select>
+                </>
+              )}
             </HStack>
           </VStack>
           {(displayType === 'FULL_CARDS' || displayType === 'SMALL_CARDS') && (

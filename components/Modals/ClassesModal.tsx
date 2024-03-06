@@ -84,7 +84,7 @@ export const ClassesModal: React.FC<ClassesModalProps> = ({
         if (numeric) {
           if (sortAttribute === 'holders') {
             return (
-              Number(b[sortAttribute].length) - Number(a[sortAttribute].length)
+              Number(a[sortAttribute].length) - Number(b[sortAttribute].length)
             );
           }
           return Number(a[sortAttribute]) - Number(b[sortAttribute]);
@@ -94,7 +94,7 @@ export const ClassesModal: React.FC<ClassesModalProps> = ({
         if (numeric) {
           if (sortAttribute === 'holders') {
             return (
-              Number(a[sortAttribute].length) - Number(b[sortAttribute].length)
+              Number(b[sortAttribute].length) - Number(a[sortAttribute].length)
             );
           }
           return Number(b[sortAttribute]) - Number(a[sortAttribute]);
@@ -128,6 +128,13 @@ export const ClassesModal: React.FC<ClassesModalProps> = ({
     },
     [game, sortOrder, sortAttribute],
   );
+
+  const sortedLabel = useMemo(() => {
+    if (sortAttribute === 'classId') return 'ID';
+    if (sortAttribute === 'name') return 'Name';
+    if (sortAttribute === 'holders') return 'Holders';
+    return 'ID';
+  }, [sortAttribute]);
 
   return (
     <Modal closeOnEsc closeOnOverlayClick isOpen={isOpen} onClose={onClose}>
@@ -211,8 +218,10 @@ export const ClassesModal: React.FC<ClassesModalProps> = ({
                 value={searchText}
               />
               <Menu closeOnSelect={false}>
-                <MenuButton as={Button} size="xs">
-                  Sort
+                <MenuButton as={Button} size="sm">
+                  {`Sorted by ${sortedLabel} ${
+                    sortOrder === 'asc' ? '▲' : '▼'
+                  }`}
                 </MenuButton>
                 <MenuList minWidth="240px">
                   <MenuOptionGroup
@@ -234,10 +243,10 @@ export const ClassesModal: React.FC<ClassesModalProps> = ({
                     value={sortOrder}
                   >
                     <MenuItemOption fontSize="sm" value="asc">
-                      Ascending
+                      Low to High
                     </MenuItemOption>
                     <MenuItemOption fontSize="sm" value="desc">
-                      Descending
+                      High to Low
                     </MenuItemOption>
                   </MenuOptionGroup>
                   <MenuDivider />

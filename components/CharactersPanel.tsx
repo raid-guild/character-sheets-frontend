@@ -191,6 +191,12 @@ export const CharactersPanel: React.FC = () => {
     [game, sortOrder, sortAttribute],
   );
 
+  const sortedLabel = useMemo(() => {
+    if (sortAttribute === 'characterId') return 'ID';
+    if (sortAttribute === 'name') return 'Name';
+    return 'XP';
+  }, [sortAttribute]);
+
   if (!game || characters.length === 0) {
     return (
       <VStack as="main" py={20} w="100%" align="stretch" spacing={8}>
@@ -267,8 +273,8 @@ export const CharactersPanel: React.FC = () => {
             value={searchText}
           />
           <Menu closeOnSelect={false}>
-            <MenuButton as={Button} size="xs">
-              Sort
+            <MenuButton as={Button} size="sm">
+              {`Sorted by ${sortedLabel} ${sortOrder === 'asc' ? '▲' : '▼'}`}
             </MenuButton>
             <MenuList minWidth="240px">
               <MenuOptionGroup
@@ -289,10 +295,10 @@ export const CharactersPanel: React.FC = () => {
                 value={sortOrder}
               >
                 <MenuItemOption fontSize="sm" value="asc">
-                  Ascending
+                  Low to High
                 </MenuItemOption>
                 <MenuItemOption fontSize="sm" value="desc">
-                  Descending
+                  High to Low
                 </MenuItemOption>
               </MenuOptionGroup>
               <MenuDivider />
@@ -336,8 +342,8 @@ export const CharactersPanel: React.FC = () => {
             onChange={({ target }) =>
               setOperatorFilter(target.value as 'more' | 'less' | 'equal')
             }
-            placeholder="OPERATOR"
-            size="xs"
+            // placeholder="OPERATOR"
+            size="sm"
             value={operatorFilter}
             variant="outline"
           >
@@ -349,6 +355,7 @@ export const CharactersPanel: React.FC = () => {
             h="30px"
             fontSize="xs"
             minW="40px"
+            maxW="100px"
             onChange={e => setAmountFilter(e.target.value)}
             placeholder="amount"
             type="number"
@@ -360,52 +367,68 @@ export const CharactersPanel: React.FC = () => {
                 target.value as 'experience' | 'heldItem' | 'class',
               )
             }
-            placeholder="CATEGORY"
-            size="xs"
+            // placeholder="CATEGORY"
+            size="sm"
             value={categoryFilter}
             variant="outline"
           >
-            <option value="experience">xp</option>
-            <option value="heldItem">item</option>
-            <option value="class">class</option>
+            <option value="experience">XP</option>
+            <option value="heldItem">items</option>
+            <option value="class">classes</option>
           </Select>
-          <Select
-            onChange={({ target }) => setIdFilter(target.value)}
-            placeholder="ID"
-            size="xs"
-            value={idFilter}
-            variant="outline"
-          >
-            {idOptions.map(o => (
-              <option key={`item-or-class-id-${o.id}`} value={o.id}>
-                {o.name}
-              </option>
-            ))}
-          </Select>
+          {idOptions.length > 0 && (
+            <>
+              <Text>of</Text>
+              <Select
+                onChange={({ target }) => setIdFilter(target.value)}
+                // placeholder="ID"
+                size="sm"
+                value={idFilter}
+                variant="outline"
+              >
+                {idOptions.map(o => (
+                  <option key={`item-or-class-id-${o.id}`} value={o.id}>
+                    {o.name}
+                  </option>
+                ))}
+              </Select>
+            </>
+          )}
         </HStack>
       </VStack>
-      {(displayType === 'FULL_CARDS' || displayType === 'SMALL_CARDS') && (
-        <SimpleGrid
-          alignItems="stretch"
-          columns={
-            displayType === 'FULL_CARDS' ? 1 : { base: 1, sm: 2, md: 3, xl: 4 }
-          }
-          spacing={{ base: 4, sm: 6, md: 8 }}
-          w="100%"
-        >
-          {searchedCharacters.map(c => (
-            <GridItem key={c.id} w="100%">
-              {displayType === 'SMALL_CARDS' && (
-                <CharacterCardSmall chainId={game.chainId} character={c} />
-              )}
-              {displayType === 'FULL_CARDS' && (
-                <CharacterCard chainId={game.chainId} character={c} />
-              )}
-            </GridItem>
-          ))}
-        </SimpleGrid>
-      )}
-      {displayType === 'VERTICAL_LIST' && (
+      {searchedCharacters.length === 0 &&
+        (characters.length === 0 ? (
+          <Text size="sm">No characters found.</Text>
+        ) : (
+          <Text size="sm">
+            No characters found. Try changing your filters or search text.
+          </Text>
+        ))}
+      {(displayType === 'FULL_CARDS' || displayType === 'SMALL_CARDS') &&
+        searchedCharacters.length > 0 && (
+          <SimpleGrid
+            alignItems="stretch"
+            columns={
+              displayType === 'FULL_CARDS'
+                ? 1
+                : { base: 1, sm: 2, md: 3, xl: 4 }
+            }
+            spacing={{ base: 4, sm: 6, md: 8 }}
+            w="100%"
+          >
+            {searchedCharacters.map(c => (
+              <GridItem key={c.id} w="100%">
+                {displayType === 'SMALL_CARDS' && (
+                  <CharacterCardSmall chainId={game.chainId} character={c} />
+                )}
+                {displayType === 'FULL_CARDS' && (
+                  <CharacterCard chainId={game.chainId} character={c} />
+                )}
+              </GridItem>
+            ))}
+          </SimpleGrid>
+        )}
+      {displayType === 'VERTICAL_LIST' && searchedCharacters.length > 0 && (
         <CharactersTable
           chainId={game.chainId}
           characters={searchedCharacters}
