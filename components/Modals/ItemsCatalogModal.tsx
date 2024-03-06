@@ -428,7 +428,7 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
               >
                 <option value="experience">XP</option>
                 <option value="item">items</option>
-                <option value="class">classes</option>
+                <option value="class">levels in class</option>
               </Select>
               {idOptions.length > 0 && (
                 <>

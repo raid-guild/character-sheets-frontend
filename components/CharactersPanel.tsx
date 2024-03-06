@@ -374,7 +374,7 @@ export const CharactersPanel: React.FC = () => {
           >
             <option value="experience">XP</option>
             <option value="heldItem">items</option>
-            <option value="class">classes</option>
+            <option value="class">levels in class</option>
           </Select>
           {idOptions.length > 0 && (
             <>
