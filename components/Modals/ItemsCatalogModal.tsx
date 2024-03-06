@@ -479,9 +479,14 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
           {displayType === 'TABLE_VIEW' && searchedItems.length > 0 && (
             <ItemsTable items={searchedItems} />
           )}
-          {searchedItems.length === 0 && (
-            <Text align="center">No items found.</Text>
-          )}
+          {searchedItems.length === 0 &&
+            (items.length === 0 ? (
+              <Text size="sm">No items found.</Text>
+            ) : (
+              <Text size="sm">
+                No items found. Try changing your filters or search text.
+              </Text>
+            ))}
         </ModalBody>
       </ModalContent>
     </Modal>

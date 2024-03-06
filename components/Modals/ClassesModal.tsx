@@ -306,9 +306,14 @@ export const ClassesModal: React.FC<ClassesModalProps> = ({
           {displayType === 'TABLE_VIEW' && searchedClasses.length > 0 && (
             <ClassesTable classes={searchedClasses} />
           )}
-          {searchedClasses.length === 0 && (
-            <Text align="center">No classes found.</Text>
-          )}
+          {searchedClasses.length === 0 &&
+            (classes.length === 0 ? (
+              <Text size="sm">No classes found.</Text>
+            ) : (
+              <Text size="sm">
+                No classes found. Try changing your filters or search text.
+              </Text>
+            ))}
         </ModalBody>
       </ModalContent>
     </Modal>
