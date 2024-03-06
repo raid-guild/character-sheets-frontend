@@ -351,12 +351,14 @@ const ItemValue: React.FC<{ label: string; value: string }> = ({
 export const ItemsTable: React.FC<{
   items: Item[];
 }> = ({ items }) => {
+  const isConnectedAndMounted = useIsConnectedAndMounted();
+
   return (
     <TableContainer w="100%">
       <Table size="sm" w={{ base: '800px', md: '100%' }}>
         <Thead>
           <Tr>
-            <Th>Actions</Th>
+            {isConnectedAndMounted && <Th>Actions</Th>}
             <Th>ID</Th>
             <Th>Name</Th>
             <Th>Description</Th>
@@ -367,9 +369,11 @@ export const ItemsTable: React.FC<{
         <Tbody>
           {items.map(item => (
             <Tr key={item.id}>
-              <Td>
-                <ItemActionMenu item={item} size="xs" variant="solid" />
-              </Td>
+              {isConnectedAndMounted && (
+                <Td>
+                  <ItemActionMenu item={item} size="xs" variant="solid" />
+                </Td>
+              )}
               <Td minH="60px">{item.itemId}</Td>
               <Td alignItems="center" display="flex" gap={4} w="240px">
                 <Image alt={item.name} h="40px" src={item.image} />

@@ -185,12 +185,14 @@ const ClassValue: React.FC<{ label: string; value: string }> = ({
 export const ClassesTable: React.FC<{
   classes: Class[];
 }> = ({ classes }) => {
+  const isConnectedAndMounted = useIsConnectedAndMounted();
+
   return (
     <TableContainer w="100%">
       <Table size="sm" w={{ base: '800px', md: '100%' }}>
         <Thead>
           <Tr>
-            <Th>Actions</Th>
+            {isConnectedAndMounted && <Th>Actions</Th>}
             <Th>ID</Th>
             <Th>Name</Th>
             <Th>Description</Th>
@@ -201,9 +203,11 @@ export const ClassesTable: React.FC<{
         <Tbody>
           {classes.map(c => (
             <Tr key={c.id}>
-              <Td>
-                <ClassActionMenu classEntity={c} size="xs" variant="solid" />
-              </Td>
+              {isConnectedAndMounted && (
+                <Td>
+                  <ClassActionMenu classEntity={c} size="xs" variant="solid" />
+                </Td>
+              )}
               <Td minH="60px">{c.classId}</Td>
               <Td alignItems="center" display="flex" gap={4}>
                 <Image alt={c.name} h="40px" src={c.image} />
