@@ -1,5 +1,5 @@
 import { Chain } from '@rainbow-me/rainbowkit';
-import { gnosis, goerli, mainnet } from 'wagmi/chains';
+import { gnosis, mainnet, sepolia } from 'wagmi/chains';
 
 import { ENVIRONMENT } from '@/utils/constants';
 
@@ -10,42 +10,43 @@ export const WALLET_CONNECT_PROJECT_ID: string =
   process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID!;
 
 export const EXPLORER_URLS: { [key: number]: string } = {
-  [100]: 'https://gnosisscan.io',
-  [5]: 'https://goerli.etherscan.io',
+  [gnosis.id]: 'https://gnosisscan.io',
+  [sepolia.id]: 'https://sepolia.etherscan.io',
 };
 
 export const SUBGRAPH_URLS: { [key: number]: string } = {
-  [100]:
+  [gnosis.id]:
     'https://api.thegraph.com/subgraphs/name/dan13ram/character-sheets-gnosis',
-  [5]: 'https://api.thegraph.com/subgraphs/name/dan13ram/character-sheets-goerli',
+  [sepolia.id]:
+    'https://api.thegraph.com/subgraphs/name/ecwireless/character-sheets-sepolia',
 };
 
 export const RPC_URLS: { [key: number]: string } = {
-  [100]: 'https://rpc.gnosis.gateway.fm',
-  [5]: `https://goerli.infura.io/v3/${INFURA_KEY}`,
+  [gnosis.id]: 'https://rpc.gnosis.gateway.fm',
+  [sepolia.id]: `https://sepolia.infura.io/v3/${INFURA_KEY}`,
   [1]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
 };
 
 export const SERVER_RPC_URLS: { [key: number]: string } = {
-  [100]: 'https://rpc.gnosis.gateway.fm',
-  [5]: `https://goerli.infura.io/v3/${SERVER_INFURA_KEY}`,
+  [gnosis.id]: 'https://rpc.gnosis.gateway.fm',
+  [sepolia.id]: `https://sepolia.infura.io/v3/${SERVER_INFURA_KEY}`,
   [1]: `https://mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
 };
 
 export const CHAINS: { [key: number]: Chain } = {
-  [100]: gnosis,
-  [5]: goerli,
-  [1]: mainnet,
+  [gnosis.id]: gnosis,
+  [sepolia.id]: sepolia,
+  [mainnet.id]: mainnet,
 };
 
 export const CHAIN_LABEL_TO_ID: { [key: string]: number } = {
-  gnosis: 100,
-  goerli: 5,
+  gnosis: gnosis.id,
+  sepolia: sepolia.id,
 };
 
 export const CHAIN_ID_TO_IMAGE: { [key: number]: string } = {
-  100: '/images/gnosis.svg',
-  5: '/images/ethereum.svg',
+  [gnosis.id]: '/images/gnosis.svg',
+  [sepolia.id]: '/images/ethereum.svg',
   1: '/images/ethereum.svg',
   420: '/images/optimism.svg',
   137: '/images/polygon.svg',
@@ -53,13 +54,13 @@ export const CHAIN_ID_TO_IMAGE: { [key: number]: string } = {
 };
 
 export const CHAIN_ID_TO_LABEL: { [key: number]: string } = {
-  100: 'gnosis',
-  5: 'goerli',
+  [gnosis.id]: 'gnosis',
+  [sepolia.id]: 'sepolia',
 };
 
 type _chains = readonly [Chain, ...Chain[]];
 
-const ALL_SUPPORTED_CHAINS: _chains = [gnosis, goerli];
+const ALL_SUPPORTED_CHAINS: _chains = [gnosis, sepolia];
 
 export const SUPPORTED_CHAINS: _chains = (() => {
   switch (ENVIRONMENT) {

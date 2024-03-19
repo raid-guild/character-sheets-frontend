@@ -4,7 +4,6 @@ import {
   FullGameInfoFragment,
   GameMetaInfoFragment,
   ItemInfoFragment,
-  ItemRequirementInfoFragment,
 } from '@/graphql/autogen/types';
 
 import {
@@ -14,7 +13,6 @@ import {
   Game,
   GameMeta,
   Item,
-  ItemRequirement,
   Metadata,
 } from './types';
 
@@ -247,16 +245,16 @@ export const formatClass = async (
   };
 };
 
-export const formatItemRequirement = (
-  r: ItemRequirementInfoFragment,
-): ItemRequirement => {
-  return {
-    amount: BigInt(r.amount).toString(),
-    assetAddress: r.assetAddress,
-    assetCategory: r.assetCategory,
-    assetId: BigInt(r.assetId).toString(),
-  };
-};
+// export const formatItemRequirement = (
+//   r: ItemRequirementInfoFragment,
+// ): ItemRequirement => {
+//   return {
+//     amount: BigInt(r.amount).toString(),
+//     assetAddress: r.assetAddress,
+//     assetCategory: r.assetCategory,
+//     assetId: BigInt(r.assetId).toString(),
+//   };
+// };
 
 export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
   const metadata = await fetchMetadata(item.uri);
@@ -276,7 +274,8 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     supply: BigInt(item.supply).toString(),
     totalSupply: BigInt(item.totalSupply).toString(),
     amount: BigInt(0).toString(),
-    requirements: item.requirements.map(formatItemRequirement),
+    // requirements: item.requirements.map(formatItemRequirement),
+    requirements: [],
     holders: item.holders.map(h => h.character),
     equippers: item.equippers.map(e => e.character),
     merkleRoot: item.merkleRoot,

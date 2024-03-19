@@ -71,10 +71,24 @@ fragment ClassInfo on Class {
   }
 }
 
-fragment ItemRequirementInfo on ItemRequirement {
-  assetCategory
+fragment AssetInfo on Asset {
+  category
   assetAddress
   assetId
+  amount
+}
+
+fragment RequirementNodeInfo on RequirementNode {
+  id
+  operator
+  asset {
+    ...AssetInfo
+  }
+}
+
+fragment CraftRequirementInfo on CraftRequirement {
+  id
+  itemId
   amount
 }
 
@@ -87,8 +101,12 @@ fragment ItemInfo on Item {
   supply
   totalSupply
   merkleRoot
-  requirements {
-    ...ItemRequirementInfo
+  craftable
+  claimRequirements {
+    ...RequirementNodeInfo
+  }
+  craftRequirements {
+    ...CraftRequirementInfo
   }
   holders {
     character {
