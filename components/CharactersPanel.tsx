@@ -114,7 +114,7 @@ export const CharactersPanel: React.FC = () => {
         }
       }
       if (categoryFilter === 'class') {
-        const classById = c.classes.find(cl => cl.id === idFilter);
+        const classById = c.heldClasses.find(cl => cl.id === idFilter);
         if (classById) {
           // TODO: use actual class amounts when leveling is added
           if (operatorFilter === 'more') {

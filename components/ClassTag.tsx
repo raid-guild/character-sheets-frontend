@@ -5,20 +5,35 @@ import { hexToNumber, keccak256, toBytes } from 'viem';
 type Size = 'sm' | 'md' | 'lg';
 
 type ClassTagProps = {
-  name: string;
+  experience: string;
   image: string;
+  level: string;
+  name: string;
   size?: Size | 'xs';
 };
 
-export const ClassTag: React.FC<ClassTagProps> = ({ size, name, image }) => {
+export const ClassTag: React.FC<ClassTagProps> = ({
+  // experience,
+  image,
+  level,
+  name,
+  size,
+}) => {
   if (size === 'xs') {
     return <ClassTagInnerExtraSmall name={name} image={image} />;
   }
-  return <ClassTagInner name={name} image={image} size={size} />;
+  return <ClassTagInner level={level} name={name} image={image} size={size} />;
 };
 
 export const VillagerClassTag: React.FC<{ size?: Size }> = ({ size }) => {
-  return <ClassTagInner name="Villager" image="/villager.png" size={size} />;
+  return (
+    <ClassTagInner
+      level="1"
+      name="Villager"
+      image="/villager.png"
+      size={size}
+    />
+  );
 };
 
 const fontSizeMap = {
@@ -66,10 +81,11 @@ const colors = [
 ];
 
 const ClassTagInner: React.FC<{
-  name: string;
   image: string;
+  level: string;
+  name: string;
   size?: Size;
-}> = ({ name, image, size = 'md' }) => {
+}> = ({ image, level, name, size = 'md' }) => {
   const { fontSize, imageWidth, imageHeight, px, py, spacing } = useMemo(
     () => ({
       fontSize: fontSizeMap[size],
@@ -98,12 +114,15 @@ const ClassTagInner: React.FC<{
             alt="class emblem"
             h={imageHeight}
             w={imageWidth}
-            objectFit="cover"
+            objectFit="contain"
             src={image}
           />
         )}
         <Text color="dark" fontSize={fontSize} fontWeight="bold">
           {name}
+        </Text>
+        <Text color="dark" fontSize={fontSize} fontWeight="bold">
+          {level}
         </Text>
       </HStack>
       <Box bg={bgColor} my={py} w="6px" />

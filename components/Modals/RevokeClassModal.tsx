@@ -32,7 +32,7 @@ export const RevokeClassModal: React.FC = () => {
 
   const invalidClass = useMemo(() => {
     const selectedCharacterClasses =
-      selectedCharacter?.classes.map(c => c.classId) ?? [];
+      selectedCharacter?.heldClasses.map(c => c.classId) ?? [];
     return !selectedCharacterClasses.includes(classId);
   }, [classId, selectedCharacter]);
 
@@ -40,8 +40,8 @@ export const RevokeClassModal: React.FC = () => {
     if (selectedClass) {
       return [selectedClass.classId];
     }
-    return selectedCharacter?.classes.map(c => c.classId) ?? [];
-  }, [selectedClass, selectedCharacter?.classes]);
+    return selectedCharacter?.heldClasses.map(c => c.classId) ?? [];
+  }, [selectedClass, selectedCharacter?.heldClasses]);
 
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
@@ -70,7 +70,7 @@ export const RevokeClassModal: React.FC = () => {
       if (!walletClient) throw new Error('Could not find a wallet client');
       if (!selectedCharacter) throw new Error('Character address not found');
       if (!game?.classesAddress) throw new Error('Missing game data');
-      if (selectedCharacter?.classes.length === 0)
+      if (selectedCharacter?.heldClasses.length === 0)
         throw new Error('No classes found');
       if (!isMaster) throw new Error('Only a GameMaster can revoke classes');
 

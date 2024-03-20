@@ -61,7 +61,7 @@ export const CharacterCard: React.FC<{
   const {
     characterId,
     account,
-    classes,
+    heldClasses,
     heldItems,
     equippedItems,
     description,
@@ -159,10 +159,10 @@ export const CharacterCard: React.FC<{
           {shortenAddress(account)}
         </Link>
         <Wrap spacing={4}>
-          {classes.length === 0 && (
+          {heldClasses.length === 0 && (
             <Text fontSize="xs">No classes claimed</Text>
           )}
-          {classes.map(classEntity => (
+          {heldClasses.map(classEntity => (
             <WrapItem key={classEntity.classId + classEntity.name}>
               <ClassTag {...classEntity} />
             </WrapItem>
@@ -251,7 +251,7 @@ export const CharacterCardSmall: React.FC<{
 
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
-  const { classes, experience, heldItems, image, jailed, name } = character;
+  const { experience, heldClasses, heldItems, image, jailed, name } = character;
 
   const itemTotal = useMemo(() => {
     return heldItems
@@ -315,7 +315,7 @@ export const CharacterCardSmall: React.FC<{
           </Text>
           <HStack justify="space-between" w="full">
             <Wrap spacing={2}>
-              {classes.map(classEntity => (
+              {heldClasses.map(classEntity => (
                 <WrapItem key={classEntity.classId + classEntity.name}>
                   <ClassTag {...classEntity} size="xs" />
                 </WrapItem>
@@ -412,7 +412,7 @@ export const CharactersTable: React.FC<{
               <Td>{c.experience}</Td>
               <Td>
                 <HStack gap={2}>
-                  {c.classes.map(cl => (
+                  {c.heldClasses.map(cl => (
                     <ClassTag key={cl.id} size="xs" {...cl} />
                   ))}
                 </HStack>

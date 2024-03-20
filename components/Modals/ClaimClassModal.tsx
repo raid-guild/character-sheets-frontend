@@ -31,7 +31,7 @@ export const ClaimClassModal: React.FC = () => {
 
   const invalidClass = useMemo(() => {
     const selectedCharacterClasses =
-      character?.classes.map(c => c.classId) ?? [];
+      character?.heldClasses.map(c => c.classId) ?? [];
     return selectedCharacterClasses.includes(classId);
   }, [character, classId]);
 

@@ -91,7 +91,7 @@ export const ClaimItemModal: React.FC = () => {
     if (!selectedItem) return false;
     if (!character) return false;
     const requirements = selectedItem.requirements || [];
-    const classes = character.classes || [];
+    const classes = character.heldClasses || [];
     return requirements.some(
       r => !classes.some(c => BigInt(c.classId) === BigInt(r.assetId)),
     );
@@ -338,7 +338,7 @@ export const ClaimItemModal: React.FC = () => {
                           c => BigInt(c.classId) === BigInt(r.assetId),
                         )?.name;
                         const classNotAssigned =
-                          character?.classes.find(
+                          character?.heldClasses.find(
                             c => BigInt(c.classId) === BigInt(r.assetId),
                           ) === undefined;
 
