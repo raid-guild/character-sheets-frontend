@@ -64,7 +64,7 @@ import {
   ItemActionsProvider,
   useItemActions,
 } from '@/contexts/ItemActionsContext';
-import { getGameForChainId } from '@/graphql/games';
+import { getGameForChainId, getGamesForChainId } from '@/graphql/games';
 import { useCheckGameNetwork } from '@/hooks/useCheckGameNetwork';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import {
@@ -516,16 +516,16 @@ export const getStaticPaths: GetStaticPaths = async () => {
       if (!chainLabel) {
         return;
       }
-      // const { games } = await getGamesForChainId(chain.id);
+      const { games } = await getGamesForChainId(chain.id);
 
-      // paths.push(
-      //   ...games.map(game => ({
-      //     params: {
-      //       chainLabel,
-      //       gameId: game.id,
-      //     },
-      //   })),
-      // );
+      paths.push(
+        ...games.map(game => ({
+          params: {
+            chainLabel,
+            gameId: game.id,
+          },
+        })),
+      );
     }),
   );
 
