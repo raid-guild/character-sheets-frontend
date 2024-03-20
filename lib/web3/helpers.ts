@@ -15,6 +15,10 @@ export const isSupportedChain = (chainId: number | string | bigint): boolean =>
   SUPPORTED_CHAINS.find(c => c.id === Number(chainId)) !== undefined;
 
 export const getChainIdFromLabel = (chainLabel: string): number | undefined => {
+  if (chainLabel === 'sepolia') {
+    return 11155111;
+  }
+
   const chainId = CHAIN_LABEL_TO_ID[chainLabel];
   if (!chainId || !isSupportedChain(chainId)) {
     return undefined;
