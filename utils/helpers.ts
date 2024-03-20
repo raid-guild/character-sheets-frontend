@@ -16,7 +16,7 @@ import {
   Metadata,
 } from './types';
 
-const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
+const IPFS_GATEWAYS = ['https://peach-immediate-rhinoceros-66.mypinata.cloud'];
 
 // if (ENVIRONMENT === 'main') {
 //   IPFS_GATEWAYS.unshift('https://character-sheets.infura-ipfs.io');
