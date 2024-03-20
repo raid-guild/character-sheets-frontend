@@ -17,17 +17,18 @@ import {
   Metadata,
 } from './types';
 
-const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
-
-if (ENVIRONMENT === 'main') {
-  IPFS_GATEWAYS.unshift('https://peach-immediate-rhinoceros-66.mypinata.cloud');
-}
-
 /**
  * Given a URI that may be ipfs, ipns, http, https, ar, or data protocol, return the fetch-able http(s) URLs for the same content
  * @param uri to convert to fetch-able http url
  */
 export const uriToHttp = (uri: string): string[] => {
+  const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
+
+  if (ENVIRONMENT === 'main') {
+    IPFS_GATEWAYS.unshift(
+      'https://peach-immediate-rhinoceros-66.mypinata.cloud',
+    );
+  }
   try {
     const protocol = uri.split(':')[0].toLowerCase();
     switch (protocol) {
