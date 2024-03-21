@@ -158,13 +158,13 @@ export const CharacterCard: React.FC<{
         >
           {shortenAddress(account)}
         </Link>
-        <Wrap spacing={4}>
+        <Wrap spacing={3}>
           {heldClasses.length === 0 && (
             <Text fontSize="xs">No classes claimed</Text>
           )}
           {heldClasses.map(classEntity => (
             <WrapItem key={classEntity.classId + classEntity.name}>
-              <ClassTag {...classEntity} />
+              <ClassTag heldClass={classEntity} />
             </WrapItem>
           ))}
         </Wrap>
@@ -314,10 +314,10 @@ export const CharacterCardSmall: React.FC<{
             {name}
           </Text>
           <HStack justify="space-between" w="full">
-            <Wrap spacing={2}>
+            <Wrap spacing={1}>
               {heldClasses.map(classEntity => (
                 <WrapItem key={classEntity.classId + classEntity.name}>
-                  <ClassTag {...classEntity} size="xs" />
+                  <ClassTag heldClass={classEntity} size="xs" />
                 </WrapItem>
               ))}
             </Wrap>
@@ -413,7 +413,7 @@ export const CharactersTable: React.FC<{
               <Td>
                 <HStack gap={2}>
                   {c.heldClasses.map(cl => (
-                    <ClassTag key={cl.id} size="xs" {...cl} />
+                    <ClassTag heldClass={cl} key={cl.id} size="xs" />
                   ))}
                 </HStack>
               </Td>

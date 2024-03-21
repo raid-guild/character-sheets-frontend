@@ -1,45 +1,30 @@
-import { Box, HStack, Image, Text, Tooltip } from '@chakra-ui/react';
+import {
+  Box,
+  HStack,
+  Image,
+  Text,
+  Tooltip,
+  useDisclosure,
+} from '@chakra-ui/react';
 import { useMemo } from 'react';
 import { hexToNumber, keccak256, toBytes } from 'viem';
+
+import { HeldClass } from '@/utils/types';
+
+import { HeldClassesInfoModal } from './Modals/HeldClassInfoModal';
 
 type Size = 'sm' | 'md' | 'lg';
 
 type ClassTagProps = {
-  experience: string;
-  image: string;
-  level: string;
-  name: string;
+  heldClass: HeldClass;
   size?: Size | 'xs';
 };
 
-export const ClassTag: React.FC<ClassTagProps> = ({
-  // experience,
-  image,
-  level,
-  name,
-  size,
-}) => {
+export const ClassTag: React.FC<ClassTagProps> = ({ heldClass, size }) => {
   if (size === 'xs') {
-    return <ClassTagInnerExtraSmall name={name} image={image} />;
+    return <ClassTagInnerExtraSmall heldClass={heldClass} />;
   }
-  return <ClassTagInner level={level} name={name} image={image} size={size} />;
-};
-
-export const VillagerClassTag: React.FC<{ size?: Size }> = ({ size }) => {
-  return (
-    <ClassTagInner
-      level="1"
-      name="Villager"
-      image="/villager.png"
-      size={size}
-    />
-  );
-};
-
-const fontSizeMap = {
-  sm: 'xs',
-  md: 'sm',
-  lg: 'md',
+  return <ClassTagInner heldClass={heldClass} size={size} />;
 };
 
 const imageWidthMap = {
@@ -56,13 +41,13 @@ const imageHeightMap = {
 
 const pxMap = {
   sm: 4,
-  md: 8,
+  md: 4,
   lg: 12,
 };
 
 const pyMap = {
   sm: 1,
-  md: 2,
+  md: 1,
   lg: 3,
 };
 
@@ -81,17 +66,18 @@ const colors = [
 ];
 
 const ClassTagInner: React.FC<{
-  image: string;
-  level: string;
-  name: string;
+  heldClass: HeldClass;
   size?: Size;
-}> = ({ image, level, name, size = 'md' }) => {
-  const { fontSize, imageWidth, imageHeight, px, py, spacing } = useMemo(
+}> = ({ heldClass, size = 'md' }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const { image, level, name } = heldClass;
+
+  const { imageWidth, imageHeight, px, py, spacing } = useMemo(
     () => ({
-      fontSize: fontSizeMap[size],
       imageWidth: imageWidthMap[size],
       imageHeight: imageHeightMap[size],
-      px: pxMap[size],
+      px: { base: 1.5, md: pxMap[size] },
       py: pyMap[size],
       spacing: spacingMap[size],
     }),
@@ -106,7 +92,14 @@ const ClassTagInner: React.FC<{
   }, [name]);
 
   return (
-    <HStack spacing={0} p={0} w="100%" align="stretch">
+    <HStack
+      align="stretch"
+      onClick={onOpen}
+      p={0}
+      spacing={0}
+      w="100%"
+      _hover={{ cursor: 'pointer' }}
+    >
       <Box bg={bgColor} my={py} w="6px" />
       <HStack spacing={spacing} bg={bgColor} py={py} px={px}>
         {image && (
@@ -118,22 +111,25 @@ const ClassTagInner: React.FC<{
             src={image}
           />
         )}
-        <Text color="dark" fontSize={fontSize} fontWeight="bold">
-          {name}
-        </Text>
-        <Text color="dark" fontSize={fontSize} fontWeight="bold">
-          {level}
+        <Text color="dark" fontSize="xs" fontWeight="bold">
+          lvl {level}
         </Text>
       </HStack>
       <Box bg={bgColor} my={py} w="6px" />
+      <HeldClassesInfoModal
+        heldClass={heldClass}
+        isOpen={isOpen}
+        onClose={onClose}
+      />
     </HStack>
   );
 };
 
 const ClassTagInnerExtraSmall: React.FC<{
-  name: string;
-  image: string;
-}> = ({ name, image }) => {
+  heldClass: HeldClass;
+}> = ({ heldClass }) => {
+  const { image, level, name, experience } = heldClass;
+
   const bgColor = useMemo(() => {
     // TODO take bgColor from classEntity
     const hexValue = keccak256(toBytes(name));
@@ -142,8 +138,11 @@ const ClassTagInnerExtraSmall: React.FC<{
   }, [name]);
 
   return (
-    <Tooltip aria-label={name} label={name}>
-      <Box bg={bgColor} borderRadius="50%" p={1.5}>
+    <Tooltip
+      aria-label={`${experience} ${name} XP`}
+      label={`${experience} ${name} XP`}
+    >
+      <HStack bg={bgColor} borderRadius="full" px={2.5} py={1}>
         {image && (
           <Image
             alt="class emblem"
@@ -153,7 +152,10 @@ const ClassTagInnerExtraSmall: React.FC<{
             w="16px"
           />
         )}
-      </Box>
+        <Text color="dark" fontSize="xs" fontWeight="bold">
+          {level}
+        </Text>
+      </HStack>
     </Tooltip>
   );
 };
