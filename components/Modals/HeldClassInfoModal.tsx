@@ -82,7 +82,7 @@ export const HeldClassesInfoModal: React.FC<HeldClassesInfoModalProps> = ({
               Current XP: {experience}
             </Text>
             <Text fontSize="xs" textAlign="right" textTransform="initial">
-              Next level: 300
+              Next level: {EXPERIENCE_TO_LEVEL_MAP[Number(level) + 1]}
             </Text>
           </HStack>
         </ModalBody>
