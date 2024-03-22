@@ -4,8 +4,8 @@ import {
   FullGameInfoFragment,
   GameMetaInfoFragment,
   ItemInfoFragment,
-  ItemRequirementInfoFragment,
 } from '@/graphql/autogen/types';
+import { ENVIRONMENT } from '@/utils/constants';
 
 import {
   Character,
@@ -14,21 +14,21 @@ import {
   Game,
   GameMeta,
   Item,
-  ItemRequirement,
   Metadata,
 } from './types';
-
-const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
-
-// if (ENVIRONMENT === 'main') {
-//   IPFS_GATEWAYS.unshift('https://character-sheets.infura-ipfs.io');
-// }
 
 /**
  * Given a URI that may be ipfs, ipns, http, https, ar, or data protocol, return the fetch-able http(s) URLs for the same content
  * @param uri to convert to fetch-able http url
  */
 export const uriToHttp = (uri: string): string[] => {
+  const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
+
+  if (ENVIRONMENT === 'main') {
+    IPFS_GATEWAYS.unshift(
+      'https://peach-immediate-rhinoceros-66.mypinata.cloud',
+    );
+  }
   try {
     const protocol = uri.split(':')[0].toLowerCase();
     switch (protocol) {
@@ -247,16 +247,16 @@ export const formatClass = async (
   };
 };
 
-export const formatItemRequirement = (
-  r: ItemRequirementInfoFragment,
-): ItemRequirement => {
-  return {
-    amount: BigInt(r.amount).toString(),
-    assetAddress: r.assetAddress,
-    assetCategory: r.assetCategory,
-    assetId: BigInt(r.assetId).toString(),
-  };
-};
+// export const formatItemRequirement = (
+//   r: ItemRequirementInfoFragment,
+// ): ItemRequirement => {
+//   return {
+//     amount: BigInt(r.amount).toString(),
+//     assetAddress: r.assetAddress,
+//     assetCategory: r.assetCategory,
+//     assetId: BigInt(r.assetId).toString(),
+//   };
+// };
 
 export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
   const metadata = await fetchMetadata(item.uri);
@@ -276,7 +276,8 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     supply: BigInt(item.supply).toString(),
     totalSupply: BigInt(item.totalSupply).toString(),
     amount: BigInt(0).toString(),
-    requirements: item.requirements.map(formatItemRequirement),
+    // requirements: item.requirements.map(formatItemRequirement),
+    requirements: [],
     holders: item.holders.map(h => h.character),
     equippers: item.equippers.map(e => e.character),
     merkleRoot: item.merkleRoot,
