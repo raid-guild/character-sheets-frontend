@@ -128,7 +128,7 @@ const ClassTagInner: React.FC<{
 const ClassTagInnerExtraSmall: React.FC<{
   heldClass: HeldClass;
 }> = ({ heldClass }) => {
-  const { image, level, name, experience } = heldClass;
+  const { image, level, name } = heldClass;
 
   const bgColor = useMemo(() => {
     // TODO take bgColor from classEntity
@@ -139,8 +139,8 @@ const ClassTagInnerExtraSmall: React.FC<{
 
   return (
     <Tooltip
-      aria-label={`${experience} ${name} XP`}
-      label={`${experience} ${name} XP`}
+      aria-label={`${name} - Level ${level}`}
+      label={`${name} - Level ${level}`}
     >
       <HStack bg={bgColor} borderRadius="full" px={2.5} py={1}>
         {image && (
