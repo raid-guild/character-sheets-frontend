@@ -114,24 +114,16 @@ export const CharactersPanel: React.FC = () => {
         }
       }
       if (categoryFilter === 'class') {
-        const classById = c.classes.find(cl => cl.id === idFilter);
+        const classById = c.heldClasses.find(cl => cl.id === idFilter);
         if (classById) {
-          // TODO: use actual class amounts when leveling is added
           if (operatorFilter === 'more') {
-            return Number(amountFilter) < 1;
+            return Number(classById.level) > Number(amountFilter);
           }
           if (operatorFilter === 'less') {
-            return Number(amountFilter) > 1;
+            return Number(classById.level) < Number(amountFilter);
           }
-          return Number(amountFilter) === 1;
+          return Number(classById.level) === Number(amountFilter);
         }
-        if (operatorFilter === 'more') {
-          return false;
-        }
-        if (operatorFilter === 'less') {
-          return Number(amountFilter) !== 0;
-        }
-        return Number(amountFilter) === 0;
       }
       return false;
     });

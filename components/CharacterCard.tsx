@@ -61,7 +61,7 @@ export const CharacterCard: React.FC<{
   const {
     characterId,
     account,
-    classes,
+    heldClasses,
     heldItems,
     equippedItems,
     description,
@@ -158,13 +158,13 @@ export const CharacterCard: React.FC<{
         >
           {shortenAddress(account)}
         </Link>
-        <Wrap spacing={4}>
-          {classes.length === 0 && (
+        <Wrap spacing={3}>
+          {heldClasses.length === 0 && (
             <Text fontSize="xs">No classes claimed</Text>
           )}
-          {classes.map(classEntity => (
+          {heldClasses.map(classEntity => (
             <WrapItem key={classEntity.classId + classEntity.name}>
-              <ClassTag {...classEntity} />
+              <ClassTag heldClass={classEntity} />
             </WrapItem>
           ))}
         </Wrap>
@@ -251,7 +251,7 @@ export const CharacterCardSmall: React.FC<{
 
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
-  const { classes, experience, heldItems, image, jailed, name } = character;
+  const { experience, heldClasses, heldItems, image, jailed, name } = character;
 
   const itemTotal = useMemo(() => {
     return heldItems
@@ -314,10 +314,10 @@ export const CharacterCardSmall: React.FC<{
             {name}
           </Text>
           <HStack justify="space-between" w="full">
-            <Wrap spacing={2}>
-              {classes.map(classEntity => (
+            <Wrap spacing={1}>
+              {heldClasses.map(classEntity => (
                 <WrapItem key={classEntity.classId + classEntity.name}>
-                  <ClassTag {...classEntity} size="xs" />
+                  <ClassTag heldClass={classEntity} size="xs" />
                 </WrapItem>
               ))}
             </Wrap>
@@ -412,8 +412,8 @@ export const CharactersTable: React.FC<{
               <Td>{c.experience}</Td>
               <Td>
                 <HStack gap={2}>
-                  {c.classes.map(cl => (
-                    <ClassTag key={cl.id} size="xs" {...cl} />
+                  {c.heldClasses.map(cl => (
+                    <ClassTag heldClass={cl} key={cl.id} size="xs" />
                   ))}
                 </HStack>
               </Td>

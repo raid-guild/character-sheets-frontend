@@ -5,27 +5,56 @@ export type Attribute = {
   value: string;
 };
 
-export type Metadata = {
+export type Character = Metadata & {
+  id: string;
+  chainId: number;
+  gameId: string;
   name: string;
-  description: string;
-  image: string;
-  equippable_layer: string | null;
-  attributes: Attribute[];
+  characterId: string;
+  account: string;
+  player: string;
+  jailed: boolean;
+  approved: string;
+  removed: boolean;
+  experience: string;
+  uri: string;
+  heldClasses: HeldClass[];
+  heldItems: Item[];
+  equippedItems: EquippedItem[];
 };
 
-export type GameMeta = Metadata & {
-  id: string;
-  startedAt: number;
-  chainId: number;
+export type CharacterMetaDB = Metadata & {
+  _id: ObjectId;
+  chainId: string;
+  gameAddress: string;
+  characterId: string;
+  account: string;
+  player: string;
   uri: string;
-  owner: string;
-  admins: string[];
-  masters: string[];
-  players: string[];
-  characters: { id: string }[];
-  classes: { id: string }[];
-  items: { id: string }[];
-  experience: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type ClaimableTreeDB = {
+  _id: ObjectId;
+  gameAddress: string;
+  itemId: string;
+  tree: string;
+  updatedAt: Date;
+  updatedBy: string;
+  createdAt: Date;
+};
+
+export type Class = Metadata & {
+  id: string;
+  classId: string;
+  uri: string;
+  claimable: boolean;
+  holders: { id: string; characterId: string }[];
+};
+
+export type EquippedItem = Item & {
+  equippedAt: number;
 };
 
 export type Game = Metadata & {
@@ -50,37 +79,24 @@ export type Game = Metadata & {
   experience: string;
 };
 
-export type Character = Metadata & {
+export type GameMeta = Metadata & {
   id: string;
+  startedAt: number;
   chainId: number;
-  gameId: string;
-  name: string;
-  characterId: string;
-  account: string;
-  player: string;
-  jailed: boolean;
-  approved: string;
-  removed: boolean;
+  uri: string;
+  owner: string;
+  admins: string[];
+  masters: string[];
+  players: string[];
+  characters: { id: string }[];
+  classes: { id: string }[];
+  items: { id: string }[];
   experience: string;
-  uri: string;
-  classes: Class[];
-  heldItems: Item[];
-  equippedItems: EquippedItem[];
 };
 
-export type Class = Metadata & {
-  id: string;
-  classId: string;
-  uri: string;
-  claimable: boolean;
-  holders: { id: string; characterId: string }[];
-};
-
-export type ItemRequirement = {
-  amount: string;
-  assetId: string;
-  assetAddress: string;
-  assetCategory: string;
+export type HeldClass = Class & {
+  experience: string;
+  level: string;
 };
 
 export type Item = Metadata & {
@@ -98,28 +114,17 @@ export type Item = Metadata & {
   merkleRoot: string;
 };
 
-export type EquippedItem = Item & {
-  equippedAt: number;
+export type ItemRequirement = {
+  amount: string;
+  assetId: string;
+  assetAddress: string;
+  assetCategory: string;
 };
 
-export type ClaimableTreeDB = {
-  _id: ObjectId;
-  gameAddress: string;
-  itemId: string;
-  tree: string;
-  updatedAt: Date;
-  updatedBy: string;
-  createdAt: Date;
-};
-
-export type CharacterMetaDB = Metadata & {
-  _id: ObjectId;
-  chainId: string;
-  gameAddress: string;
-  characterId: string;
-  account: string;
-  player: string;
-  uri: string;
-  createdAt: Date;
-  updatedAt: Date;
+export type Metadata = {
+  name: string;
+  description: string;
+  image: string;
+  equippable_layer: string | null;
+  attributes: Attribute[];
 };

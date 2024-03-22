@@ -32,7 +32,7 @@ export const AssignClassModal: React.FC = () => {
 
   const invalidClass = useMemo(() => {
     const selectedCharacterClasses =
-      selectedCharacter?.classes.map(c => c.classId) ?? [];
+      selectedCharacter?.heldClasses.map(c => c.classId) ?? [];
     return selectedCharacterClasses.includes(classId);
   }, [classId, selectedCharacter]);
 

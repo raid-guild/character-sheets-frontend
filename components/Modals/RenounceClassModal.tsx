@@ -33,7 +33,7 @@ export const RenounceClassModal: React.FC = () => {
     if (selectedClass) {
       return [selectedClass.classId];
     }
-    return character?.classes.map(c => c.classId) ?? [];
+    return character?.heldClasses.map(c => c.classId) ?? [];
   }, [character, selectedClass]);
 
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
@@ -59,7 +59,8 @@ export const RenounceClassModal: React.FC = () => {
       if (!walletClient) throw new Error('Could not find a wallet client');
       if (!character) throw new Error('Character address not found');
       if (!game?.classesAddress) throw new Error('Missing game data');
-      if (character?.classes.length === 0) throw new Error('No classes found');
+      if (character?.heldClasses.length === 0)
+        throw new Error('No classes found');
 
       setIsRenouncing(true);
 

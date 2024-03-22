@@ -150,7 +150,7 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
     let actions = Object.keys(PlayerActions).map(
       key => PlayerActions[key as keyof typeof PlayerActions],
     );
-    if (selectedCharacter?.classes.length === 0) {
+    if (selectedCharacter?.heldClasses.length === 0) {
       actions = actions.filter(a => a !== PlayerActions.RENOUNCE_CLASS);
     }
 
@@ -175,7 +175,7 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
         actions = actions.filter(a => a !== GameMasterActions.ASSIGN_CLASS);
       }
 
-      if (selectedCharacter?.classes.length === 0) {
+      if (selectedCharacter?.heldClasses.length === 0) {
         actions = actions.filter(a => a !== GameMasterActions.REVOKE_CLASS);
       }
 

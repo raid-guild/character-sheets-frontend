@@ -11,12 +11,14 @@ import {
 
 type DropdownProps = {
   options: string[];
+  optionsLabelMapping?: { [key: string]: string };
   selectedOption: string;
   setSelectedOption: (option: string) => void;
 };
 
 export const Dropdown: React.FC<DropdownProps> = ({
   options,
+  optionsLabelMapping,
   selectedOption,
   setSelectedOption,
 }) => {
@@ -29,7 +31,9 @@ export const Dropdown: React.FC<DropdownProps> = ({
         w="100%"
       >
         {selectedOption ? (
-          <SelectedOption option={selectedOption} />
+          <SelectedOption
+            option={optionsLabelMapping?.[selectedOption] ?? selectedOption}
+          />
         ) : (
           <Text>Select Option</Text>
         )}
@@ -37,7 +41,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
       <MenuList minW={{ base: 'auto', sm: '20rem' }}>
         {options.map((option: string) => (
           <MenuItem key={option} onClick={() => setSelectedOption(option)}>
-            <SelectedOption option={option} />
+            <SelectedOption option={optionsLabelMapping?.[option] ?? option} />
           </MenuItem>
         ))}
       </MenuList>

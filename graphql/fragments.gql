@@ -37,6 +37,8 @@ fragment CharacterInfo on Character {
   experience
   uri
   heldClasses {
+    experience
+    level
     classEntity {
       ...ClassInfo
     }

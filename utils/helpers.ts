@@ -5,7 +5,6 @@ import {
   GameMetaInfoFragment,
   ItemInfoFragment,
 } from '@/graphql/autogen/types';
-import { ENVIRONMENT } from '@/utils/constants';
 
 import {
   Character,
@@ -13,22 +12,23 @@ import {
   EquippedItem,
   Game,
   GameMeta,
+  HeldClass,
   Item,
   Metadata,
 } from './types';
+
+const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
+
+// Using env here to avoid initialization issues with the ENVIRONMENT constant
+if (process.env.NEXT_PUBLIC_ENVIRONMENT === 'main') {
+  IPFS_GATEWAYS.unshift('https://peach-immediate-rhinoceros-66.mypinata.cloud');
+}
 
 /**
  * Given a URI that may be ipfs, ipns, http, https, ar, or data protocol, return the fetch-able http(s) URLs for the same content
  * @param uri to convert to fetch-able http url
  */
 export const uriToHttp = (uri: string): string[] => {
-  const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
-
-  if (ENVIRONMENT === 'main') {
-    IPFS_GATEWAYS.unshift(
-      'https://peach-immediate-rhinoceros-66.mypinata.cloud',
-    );
-  }
   try {
     const protocol = uri.split(':')[0].toLowerCase();
     switch (protocol) {
@@ -126,8 +126,16 @@ export const formatFullCharacter = async (
   const metadata = await fetchMetadata(character.uri);
 
   const heldClasses = await Promise.all(
-    character.heldClasses.map(async c => formatClass(c.classEntity)),
+    character.heldClasses.map(async c => {
+      const info = await formatClass(c.classEntity);
+      return {
+        ...info,
+        experience: BigInt(c.experience).toString(),
+        level: BigInt(c.level).toString(),
+      };
+    }),
   );
+
   const heldItems = await Promise.all(
     character.heldItems.map(async i => {
       const info = await formatItem(i.item);
@@ -166,7 +174,7 @@ export const formatFullCharacter = async (
     jailed: character.jailed,
     approved: character.approved,
     removed: character.removed,
-    classes: heldClasses,
+    heldClasses,
     heldItems,
     equippedItems,
     equippable_layer: null,
@@ -180,9 +188,19 @@ export const formatCharacter = async (
 ): Promise<Character> => {
   const metadata = await fetchMetadata(character.uri);
 
-  const characterClasses = classes.filter(c =>
-    character.heldClasses.find(h => h.classEntity.classId === c.classId),
-  );
+  const heldClasses = classes
+    .map(c => {
+      const held = character.heldClasses.find(
+        h => h.classEntity.classId === c.classId,
+      );
+      if (!held) return null;
+      return {
+        ...c,
+        experience: BigInt(held.experience).toString(),
+        level: BigInt(held.level).toString(),
+      };
+    })
+    .filter(c => c !== null) as HeldClass[];
 
   const heldItems: Item[] = [];
   const equippedItems: EquippedItem[] = [];
@@ -221,7 +239,7 @@ export const formatCharacter = async (
     jailed: character.jailed,
     approved: character.approved,
     removed: character.removed,
-    classes: characterClasses,
+    heldClasses,
     heldItems,
     equippedItems,
     equippable_layer: null,
