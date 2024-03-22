@@ -24,13 +24,13 @@ export const SUBGRAPH_URLS: { [key: number]: string } = {
 export const RPC_URLS: { [key: number]: string } = {
   [gnosis.id]: 'https://rpc.gnosis.gateway.fm',
   [sepolia.id]: `https://sepolia.infura.io/v3/${INFURA_KEY}`,
-  [1]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+  [mainnet.id]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
 };
 
 export const SERVER_RPC_URLS: { [key: number]: string } = {
   [gnosis.id]: 'https://rpc.gnosis.gateway.fm',
   [sepolia.id]: `https://sepolia.infura.io/v3/${SERVER_INFURA_KEY}`,
-  [1]: `https://mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
+  [mainnet.id]: `https://mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
 };
 
 export const CHAINS: { [key: number]: Chain } = {
@@ -47,7 +47,7 @@ export const CHAIN_LABEL_TO_ID: { [key: string]: number } = {
 export const CHAIN_ID_TO_IMAGE: { [key: number]: string } = {
   [gnosis.id]: '/images/gnosis.svg',
   [sepolia.id]: '/images/ethereum.svg',
-  1: '/images/ethereum.svg',
+  [mainnet.id]: '/images/ethereum.svg',
   420: '/images/optimism.svg',
   137: '/images/polygon.svg',
   42161: '/images/arbitrum.svg',
