@@ -373,7 +373,7 @@ const Table = {
 };
 
 export const theme = extendTheme({
-  config: { initialColorMode: 'dark', useSystemColorMode: false },
+  config: { initialColorMode: 'light', useSystemColorMode: false },
   fonts: {
     body: `'Unbounded', sans-serif`,
     heading: `'Unbounded', sans-serif`,

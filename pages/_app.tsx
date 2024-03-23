@@ -21,7 +21,7 @@ import { Analytics } from '@vercel/analytics/react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 
 import { Layout } from '@/components/Layout';
 import { GamesProvider } from '@/contexts/GamesContext';
@@ -48,6 +48,10 @@ export default function App({
       push(RAIDGUILD_GAME_URL);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useLayoutEffect(() => {
+    window.localStorage.setItem('chakra-ui-color-mode', 'light');
   }, []);
 
   return (
