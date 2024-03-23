@@ -9,6 +9,7 @@ import {
   Input,
   Link,
   Text,
+  Tooltip,
   VStack,
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -297,23 +298,36 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
             selectedCharacter={selectedCharacter}
             setSelectedCharacter={setSelectedCharacter}
           />
-          <Input
-            type="number"
-            step={1}
-            min={0}
-            placeholder="Amount"
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
-            isInvalid={amountInvalid && showError}
-          />
+          <Tooltip
+            label={characters.length === 0 ? 'No characters available' : ''}
+          >
+            <Input
+              type="number"
+              step={1}
+              min={0}
+              placeholder="Amount"
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+              isInvalid={amountInvalid && showError}
+              isDisabled={characters.length === 0}
+              h="2.7125rem"
+            />
+          </Tooltip>
         </Grid>
         {showError && (
           <FormHelperText color="red.500">{errorText}</FormHelperText>
         )}
       </FormControl>
-      <Button variant="outline" size="sm" onClick={onAddClaimableAddress}>
-        Add claimer
-      </Button>
+      <Tooltip label={characters.length === 0 ? 'No characters available' : ''}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onAddClaimableAddress}
+          isDisabled={characters.length === 0}
+        >
+          Add claimer
+        </Button>
+      </Tooltip>
     </VStack>
   );
 };

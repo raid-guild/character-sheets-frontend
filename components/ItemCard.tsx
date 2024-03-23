@@ -27,9 +27,14 @@ import { Item } from '@/utils/types';
 
 type ItemCardProps = Item & {
   holderId?: string;
+  dummy?: boolean;
 };
 
-export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
+export const ItemCard: React.FC<ItemCardProps> = ({
+  holderId,
+  dummy = false,
+  ...item
+}) => {
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const {
@@ -155,7 +160,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
           */}
         </SimpleGrid>
       </VStack>
-      {isConnectedAndMounted && !!character && (
+      {isConnectedAndMounted && !!character && !dummy && (
         <ItemActionMenu item={item} variant="solid" />
       )}
     </VStack>
