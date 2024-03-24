@@ -24,12 +24,12 @@ import { usePublicClient, useWalletClient } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
-import { ClaimableItemLeaf, useClaimableTree } from '@/hooks/useClaimableTree';
+import { useWhitelistTree, WhitelistItemLeaf } from '@/hooks/useWhitelistTree';
 
 import {
-  ClaimableAddress,
-  ClaimableAddressListInput,
-} from '../ClaimableAddressListInput';
+  WhitelistAddress,
+  WhitelistAddressListInput,
+} from '../WhitelistAddressListInput';
 import { ActionModal } from './ActionModal';
 
 const getClaimNonce = async (
@@ -54,9 +54,9 @@ const getClaimNonce = async (
   return nonce;
 };
 
-export const EditItemClaimableModal: React.FC = () => {
+export const EditItemWhitelistModal: React.FC = () => {
   const { game, reload: reloadGame } = useGame();
-  const { selectedItem, editItemClaimableModal } = useItemActions();
+  const { selectedItem, editItemWhitelistModal } = useItemActions();
 
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -66,10 +66,10 @@ export const EditItemClaimableModal: React.FC = () => {
   const [itemDistribution, setItemDistribution] = useState<string>(
     selectedItem?.distribution.toString() ?? '0',
   );
-  const [claimableToggle, setClaimableToggle] = useState<boolean>(false);
+  const [whitelistToggle, setWhitelistToggle] = useState<boolean>(false);
 
-  const [claimableAddressList, setClaimableAddressList] = useState<
-    ClaimableAddress[]
+  const [whitelistAddressList, setWhitelistAddressList] = useState<
+    WhitelistAddress[]
   >([]);
 
   const noSupply = useMemo(() => {
@@ -91,28 +91,28 @@ export const EditItemClaimableModal: React.FC = () => {
     );
   }, [itemDistribution, itemSupply]);
 
-  const invalidClaimableAddressList = useMemo(() => {
+  const invalidWhitelistAddressList = useMemo(() => {
     if (!selectedItem) return false;
-    if (!claimableToggle) return false;
-    const totalAmount = claimableAddressList.reduce(
+    if (!whitelistToggle) return false;
+    const totalAmount = whitelistAddressList.reduce(
       (acc, { amount }) => acc + BigInt(amount),
       BigInt(0),
     );
     if (totalAmount > BigInt(selectedItem.supply)) return true;
-    return claimableAddressList.some(
+    return whitelistAddressList.some(
       ({ address, amount }) =>
         !isAddress(address) ||
         BigInt(amount) <= BigInt(0) ||
         BigInt(amount) > BigInt(itemDistribution) ||
         BigInt(amount).toString() === 'NaN',
     );
-  }, [claimableAddressList, selectedItem, claimableToggle, itemDistribution]);
+  }, [whitelistAddressList, selectedItem, whitelistToggle, itemDistribution]);
 
   const {
     tree,
     loading: isLoadingTree,
     reload: reloadTree,
-  } = useClaimableTree(selectedItem?.itemId);
+  } = useWhitelistTree(selectedItem?.itemId);
 
   const resetData = useCallback(() => {
     setIsUpdating(false);
@@ -124,22 +124,22 @@ export const EditItemClaimableModal: React.FC = () => {
     if (isUpdating) return;
     if (!selectedItem) return;
     if (selectedItem.merkleRoot === pad('0x00')) {
-      setClaimableToggle(true);
-      setClaimableAddressList([]);
+      setWhitelistToggle(true);
+      setWhitelistAddressList([]);
     } else if (selectedItem.merkleRoot === pad('0x01')) {
-      setClaimableToggle(false);
-      setClaimableAddressList([]);
+      setWhitelistToggle(false);
+      setWhitelistAddressList([]);
     } else {
-      setClaimableToggle(true);
+      setWhitelistToggle(true);
       const dumpValues = tree?.dump().values || [];
       if (!tree || dumpValues.length === 0) {
-        setClaimableAddressList([]);
+        setWhitelistAddressList([]);
         return;
       }
       const itemId = BigInt(selectedItem?.itemId ?? '0');
       const itemIdFromTree = BigInt(dumpValues[0].value[0]);
       if (itemId !== itemIdFromTree) {
-        setClaimableAddressList([]);
+        setWhitelistAddressList([]);
         return;
       }
       const list = dumpValues.map(leaf => {
@@ -149,11 +149,11 @@ export const EditItemClaimableModal: React.FC = () => {
           amount: BigInt(amount),
         };
       });
-      setClaimableAddressList(list);
+      setWhitelistAddressList(list);
     }
   }, [selectedItem, tree, isUpdating]);
 
-  const onUpdateClaimable = useCallback(async () => {
+  const onUpdateWhitelist = useCallback(async () => {
     try {
       if (noSupply) {
         throw new Error('This item has zero supply.');
@@ -163,8 +163,8 @@ export const EditItemClaimableModal: React.FC = () => {
         throw new Error('Invalid item distribution.');
       }
 
-      if (invalidClaimableAddressList) {
-        throw new Error('Invalid claimable address list.');
+      if (invalidWhitelistAddressList) {
+        throw new Error('Invalid whitelist address list.');
       }
 
       if (!walletClient) {
@@ -183,14 +183,14 @@ export const EditItemClaimableModal: React.FC = () => {
 
       const itemId = BigInt(selectedItem.itemId);
 
-      let claimable = pad('0x01');
+      let whitelist = pad('0x01');
 
-      if (claimableToggle) {
-        if (claimableAddressList.length === 0) {
-          claimable = pad('0x00');
+      if (whitelistToggle) {
+        if (whitelistAddressList.length === 0) {
+          whitelist = pad('0x00');
         } else {
-          const leaves: ClaimableItemLeaf[] = await Promise.all(
-            claimableAddressList.map(async ({ address, amount }) => {
+          const leaves: WhitelistItemLeaf[] = await Promise.all(
+            whitelistAddressList.map(async ({ address, amount }) => {
               const nonce = await getClaimNonce(
                 publicClient,
                 game.itemsAddress as Address,
@@ -212,7 +212,7 @@ export const EditItemClaimableModal: React.FC = () => {
             'uint256',
             'uint256',
           ]);
-          claimable = tree.root as `0x${string}`;
+          whitelist = tree.root as `0x${string}`;
 
           if (
             tree.root.toLowerCase() === selectedItem.merkleRoot.toLowerCase()
@@ -245,17 +245,17 @@ export const EditItemClaimableModal: React.FC = () => {
 
           if (!res.ok) {
             console.error(
-              'Something went wrong uploading your claimable tree.',
+              'Something went wrong uploading your whitelist tree.',
             );
             throw new Error(
-              'Something went wrong uploading your claimable tree',
+              'Something went wrong uploading your whitelist tree',
             );
           }
         }
       }
 
       if (
-        claimable.toLowerCase() === selectedItem.merkleRoot.toLowerCase() &&
+        whitelist.toLowerCase() === selectedItem.merkleRoot.toLowerCase() &&
         Number(itemDistribution) === Number(selectedItem.distribution)
       ) {
         throw new Error('No changes were made.');
@@ -266,10 +266,10 @@ export const EditItemClaimableModal: React.FC = () => {
         account: walletClient.account?.address as Address,
         address: game.itemsAddress as Address,
         abi: parseAbi([
-          'function updateItemClaimable(uint256 itemId, bytes32 merkleRoot, uint256 newDistribution) external',
+          'function updateItemWhitelist(uint256 itemId, bytes32 merkleRoot, uint256 newDistribution) external',
         ]),
-        functionName: 'updateItemClaimable',
-        args: [itemId, claimable, BigInt(selectedItem.supply)],
+        functionName: 'updateItemWhitelist',
+        args: [itemId, whitelist, BigInt(selectedItem.supply)],
       });
 
       return transactionhash;
@@ -285,9 +285,9 @@ export const EditItemClaimableModal: React.FC = () => {
     noSupply,
     selectedItem,
     walletClient,
-    claimableToggle,
-    claimableAddressList,
-    invalidClaimableAddressList,
+    whitelistToggle,
+    whitelistAddressList,
+    invalidWhitelistAddressList,
     invalidItemDistribution,
   ]);
 
@@ -297,18 +297,18 @@ export const EditItemClaimableModal: React.FC = () => {
   return (
     <ActionModal
       {...{
-        isOpen: editItemClaimableModal?.isOpen,
-        onClose: editItemClaimableModal?.onClose,
-        header: `Edit Claimability for ${selectedItem?.name ?? 'Item'}`,
+        isOpen: editItemWhitelistModal?.isOpen,
+        onClose: editItemWhitelistModal?.onClose,
+        header: `Edit Whitelist for ${selectedItem?.name ?? 'Item'}`,
         loadingText: `Updating ${selectedItem?.name}...`,
-        successText: `Claimability has been updated for ${selectedItem?.name}!`,
-        errorText: 'There was an error updating claimability.',
+        successText: `Item whitelist has been updated for ${selectedItem?.name}!`,
+        errorText: 'There was an error updating item whitelist.',
         resetData,
-        onAction: onUpdateClaimable,
+        onAction: onUpdateWhitelist,
         onComplete: reloadGame,
       }}
     >
-      <VStack as="form" onSubmit={onUpdateClaimable} spacing={8}>
+      <VStack as="form" onSubmit={onUpdateWhitelist} spacing={8}>
         <VStack justify="space-between" h="100%" spacing={6}>
           <Image
             alt={`${selectedItem?.name} image`}
@@ -343,8 +343,8 @@ export const EditItemClaimableModal: React.FC = () => {
         </FormControl>
         <FormControl>
           <Flex align="center">
-            <FormLabel>Allow players to claim?</FormLabel>
-            <Tooltip label="If you don't allow players to claim, then items can only be given by the GameMaster.">
+            <FormLabel>Allow players to obtain?</FormLabel>
+            <Tooltip label="If you don't allow players to obtain, then items can only be given by the GameMaster.">
               <Image
                 alt="down arrow"
                 height="14px"
@@ -355,16 +355,16 @@ export const EditItemClaimableModal: React.FC = () => {
             </Tooltip>
           </Flex>
           <Switch
-            isChecked={claimableToggle}
-            onChange={e => setClaimableToggle(e.target.checked)}
+            isChecked={whitelistToggle}
+            onChange={e => setWhitelistToggle(e.target.checked)}
           />
         </FormControl>
-        {claimableToggle && (
-          <ClaimableAddressListInput
-            claimableAddressList={claimableAddressList}
+        {whitelistToggle && (
+          <WhitelistAddressListInput
+            whitelistAddressList={whitelistAddressList}
             itemSupply={selectedItem?.supply.toString() ?? '0'}
             itemDistribution={itemDistribution}
-            setClaimableAddressList={setClaimableAddressList}
+            setWhitelistAddressList={setWhitelistAddressList}
           />
         )}
         {isLoadingTree ? (

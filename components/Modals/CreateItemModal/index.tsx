@@ -4,11 +4,11 @@ import { useCallback, useState } from 'react';
 import { Address, encodeAbiParameters, getAddress, pad, parseAbi } from 'viem';
 import { useWalletClient } from 'wagmi';
 
-import { ClaimableAddress } from '@/components/ClaimableAddressListInput';
+import { WhitelistAddress } from '@/components/WhitelistAddressListInput';
 import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { ClaimableItemLeaf } from '@/hooks/useClaimableTree';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import { WhitelistItemLeaf } from '@/hooks/useWhitelistTree';
 import { EquippableTraitType } from '@/lib/traits';
 import { Item } from '@/utils/types';
 
@@ -48,14 +48,14 @@ export const CreateItemModal: React.FC = () => {
   const [itemDistribution, setItemDistribution] = useState<string>('1');
 
   const [soulboundToggle, setSoulboundToggle] = useState<boolean>(false);
-  const [claimableToggle, setClaimableToggle] = useState<boolean>(false);
+  const [whitelistToggle, setWhitelistToggle] = useState<boolean>(false);
 
   const [craftableToggle, setCraftableToggle] = useState<boolean>(false);
   const [claimByRequirementsToggle, setClaimByRequirementsToggle] =
     useState<boolean>(false);
 
-  const [claimableAddressList, setClaimableAddressList] = useState<
-    ClaimableAddress[]
+  const [whitelistAddressList, setWhitelistAddressList] = useState<
+    WhitelistAddress[]
   >([]);
 
   const [equippableType, setEquippableType] = useState<EquippableTraitType>(
@@ -76,8 +76,8 @@ export const CreateItemModal: React.FC = () => {
     setItemSupply('');
     setItemDistribution('1');
     setSoulboundToggle(false);
-    setClaimableToggle(false);
-    setClaimableAddressList([]);
+    setWhitelistToggle(false);
+    setWhitelistAddressList([]);
     setItemEmblem(null);
     setItemLayer(null);
     setEquippableType(EquippableTraitType.EQUIPPED_WEARABLE);
@@ -130,14 +130,14 @@ export const CreateItemModal: React.FC = () => {
     if (!itemMetadataCid)
       throw new Error('Something went wrong uploading your item metadata');
 
-    let claimable = pad('0x01');
+    let whitelist = pad('0x01');
 
-    if (claimableToggle) {
-      if (claimableAddressList.length === 0) {
-        claimable = pad('0x00');
+    if (whitelistToggle) {
+      if (whitelistAddressList.length === 0) {
+        whitelist = pad('0x00');
       } else {
         const itemId = BigInt(game.items.length);
-        const leaves: ClaimableItemLeaf[] = claimableAddressList.map(
+        const leaves: WhitelistItemLeaf[] = whitelistAddressList.map(
           ({ address, amount }) => {
             return [
               BigInt(itemId),
@@ -155,7 +155,7 @@ export const CreateItemModal: React.FC = () => {
           'uint256',
         ]);
 
-        claimable = tree.root as `0x${string}`;
+        whitelist = tree.root as `0x${string}`;
 
         const jsonTree = JSON.stringify(tree.dump());
         const data = {
@@ -181,8 +181,8 @@ export const CreateItemModal: React.FC = () => {
         });
 
         if (!res.ok) {
-          console.error('Something went wrong uploading your claimable tree.');
-          throw new Error('Something went wrong uploading your claimable tree');
+          console.error('Something went wrong uploading your whitelist tree.');
+          throw new Error('Something went wrong uploading your whitelist tree');
         }
       }
     }
@@ -221,7 +221,7 @@ export const CreateItemModal: React.FC = () => {
       [
         craftableToggle,
         soulboundToggle,
-        claimable,
+        whitelist,
         BigInt(itemDistribution),
         BigInt(itemSupply),
         itemMetadataCid,
@@ -247,8 +247,8 @@ export const CreateItemModal: React.FC = () => {
       setIsCreating(false);
     }
   }, [
-    claimableAddressList,
-    claimableToggle,
+    whitelistAddressList,
+    whitelistToggle,
     equippableType,
     itemName,
     itemDescription,
@@ -357,14 +357,14 @@ export const CreateItemModal: React.FC = () => {
             currentStep,
             setCurrentStep,
 
-            claimableAddressList,
-            setClaimableAddressList,
+            whitelistAddressList,
+            setWhitelistAddressList,
 
             soulboundToggle,
             setSoulboundToggle,
 
-            claimableToggle,
-            setClaimableToggle,
+            whitelistToggle,
+            setWhitelistToggle,
 
             itemSupply,
             itemDistribution,

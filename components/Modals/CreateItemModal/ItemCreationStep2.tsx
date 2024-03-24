@@ -11,27 +11,27 @@ import {
 import { useCallback, useMemo, useState } from 'react';
 import { isAddress } from 'viem';
 
-import {
-  ClaimableAddress,
-  ClaimableAddressListInput,
-} from '@/components/ClaimableAddressListInput';
 import { Switch } from '@/components/Switch';
+import {
+  WhitelistAddress,
+  WhitelistAddressListInput,
+} from '@/components/WhitelistAddressListInput';
 import { useToast } from '@/hooks/useToast';
 
 type Step2Props = {
   currentStep: number;
   setCurrentStep: (step: number) => void;
 
-  claimableAddressList: ClaimableAddress[];
-  setClaimableAddressList: React.Dispatch<
-    React.SetStateAction<ClaimableAddress[]>
+  whitelistAddressList: WhitelistAddress[];
+  setWhitelistAddressList: React.Dispatch<
+    React.SetStateAction<WhitelistAddress[]>
   >;
 
   soulboundToggle: boolean;
   setSoulboundToggle: React.Dispatch<React.SetStateAction<boolean>>;
 
-  claimableToggle: boolean;
-  setClaimableToggle: React.Dispatch<React.SetStateAction<boolean>>;
+  whitelistToggle: boolean;
+  setWhitelistToggle: React.Dispatch<React.SetStateAction<boolean>>;
 
   itemSupply: string;
   itemDistribution: string;
@@ -41,42 +41,42 @@ export const ItemCreationStep2: React.FC<Step2Props> = ({
   currentStep,
   setCurrentStep,
 
-  claimableAddressList,
-  setClaimableAddressList,
+  whitelistAddressList,
+  setWhitelistAddressList,
 
   soulboundToggle,
   setSoulboundToggle,
 
-  claimableToggle,
-  setClaimableToggle,
+  whitelistToggle,
+  setWhitelistToggle,
 
   itemSupply,
   itemDistribution,
 }) => {
-  const invalidClaimableAddressList = useMemo(() => {
-    const totalAmount = claimableAddressList.reduce(
+  const invalidWhitelistAddressList = useMemo(() => {
+    const totalAmount = whitelistAddressList.reduce(
       (acc, { amount }) => acc + BigInt(amount),
       BigInt(0),
     );
 
     if (totalAmount > BigInt(itemSupply)) return true;
 
-    return claimableAddressList.some(
+    return whitelistAddressList.some(
       ({ address, amount }) =>
         !isAddress(address) ||
         BigInt(amount) <= BigInt(0) ||
         BigInt(amount) > BigInt(itemDistribution) ||
         BigInt(amount).toString() === 'NaN',
     );
-  }, [claimableAddressList, itemSupply, itemDistribution]);
+  }, [whitelistAddressList, itemSupply, itemDistribution]);
 
   const hasError = useMemo(() => {
     return (
       //     invalidXpRequiredAmount
-      invalidClaimableAddressList
+      invalidWhitelistAddressList
     );
   }, [
-    invalidClaimableAddressList,
+    invalidWhitelistAddressList,
     //   invalidXpRequiredAmount,
   ]);
 
@@ -117,8 +117,8 @@ export const ItemCreationStep2: React.FC<Step2Props> = ({
 
       <FormControl isInvalid={showError && !itemSupply}>
         <Flex align="center">
-          <FormLabel>Allow players to claim?</FormLabel>
-          <Tooltip label="If you don't allow players to claim, then items can only be given by the GameMaster.">
+          <FormLabel>Allow players to obtain?</FormLabel>
+          <Tooltip label="If you don't allow players to obtain, then items can only be given by the GameMaster.">
             <Image
               alt="down arrow"
               height="14px"
@@ -129,17 +129,17 @@ export const ItemCreationStep2: React.FC<Step2Props> = ({
           </Tooltip>
         </Flex>
         <Switch
-          isChecked={claimableToggle}
-          onChange={() => setClaimableToggle(!claimableToggle)}
+          isChecked={whitelistToggle}
+          onChange={() => setWhitelistToggle(!whitelistToggle)}
         />
       </FormControl>
 
-      {claimableToggle && (
-        <ClaimableAddressListInput
-          claimableAddressList={claimableAddressList}
+      {whitelistToggle && (
+        <WhitelistAddressListInput
+          whitelistAddressList={whitelistAddressList}
           itemSupply={itemSupply}
           itemDistribution={itemDistribution}
-          setClaimableAddressList={setClaimableAddressList}
+          setWhitelistAddressList={setWhitelistAddressList}
         />
       )}
 

@@ -24,14 +24,14 @@ import { useWalletClient } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
-import { ClaimableItemLeaf, useClaimableTree } from '@/hooks/useClaimableTree';
+import { useWhitelistTree, WhitelistItemLeaf } from '@/hooks/useWhitelistTree';
 import { executeAsCharacter } from '@/utils/account';
 
 import { ActionModal } from './ActionModal';
 
-export const ClaimItemModal: React.FC = () => {
+export const ObtainItemModal: React.FC = () => {
   const { character, game, reload: reloadGame } = useGame();
-  const { selectedItem, claimItemModal } = useItemActions();
+  const { selectedItem, obtainItemModal } = useItemActions();
 
   const { data: walletClient } = useWalletClient();
 
@@ -39,7 +39,7 @@ export const ClaimItemModal: React.FC = () => {
   const [amount, setAmount] = useState<string>('1');
 
   const [showError, setShowError] = useState<boolean>(false);
-  const [isClaiming, setIsClaiming] = useState<boolean>(false);
+  const [isObtaining, setIsObtaining] = useState<boolean>(false);
 
   const existingAmount = useMemo(() => {
     if (!selectedItem || !character) return BigInt(0);
@@ -50,7 +50,7 @@ export const ClaimItemModal: React.FC = () => {
     return BigInt(item.amount);
   }, [selectedItem, character]);
 
-  const distributionLeftToClaim = useMemo(() => {
+  const distributionLeftToObtain = useMemo(() => {
     if (!selectedItem) return BigInt(0);
     return BigInt(selectedItem.distribution) - existingAmount;
   }, [selectedItem, existingAmount]);
@@ -60,8 +60,8 @@ export const ClaimItemModal: React.FC = () => {
       !amount ||
       BigInt(amount).toString() === 'NaN' ||
       BigInt(amount) <= BigInt(0) ||
-      BigInt(amount) > BigInt(distributionLeftToClaim),
-    [amount, distributionLeftToClaim],
+      BigInt(amount) > BigInt(distributionLeftToObtain),
+    [amount, distributionLeftToObtain],
   );
 
   const errorText = useMemo(() => {
@@ -70,11 +70,11 @@ export const ClaimItemModal: React.FC = () => {
     if (BigInt(amount).toString() === 'NaN')
       return 'Please enter a valid amount.';
     if (BigInt(amount) <= BigInt(0)) return 'Please enter a valid amount.';
-    if (BigInt(amount) > BigInt(distributionLeftToClaim)) {
-      return `You can only claim up to ${distributionLeftToClaim.toString()} of this item.`;
+    if (BigInt(amount) > BigInt(distributionLeftToObtain)) {
+      return `You can only obtain up to ${distributionLeftToObtain.toString()} of this item.`;
     }
     return '';
-  }, [amount, selectedItem, distributionLeftToClaim]);
+  }, [amount, selectedItem, distributionLeftToObtain]);
 
   useEffect(() => {
     setShowError(false);
@@ -117,72 +117,72 @@ export const ClaimItemModal: React.FC = () => {
     tree,
     loading: isLoadingTree,
     reload: reloadTree,
-  } = useClaimableTree(selectedItem?.itemId);
+  } = useWhitelistTree(selectedItem?.itemId);
 
   const resetData = useCallback(() => {
     setOpenDetails(-1);
     setAmount('1');
-    setIsClaiming(false);
+    setIsObtaining(false);
     reloadTree();
   }, [reloadTree]);
 
-  const claimableLeaves: Array<ClaimableItemLeaf> = useMemo(() => {
+  const whitelistLeaves: Array<WhitelistItemLeaf> = useMemo(() => {
     if (!tree) return [];
     return tree.dump().values.map(leaf => {
-      const [itemId, claimer, nonce, amount] = leaf.value;
+      const [itemId, obtainer, nonce, amount] = leaf.value;
       return [
         BigInt(itemId),
-        getAddress(claimer),
+        getAddress(obtainer),
         BigInt(nonce),
         BigInt(amount),
       ];
     });
   }, [tree]);
 
-  const claimableLeaf: ClaimableItemLeaf | null = useMemo(() => {
+  const whitelistLeaf: WhitelistItemLeaf | null = useMemo(() => {
     if (!character) return null;
     if (!selectedItem) return null;
     if (!tree) return null;
     if (tree.root.toLowerCase() !== selectedItem.merkleRoot.toLowerCase())
       return null;
-    if (!claimableLeaves.length) return null;
-    const claimableLeaf = claimableLeaves.find(
+    if (!whitelistLeaves.length) return null;
+    const whitelistLeaf = whitelistLeaves.find(
       leaf =>
         leaf[1] === getAddress(character.account) &&
         leaf[0] === BigInt(selectedItem.itemId),
     );
-    if (!claimableLeaf) return null;
+    if (!whitelistLeaf) return null;
     return [
-      BigInt(claimableLeaf[0]),
-      getAddress(claimableLeaf[1]),
-      BigInt(claimableLeaf[2]),
-      BigInt(claimableLeaf[3]),
+      BigInt(whitelistLeaf[0]),
+      getAddress(whitelistLeaf[1]),
+      BigInt(whitelistLeaf[2]),
+      BigInt(whitelistLeaf[3]),
     ];
-  }, [character, selectedItem, tree, claimableLeaves]);
+  }, [character, selectedItem, tree, whitelistLeaves]);
 
-  const claimableAmount: bigint = useMemo(() => {
-    if (!claimableLeaf) return BigInt(0);
-    return claimableLeaf[3];
-  }, [claimableLeaf]);
+  const whitelistedAmount: bigint = useMemo(() => {
+    if (!whitelistLeaf) return BigInt(0);
+    return whitelistLeaf[3];
+  }, [whitelistLeaf]);
 
-  const isClaimableByPublic = useMemo(() => {
+  const isWhitelistedForAll = useMemo(() => {
     if (!selectedItem) return false;
     if (selectedItem.merkleRoot === pad('0x00')) return true;
     return false;
   }, [selectedItem]);
 
-  const isClaimableByMerkleProof = useMemo(() => {
+  const isWhitelistedByMerkleProof = useMemo(() => {
     if (!selectedItem) return false;
     if (selectedItem.merkleRoot === pad('0x00')) return false;
-    return claimableAmount > BigInt(0);
-  }, [selectedItem, claimableAmount]);
+    return whitelistedAmount > BigInt(0);
+  }, [selectedItem, whitelistedAmount]);
 
-  const onClaimItem = useCallback(async () => {
+  const onObtainItem = useCallback(async () => {
     if (noSupply) {
       throw new Error('This item has zero supply.');
     }
 
-    if (hasError && isClaimableByPublic) {
+    if (hasError && isWhitelistedForAll) {
       setShowError(true);
       return null;
     }
@@ -213,32 +213,32 @@ export const ClaimItemModal: React.FC = () => {
       throw new Error('Item not found');
     }
 
-    setIsClaiming(true);
+    setIsObtaining(true);
 
-    if (!isClaimableByPublic && !tree) {
-      console.error('Could not find the claimable tree.');
+    if (!isWhitelistedForAll && !tree) {
+      console.error('Could not find the whitelist tree.');
       throw new Error(
-        `Something went wrong while claiming ${selectedItem.name}.`,
+        `Something went wrong while obtaining ${selectedItem.name}.`,
       );
     }
 
     const itemId = BigInt(selectedItem.itemId);
 
     let proof: string[] = [];
-    let claimingAmount = BigInt(amount);
+    let obtainingAmount = BigInt(amount);
 
     if (
-      isClaimableByMerkleProof &&
+      isWhitelistedByMerkleProof &&
       tree &&
-      claimableAmount > BigInt(0) &&
-      claimableLeaf
+      whitelistedAmount > BigInt(0) &&
+      whitelistLeaf
     ) {
-      proof = tree.getProof(claimableLeaf);
-      claimingAmount = claimableAmount;
-    } else if (!isClaimableByPublic) {
-      console.error('Not claimable by public or merkle proof.');
+      proof = tree.getProof(whitelistLeaf);
+      obtainingAmount = whitelistedAmount;
+    } else if (!isWhitelistedForAll) {
+      console.error('Not whitelist by public or merkle proof.');
       throw new Error(
-        `Something went wrong while claiming ${selectedItem.name}.`,
+        `Something went wrong while obtaining ${selectedItem.name}.`,
       );
     }
 
@@ -251,17 +251,17 @@ export const ClaimItemModal: React.FC = () => {
           account: walletClient.account?.address as Address,
           address: game.itemsAddress as Address,
           abi: parseAbi([
-            'function claimItems(uint256[] calldata itemIds, uint256[] calldata amounts, bytes32[][] calldata proofs) external',
+            'function obtainItems(uint256[] calldata itemIds, uint256[] calldata amounts, bytes32[][] calldata proofs) external',
           ]),
-          functionName: 'claimItems',
-          args: [[itemId], [claimingAmount], [proof]],
+          functionName: 'obtainItems',
+          args: [[itemId], [obtainingAmount], [proof]],
         },
       );
       return transactionhash;
     } catch (e) {
       throw e;
     } finally {
-      setIsClaiming(false);
+      setIsObtaining(false);
     }
   }, [
     amount,
@@ -274,27 +274,27 @@ export const ClaimItemModal: React.FC = () => {
     selectedItem,
     walletClient,
     tree,
-    isClaimableByPublic,
-    claimableAmount,
-    claimableLeaf,
-    isClaimableByMerkleProof,
+    isWhitelistedForAll,
+    whitelistedAmount,
+    whitelistLeaf,
+    isWhitelistedByMerkleProof,
   ]);
 
-  const isLoading = isClaiming;
+  const isLoading = isObtaining;
 
   const isDisabled = isLoading;
 
   return (
     <ActionModal
       {...{
-        isOpen: claimItemModal?.isOpen,
-        onClose: claimItemModal?.onClose,
-        header: `Claim ${selectedItem?.name ?? 'Item'}`,
-        loadingText: `Claiming item...`,
-        successText: 'Item successfully claimed!',
-        errorText: 'There was an error claiming this item.',
+        isOpen: obtainItemModal?.isOpen,
+        onClose: obtainItemModal?.onClose,
+        header: `Obtain ${selectedItem?.name ?? 'Item'}`,
+        loadingText: `Obtaining item...`,
+        successText: 'Item successfully obtained!',
+        errorText: 'There was an error obtaining this item.',
         resetData,
-        onAction: onClaimItem,
+        onAction: onObtainItem,
         onComplete: reloadGame,
       }}
     >
@@ -391,35 +391,35 @@ export const ClaimItemModal: React.FC = () => {
         <>
           {noSupply ? (
             <Text color="red.500">This item has zero supply.</Text>
-          ) : isClaimableByPublic ? (
+          ) : isWhitelistedForAll ? (
             <FormControl isInvalid={showError}>
               <FormLabel>Amount</FormLabel>
               <Input
                 onChange={e => setAmount(e.target.value)}
                 type="number"
                 value={amount}
-                max={distributionLeftToClaim.toString()}
+                max={distributionLeftToObtain.toString()}
               />
               {showError && (
                 <FormHelperText color="red">{errorText}</FormHelperText>
               )}
             </FormControl>
           ) : (
-            <FormControl isInvalid={!isClaimableByMerkleProof}>
+            <FormControl isInvalid={!isWhitelistedByMerkleProof}>
               <FormLabel>Amount</FormLabel>
               <Input
                 isDisabled
                 type="number"
                 value={
-                  claimableAmount === distributionLeftToClaim
-                    ? claimableAmount.toString()
+                  whitelistedAmount === distributionLeftToObtain
+                    ? whitelistedAmount.toString()
                     : '0'
                 }
               />
-              {(claimableAmount === BigInt(0) ||
-                claimableAmount !== distributionLeftToClaim) && (
+              {(whitelistedAmount === BigInt(0) ||
+                whitelistedAmount !== distributionLeftToObtain) && (
                 <FormHelperText color="red">
-                  You cannot claim this item.
+                  You cannot obtain this item.
                 </FormHelperText>
               )}
             </FormControl>
@@ -433,7 +433,7 @@ export const ClaimItemModal: React.FC = () => {
           autoFocus
           isDisabled={isDisabled}
           isLoading={isLoading}
-          loadingText="Claiming..."
+          loadingText="Obtaining..."
           type="submit"
           variant="solid"
           alignSelf="flex-end"

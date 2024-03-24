@@ -21,7 +21,7 @@ import { Analytics } from '@vercel/analytics/react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useEffect, useLayoutEffect } from 'react';
+import { useEffect } from 'react';
 
 import { Layout } from '@/components/Layout';
 import { GamesProvider } from '@/contexts/GamesContext';
@@ -50,7 +50,7 @@ export default function App({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     window.localStorage.setItem('chakra-ui-color-mode', 'light');
   }, []);
 
