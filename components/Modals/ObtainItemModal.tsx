@@ -24,6 +24,7 @@ import { useWalletClient } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
+import { useIsApprovedForAll } from '@/hooks/useIsApprovedForAll';
 import { useWhitelistTree, WhitelistItemLeaf } from '@/hooks/useWhitelistTree';
 import { executeAsCharacter } from '@/utils/account';
 
@@ -32,6 +33,8 @@ import { ActionModal } from './ActionModal';
 export const ObtainItemModal: React.FC = () => {
   const { character, game, reload: reloadGame } = useGame();
   const { selectedItem, obtainItemModal } = useItemActions();
+
+  const isCraftable = selectedItem?.craftable ?? false;
 
   const { data: walletClient } = useWalletClient();
 
@@ -177,6 +180,12 @@ export const ObtainItemModal: React.FC = () => {
     return whitelistedAmount > BigInt(0);
   }, [selectedItem, whitelistedAmount]);
 
+  const { isApprovedForAll } = useIsApprovedForAll(
+    game?.itemsAddress,
+    character?.account,
+    game?.itemsManager,
+  );
+
   const onObtainItem = useCallback(async () => {
     if (noSupply) {
       throw new Error('This item has zero supply.');
@@ -243,19 +252,38 @@ export const ObtainItemModal: React.FC = () => {
     }
 
     try {
+      const approvalTxs =
+        isCraftable && !isApprovedForAll
+          ? [
+              {
+                chain: walletClient.chain,
+                account: walletClient.account?.address as Address,
+                address: game.itemsAddress as Address,
+                abi: parseAbi([
+                  'function setApprovalForAll(address operator, bool approved) external',
+                ]),
+                functionName: 'setApprovalForAll',
+                args: [game.itemsManager as Address, true],
+              },
+            ]
+          : [];
+
       const transactionhash = await executeAsCharacter(
         character,
         walletClient,
-        {
-          chain: walletClient.chain,
-          account: walletClient.account?.address as Address,
-          address: game.itemsAddress as Address,
-          abi: parseAbi([
-            'function obtainItems(uint256[] calldata itemIds, uint256[] calldata amounts, bytes32[][] calldata proofs) external',
-          ]),
-          functionName: 'obtainItems',
-          args: [[itemId], [obtainingAmount], [proof]],
-        },
+        [
+          ...approvalTxs,
+          {
+            chain: walletClient.chain,
+            account: walletClient.account?.address as Address,
+            address: game.itemsAddress as Address,
+            abi: parseAbi([
+              'function obtainItems(uint256 itemId, uint256 amount, bytes32[] calldata proof) external',
+            ]),
+            functionName: 'obtainItems',
+            args: [itemId, obtainingAmount, proof],
+          },
+        ],
       );
       return transactionhash;
     } catch (e) {
@@ -278,6 +306,8 @@ export const ObtainItemModal: React.FC = () => {
     whitelistedAmount,
     whitelistLeaf,
     isWhitelistedByMerkleProof,
+    isApprovedForAll,
+    isCraftable,
   ]);
 
   const isLoading = isObtaining;
@@ -391,38 +421,74 @@ export const ObtainItemModal: React.FC = () => {
         <>
           {noSupply ? (
             <Text color="red.500">This item has zero supply.</Text>
-          ) : isWhitelistedForAll ? (
-            <FormControl isInvalid={showError}>
-              <FormLabel>Amount</FormLabel>
-              <Input
-                onChange={e => setAmount(e.target.value)}
-                type="number"
-                value={amount}
-                max={distributionLeftToObtain.toString()}
-              />
-              {showError && (
-                <FormHelperText color="red">{errorText}</FormHelperText>
-              )}
-            </FormControl>
           ) : (
-            <FormControl isInvalid={!isWhitelistedByMerkleProof}>
-              <FormLabel>Amount</FormLabel>
-              <Input
-                isDisabled
-                type="number"
-                value={
-                  whitelistedAmount === distributionLeftToObtain
-                    ? whitelistedAmount.toString()
-                    : '0'
-                }
-              />
-              {(whitelistedAmount === BigInt(0) ||
-                whitelistedAmount !== distributionLeftToObtain) && (
-                <FormHelperText color="red">
-                  You cannot obtain this item.
-                </FormHelperText>
+            <>
+              {isCraftable && (
+                <>
+                  <Text>
+                    You can craft this item by combining the following items:
+                  </Text>
+                  <VStack>
+                    {selectedItem?.craftRequirements.map((req, i) => {
+                      const item = game?.items.find(
+                        item => BigInt(item.itemId) === BigInt(req.itemId),
+                      );
+                      return (
+                        <HStack key={i}>
+                          <Image
+                            alt={`${item?.name} image`}
+                            h="40px"
+                            objectFit="contain"
+                            src={item?.image}
+                            w="40px"
+                          />
+                          <Text>
+                            {item?.name} x {req.amount}
+                          </Text>
+                        </HStack>
+                      );
+                    })}
+                  </VStack>
+                </>
               )}
-            </FormControl>
+              {isWhitelistedForAll ? (
+                <FormControl isInvalid={showError}>
+                  <FormLabel>
+                    Amount to {isCraftable ? 'craft' : 'claim'}
+                  </FormLabel>
+                  <Input
+                    onChange={e => setAmount(e.target.value)}
+                    type="number"
+                    value={amount}
+                    max={distributionLeftToObtain.toString()}
+                  />
+                  {showError && (
+                    <FormHelperText color="red">{errorText}</FormHelperText>
+                  )}
+                </FormControl>
+              ) : (
+                <FormControl isInvalid={!isWhitelistedByMerkleProof}>
+                  <FormLabel>
+                    Amount to {isCraftable ? 'craft' : 'claim'}
+                  </FormLabel>
+                  <Input
+                    isDisabled
+                    type="number"
+                    value={
+                      whitelistedAmount === distributionLeftToObtain
+                        ? whitelistedAmount.toString()
+                        : '0'
+                    }
+                  />
+                  {(whitelistedAmount === BigInt(0) ||
+                    whitelistedAmount !== distributionLeftToObtain) && (
+                    <FormHelperText color="red">
+                      You cannot obtain this item.
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              )}
+            </>
           )}
         </>
       )}
@@ -438,7 +504,7 @@ export const ObtainItemModal: React.FC = () => {
           variant="solid"
           alignSelf="flex-end"
         >
-          Claim
+          {isCraftable ? 'Craft Item' : 'Claim Item'}
         </Button>
       )}
     </ActionModal>

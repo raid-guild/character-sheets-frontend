@@ -11,8 +11,8 @@ export type Character = Metadata & {
   gameId: string;
   name: string;
   characterId: string;
-  account: string;
-  player: string;
+  account: `0x${string}`;
+  player: `0x${string}`;
   jailed: boolean;
   approved: string;
   removed: boolean;
@@ -61,12 +61,12 @@ export type Game = Metadata & {
   id: string;
   startedAt: number;
   chainId: number;
-  experienceAddress: string;
-  itemsAddress: string;
-  classesAddress: string;
-  characterEligibilityAdaptor: string;
-  hatsAdaptor: string;
-  itemsManager: string;
+  experienceAddress: `0x${string}`;
+  itemsAddress: `0x${string}`;
+  classesAddress: `0x${string}`;
+  characterEligibilityAdaptor: `0x${string}`;
+  hatsAdaptor: `0x${string}`;
+  itemsManager: `0x${string}`;
   uri: string;
   baseTokenURI: string;
   owner: string;
@@ -112,6 +112,13 @@ export type Item = Metadata & {
   holders: { id: string; characterId: string }[];
   equippers: { id: string; characterId: string }[];
   merkleRoot: string;
+  craftable: boolean;
+  craftRequirements: CraftRequirement[];
+};
+
+export type CraftRequirement = {
+  itemId: string;
+  amount: string;
 };
 
 export type ItemRequirement = {

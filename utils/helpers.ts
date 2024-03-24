@@ -16,6 +16,7 @@ import {
   Item,
   Metadata,
 } from './types';
+import { decodeAbiParameters } from 'viem';
 
 const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
 
@@ -279,6 +280,20 @@ export const formatClass = async (
 export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
   const metadata = await fetchMetadata(item.uri);
 
+  const decodedCraftRequirements = decodeAbiParameters(
+    [
+      {
+        components: [
+          { name: 'itemId', type: 'uint256' },
+          { name: 'amount', type: 'uint256' },
+        ],
+        name: 'CraftItem',
+        type: 'tuple[]',
+      },
+    ],
+    item.craftRequirementsBytes,
+  );
+
   return {
     id: item.id,
     uri: item.uri,
@@ -300,6 +315,11 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     equippers: item.equippers.map(e => e.character),
     merkleRoot: item.merkleRoot,
     distribution: item.distribution,
+    craftable: item.craftable,
+    craftRequirements: decodedCraftRequirements[0].map(r => ({
+      itemId: r.itemId.toString(),
+      amount: r.amount.toString(),
+    })),
   };
 };
 

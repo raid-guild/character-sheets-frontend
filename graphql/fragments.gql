@@ -107,6 +107,7 @@ fragment ItemInfo on Item {
   claimRequirements {
     ...RequirementNodeInfo
   }
+  craftRequirementsBytes
   craftRequirements {
     ...CraftRequirementInfo
   }
