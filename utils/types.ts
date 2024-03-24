@@ -108,12 +108,12 @@ export type Item = Metadata & {
   supply: string;
   totalSupply: string;
   amount: string;
-  requirements: ItemRequirement[];
   holders: { id: string; characterId: string }[];
   equippers: { id: string; characterId: string }[];
   merkleRoot: string;
   craftable: boolean;
   craftRequirements: CraftRequirement[];
+  claimRequirements: RequirementNode | null;
 };
 
 export type CraftRequirement = {
@@ -121,11 +121,17 @@ export type CraftRequirement = {
   amount: string;
 };
 
-export type ItemRequirement = {
+export type Asset = {
   amount: string;
   assetId: string;
   assetAddress: string;
   assetCategory: string;
+};
+
+export type RequirementNode = {
+  operation: 'NIL' | 'AND' | 'OR' | 'NOT';
+  children: RequirementNode[];
+  asset: Asset;
 };
 
 export type Metadata = {

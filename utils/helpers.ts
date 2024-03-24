@@ -266,17 +266,6 @@ export const formatClass = async (
   };
 };
 
-// export const formatItemRequirement = (
-//   r: ItemRequirementInfoFragment,
-// ): ItemRequirement => {
-//   return {
-//     amount: BigInt(r.amount).toString(),
-//     assetAddress: r.assetAddress,
-//     assetCategory: r.assetCategory,
-//     assetId: BigInt(r.assetId).toString(),
-//   };
-// };
-
 export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
   const metadata = await fetchMetadata(item.uri);
 
@@ -309,8 +298,6 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     supply: BigInt(item.supply).toString(),
     totalSupply: BigInt(item.totalSupply).toString(),
     amount: BigInt(0).toString(),
-    // requirements: item.requirements.map(formatItemRequirement),
-    requirements: [],
     holders: item.holders.map(h => h.character),
     equippers: item.equippers.map(e => e.character),
     merkleRoot: item.merkleRoot,
@@ -320,6 +307,7 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
       itemId: r.itemId.toString(),
       amount: r.amount.toString(),
     })),
+    claimRequirements: null,
   };
 };
 

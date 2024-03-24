@@ -17,7 +17,7 @@ import {
   Tr,
   VStack,
 } from '@chakra-ui/react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { ItemActionMenu } from '@/components/ActionMenus/ItemActionMenu';
 import { useGame } from '@/contexts/GameContext';
@@ -47,25 +47,14 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     soulbound,
     supply,
     totalSupply,
-    requirements,
+    craftable,
   } = item;
 
-  const { character, game } = useGame();
+  const { character } = useGame();
 
   const isEquipped =
     equippers.length > 0 &&
     equippers.some(equippedBy => equippedBy.characterId === holderId);
-
-  const requiredXp = useMemo(() => {
-    return BigInt(
-      requirements.filter(
-        r =>
-          r.assetCategory === 'ERC20' &&
-          r.assetAddress.toLowerCase() ===
-            game?.experienceAddress.toLowerCase(),
-      )[0]?.amount ?? '0',
-    );
-  }, [requirements, game]);
 
   return (
     <VStack spacing={3} w="100%" h="100%">
@@ -151,8 +140,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({
               equippers.length !== 1 ? 's' : ''
             }`}
           />
-          <ItemValue label="Required XP" value={requiredXp.toLocaleString()} />
-          {/*
+          <ItemValue label="Craftable?" value={craftable ? 'Yes' : 'No'} />
+          {/* <ItemValue label="Required XP" value={requiredXp.toLocaleString()} />
           <ItemValue
             label="Can I Claim?"
             value={isConnected ? '?' : 'Wallet not connected'}
@@ -180,30 +169,19 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
     image,
     itemId,
     name,
-    requirements,
     soulbound,
     supply,
     totalSupply,
+    craftable,
   } = item;
 
-  const { character, game } = useGame();
+  const { character } = useGame();
 
   const [showDetails, setShowDetails] = useState(false);
 
   const isEquipped =
     equippers.length > 0 &&
     equippers.some(equippedBy => equippedBy.characterId === holderId);
-
-  const requiredXp = useMemo(() => {
-    return BigInt(
-      requirements.filter(
-        r =>
-          r.assetCategory === 'ERC20' &&
-          r.assetAddress.toLowerCase() ===
-            game?.experienceAddress.toLowerCase(),
-      )[0]?.amount ?? '0',
-    );
-  }, [requirements, game]);
 
   return (
     <VStack h="100%" spacing={3} w="100%">
@@ -317,11 +295,12 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
                 equippers.length !== 1 ? 's' : ''
               }`}
             />
+            <ItemValue label="Craftable?" value={craftable ? 'Yes' : 'No'} />
+            {/*
             <ItemValue
               label="Required XP"
               value={requiredXp.toLocaleString()}
             />
-            {/*
           <ItemValue
             label="Can I Claim?"
             value={isConnected ? '?' : 'Wallet not connected'}

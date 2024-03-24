@@ -12,10 +12,8 @@ import {
   HStack,
   Image,
   Input,
-  ListItem,
   SimpleGrid,
   Text,
-  UnorderedList,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -90,31 +88,31 @@ export const ObtainItemModal: React.FC = () => {
     return false;
   }, [selectedItem]);
 
-  const insufficientClasses = useMemo(() => {
-    if (!selectedItem) return false;
-    if (!character) return false;
-    const requirements = selectedItem.requirements || [];
-    const classes = character.heldClasses || [];
-    return requirements.some(
-      r => !classes.some(c => BigInt(c.classId) === BigInt(r.assetId)),
-    );
-  }, [selectedItem, character]);
+  // const insufficientClasses = useMemo(() => {
+  //   if (!selectedItem) return false;
+  //   if (!character) return false;
+  //   const requirements = selectedItem.requirements || [];
+  //   const classes = character.heldClasses || [];
+  //   return requirements.some(
+  //     r => !classes.some(c => BigInt(c.classId) === BigInt(r.assetId)),
+  //   );
+  // }, [selectedItem, character]);
 
-  const requiredXp = useMemo(() => {
-    return BigInt(
-      selectedItem?.requirements.filter(
-        r =>
-          r.assetCategory === 'ERC20' &&
-          r.assetAddress.toLowerCase() ===
-            game?.experienceAddress.toLowerCase(),
-      )[0]?.amount ?? '0',
-    );
-  }, [selectedItem, game]);
+  // const requiredXp = useMemo(() => {
+  //   return BigInt(
+  //     selectedItem?.requirements.filter(
+  //       r =>
+  //         r.assetCategory === 'ERC20' &&
+  //         r.assetAddress.toLowerCase() ===
+  //           game?.experienceAddress.toLowerCase(),
+  //     )[0]?.amount ?? '0',
+  //   );
+  // }, [selectedItem, game]);
 
-  const insufficientXp = useMemo(() => {
-    if (!character) return false;
-    return BigInt(character.experience) < requiredXp;
-  }, [character, requiredXp]);
+  // const insufficientXp = useMemo(() => {
+  //   if (!character) return false;
+  //   return BigInt(character.experience) < requiredXp;
+  // }, [character, requiredXp]);
 
   const {
     tree,
@@ -196,15 +194,15 @@ export const ObtainItemModal: React.FC = () => {
       return null;
     }
 
-    if (insufficientClasses) {
-      setOpenDetails(0);
-      throw new Error('You do not have the required classes');
-    }
+    // if (insufficientClasses) {
+    //   setOpenDetails(0);
+    //   throw new Error('You do not have the required classes');
+    // }
 
-    if (insufficientXp) {
-      setOpenDetails(0);
-      throw new Error('You do not have the required XP');
-    }
+    // if (insufficientXp) {
+    //   setOpenDetails(0);
+    //   throw new Error('You do not have the required XP');
+    // }
 
     if (!walletClient) {
       throw new Error('Could not find a wallet client');
@@ -296,8 +294,8 @@ export const ObtainItemModal: React.FC = () => {
     character,
     game,
     hasError,
-    insufficientClasses,
-    insufficientXp,
+    // insufficientClasses,
+    // insufficientXp,
     noSupply,
     selectedItem,
     walletClient,
@@ -355,6 +353,7 @@ export const ObtainItemModal: React.FC = () => {
           </AccordionButton>
           <AccordionPanel>
             <SimpleGrid columns={{ base: 1, sm: 3 }} spacing={4}>
+              {/*
               <GridItem>
                 <Text fontSize="sm" fontWeight="bold">
                   Required classes:
@@ -403,7 +402,7 @@ export const ObtainItemModal: React.FC = () => {
                 >
                   {requiredXp.toString()}
                 </Text>
-              </GridItem>
+              </GridItem> */}
 
               <GridItem>
                 <Text fontSize="sm" fontWeight="bold">

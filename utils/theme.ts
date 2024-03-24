@@ -372,6 +372,34 @@ const Table = {
   },
 };
 
+const Select = {
+  baseStyle: {
+    field: {
+      background: 'cardBG',
+      border: '1px solid',
+      borderRadius: '6px',
+      borderColor: 'white',
+      height: '32px',
+
+      _hover: {
+        borderColor: 'accent',
+      },
+
+      _active: {
+        borderColor: 'accent',
+      },
+      '>option': {
+        background: 'cardBG',
+        color: 'white',
+        _hover: {
+          background: 'accent',
+          color: 'dark',
+        },
+      },
+    },
+  },
+};
+
 export const theme = extendTheme({
   config: { initialColorMode: 'light', useSystemColorMode: false },
   fonts: {
@@ -402,5 +430,6 @@ export const theme = extendTheme({
     Textarea,
     Tooltip,
     Table,
+    Select,
   },
 });

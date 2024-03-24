@@ -104,10 +104,12 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
   }, [game]);
 
   useEffect(() => {
-    const filteredItems = items.filter(item => {
+    const filteredItems = items.filter(() => {
       if (amountFilter === '') return true;
       if (Number(amountFilter) < 0) return false;
 
+      {
+        /*
       if (categoryFilter === 'experience') {
         const requiredXp =
           item.requirements.find(
@@ -160,6 +162,9 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
         }
       }
       return false;
+        */
+      }
+      return true;
     });
 
     const sortedItems = filteredItems.slice().sort((a, b) => {
