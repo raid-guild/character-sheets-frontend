@@ -478,11 +478,16 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
                     {displayType === 'SMALL_CARDS' && (
                       <ItemCardSmall
                         holderId={character?.characterId}
+                        holderCharacter={character}
                         {...item}
                       />
                     )}
                     {displayType === 'FULL_CARDS' && (
-                      <ItemCard holderId={character?.characterId} {...item} />
+                      <ItemCard
+                        holderId={character?.characterId}
+                        holderCharacter={character}
+                        {...item}
+                      />
                     )}
                   </GridItem>
                 ))}

@@ -66,9 +66,9 @@ const ClassEntry: React.FC<{ heldClass: Class }> = ({ heldClass }) => {
       <Image
         alt={`${name} image`}
         h="40px"
-        objectFit="contain"
-        src={image}
         w="40px"
+        src={image}
+        objectFit="contain"
       />
     </HStack>
   );

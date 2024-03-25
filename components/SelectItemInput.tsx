@@ -62,9 +62,9 @@ const ItemEntry: React.FC<{ item: Item }> = ({ item }) => {
       <Image
         alt={`${name} image`}
         h="40px"
-        objectFit="contain"
-        src={image}
         w="40px"
+        src={image}
+        objectFit="contain"
       />
     </HStack>
   );
