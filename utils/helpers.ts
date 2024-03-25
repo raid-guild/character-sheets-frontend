@@ -273,7 +273,9 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     item.craftRequirementsBytes,
   );
 
-  const decodedRequirementNode = decodeRequirementNode(item.claimRequirementsBytes);
+  const decodedRequirementNode = decodeRequirementNode(
+    item.claimRequirementsBytes,
+  );
 
   return {
     id: item.id,
@@ -296,7 +298,7 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     distribution: item.distribution,
     craftable: item.craftable,
     craftRequirements: decodedCraftRequirements,
-    claimRequirements: null,
+    claimRequirements: decodedRequirementNode,
   };
 };
 

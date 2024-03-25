@@ -13,7 +13,8 @@ import { zeroAddress } from 'viem';
 
 import { useGame } from '@/contexts/GameContext';
 import { shortenAddress } from '@/utils/helpers';
-import { Asset, Class, Game, Item, RequirementNode } from '@/utils/types';
+import { validateNode } from '@/utils/requirements';
+import { Asset, Class, Item, RequirementNode } from '@/utils/types';
 
 import { SelectClassInput } from './SelectClassInput';
 import { SelectItemInput } from './SelectItemInput';
@@ -21,64 +22,6 @@ import { SelectItemInput } from './SelectItemInput';
 type Props = {
   node: RequirementNode | null;
   setNode: (node: RequirementNode | null) => void;
-};
-
-export const validateNode = (
-  node: RequirementNode | null,
-  game: Game | null | undefined,
-): boolean => {
-  if (!node || !game) return false;
-
-  if (node.operator === 'NIL') {
-    if (!node.asset) return false;
-    if (
-      !node.asset.assetAddress ||
-      node.asset.assetAddress === '0x0' ||
-      node.asset.assetAddress === zeroAddress
-    )
-      return false;
-    if (!node.asset.assetId) return false;
-    if (!node.asset.amount || node.asset.amount === '0') return false;
-    if (node.asset.assetCategory === 'ERC1155') {
-      if (
-        node.asset.assetAddress === game.itemsAddress &&
-        !game.items.find(i => i.itemId === node.asset?.assetId)
-      ) {
-        return false;
-      }
-      if (
-        node.asset.assetAddress === game.classesAddress &&
-        !game.classes.find(c => c.classId === node.asset?.assetId)
-      ) {
-        return false;
-      }
-    }
-    if (node.asset.assetCategory === 'ERC20') {
-      if (node.asset.assetAddress !== game.experienceAddress) {
-        return false;
-      }
-    }
-  }
-
-  if (node.operator === 'AND' || node.operator === 'OR') {
-    if (!node.children) return false;
-    if (node.children.length === 0) return false;
-    if (!node.children.every(n => validateNode(n, game))) return false;
-  }
-
-  if (node.operator === 'NOT') {
-    if (!node.children || node.children.length === 0) {
-      const newNode = {
-        ...node,
-        operator: 'NIL' as RequirementNode['operator'],
-      };
-      return validateNode(newNode, game);
-    }
-    if (node.children.length !== 1) return false;
-    if (!validateNode(node.children[0], game)) return false;
-  }
-
-  return true;
 };
 
 export const ClaimRequirementsInput: React.FC<Props> = ({ node, setNode }) => {
@@ -152,13 +95,19 @@ const RequirementNodeEditor: React.FC<{
 
       if (node.asset) {
         if (node.asset.assetCategory === 'ERC1155') {
-          if (node.asset.assetAddress === game?.itemsAddress) {
+          if (
+            node.asset.assetAddress.toLowerCase() ===
+            game?.itemsAddress.toLowerCase()
+          ) {
             setSelectedItem(
               game?.items.find(i => i.itemId === node.asset?.assetId) ?? null,
             );
             setType('ITEM');
           }
-          if (node.asset.assetAddress === game?.classesAddress) {
+          if (
+            node.asset.assetAddress.toLowerCase() ===
+            game?.classesAddress.toLowerCase()
+          ) {
             setSelectedClass(
               game?.classes.find(c => c.classId === node.asset?.assetId) ??
                 null,
@@ -168,7 +117,8 @@ const RequirementNodeEditor: React.FC<{
         }
         if (
           node.asset.assetCategory === 'ERC20' &&
-          node.asset.assetAddress === game?.experienceAddress
+          node.asset.assetAddress.toLowerCase() ===
+            game?.experienceAddress.toLowerCase()
         ) {
           setType('EXPERIENCE');
         }
@@ -425,7 +375,7 @@ const ImageDisplay: React.FC<Item | Class> = ({ name, image }) => (
   />
 );
 
-const RequirementNodeDisplay: React.FC<{
+export const RequirementNodeDisplay: React.FC<{
   node: RequirementNode | null;
   setNode?: (node: RequirementNode | null) => void;
   isEditing?: boolean;
@@ -474,17 +424,19 @@ const RequirementNodeDisplay: React.FC<{
 
     const item =
       node.asset.assetCategory === 'ERC1155' &&
-      node.asset.assetAddress === game?.itemsAddress
+      node.asset.assetAddress.toLowerCase() === game?.itemsAddress.toLowerCase()
         ? game?.items.find(i => i.itemId === node.asset?.assetId)
         : null;
     const klass =
       node.asset.assetCategory === 'ERC1155' &&
-      node.asset.assetAddress === game?.classesAddress
+      node.asset.assetAddress.toLowerCase() ===
+        game?.classesAddress.toLowerCase()
         ? game?.classes.find(c => c.classId === node.asset?.assetId)
         : null;
     const exp =
       node.asset.assetCategory === 'ERC20' &&
-      node.asset.assetAddress === game?.experienceAddress
+      node.asset.assetAddress.toLowerCase() ===
+        game?.experienceAddress.toLowerCase()
         ? true
         : false;
 

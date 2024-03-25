@@ -25,7 +25,12 @@ import { useItemActions } from '@/contexts/ItemActionsContext';
 import { useIsApprovedForAll } from '@/hooks/useIsApprovedForAll';
 import { useWhitelistTree, WhitelistItemLeaf } from '@/hooks/useWhitelistTree';
 import { executeAsCharacter } from '@/utils/account';
+import {
+  checkClaimRequirements,
+  checkCraftRequirements,
+} from '@/utils/requirements';
 
+import { RequirementNodeDisplay } from '../ClaimRequirementsInput';
 import { ActionModal } from './ActionModal';
 
 export const ObtainItemModal: React.FC = () => {
@@ -87,6 +92,16 @@ export const ObtainItemModal: React.FC = () => {
     if (Number.isNaN(Number(supply)) || supply <= 0) return true;
     return false;
   }, [selectedItem]);
+
+  const noDistribution = useMemo(() => {
+    if (!selectedItem) return false;
+    if (
+      Number.isNaN(Number(distributionLeftToObtain)) ||
+      distributionLeftToObtain <= 0
+    )
+      return true;
+    return false;
+  }, [selectedItem, distributionLeftToObtain]);
 
   // const insufficientClasses = useMemo(() => {
   //   if (!selectedItem) return false;
@@ -312,6 +327,28 @@ export const ObtainItemModal: React.FC = () => {
 
   const isDisabled = isLoading;
 
+  const satisfiesClaimRequirements = useMemo(() => {
+    if (!selectedItem) return false;
+    if (!character) return false;
+    if (!game) return false;
+    return checkClaimRequirements(
+      selectedItem.claimRequirements,
+      game,
+      character,
+    );
+  }, [selectedItem, character, game]);
+
+  const satisfiesCraftRequirements = useMemo(() => {
+    if (!selectedItem) return false;
+    if (!character) return false;
+    if (!amount) return false;
+    return checkCraftRequirements(
+      selectedItem.craftRequirements,
+      character,
+      BigInt(amount),
+    );
+  }, [selectedItem, character, amount]);
+
   return (
     <ActionModal
       {...{
@@ -352,57 +389,15 @@ export const ObtainItemModal: React.FC = () => {
             </HStack>
           </AccordionButton>
           <AccordionPanel>
-            <SimpleGrid columns={{ base: 1, sm: 3 }} spacing={4}>
-              {/*
+            <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
               <GridItem>
                 <Text fontSize="sm" fontWeight="bold">
-                  Required classes:
+                  Craftable:
                 </Text>
-                {selectedItem && selectedItem.requirements.length > 0 ? (
-                  <UnorderedList>
-                    {selectedItem?.requirements
-                      .filter(req => req.assetCategory === 'ERC1155')
-                      .map((r, i) => {
-                        const className = game?.classes.find(
-                          c => BigInt(c.classId) === BigInt(r.assetId),
-                        )?.name;
-                        const classNotAssigned =
-                          character?.heldClasses.find(
-                            c => BigInt(c.classId) === BigInt(r.assetId),
-                          ) === undefined;
-
-                        if (classNotAssigned) {
-                          return (
-                            <ListItem key={i}>
-                              <Text fontSize="sm" color="red.500">
-                                {className} (not assigned)
-                              </Text>
-                            </ListItem>
-                          );
-                        }
-                        return (
-                          <ListItem key={i}>
-                            <Text fontSize="sm">{className}</Text>
-                          </ListItem>
-                        );
-                      })}
-                  </UnorderedList>
-                ) : (
-                  <Text fontSize="sm">None</Text>
-                )}
+                <Text fontSize="sm">
+                  {selectedItem?.craftable ? 'True' : 'False'}
+                </Text>
               </GridItem>
-
-              <GridItem>
-                <Text fontSize="sm" fontWeight="bold">
-                  Required XP:
-                </Text>
-                <Text
-                  color={insufficientXp ? 'red.500' : 'white'}
-                  fontSize="sm"
-                >
-                  {requiredXp.toString()}
-                </Text>
-              </GridItem> */}
 
               <GridItem>
                 <Text fontSize="sm" fontWeight="bold">
@@ -418,9 +413,13 @@ export const ObtainItemModal: React.FC = () => {
       </Accordion>
       {!isLoadingTree && (
         <>
-          {noSupply ? (
-            <Text color="red.500">This item has zero supply.</Text>
-          ) : (
+          {noSupply && <Text color="red.500">This item has zero supply.</Text>}
+          {noDistribution && (
+            <Text color="red.500">
+              You have already claimed the maximum amount of this item.
+            </Text>
+          )}
+          {!noSupply && !noDistribution && (
             <>
               {isCraftable && (
                 <>
@@ -448,8 +447,30 @@ export const ObtainItemModal: React.FC = () => {
                       );
                     })}
                   </VStack>
+                  {!satisfiesCraftRequirements && (
+                    <Text color="red.500" size="sm">
+                      You do not have the required items to craft this item.
+                    </Text>
+                  )}
                 </>
               )}
+              {!isCraftable && !!selectedItem?.claimRequirements && (
+                <>
+                  <Text>
+                    You must satisfy the following requirements to claim this:
+                  </Text>
+                  <RequirementNodeDisplay
+                    node={selectedItem.claimRequirements}
+                    isEditable={false}
+                  />
+                  {!satisfiesClaimRequirements && (
+                    <Text color="red.500" size="sm">
+                      You do not meet the requirements to claim this item.
+                    </Text>
+                  )}
+                </>
+              )}
+
               {isWhitelistedForAll ? (
                 <FormControl isInvalid={showError}>
                   <FormLabel>

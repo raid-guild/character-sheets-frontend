@@ -1,20 +1,83 @@
 import { decodeAbiParameters, encodeAbiParameters, zeroAddress } from 'viem';
 
 import {
-  ClaimRequirementsInput,
-  validateNode,
-} from '@/components/ClaimRequirementsInput';
-import { CraftItemRequirementsListInput } from '@/components/CraftItemRequirementsListInput';
-import { Switch } from '@/components/Switch';
-import { useGame } from '@/contexts/GameContext';
-import { useToast } from '@/hooks/useToast';
-import { CraftRequirement, RequirementNode } from '@/utils/types';
+  Character,
+  CraftRequirement,
+  Game,
+  RequirementNode,
+} from '@/utils/types';
 
 const EMPTY_CLAIM_REQUIREMENTS_BYTES =
   '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`;
 
 const EMPTY_CRAFT_REQUIREMENTS_BYTES =
   '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`;
+
+export const validateNode = (
+  node: RequirementNode | null,
+  game: Game | null | undefined,
+): boolean => {
+  if (!node || !game) return false;
+
+  if (node.operator === 'NIL') {
+    if (!node.asset) return false;
+    if (
+      !node.asset.assetAddress ||
+      node.asset.assetAddress === '0x0' ||
+      node.asset.assetAddress === zeroAddress
+    )
+      return false;
+    if (!node.asset.assetId) return false;
+    if (!node.asset.amount || node.asset.amount === '0') return false;
+    if (node.asset.assetCategory === 'ERC1155') {
+      if (
+        node.asset.assetAddress.toLowerCase() ===
+          game.itemsAddress.toLowerCase() &&
+        game.items.find(i => i.itemId === node.asset?.assetId)
+      ) {
+        return true;
+      }
+      if (
+        node.asset.assetAddress.toLowerCase() ===
+          game.classesAddress.toLowerCase() &&
+        game.classes.find(c => c.classId === node.asset?.assetId)
+      ) {
+        return true;
+      }
+      return false;
+    }
+    if (
+      node.asset.assetCategory === 'ERC20' &&
+      node.asset.assetAddress.toLowerCase() ===
+        game.experienceAddress.toLowerCase()
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  if (node.operator === 'AND' || node.operator === 'OR') {
+    if (!node.children) return false;
+    if (node.children.length === 0) return false;
+    if (!node.children.every(n => validateNode(n, game))) return false;
+    return true;
+  }
+
+  if (node.operator === 'NOT') {
+    if (!node.children || node.children.length === 0) {
+      const newNode = {
+        ...node,
+        operator: 'NIL' as RequirementNode['operator'],
+      };
+      return validateNode(newNode, game);
+    }
+    if (node.children.length !== 1) return false;
+    if (!validateNode(node.children[0], game)) return false;
+    return true;
+  }
+
+  return false;
+};
 
 const encodeOperator = (operator: 'NIL' | 'AND' | 'OR' | 'NOT'): number => {
   switch (operator) {
@@ -222,4 +285,91 @@ export const decodeCraftRequirements = (
     itemId: itemId.toString(),
     amount: amount.toString(),
   }));
+};
+
+export const checkCraftRequirements = (
+  craftRequirements: CraftRequirement[],
+  character: Character,
+  craftableAmount: bigint,
+): boolean => {
+  return craftRequirements.every(({ itemId, amount }) => {
+    const characterItem = character.heldItems.find(
+      item =>
+        item.itemId === itemId &&
+        BigInt(item.amount) >= BigInt(amount) * craftableAmount,
+    );
+    return !!characterItem;
+  });
+};
+
+export const checkClaimRequirements = (
+  node: RequirementNode | null,
+  game: Game,
+  character: Character,
+): boolean => {
+  if (!node || !validateNode(node, game)) {
+    return false;
+  }
+
+  if (node.operator === 'NIL') {
+    if (!node.asset) {
+      return false;
+    }
+    const item =
+      node.asset.assetCategory === 'ERC1155' &&
+      node.asset.assetAddress.toLowerCase() === game.itemsAddress.toLowerCase()
+        ? character.heldItems.find(item => item.itemId === node.asset?.assetId)
+        : null;
+    if (item) {
+      return BigInt(item.amount) >= BigInt(node.asset.amount);
+    }
+
+    const klass =
+      node.asset.assetCategory === 'ERC721' &&
+      node.asset.assetAddress.toLowerCase() === game.itemsAddress.toLowerCase()
+        ? character.heldClasses.find(
+            klass => klass.classId === node.asset?.assetId,
+          )
+        : null;
+
+    if (klass) {
+      return BigInt(klass.level) >= BigInt(node.asset.amount);
+    }
+
+    const experience =
+      node.asset.assetCategory === 'ERC20' &&
+      node.asset.assetAddress.toLowerCase() ===
+        game.experienceAddress.toLowerCase()
+        ? true
+        : false;
+
+    if (experience) {
+      return BigInt(character.experience) >= BigInt(node.asset.amount);
+    }
+  }
+
+  if (node.operator === 'NOT') {
+    if (node.children.length === 0) {
+      const newNode = {
+        ...node,
+        operator: 'NIL' as RequirementNode['operator'],
+      };
+      return !checkClaimRequirements(newNode, game, character);
+    }
+    return !checkClaimRequirements(node.children[0], game, character);
+  }
+
+  if (node.operator === 'AND') {
+    return node.children.every(child =>
+      checkClaimRequirements(child, game, character),
+    );
+  }
+
+  if (node.operator === 'OR') {
+    return node.children.some(child =>
+      checkClaimRequirements(child, game, character),
+    );
+  }
+
+  return false;
 };

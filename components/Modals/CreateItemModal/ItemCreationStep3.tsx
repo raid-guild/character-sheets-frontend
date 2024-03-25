@@ -13,10 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import {
-  ClaimRequirementsInput,
-  validateNode,
-} from '@/components/ClaimRequirementsInput';
+import { ClaimRequirementsInput } from '@/components/ClaimRequirementsInput';
 import { CraftItemRequirementsListInput } from '@/components/CraftItemRequirementsListInput';
 import { Switch } from '@/components/Switch';
 import { useGame } from '@/contexts/GameContext';
@@ -24,6 +21,7 @@ import { useToast } from '@/hooks/useToast';
 import {
   encodeCraftRequirements,
   encodeRequirementNode,
+  validateNode,
 } from '@/utils/requirements';
 import { CraftRequirement, RequirementNode } from '@/utils/types';
 
@@ -205,11 +203,16 @@ export const ItemCreationStep3: React.FC<Step3Props> = ({
             </FormControl>
           )}
           {claimByRequirementsToggle && (
-            <FormControl>
+            <FormControl isInvalid={showError && invalidClaimRequirements}>
               <ClaimRequirementsInput
                 node={requirementNode}
                 setNode={setRequirementNode}
               />
+              {showError && invalidClaimRequirements && (
+                <FormHelperText color="red">
+                  Please define a valid claim requirement.
+                </FormHelperText>
+              )}
             </FormControl>
           )}
         </>
