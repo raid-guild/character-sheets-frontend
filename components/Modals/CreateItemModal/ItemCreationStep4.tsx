@@ -22,7 +22,7 @@ export const ItemCreationStep4: React.FC<Step4Props> = ({
 }) => {
   return (
     <VStack spacing={8} w="100%">
-      <ItemCard {...itemToCreate} />
+      <ItemCard dummy {...itemToCreate} />
       <HStack w="100%" justify="flex-end" spacing={4}>
         {currentStep != 0 && (
           <Button

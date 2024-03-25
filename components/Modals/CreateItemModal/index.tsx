@@ -10,7 +10,7 @@ import { useGame } from '@/contexts/GameContext';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { WhitelistItemLeaf } from '@/hooks/useWhitelistTree';
 import { EquippableTraitType } from '@/lib/traits';
-import { Item } from '@/utils/types';
+import { CraftRequirement, Item, RequirementNode } from '@/utils/types';
 
 import { ActionModal } from '../ActionModal';
 import { ItemCreationStep0 } from './ItemCreationStep0';
@@ -61,6 +61,13 @@ export const CreateItemModal: React.FC = () => {
   const [equippableType, setEquippableType] = useState<EquippableTraitType>(
     EquippableTraitType.EQUIPPED_WEARABLE,
   );
+
+  const [craftRequirementsList, setCraftRequirementsList] = useState<
+    Array<CraftRequirement>
+  >([]);
+
+  const [requirementNode, setRequirementNode] =
+    useState<RequirementNode | null>(null);
 
   const [requiredAssetsBytes, setRequiredAssetsBytes] =
     useState<`0x${string}`>('0x');
@@ -388,6 +395,12 @@ export const CreateItemModal: React.FC = () => {
 
             requiredAssetsBytes,
             setRequiredAssetsBytes,
+
+            craftRequirementsList,
+            setCraftRequirementsList,
+
+            requirementNode,
+            setRequirementNode,
           }}
         />
       )}

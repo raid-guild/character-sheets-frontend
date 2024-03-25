@@ -104,13 +104,8 @@ fragment ItemInfo on Item {
   totalSupply
   merkleRoot
   craftable
-  claimRequirements {
-    ...RequirementNodeInfo
-  }
+  claimRequirementsBytes
   craftRequirementsBytes
-  craftRequirements {
-    ...CraftRequirementInfo
-  }
   holders {
     character {
       id

@@ -2,6 +2,7 @@ import { ChevronDownIcon } from '@chakra-ui/icons';
 import {
   Button,
   HStack,
+  Image,
   Menu,
   MenuButton,
   MenuItem,
@@ -34,7 +35,7 @@ export const SelectItemInput: React.FC<SelectItemInputProps> = ({
           isDisabled={items.length === 0}
         >
           {selectedItem ? (
-            <ItemItem item={selectedItem} />
+            <ItemEntry item={selectedItem} />
           ) : (
             <Text>Select Item</Text>
           )}
@@ -43,7 +44,7 @@ export const SelectItemInput: React.FC<SelectItemInputProps> = ({
       <MenuList minW="20rem">
         {items.map((item: Item) => (
           <MenuItem key={item.id} onClick={() => setSelectedItem(item)}>
-            <ItemItem item={item} />
+            <ItemEntry item={item} />
           </MenuItem>
         ))}
       </MenuList>
@@ -51,16 +52,20 @@ export const SelectItemInput: React.FC<SelectItemInputProps> = ({
   );
 };
 
-const ItemItem: React.FC<{ item: Item }> = ({ item }) => {
-  const { name, itemId } = item;
+const ItemEntry: React.FC<{ item: Item }> = ({ item }) => {
+  const { name, image } = item;
   return (
     <HStack spacing={4} justify="space-between" w="100%">
       <Text fontSize="md" fontWeight="bold">
         {name}
       </Text>
-      <Text color="gray.500" fontSize="sm">
-        Item ID: {itemId}
-      </Text>
+      <Image
+        alt={`${name} image`}
+        h="40px"
+        objectFit="contain"
+        src={image}
+        w="40px"
+      />
     </HStack>
   );
 };

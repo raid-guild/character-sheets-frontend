@@ -5,6 +5,7 @@ import {
   FormHelperText,
   Grid,
   HStack,
+  Image,
   Input,
   Text,
   Tooltip,
@@ -14,23 +15,18 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
-import { Item } from '@/utils/types';
+import { CraftRequirement, Item } from '@/utils/types';
 
 import { SelectItemInput } from './SelectItemInput';
 
-export type CraftItemRequirement = {
-  itemId: bigint;
-  amount: bigint;
-};
-
 type Props = {
-  craftRequirementsList: Array<CraftItemRequirement>;
+  craftRequirementsList: Array<CraftRequirement>;
   setCraftRequirementsList: React.Dispatch<
-    React.SetStateAction<Array<CraftItemRequirement>>
+    React.SetStateAction<Array<CraftRequirement>>
   >;
 };
 
-export const CraftItemRequirementListInput: React.FC<Props> = ({
+export const CraftItemRequirementsListInput: React.FC<Props> = ({
   craftRequirementsList: requirementsList,
   setCraftRequirementsList: setRequirementsList,
 }) => {
@@ -43,8 +39,8 @@ export const CraftItemRequirementListInput: React.FC<Props> = ({
   };
 
   const itemMap = useMemo(() => {
-    const map = new Map<string, string>();
-    items.forEach(c => map.set(c.itemId, c.name));
+    const map = new Map<string, Item>();
+    items.forEach(c => map.set(c.itemId, c));
     return map;
   }, [items]);
 
@@ -86,8 +82,8 @@ export const CraftItemRequirementListInput: React.FC<Props> = ({
             <CraftItemRequirementDisplay
               key={v.toString() + i.toString()}
               craftItem={requirementsList[i]}
-              itemName={itemMap.get(requirementsList[i].itemId.toString())}
-              removeCraftItemRequirement={removeCraftItemRequirement}
+              item={itemMap.get(requirementsList[i].itemId.toString())}
+              removeCraftRequirement={removeCraftItemRequirement}
               index={i}
               chainId={chainId}
             />
@@ -98,20 +94,20 @@ export const CraftItemRequirementListInput: React.FC<Props> = ({
 };
 
 type DisplayProps = {
-  craftItem: CraftItemRequirement;
-  itemName: string | undefined;
-  removeCraftItemRequirement: (index: number) => void;
+  craftItem: CraftRequirement;
+  item: Item | undefined;
+  removeCraftRequirement: (index: number) => void;
   index: number;
   chainId: number;
 };
 
 const CraftItemRequirementDisplay: React.FC<DisplayProps> = ({
   craftItem,
-  itemName,
-  removeCraftItemRequirement,
+  item,
+  removeCraftRequirement,
   index: i,
 }) => {
-  const { itemId, amount } = craftItem;
+  const { amount } = craftItem;
 
   return (
     <VStack spacing={4} w="100%" mb={4}>
@@ -126,8 +122,14 @@ const CraftItemRequirementDisplay: React.FC<DisplayProps> = ({
         position="relative"
       >
         <HStack spacing={2}>
-          <Text fontWeight="bold">{itemName}</Text>
-          <Text color="whiteAlpha.400">( Item ID: {itemId.toString()} )</Text>
+          <Image
+            alt={`${item?.name} image`}
+            h="40px"
+            objectFit="contain"
+            src={item?.image}
+            w="40px"
+          />
+          <Text fontWeight="bold">{item?.name}</Text>
         </HStack>
         <Text>{amount.toString()}</Text>
         <CloseIcon
@@ -139,7 +141,7 @@ const CraftItemRequirementDisplay: React.FC<DisplayProps> = ({
           transition="0.25s"
           color="whiteAlpha.400"
           _hover={{ color: 'white' }}
-          onClick={() => removeCraftItemRequirement(i)}
+          onClick={() => removeCraftRequirement(i)}
         />
       </Grid>
     </VStack>
@@ -148,9 +150,9 @@ const CraftItemRequirementDisplay: React.FC<DisplayProps> = ({
 
 type InputProps = {
   items: Item[];
-  requirementsList: Array<CraftItemRequirement>;
+  requirementsList: Array<CraftRequirement>;
   setRequirementsList: React.Dispatch<
-    React.SetStateAction<Array<CraftItemRequirement>>
+    React.SetStateAction<Array<CraftRequirement>>
   >;
 };
 
@@ -221,8 +223,8 @@ const CraftItemRequirementInput: React.FC<InputProps> = ({
     setRequirementsList(oldList => [
       ...oldList,
       {
-        itemId: BigInt(selectedItem.itemId),
-        amount: BigInt(amount),
+        itemId: BigInt(selectedItem.itemId).toString(),
+        amount: BigInt(amount).toString(),
       },
     ]);
     setSelectedItem(null);

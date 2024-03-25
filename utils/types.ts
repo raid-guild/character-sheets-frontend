@@ -125,13 +125,13 @@ export type Asset = {
   amount: string;
   assetId: string;
   assetAddress: string;
-  assetCategory: string;
+  assetCategory: 'ERC20' | 'ERC721' | 'ERC1155';
 };
 
 export type RequirementNode = {
-  operation: 'NIL' | 'AND' | 'OR' | 'NOT';
+  operator: 'NIL' | 'AND' | 'OR' | 'NOT';
   children: RequirementNode[];
-  asset: Asset;
+  asset: Asset | null;
 };
 
 export type Metadata = {

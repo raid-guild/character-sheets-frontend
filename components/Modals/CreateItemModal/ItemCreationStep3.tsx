@@ -1,4 +1,3 @@
-// import {useToast} from '@/hooks/useToast';
 import {
   Button,
   Divider,
@@ -13,14 +12,20 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { encodeAbiParameters } from 'viem';
 
 import {
-  CraftItemRequirement,
-  CraftItemRequirementListInput,
-} from '@/components/CraftableItemRequirementsListInput';
+  ClaimRequirementsInput,
+  validateNode,
+} from '@/components/ClaimRequirementsInput';
+import { CraftItemRequirementsListInput } from '@/components/CraftItemRequirementsListInput';
 import { Switch } from '@/components/Switch';
+import { useGame } from '@/contexts/GameContext';
 import { useToast } from '@/hooks/useToast';
+import {
+  encodeCraftRequirements,
+  encodeRequirementNode,
+} from '@/utils/requirements';
+import { CraftRequirement, RequirementNode } from '@/utils/types';
 
 type Step3Props = {
   currentStep: number;
@@ -34,6 +39,16 @@ type Step3Props = {
 
   requiredAssetsBytes: `0x${string}`;
   setRequiredAssetsBytes: React.Dispatch<React.SetStateAction<`0x${string}`>>;
+
+  craftRequirementsList: CraftRequirement[];
+  setCraftRequirementsList: React.Dispatch<
+    React.SetStateAction<CraftRequirement[]>
+  >;
+
+  requirementNode: RequirementNode | null;
+  setRequirementNode: React.Dispatch<
+    React.SetStateAction<RequirementNode | null>
+  >;
 };
 
 export const ItemCreationStep3: React.FC<Step3Props> = ({
@@ -47,21 +62,37 @@ export const ItemCreationStep3: React.FC<Step3Props> = ({
   setClaimByRequirementsToggle,
 
   setRequiredAssetsBytes,
+
+  craftRequirementsList,
+  setCraftRequirementsList,
+
+  requirementNode,
+  setRequirementNode,
 }) => {
-  const [craftRequirementsList, setCraftRequirementsList] = useState<
-    Array<CraftItemRequirement>
-  >([]);
+  const { game } = useGame();
 
   const invalidCraftRequirements = useMemo(() => {
     return craftRequirementsList.length === 0;
   }, [craftRequirementsList]);
 
+  const invalidClaimRequirements = useMemo(() => {
+    return !validateNode(requirementNode, game);
+  }, [requirementNode, game]);
+
   const hasError = useMemo(() => {
     if (craftableToggle) {
       return invalidCraftRequirements;
     }
+    if (claimByRequirementsToggle) {
+      return invalidClaimRequirements;
+    }
     return false;
-  }, [craftableToggle, invalidCraftRequirements]);
+  }, [
+    craftableToggle,
+    invalidCraftRequirements,
+    claimByRequirementsToggle,
+    invalidClaimRequirements,
+  ]);
 
   const [showError, setShowError] = useState(false);
 
@@ -79,27 +110,14 @@ export const ItemCreationStep3: React.FC<Step3Props> = ({
 
   useEffect(() => {
     if (craftableToggle) {
-      const craftRequirements = craftRequirementsList.sort((a, b) =>
-        Number(a.itemId - b.itemId),
+      const craftRequirementsBytes = encodeCraftRequirements(
+        craftRequirementsList,
       );
-
-      const craftRequirementsBytes = encodeAbiParameters(
-        [
-          {
-            components: [
-              { name: 'itemId', type: 'uint256' },
-              { name: 'amount', type: 'uint256' },
-            ],
-            name: 'CraftItem',
-            type: 'tuple[]',
-          },
-        ],
-        [craftRequirements],
-      );
-
       setRequiredAssetsBytes(craftRequirementsBytes);
     } else if (claimByRequirementsToggle) {
-      setRequiredAssetsBytes('0x');
+      const requirementNodeBytes = encodeRequirementNode(requirementNode!);
+
+      setRequiredAssetsBytes(requirementNodeBytes);
     } else {
       setRequiredAssetsBytes('0x');
     }
@@ -108,6 +126,7 @@ export const ItemCreationStep3: React.FC<Step3Props> = ({
     craftRequirementsList,
     setRequiredAssetsBytes,
     claimByRequirementsToggle,
+    requirementNode,
   ]);
 
   return (
@@ -170,21 +189,29 @@ export const ItemCreationStep3: React.FC<Step3Props> = ({
               ? 'Select the items that can be combined to craft this item.'
               : 'Define the requirements for players to claim this item.'}
           </Text>
-          <FormControl isInvalid={showError && invalidCraftRequirements}>
-            {craftableToggle && (
-              <CraftItemRequirementListInput
+          {craftableToggle && (
+            <FormControl isInvalid={showError && invalidCraftRequirements}>
+              <CraftItemRequirementsListInput
                 {...{
                   craftRequirementsList,
                   setCraftRequirementsList,
                 }}
               />
-            )}
-            {showError && invalidCraftRequirements && (
-              <FormHelperText color="red">
-                Please add at least one item to the list.
-              </FormHelperText>
-            )}
-          </FormControl>
+              {showError && invalidCraftRequirements && (
+                <FormHelperText color="red">
+                  Please add at least one item to the list.
+                </FormHelperText>
+              )}
+            </FormControl>
+          )}
+          {claimByRequirementsToggle && (
+            <FormControl>
+              <ClaimRequirementsInput
+                node={requirementNode}
+                setNode={setRequirementNode}
+              />
+            </FormControl>
+          )}
         </>
       ) : null}
 
