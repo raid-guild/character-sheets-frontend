@@ -103,32 +103,6 @@ export const ObtainItemModal: React.FC = () => {
     return false;
   }, [selectedItem, distributionLeftToObtain]);
 
-  // const insufficientClasses = useMemo(() => {
-  //   if (!selectedItem) return false;
-  //   if (!character) return false;
-  //   const requirements = selectedItem.requirements || [];
-  //   const classes = character.heldClasses || [];
-  //   return requirements.some(
-  //     r => !classes.some(c => BigInt(c.classId) === BigInt(r.assetId)),
-  //   );
-  // }, [selectedItem, character]);
-
-  // const requiredXp = useMemo(() => {
-  //   return BigInt(
-  //     selectedItem?.requirements.filter(
-  //       r =>
-  //         r.assetCategory === 'ERC20' &&
-  //         r.assetAddress.toLowerCase() ===
-  //           game?.experienceAddress.toLowerCase(),
-  //     )[0]?.amount ?? '0',
-  //   );
-  // }, [selectedItem, game]);
-
-  // const insufficientXp = useMemo(() => {
-  //   if (!character) return false;
-  //   return BigInt(character.experience) < requiredXp;
-  // }, [character, requiredXp]);
-
   const {
     tree,
     loading: isLoadingTree,
@@ -204,20 +178,16 @@ export const ObtainItemModal: React.FC = () => {
       throw new Error('This item has zero supply.');
     }
 
+    if (noDistribution) {
+      throw new Error(
+        'You have already claimed the maximum amount of this item.',
+      );
+    }
+
     if (hasError && isWhitelistedForAll) {
       setShowError(true);
       return null;
     }
-
-    // if (insufficientClasses) {
-    //   setOpenDetails(0);
-    //   throw new Error('You do not have the required classes');
-    // }
-
-    // if (insufficientXp) {
-    //   setOpenDetails(0);
-    //   throw new Error('You do not have the required XP');
-    // }
 
     if (!walletClient) {
       throw new Error('Could not find a wallet client');
@@ -309,9 +279,8 @@ export const ObtainItemModal: React.FC = () => {
     character,
     game,
     hasError,
-    // insufficientClasses,
-    // insufficientXp,
     noSupply,
+    noDistribution,
     selectedItem,
     walletClient,
     tree,
@@ -325,7 +294,7 @@ export const ObtainItemModal: React.FC = () => {
 
   const isLoading = isObtaining;
 
-  const isDisabled = isLoading;
+  const isDisabled = isLoading || noSupply || noDistribution;
 
   const satisfiesClaimRequirements = useMemo(() => {
     if (!selectedItem) return false;

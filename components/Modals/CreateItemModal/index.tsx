@@ -48,7 +48,7 @@ export const CreateItemModal: React.FC = () => {
   const [itemDistribution, setItemDistribution] = useState<string>('1');
 
   const [soulboundToggle, setSoulboundToggle] = useState<boolean>(false);
-  const [whitelistToggle, setWhitelistToggle] = useState<boolean>(false);
+  const [whitelistToggle, setWhitelistToggle] = useState<boolean>(true);
 
   const [craftableToggle, setCraftableToggle] = useState<boolean>(false);
   const [claimByRequirementsToggle, setClaimByRequirementsToggle] =

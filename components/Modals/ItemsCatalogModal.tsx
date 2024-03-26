@@ -109,7 +109,7 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
       if (Number(amountFilter) < 0) return false;
 
       {
-        /*
+        /* TODO: Fix Filters!!
       if (categoryFilter === 'experience') {
         const requiredXp =
           item.requirements.find(

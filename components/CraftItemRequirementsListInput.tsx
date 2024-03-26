@@ -255,7 +255,7 @@ const CraftItemRequirementInput: React.FC<InputProps> = ({
           alignItems="center"
         >
           <SelectItemInput
-            items={items}
+            items={items.filter(i => !i.soulbound)}
             selectedItem={selectedItem}
             setSelectedItem={setSelectedItem}
           />
