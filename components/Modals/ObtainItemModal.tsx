@@ -173,6 +173,28 @@ export const ObtainItemModal: React.FC = () => {
     game?.itemsManager,
   );
 
+  const satisfiesClaimRequirements = useMemo(() => {
+    if (!selectedItem) return false;
+    if (!character) return false;
+    if (!game) return false;
+    return checkClaimRequirements(
+      selectedItem.claimRequirements,
+      game,
+      character,
+    );
+  }, [selectedItem, character, game]);
+
+  const satisfiesCraftRequirements = useMemo(() => {
+    if (!selectedItem) return false;
+    if (!character) return false;
+    if (!amount) return false;
+    return checkCraftRequirements(
+      selectedItem.craftRequirements,
+      character,
+      BigInt(amount),
+    );
+  }, [selectedItem, character, amount]);
+
   const onObtainItem = useCallback(async () => {
     if (noSupply) {
       throw new Error('This item has zero supply.');
@@ -232,6 +254,18 @@ export const ObtainItemModal: React.FC = () => {
       throw new Error(
         `Something went wrong while obtaining ${selectedItem.name}.`,
       );
+    }
+
+    if (isCraftable && !satisfiesCraftRequirements) {
+      throw new Error('You do not have the required items to craft this item.');
+    }
+
+    if (
+      !isCraftable &&
+      !!selectedItem?.claimRequirements &&
+      !satisfiesClaimRequirements
+    ) {
+      throw new Error('You do not meet the requirements to claim this item.');
     }
 
     try {
@@ -296,28 +330,6 @@ export const ObtainItemModal: React.FC = () => {
 
   const isDisabled = isLoading || noSupply || noDistribution;
 
-  const satisfiesClaimRequirements = useMemo(() => {
-    if (!selectedItem) return false;
-    if (!character) return false;
-    if (!game) return false;
-    return checkClaimRequirements(
-      selectedItem.claimRequirements,
-      game,
-      character,
-    );
-  }, [selectedItem, character, game]);
-
-  const satisfiesCraftRequirements = useMemo(() => {
-    if (!selectedItem) return false;
-    if (!character) return false;
-    if (!amount) return false;
-    return checkCraftRequirements(
-      selectedItem.craftRequirements,
-      character,
-      BigInt(amount),
-    );
-  }, [selectedItem, character, amount]);
-
   return (
     <ActionModal
       {...{
@@ -358,7 +370,7 @@ export const ObtainItemModal: React.FC = () => {
             </HStack>
           </AccordionButton>
           <AccordionPanel>
-            <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
+            <SimpleGrid columns={{ base: 1, sm: 3 }} spacing={4}>
               <GridItem>
                 <Text fontSize="sm" fontWeight="bold">
                   Craftable:
@@ -374,6 +386,15 @@ export const ObtainItemModal: React.FC = () => {
                 </Text>
                 <Text fontSize="sm">
                   {selectedItem?.soulbound ? 'True' : 'False'}
+                </Text>
+              </GridItem>
+
+              <GridItem>
+                <Text fontSize="sm" fontWeight="bold">
+                  Holding Limit:
+                </Text>
+                <Text fontSize="sm">
+                  {selectedItem?.distribution.toString()}
                 </Text>
               </GridItem>
             </SimpleGrid>
