@@ -8,19 +8,21 @@ import {
   WriteContractParameters,
 } from 'viem';
 
-import { Character } from './types';
 import { ABIS } from './abis';
+import { Character } from './types';
 
-type WriteParams = WriteContractParameters<Abi, string, readonly unknown[], Chain | undefined>;
+type WriteParams = WriteContractParameters<
+  Abi,
+  string,
+  readonly unknown[],
+  Chain | undefined
+>;
 
 export const executeAsCharacter = (
   character: Character,
   walletClient: WalletClient,
-  args: Array<
-    WriteParams
-  > | WriteParams,
+  args: Array<WriteParams> | WriteParams,
 ): Promise<`0x${string}`> => {
-
   if (!Array.isArray(args)) {
     args = [args] as Array<WriteParams>;
   }

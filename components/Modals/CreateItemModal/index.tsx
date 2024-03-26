@@ -88,6 +88,10 @@ export const CreateItemModal: React.FC = () => {
     setItemEmblem(null);
     setItemLayer(null);
     setEquippableType(EquippableTraitType.EQUIPPED_WEARABLE);
+    setCraftableToggle(false);
+    setCraftRequirementsList([]);
+    setClaimByRequirementsToggle(false);
+    setRequirementNode(null);
     setRequiredAssetsBytes('0x');
 
     setIsCreating(false);

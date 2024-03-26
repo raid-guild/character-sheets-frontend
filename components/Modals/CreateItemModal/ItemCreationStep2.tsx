@@ -71,14 +71,8 @@ export const ItemCreationStep2: React.FC<Step2Props> = ({
   }, [whitelistAddressList, itemSupply, itemDistribution]);
 
   const hasError = useMemo(() => {
-    return (
-      //     invalidXpRequiredAmount
-      invalidWhitelistAddressList
-    );
-  }, [
-    invalidWhitelistAddressList,
-    //   invalidXpRequiredAmount,
-  ]);
+    return invalidWhitelistAddressList;
+  }, [invalidWhitelistAddressList]);
 
   const [showError, setShowError] = useState<boolean>(false);
 

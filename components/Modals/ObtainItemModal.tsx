@@ -196,79 +196,81 @@ export const ObtainItemModal: React.FC = () => {
   }, [selectedItem, character, amount]);
 
   const onObtainItem = useCallback(async () => {
-    if (noSupply) {
-      throw new Error('This item has zero supply.');
-    }
-
-    if (noDistribution) {
-      throw new Error(
-        'You have already claimed the maximum amount of this item.',
-      );
-    }
-
-    if (hasError && isWhitelistedForAll) {
-      setShowError(true);
-      return null;
-    }
-
-    if (!walletClient) {
-      throw new Error('Could not find a wallet client');
-    }
-
-    if (!game?.itemsAddress) {
-      throw new Error('Missing game data');
-    }
-
-    if (!character) {
-      throw new Error('Character address not found');
-    }
-
-    if (!selectedItem) {
-      throw new Error('Item not found');
-    }
-
-    setIsObtaining(true);
-
-    if (!isWhitelistedForAll && !tree) {
-      console.error('Could not find the whitelist tree.');
-      throw new Error(
-        `Something went wrong while obtaining ${selectedItem.name}.`,
-      );
-    }
-
-    const itemId = BigInt(selectedItem.itemId);
-
-    let proof: string[] = [];
-    let obtainingAmount = BigInt(amount);
-
-    if (
-      isWhitelistedByMerkleProof &&
-      tree &&
-      whitelistedAmount > BigInt(0) &&
-      whitelistLeaf
-    ) {
-      proof = tree.getProof(whitelistLeaf);
-      obtainingAmount = whitelistedAmount;
-    } else if (!isWhitelistedForAll) {
-      console.error('Not whitelist by public or merkle proof.');
-      throw new Error(
-        `Something went wrong while obtaining ${selectedItem.name}.`,
-      );
-    }
-
-    if (isCraftable && !satisfiesCraftRequirements) {
-      throw new Error('You do not have the required items to craft this item.');
-    }
-
-    if (
-      !isCraftable &&
-      !!selectedItem?.claimRequirements &&
-      !satisfiesClaimRequirements
-    ) {
-      throw new Error('You do not meet the requirements to claim this item.');
-    }
-
     try {
+      if (noSupply) {
+        throw new Error('This item has zero supply.');
+      }
+
+      if (noDistribution) {
+        throw new Error(
+          'You have already claimed the maximum amount of this item.',
+        );
+      }
+
+      if (hasError && isWhitelistedForAll) {
+        setShowError(true);
+        return null;
+      }
+
+      if (!walletClient) {
+        throw new Error('Could not find a wallet client');
+      }
+
+      if (!game?.itemsAddress) {
+        throw new Error('Missing game data');
+      }
+
+      if (!character) {
+        throw new Error('Character address not found');
+      }
+
+      if (!selectedItem) {
+        throw new Error('Item not found');
+      }
+
+      setIsObtaining(true);
+
+      if (!isWhitelistedForAll && !tree) {
+        console.error('Could not find the whitelist tree.');
+        throw new Error(
+          `Something went wrong while obtaining ${selectedItem.name}.`,
+        );
+      }
+
+      const itemId = BigInt(selectedItem.itemId);
+
+      let proof: string[] = [];
+      let obtainingAmount = BigInt(amount);
+
+      if (
+        isWhitelistedByMerkleProof &&
+        tree &&
+        whitelistedAmount > BigInt(0) &&
+        whitelistLeaf
+      ) {
+        proof = tree.getProof(whitelistLeaf);
+        obtainingAmount = whitelistedAmount;
+      } else if (!isWhitelistedForAll) {
+        console.error('Not whitelist by public or merkle proof.');
+        throw new Error(
+          `Something went wrong while obtaining ${selectedItem.name}.`,
+        );
+      }
+
+      if (isCraftable && !satisfiesCraftRequirements) {
+        throw new Error(
+          'You do not have the required items to craft this item.',
+        );
+      }
+
+      if (
+        !isCraftable &&
+        !!selectedItem?.claimRequirements &&
+        !satisfiesClaimRequirements
+      ) {
+        throw new Error('You do not meet the requirements to claim this item.');
+      }
+
       const approvalTxs =
         isCraftable && !isApprovedForAll
           ? [
@@ -324,6 +326,8 @@ export const ObtainItemModal: React.FC = () => {
     isWhitelistedByMerkleProof,
     isApprovedForAll,
     isCraftable,
+    satisfiesClaimRequirements,
+    satisfiesCraftRequirements,
   ]);
 
   const isLoading = isObtaining;
