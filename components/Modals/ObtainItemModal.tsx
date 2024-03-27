@@ -22,6 +22,7 @@ import { useWalletClient } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
+import { useClaimNonce } from '@/hooks/useClaimNonce';
 import { useIsApprovedForAll } from '@/hooks/useIsApprovedForAll';
 import { useWhitelistTree, WhitelistItemLeaf } from '@/hooks/useWhitelistTree';
 import { executeAsCharacter } from '@/utils/account';
@@ -105,9 +106,15 @@ export const ObtainItemModal: React.FC = () => {
 
   const {
     tree,
-    loading: isLoadingTree,
+    loading: isLoadingWhitelist,
     reload: reloadTree,
   } = useWhitelistTree(selectedItem?.itemId);
+
+  const { nonce, loading: isLoadingNonce } = useClaimNonce(
+    selectedItem?.itemId,
+  );
+
+  const isLoadingTree = isLoadingWhitelist || isLoadingNonce;
 
   const resetData = useCallback(() => {
     setOpenDetails(-1);
@@ -133,13 +140,15 @@ export const ObtainItemModal: React.FC = () => {
     if (!character) return null;
     if (!selectedItem) return null;
     if (!tree) return null;
+    if (!nonce) return null;
     if (tree.root.toLowerCase() !== selectedItem.merkleRoot.toLowerCase())
       return null;
     if (!whitelistLeaves.length) return null;
     const whitelistLeaf = whitelistLeaves.find(
       leaf =>
         leaf[1] === getAddress(character.account) &&
-        leaf[0] === BigInt(selectedItem.itemId),
+        leaf[0] === BigInt(selectedItem.itemId) &&
+        leaf[2] === BigInt(nonce),
     );
     if (!whitelistLeaf) return null;
     return [
@@ -148,7 +157,7 @@ export const ObtainItemModal: React.FC = () => {
       BigInt(whitelistLeaf[2]),
       BigInt(whitelistLeaf[3]),
     ];
-  }, [character, selectedItem, tree, whitelistLeaves]);
+  }, [character, selectedItem, tree, whitelistLeaves, nonce]);
 
   const whitelistedAmount: bigint = useMemo(() => {
     if (!whitelistLeaf) return BigInt(0);
@@ -489,13 +498,13 @@ export const ObtainItemModal: React.FC = () => {
                     isDisabled
                     type="number"
                     value={
-                      whitelistedAmount === distributionLeftToObtain
+                      whitelistedAmount <= distributionLeftToObtain
                         ? whitelistedAmount.toString()
                         : '0'
                     }
                   />
                   {(whitelistedAmount === BigInt(0) ||
-                    whitelistedAmount !== distributionLeftToObtain) && (
+                    whitelistedAmount > distributionLeftToObtain) && (
                     <FormHelperText color="red">
                       You cannot obtain this item.
                     </FormHelperText>

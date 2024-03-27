@@ -51,7 +51,7 @@ export const useWhitelistTree = (
       chainId: chainId ? chainId.toString() : '',
       itemId: itemId ? itemId.toString() : '',
     }),
-    [gameAddress, itemId],
+    [gameAddress, chainId, itemId],
   );
 
   const { data, error, mutate, isLoading, isValidating } = useSWR<

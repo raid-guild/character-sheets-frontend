@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
-import { getClaimableTreeFromDB } from '@/lib/claimableTree';
 import { isSupportedChain } from '@/lib/web3';
+import { getWhitelistTreeFromDB } from '@/lib/whitelistTree';
 
 export default async function getTree(
   req: NextApiRequest,
@@ -27,7 +27,7 @@ export default async function getTree(
   }
 
   try {
-    const tree = await getClaimableTreeFromDB(gameAddress, itemId, chainId);
+    const tree = await getWhitelistTreeFromDB(gameAddress, itemId, chainId);
 
     if (!tree) {
       return res.status(404).end();
