@@ -25,9 +25,15 @@ import {
 } from '@chakra-ui/react';
 import FuzzySearch from 'fuzzy-search';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { zeroHash } from 'viem';
 
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
+import { useWhitelistedItems } from '@/hooks/useWhitelistedItems';
+import {
+  checkClaimRequirements,
+  checkCraftRequirements,
+} from '@/utils/requirements';
 import { Character, Item } from '@/utils/types';
 
 import { SquareIcon } from '../icons/SquareIcon';
@@ -47,8 +53,13 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { game } = useGame();
+  const { game, character: loggedInCharacter } = useGame();
   const { areAnyItemModalsOpen } = useItemActions();
+
+  const { whitelistedItems, loading: loadingWhitelist } = useWhitelistedItems();
+
+  const showObtainableFilter =
+    !character && !!loggedInCharacter && !loadingWhitelist;
 
   const [displayType, setDisplayType] = useState<
     'FULL_CARDS' | 'SMALL_CARDS' | 'TABLE_VIEW'
@@ -62,29 +73,14 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
     'itemId' | 'name' | 'holders' | 'supply'
   >('itemId');
 
-  const [operatorFilter, setOperatorFilter] = useState<
-    'more' | 'less' | 'equal'
-  >('more');
-  const [amountFilter, setAmountFilter] = useState<string>('');
-  const [categoryFilter, setCategoryFilter] = useState<
-    'experience' | 'item' | 'class'
-  >('experience');
-  const [idFilter, setIdFilter] = useState<string>('');
+  const [obtainableFilter, setObtainableFilter] = useState<
+    'ALL' | 'OBTAINABLE' | 'CLAIMABLE' | 'CRAFTABLE'
+  >('ALL');
 
   const items = useMemo(
     () => character?.heldItems || game?.items || [],
     [character, game],
   );
-
-  const idOptions = useMemo(() => {
-    if (categoryFilter === 'item') {
-      return game?.items.map(i => i) ?? [];
-    }
-    if (categoryFilter === 'class') {
-      return game?.classes.map(c => c) ?? [];
-    }
-    return [];
-  }, [categoryFilter, game]);
 
   useEffect(() => {
     if (!game) return;
@@ -104,67 +100,62 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
   }, [game]);
 
   useEffect(() => {
-    const filteredItems = items.filter(() => {
-      if (amountFilter === '') return true;
-      if (Number(amountFilter) < 0) return false;
+    const filteredItems = items.filter(item => {
+      if (!showObtainableFilter) return true;
+      if (!loggedInCharacter) return true;
+      if (!game) return true;
 
-      {
-        /* TODO: Fix Filters!!
-      if (categoryFilter === 'experience') {
-        const requiredXp =
-          item.requirements.find(
-            r => r.assetAddress === game?.experienceAddress,
-          )?.amount ?? '0';
-        if (operatorFilter === 'more') {
-          return Number(requiredXp) > Number(amountFilter);
-        }
-        if (operatorFilter === 'less') {
-          return Number(requiredXp) < Number(amountFilter);
-        }
-        return Number(requiredXp) === Number(amountFilter);
-      }
-      const formattedIdFilter = idFilter
-        ? Number(idFilter.split('-')[2]).toString()
-        : '';
+      const whitelistedAmount =
+        whitelistedItems.find(i => i.itemId === item.itemId)?.amount || null;
 
-      if (categoryFilter === 'item') {
-        const requiredItems = item.requirements.filter(
-          r => r.assetAddress === game?.itemsAddress,
+      const balance =
+        loggedInCharacter.heldItems.find(i => i.itemId === item.itemId)
+          ?.amount || BigInt(0);
+
+      const availableDistribution = BigInt(item.distribution) - BigInt(balance);
+
+      const availableToClaim =
+        BigInt(item.supply) > BigInt(0) &&
+        availableDistribution > BigInt(0) &&
+        BigInt(item.supply) > availableDistribution;
+
+      const hasWhitelistedAmount =
+        whitelistedAmount &&
+        BigInt(whitelistedAmount) > BigInt(0) &&
+        BigInt(whitelistedAmount) <= availableDistribution;
+
+      const isWhitelisted =
+        availableToClaim &&
+        (item.merkleRoot === zeroHash || hasWhitelistedAmount);
+
+      const isCraftable =
+        item.craftable &&
+        checkCraftRequirements(
+          item.craftRequirements,
+          loggedInCharacter,
+          BigInt(1),
         );
-        const itemById = requiredItems.find(
-          ri => ri.assetId === formattedIdFilter,
-        );
-        if (itemById) {
-          if (operatorFilter === 'more') {
-            return Number(itemById.amount) > Number(amountFilter);
-          }
-          if (operatorFilter === 'less') {
-            return Number(itemById.amount) < Number(amountFilter);
-          }
-          return Number(itemById.amount) === Number(amountFilter);
-        }
+
+      const isClaimable =
+        !item.craftable &&
+        (!item.claimRequirements ||
+          checkClaimRequirements(
+            item.claimRequirements,
+            game,
+            loggedInCharacter,
+          ));
+
+      switch (obtainableFilter) {
+        case 'OBTAINABLE':
+          return isWhitelisted && (isClaimable || isCraftable);
+        case 'CLAIMABLE':
+          return isWhitelisted && isClaimable;
+        case 'CRAFTABLE':
+          return isWhitelisted && isCraftable;
+        case 'ALL':
+        default:
+          return true;
       }
-      if (categoryFilter === 'class') {
-        const requiredClasses = item.requirements.filter(
-          r => r.assetAddress === game?.classesAddress,
-        );
-        const classById = requiredClasses.find(
-          rc => rc.assetId === formattedIdFilter,
-        );
-        if (classById) {
-          if (operatorFilter === 'more') {
-            return Number(classById.amount) > Number(amountFilter);
-          }
-          if (operatorFilter === 'less') {
-            return Number(classById.amount) < Number(amountFilter);
-          }
-          return Number(classById.amount) === Number(amountFilter);
-        }
-      }
-      return false;
-        */
-      }
-      return true;
     });
 
     const sortedItems = filteredItems.slice().sort((a, b) => {
@@ -205,15 +196,15 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
     });
     setSearchedItems(searcher.search(searchText));
   }, [
-    amountFilter,
-    categoryFilter,
     game,
-    idFilter,
     items,
-    operatorFilter,
     searchText,
     sortAttribute,
     sortOrder,
+    whitelistedItems,
+    obtainableFilter,
+    loggedInCharacter,
+    showObtainableFilter,
   ]);
 
   const onSelectDisplayType = useCallback(
@@ -398,69 +389,30 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
                 </MenuList>
               </Menu>
             </HStack>
-            <HStack
-              flexDirection={{ base: 'column', md: 'row' }}
-              spacing={2}
-              w="100%"
-            >
-              <Text>Requires</Text>
-              <Select
-                onChange={({ target }) =>
-                  setOperatorFilter(target.value as 'more' | 'less' | 'equal')
-                }
-                // placeholder="OPERATOR"
-                size="sm"
-                value={operatorFilter}
-                variant="outline"
-              >
-                <option value="more">more than</option>
-                <option value="less">less than</option>
-                <option value="equal">equal to</option>
-              </Select>
-              <Input
-                fontSize="xs"
-                h="30px"
-                minW="40px"
-                maxW="100px"
-                onChange={e => setAmountFilter(e.target.value)}
-                placeholder="amount"
-                type="number"
-                value={amountFilter}
-              />
-              <Select
-                onChange={({ target }) =>
-                  setCategoryFilter(
-                    target.value as 'experience' | 'item' | 'class',
-                  )
-                }
-                // placeholder="CATEGORY"
-                size="sm"
-                value={categoryFilter}
-                variant="outline"
-              >
-                <option value="experience">XP</option>
-                <option value="item">items</option>
-                <option value="class">levels in class</option>
-              </Select>
-              {idOptions.length > 0 && (
-                <>
-                  <Text>of</Text>
-                  <Select
-                    onChange={({ target }) => setIdFilter(target.value)}
-                    // placeholder="ID"
-                    size="sm"
-                    value={idFilter}
-                    variant="outline"
-                  >
-                    {idOptions.map(o => (
-                      <option key={`item-or-class-id-${o.id}`} value={o.id}>
-                        {o.name}
-                      </option>
-                    ))}
-                  </Select>
-                </>
-              )}
-            </HStack>
+            {showObtainableFilter && (
+              <HStack spacing={2}>
+                <Text flexShrink={0}>Filter by:</Text>
+                <Select
+                  onChange={({ target }) =>
+                    setObtainableFilter(
+                      target.value as
+                        | 'ALL'
+                        | 'OBTAINABLE'
+                        | 'CLAIMABLE'
+                        | 'CRAFTABLE',
+                    )
+                  }
+                  size="sm"
+                  value={obtainableFilter}
+                  variant="outline"
+                >
+                  <option value="ALL">All</option>
+                  <option value="OBTAINABLE">Obtainable</option>
+                  <option value="CLAIMABLE">Claimable</option>
+                  <option value="CRAFTABLE">Craftable</option>
+                </Select>
+              </HStack>
+            )}
           </VStack>
           {(displayType === 'FULL_CARDS' || displayType === 'SMALL_CARDS') && (
             <SimpleGrid
