@@ -59,19 +59,15 @@ export const validateNode = (
   if (node.operator === 'AND' || node.operator === 'OR') {
     if (!node.children) return false;
     if (node.children.length === 0) return false;
+    if (!!node.asset) return false;
     if (!node.children.every(n => validateNode(n, game))) return false;
     return true;
   }
 
   if (node.operator === 'NOT') {
-    if (!node.children || node.children.length === 0) {
-      const newNode = {
-        ...node,
-        operator: 'NIL' as RequirementNode['operator'],
-      };
-      return validateNode(newNode, game);
-    }
+    if (!node.children) return false;
     if (node.children.length !== 1) return false;
+    if (!!node.asset) return false;
     if (!validateNode(node.children[0], game)) return false;
     return true;
   }
@@ -213,12 +209,21 @@ export const decodeRequirementNode = (
 
   const operator = decodeOperator(node.operator);
 
-  const asset = {
+  let asset: RequirementNode['asset'] = {
     assetCategory: decodeCategory(node.asset.category),
     assetAddress: node.asset.assetAddress,
     assetId: node.asset.id.toString(),
     amount: node.asset.amount.toString(),
   };
+
+  if (
+    asset.assetCategory === 'ERC20' &&
+    asset.assetAddress === zeroAddress &&
+    asset.assetId === '0' &&
+    asset.amount === '0'
+  ) {
+    asset = null;
+  }
 
   return {
     operator,
@@ -325,8 +330,9 @@ export const checkClaimRequirements = (
     }
 
     const klass =
-      node.asset.assetCategory === 'ERC721' &&
-      node.asset.assetAddress.toLowerCase() === game.itemsAddress.toLowerCase()
+      node.asset.assetCategory === 'ERC1155' &&
+      node.asset.assetAddress.toLowerCase() ===
+        game.classesAddress.toLowerCase()
         ? character.heldClasses.find(
             klass => klass.classId === node.asset?.assetId,
           )

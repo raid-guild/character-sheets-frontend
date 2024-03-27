@@ -63,7 +63,7 @@ export const CraftItemRequirementsListInput: React.FC<Props> = ({
   if (!chainId) {
     return (
       <VStack align="stretch" spacing={4} w="100%">
-        <Text>You must connect your wallet to add claimers.</Text>
+        <Text>You must connect your wallet to add items</Text>
       </VStack>
     );
   }
@@ -258,8 +258,11 @@ const CraftItemRequirementInput: React.FC<InputProps> = ({
             items={items.filter(i => !i.soulbound)}
             selectedItem={selectedItem}
             setSelectedItem={setSelectedItem}
+            noItemsText="No transferable items available"
           />
-          <Tooltip label={items.length === 0 ? 'No items available' : ''}>
+          <Tooltip
+            label={items.length === 0 ? 'No transferable items available' : ''}
+          >
             <Input
               type="number"
               step={1}
@@ -277,7 +280,9 @@ const CraftItemRequirementInput: React.FC<InputProps> = ({
           <FormHelperText color="red.500">{errorText}</FormHelperText>
         )}
       </FormControl>
-      <Tooltip label={items.length === 0 ? 'No items available' : ''}>
+      <Tooltip
+        label={items.length === 0 ? 'No transferable items available' : ''}
+      >
         <Button
           variant="outline"
           size="sm"

@@ -17,16 +17,18 @@ type SelectItemInputProps = {
   selectedItem: Item | null;
   setSelectedItem: (item: Item) => void;
   items: Item[];
+  noItemsText?: string;
 };
 
 export const SelectItemInput: React.FC<SelectItemInputProps> = ({
   selectedItem,
   setSelectedItem,
   items,
+  noItemsText = 'No items available',
 }) => {
   return (
     <Menu>
-      <Tooltip label={items.length === 0 ? 'No items available' : ''}>
+      <Tooltip label={items.length === 0 ? noItemsText : ''}>
         <MenuButton
           as={Button}
           rightIcon={<ChevronDownIcon />}

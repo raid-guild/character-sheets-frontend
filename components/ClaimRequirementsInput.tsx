@@ -40,17 +40,32 @@ export const ClaimRequirementsInput: React.FC<Props> = ({ node, setNode }) => {
       {!isEditing && !node && (
         <Button onClick={() => setIsEditing(true)}>Add Requirement</Button>
       )}
-      {node && (node.operator === 'AND' || node.operator == 'OR') && (
-        <Button
-          size="sm"
-          variant="outline"
-          maxH="24px"
-          onClick={() => {
-            setIsEditing(e => !e);
-          }}
-        >
-          {isEditing ? 'Cancel' : 'Edit'}
-        </Button>
+      {node && !isEditing && (
+        <HStack w="100%" justify="space-between">
+          <Button
+            size="sm"
+            variant="outline"
+            maxH="24px"
+            onClick={() => {
+              setNode(null);
+              setIsEditing(false);
+            }}
+            px={3}
+          >
+            Remove
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            maxH="24px"
+            onClick={() => {
+              setIsEditing(true);
+            }}
+            px={3}
+          >
+            Edit
+          </Button>
+        </HStack>
       )}
     </VStack>
   );
@@ -66,6 +81,7 @@ const RequirementNodeEditor: React.FC<{
   isEditingChildren?: boolean[];
   setIsEditingChildren?: (editing: boolean[]) => void;
   isEditable?: boolean;
+  onRemove?: () => void;
 }> = ({
   node,
   setNode,
@@ -76,6 +92,7 @@ const RequirementNodeEditor: React.FC<{
   isEditingChildren = [],
   setIsEditingChildren = () => {},
   isEditable = true,
+  onRemove = () => {},
 }) => {
   const [operator, setOperator] = useState<RequirementNode['operator']>('NIL');
   const [asset, setAsset] = useState<RequirementNode['asset'] | null>(null);
@@ -89,9 +106,9 @@ const RequirementNodeEditor: React.FC<{
 
   useEffect(() => {
     if (node) {
-      setOperator(node.operator);
-      setAsset(node.asset);
       setChildren(node.children);
+      setAsset(node.asset);
+      setOperator(node.operator);
 
       if (node.asset) {
         if (node.asset.assetCategory === 'ERC1155') {
@@ -123,6 +140,13 @@ const RequirementNodeEditor: React.FC<{
           setType('EXPERIENCE');
         }
       }
+    } else {
+      setOperator('NIL');
+      setAsset(null);
+      setChildren([]);
+      setSelectedItem(null);
+      setSelectedClass(null);
+      setType('CLASS');
     }
   }, [node, isEditing, game]);
 
@@ -184,25 +208,28 @@ const RequirementNodeEditor: React.FC<{
     }
   }, [selectedClass, game]);
 
-  const hasError = useMemo(
-    () =>
-      !validateNode(
-        {
-          operator,
-          asset,
-          children: children.filter(n => !!n) as RequirementNode[],
-        },
-        game,
-      ),
-    [operator, asset, children, game],
-  );
+  const newNode = useMemo(() => {
+    if (operator === 'NIL') {
+      return {
+        operator,
+        asset,
+        children: [],
+      };
+    }
+    return {
+      operator,
+      asset: null,
+      children: children.filter(c => !!c) as RequirementNode[],
+    };
+  }, [operator, asset, children]);
+
+  const hasError = useMemo(() => !validateNode(newNode, game), [newNode, game]);
   const [showError, setShowError] = useState(false);
 
   return (
     <VStack
       w="100%"
       p={4}
-      spacing={3}
       borderRadius={4}
       border="1px solid"
       borderColor="white"
@@ -216,6 +243,7 @@ const RequirementNodeEditor: React.FC<{
           }
           size="sm"
           variant="outline"
+          w="18rem"
         >
           <option value="NIL">Hold</option>
           <option value="AND">AND</option>
@@ -234,6 +262,7 @@ const RequirementNodeEditor: React.FC<{
               }
               size="sm"
               variant="outline"
+              w="18rem"
             >
               <option value="CLASS">Class Levels</option>
               <option value="ITEM">Items</option>
@@ -259,6 +288,7 @@ const RequirementNodeEditor: React.FC<{
             <Input
               fontSize="xs"
               h="30px"
+              w="16.875rem"
               onChange={e => {
                 setAsset(asset =>
                   asset ? { ...asset, amount: e.target.value } : asset,
@@ -291,29 +321,37 @@ const RequirementNodeEditor: React.FC<{
         />
       )}
       {operator === 'AND' || operator === 'OR' ? (
-        <VStack w="100%" p={3} spacing={3}>
+        <VStack w="100%" p={3}>
           {children.map((child, idx) => (
             <>
-              <RequirementNodeDisplay
-                key={idx}
-                node={child}
-                setNode={newNode => {
-                  setChildren(
-                    children.map((c, i) => (i === idx ? newNode : c)),
-                  );
-                }}
-                isEditingParent={isEditing}
-                setIsEditingParent={setIsEditing}
-                isEditing={isEditingChildren[idx] ?? false}
-                setIsEditing={editing => {
-                  setIsEditingChildren(
-                    isEditingChildren.map((_editing, i) =>
-                      i === idx ? editing : _editing,
-                    ),
-                  );
-                }}
-                isEditable={isEditable}
-              />
+              <HStack w="100%" position="relative">
+                <RequirementNodeDisplay
+                  key={idx}
+                  node={child}
+                  setNode={newNode => {
+                    setChildren(
+                      children.map((c, i) => (i === idx ? newNode : c)),
+                    );
+                  }}
+                  isEditingParent={isEditing}
+                  setIsEditingParent={setIsEditing}
+                  isEditing={isEditingChildren[idx] ?? false}
+                  setIsEditing={editing => {
+                    setIsEditingChildren(
+                      isEditingChildren.map((_editing, i) =>
+                        i === idx ? editing : _editing,
+                      ),
+                    );
+                  }}
+                  isEditable={isEditable}
+                  onRemove={() => {
+                    setChildren(children.filter((_, i) => i !== idx));
+                    setIsEditingChildren(
+                      isEditingChildren.filter((_, i) => i !== idx),
+                    );
+                  }}
+                />
+              </HStack>
               {idx < children.length - 1 && (
                 <OperatorDisplay operator={operator} />
               )}
@@ -321,9 +359,10 @@ const RequirementNodeEditor: React.FC<{
           ))}
           {isEditable && (
             <Button
+              mt={1}
               size="sm"
               variant="outline"
-              maxH="24px"
+              w="100%"
               onClick={() => {
                 setChildren([...children, null]);
                 setIsEditingChildren([...isEditingChildren, true]);
@@ -340,26 +379,55 @@ const RequirementNodeEditor: React.FC<{
         </Text>
       )}
 
-      <Button
-        size="sm"
-        variant="solid"
-        maxH="24px"
-        onClick={() => {
-          if (hasError) {
-            setShowError(true);
-            return;
-          }
-          setShowError(false);
-          setNode({
-            operator,
-            asset,
-            children: children.filter(c => !!c) as RequirementNode[],
-          });
-          setIsEditing(false);
-        }}
-      >
-        Save
-      </Button>
+      <HStack mt={3} justify="space-between" w="100%">
+        <HStack>
+          <Button
+            size="sm"
+            variant="outline"
+            maxH="24px"
+            onClick={() => {
+              setIsEditing(false);
+              onRemove();
+            }}
+            px={3}
+          >
+            Remove
+          </Button>
+        </HStack>
+        <HStack>
+          <Button
+            size="sm"
+            variant="outline"
+            maxH="24px"
+            onClick={() => {
+              setIsEditing(false);
+              if (!node) {
+                onRemove();
+              }
+            }}
+            px={3}
+          >
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            variant="solid"
+            maxH="24px"
+            onClick={() => {
+              if (hasError) {
+                setShowError(true);
+                return;
+              }
+              setShowError(false);
+              setNode(newNode);
+              setIsEditing(false);
+            }}
+            px={3}
+          >
+            Save
+          </Button>
+        </HStack>
+      </HStack>
     </VStack>
   );
 };
@@ -383,6 +451,7 @@ export const RequirementNodeDisplay: React.FC<{
   isEditingParent?: boolean;
   setIsEditingParent?: (editing: boolean) => void;
   isEditable?: boolean;
+  onRemove?: () => void;
 }> = ({
   node,
   setNode = () => {},
@@ -391,6 +460,7 @@ export const RequirementNodeDisplay: React.FC<{
   isEditingParent = false,
   setIsEditingParent = () => {},
   isEditable = true,
+  onRemove = () => {},
 }) => {
   const { game } = useGame();
   const [isEditingChildren, setIsEditingChildren] = useState(
@@ -413,6 +483,7 @@ export const RequirementNodeDisplay: React.FC<{
         isEditingChildren={isEditingChildren}
         setIsEditingChildren={setIsEditingChildren}
         isEditable={isEditable}
+        onRemove={onRemove}
       />
     );
   }
@@ -456,29 +527,56 @@ export const RequirementNodeDisplay: React.FC<{
     })();
 
     return (
-      <HStack w="100%" bg="whiteAlpha.100" borderRadius={3} p={3} spacing={3}>
+      <HStack w="100%" bg="whiteAlpha.100" borderRadius={3} p={3}>
         {item && <ImageDisplay {...item} />}
         {klass && <ImageDisplay {...klass} />}
+        {exp && (
+          <Image
+            alt="users"
+            height="20px"
+            src="/icons/xp.svg"
+            width="20px"
+            mr="4px"
+          />
+        )}
         <Text w="100%" flex={1}>
           Hold {klass && 'Level '}
           {node.asset.amount.toString()} of {assetLabel}
         </Text>
-        {isEditable && (
-          <Button
-            size="sm"
-            variant="outline"
-            maxH="24px"
-            onClick={() => setIsEditing(true)}
-          >
-            Edit
-          </Button>
+        {isEditable && isEditingParent && (
+          <HStack>
+            <Button
+              size="sm"
+              variant="outline"
+              maxH="24px"
+              onClick={() => {
+                setNode(null);
+                setIsEditing(false);
+                onRemove();
+              }}
+              px={3}
+            >
+              Remove
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              maxH="24px"
+              onClick={() => {
+                setIsEditing(true);
+              }}
+              px={3}
+            >
+              Edit
+            </Button>
+          </HStack>
         )}
       </HStack>
     );
   }
   if (node.operator === 'AND' || node.operator === 'OR') {
     return (
-      <VStack w="100%" bg="whiteAlpha.100" borderRadius={3} p={3} spacing={3}>
+      <VStack w="100%" bg="whiteAlpha.100" borderRadius={3} p={3} spacing={1}>
         {node.children.map((child, idx) => (
           <>
             <RequirementNodeDisplay
@@ -503,6 +601,12 @@ export const RequirementNodeDisplay: React.FC<{
                 );
               }}
               isEditable={isEditable}
+              onRemove={() => {
+                setNode({
+                  ...node,
+                  children: node.children.filter((_, i) => i !== idx),
+                });
+              }}
             />
             {idx < node.children.length - 1 && (
               <OperatorDisplay operator={node.operator} />
@@ -519,7 +623,7 @@ export const RequirementNodeDisplay: React.FC<{
     child.operator = 'NIL';
   }
   return (
-    <VStack w="100%" bg="whiteAlpha.100" borderRadius={3} p={3} spacing={3}>
+    <VStack w="100%" bg="whiteAlpha.100" borderRadius={3} p={3}>
       <OperatorDisplay operator={node.operator} />
       <RequirementNodeDisplay
         node={node.children[0]}
@@ -540,6 +644,10 @@ export const RequirementNodeDisplay: React.FC<{
           setIsEditingChildren([editing]);
         }}
         isEditable={isEditable}
+        onRemove={() => {
+          setNode({ ...node, children: [] });
+          setIsEditingChildren([]);
+        }}
       />
     </VStack>
   );
