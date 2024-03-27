@@ -15,14 +15,14 @@ import { Item } from '@/utils/types';
 import { useCharacterActions } from './CharacterActionsContext';
 
 export enum PlayerActions {
-  CLAIM_ITEM = 'Claim item',
+  OBTAIN_ITEM = 'Obtain item',
   EQUIP_ITEM = 'Equip/Unequip item',
 }
 
 export enum GameMasterActions {
   EDIT_ITEM = 'Edit item',
   GIVE_ITEM = 'Give item',
-  EDIT_ITEM_CLAIMABLE = 'Edit item claimable',
+  EDIT_ITEM_WHITELIST = 'Edit item whitelist',
 }
 
 type ModalProps = Omit<ReturnType<typeof useDisclosure>, 'onOpen'> | undefined;
@@ -37,9 +37,9 @@ type ItemActionsContextType = {
   selectItem: (item: Item) => void;
 
   openActionModal: (action: PlayerActions | GameMasterActions) => void;
-  claimItemModal: ModalProps;
+  obtainItemModal: ModalProps;
   equipItemModal: ModalProps;
-  editItemClaimableModal: ModalProps;
+  editItemWhitelistModal: ModalProps;
 };
 
 const ItemActionsContext = createContext<ItemActionsContextType>({
@@ -52,9 +52,9 @@ const ItemActionsContext = createContext<ItemActionsContextType>({
   selectItem: () => {},
 
   openActionModal: () => {},
-  claimItemModal: undefined,
+  obtainItemModal: undefined,
   equipItemModal: undefined,
-  editItemClaimableModal: undefined,
+  editItemWhitelistModal: undefined,
 });
 
 export const useItemActions = (): ItemActionsContextType =>
@@ -68,9 +68,9 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
   const { setShowEditCharacter, uriNeedsUpgraded } = useCharacterActions();
   const toast = useToast();
 
-  const claimItemModal = useDisclosure();
+  const obtainItemModal = useDisclosure();
   const equipItemModal = useDisclosure();
-  const editItemClaimableModal = useDisclosure();
+  const editItemWhitelistModal = useDisclosure();
 
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
@@ -111,8 +111,8 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
         return;
       }
       switch (action) {
-        case PlayerActions.CLAIM_ITEM:
-          claimItemModal.onOpen();
+        case PlayerActions.OBTAIN_ITEM:
+          obtainItemModal.onOpen();
           break;
 
         case PlayerActions.EQUIP_ITEM:
@@ -136,16 +136,16 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
             status: 'warning',
           });
           break;
-        case GameMasterActions.EDIT_ITEM_CLAIMABLE:
-          editItemClaimableModal.onOpen();
+        case GameMasterActions.EDIT_ITEM_WHITELIST:
+          editItemWhitelistModal.onOpen();
           break;
         default:
           break;
       }
     },
     [
-      claimItemModal,
-      editItemClaimableModal,
+      obtainItemModal,
+      editItemWhitelistModal,
       equipItemModal,
       toast,
       isWrongNetwork,
@@ -157,12 +157,12 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
 
   const areAnyItemModalsOpen = useMemo(
     () =>
-      claimItemModal.isOpen ||
+      obtainItemModal.isOpen ||
       equipItemModal.isOpen ||
-      editItemClaimableModal.isOpen,
+      editItemWhitelistModal.isOpen,
     [
-      claimItemModal.isOpen,
-      editItemClaimableModal.isOpen,
+      obtainItemModal.isOpen,
+      editItemWhitelistModal.isOpen,
       equipItemModal.isOpen,
     ],
   );
@@ -179,9 +179,9 @@ export const ItemActionsProvider: React.FC<React.PropsWithChildren> = ({
         selectItem: setSelectedItem,
 
         openActionModal,
-        claimItemModal,
+        obtainItemModal,
         equipItemModal,
-        editItemClaimableModal,
+        editItemWhitelistModal,
       }}
     >
       {children}

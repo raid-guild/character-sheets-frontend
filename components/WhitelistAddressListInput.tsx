@@ -9,6 +9,7 @@ import {
   Input,
   Link,
   Text,
+  Tooltip,
   VStack,
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -22,25 +23,25 @@ import { Character } from '@/utils/types';
 
 import { SelectCharacterInput } from './SelectCharacterInput';
 
-export type ClaimableAddress = {
+export type WhitelistAddress = {
   address: `0x${string}`;
   amount: bigint;
 };
 
 type Props = {
-  claimableAddressList: Array<ClaimableAddress>;
+  whitelistAddressList: Array<WhitelistAddress>;
   itemSupply: string;
   itemDistribution: string;
-  setClaimableAddressList: React.Dispatch<
-    React.SetStateAction<Array<ClaimableAddress>>
+  setWhitelistAddressList: React.Dispatch<
+    React.SetStateAction<Array<WhitelistAddress>>
   >;
 };
 
-export const ClaimableAddressListInput: React.FC<Props> = ({
-  claimableAddressList,
+export const WhitelistAddressListInput: React.FC<Props> = ({
+  whitelistAddressList,
   itemSupply,
   itemDistribution,
-  setClaimableAddressList,
+  setWhitelistAddressList,
 }) => {
   const { game } = useGame();
   const { chain } = useAccount();
@@ -56,51 +57,51 @@ export const ClaimableAddressListInput: React.FC<Props> = ({
     return map;
   }, [characters]);
 
-  const removeClaimableAddress = useCallback(
+  const removeWhitelistAddress = useCallback(
     (index: number) => {
-      const newClaimableAddressList = claimableAddressList.slice();
-      newClaimableAddressList.splice(index, 1);
-      setClaimableAddressList(newClaimableAddressList);
+      const newWhitelistAddressList = whitelistAddressList.slice();
+      newWhitelistAddressList.splice(index, 1);
+      setWhitelistAddressList(newWhitelistAddressList);
     },
-    [claimableAddressList, setClaimableAddressList],
+    [whitelistAddressList, setWhitelistAddressList],
   );
 
   const charactersNotSelected = useMemo(() => {
     const selectedAddresses = new Set(
-      claimableAddressList.map(c => c.address.toLowerCase()),
+      whitelistAddressList.map(c => c.address.toLowerCase()),
     );
     return characters.filter(c => !selectedAddresses.has(c.account));
-  }, [claimableAddressList, characters]);
+  }, [whitelistAddressList, characters]);
 
   if (!chainId) {
     return (
       <VStack align="stretch" spacing={4} w="100%">
-        <Text>You must connect your wallet to add claimers.</Text>
+        <Text>You must connect your wallet to add characters.</Text>
       </VStack>
     );
   }
 
   return (
     <VStack align="stretch" spacing={4} w="100%">
-      <Text>Whitelisted claimers (if left empty, any player can claim)</Text>
-      <ClaimableAddressInput
+      <Text>Whitelisted characters (if left empty, any player can claim)</Text>
+      <WhitelistAddressInput
         characters={charactersNotSelected}
-        claimableAddressList={claimableAddressList}
+        whitelistAddressList={whitelistAddressList}
         itemSupply={itemSupply}
         itemDistribution={itemDistribution}
-        setClaimableAddressList={setClaimableAddressList}
+        setWhitelistAddressList={setWhitelistAddressList}
       />
       <VStack spacing={2} w="100%">
-        {Array(claimableAddressList.length)
+        {Array(whitelistAddressList.length)
           .fill(0)
           .map((v, i) => (
-            <ClaimableAddressDisplay
+            <WhitelistAddressDisplay
               key={v.toString() + i.toString()}
-              claimableAddress={claimableAddressList[i]}
+              whitelistAddress={whitelistAddressList[i]}
               characterName={characterMap.get(
-                claimableAddressList[i].address.toLowerCase(),
+                whitelistAddressList[i].address.toLowerCase(),
               )}
-              removeClaimableAddress={removeClaimableAddress}
+              removeWhitelistAddress={removeWhitelistAddress}
               index={i}
               chainId={chainId}
             />
@@ -111,21 +112,21 @@ export const ClaimableAddressListInput: React.FC<Props> = ({
 };
 
 type DisplayProps = {
-  claimableAddress: ClaimableAddress;
+  whitelistAddress: WhitelistAddress;
   characterName: string | undefined;
-  removeClaimableAddress: (index: number) => void;
+  removeWhitelistAddress: (index: number) => void;
   index: number;
   chainId: number;
 };
 
-const ClaimableAddressDisplay: React.FC<DisplayProps> = ({
-  claimableAddress,
+const WhitelistAddressDisplay: React.FC<DisplayProps> = ({
+  whitelistAddress,
   characterName,
-  removeClaimableAddress,
+  removeWhitelistAddress,
   index: i,
   chainId,
 }) => {
-  const { address, amount } = claimableAddress;
+  const { address, amount } = whitelistAddress;
 
   return (
     <VStack spacing={4} w="100%" mb={4}>
@@ -170,7 +171,7 @@ const ClaimableAddressDisplay: React.FC<DisplayProps> = ({
           transition="0.25s"
           color="whiteAlpha.400"
           _hover={{ color: 'white' }}
-          onClick={() => removeClaimableAddress(i)}
+          onClick={() => removeWhitelistAddress(i)}
         />
       </Grid>
     </VStack>
@@ -179,20 +180,20 @@ const ClaimableAddressDisplay: React.FC<DisplayProps> = ({
 
 type InputProps = {
   characters: Character[];
-  claimableAddressList: Array<ClaimableAddress>;
+  whitelistAddressList: Array<WhitelistAddress>;
   itemSupply: string;
   itemDistribution: string;
-  setClaimableAddressList: React.Dispatch<
-    React.SetStateAction<Array<ClaimableAddress>>
+  setWhitelistAddressList: React.Dispatch<
+    React.SetStateAction<Array<WhitelistAddress>>
   >;
 };
 
-const ClaimableAddressInput: React.FC<InputProps> = ({
+const WhitelistAddressInput: React.FC<InputProps> = ({
   characters,
-  claimableAddressList,
+  whitelistAddressList,
   itemSupply,
   itemDistribution,
-  setClaimableAddressList,
+  setWhitelistAddressList,
 }) => {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null,
@@ -206,7 +207,7 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
   );
 
   const moreThanSupply = useMemo(() => {
-    const totalAmount = claimableAddressList.reduce(
+    const totalAmount = whitelistAddressList.reduce(
       (acc, curr) => BigInt(acc) + BigInt(curr.amount),
       BigInt(0),
     );
@@ -215,7 +216,7 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
       return true;
     }
     return false;
-  }, [amount, claimableAddressList, itemSupply]);
+  }, [amount, whitelistAddressList, itemSupply]);
 
   const moreThanDistribution = useMemo(() => {
     if (BigInt(amount) > BigInt(itemDistribution)) {
@@ -239,15 +240,15 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
       return 'Amount is invalid';
     }
     if (!!selectedCharacter && moreThanSupply) {
-      return 'Total claimable amount exceeds item supply';
+      return 'Total whitelist amount exceeds item supply';
     }
     if (!!selectedCharacter && moreThanDistribution) {
-      return 'Claimable amount exceeds item distribution';
+      return 'Whitelist amount exceeds item distribution';
     }
     return '';
   }, [selectedCharacter, amountInvalid, moreThanSupply, moreThanDistribution]);
 
-  const onAddClaimableAddress = useCallback(() => {
+  const onAddWhitelistAddress = useCallback(() => {
     if (
       !selectedCharacter ||
       amountInvalid ||
@@ -258,7 +259,7 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
       return;
     }
 
-    setClaimableAddressList(oldList => [
+    setWhitelistAddressList(oldList => [
       ...oldList,
       {
         address: getAddress(selectedCharacter.account),
@@ -274,7 +275,7 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
     amountInvalid,
     moreThanSupply,
     moreThanDistribution,
-    setClaimableAddressList,
+    setWhitelistAddressList,
   ]);
 
   return (
@@ -297,23 +298,36 @@ const ClaimableAddressInput: React.FC<InputProps> = ({
             selectedCharacter={selectedCharacter}
             setSelectedCharacter={setSelectedCharacter}
           />
-          <Input
-            type="number"
-            step={1}
-            min={0}
-            placeholder="Amount"
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
-            isInvalid={amountInvalid && showError}
-          />
+          <Tooltip
+            label={characters.length === 0 ? 'No characters available' : ''}
+          >
+            <Input
+              type="number"
+              step={1}
+              min={0}
+              placeholder="Amount"
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+              isInvalid={amountInvalid && showError}
+              isDisabled={characters.length === 0}
+              h="2.7125rem"
+            />
+          </Tooltip>
         </Grid>
         {showError && (
           <FormHelperText color="red.500">{errorText}</FormHelperText>
         )}
       </FormControl>
-      <Button variant="outline" size="sm" onClick={onAddClaimableAddress}>
-        Add claimer
-      </Button>
+      <Tooltip label={characters.length === 0 ? 'No characters available' : ''}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onAddWhitelistAddress}
+          isDisabled={characters.length === 0}
+        >
+          Add character
+        </Button>
+      </Tooltip>
     </VStack>
   );
 };

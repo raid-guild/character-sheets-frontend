@@ -17,19 +17,26 @@ import {
   Tr,
   VStack,
 } from '@chakra-ui/react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { ItemActionMenu } from '@/components/ActionMenus/ItemActionMenu';
 import { useGame } from '@/contexts/GameContext';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { shortenText } from '@/utils/helpers';
-import { Item } from '@/utils/types';
+import { Character, Item } from '@/utils/types';
 
 type ItemCardProps = Item & {
   holderId?: string;
+  holderCharacter?: Character;
+  dummy?: boolean;
 };
 
-export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
+export const ItemCard: React.FC<ItemCardProps> = ({
+  holderId,
+  holderCharacter,
+  dummy = false,
+  ...item
+}) => {
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const {
@@ -42,25 +49,18 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
     soulbound,
     supply,
     totalSupply,
-    requirements,
+    craftable,
   } = item;
 
-  const { character, game } = useGame();
+  const { character } = useGame();
 
   const isEquipped =
     equippers.length > 0 &&
     equippers.some(equippedBy => equippedBy.characterId === holderId);
 
-  const requiredXp = useMemo(() => {
-    return BigInt(
-      requirements.filter(
-        r =>
-          r.assetCategory === 'ERC20' &&
-          r.assetAddress.toLowerCase() ===
-            game?.experienceAddress.toLowerCase(),
-      )[0]?.amount ?? '0',
-    );
-  }, [requirements, game]);
+  const heldAmount = holderCharacter?.heldItems.find(
+    heldItem => heldItem.itemId === itemId,
+  )?.amount;
 
   return (
     <VStack spacing={3} w="100%" h="100%">
@@ -95,7 +95,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
             />
           </AspectRatio>
           <Text fontSize="md" fontWeight="500" w="100%">
-            {name}
+            {heldAmount ? `${name} (${heldAmount})` : name}
           </Text>
           <Text fontSize="sm" w="100%">
             {shortenText(description, 130)}
@@ -146,8 +146,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
               equippers.length !== 1 ? 's' : ''
             }`}
           />
-          <ItemValue label="Required XP" value={requiredXp.toLocaleString()} />
-          {/*
+          <ItemValue label="Craftable?" value={craftable ? 'Yes' : 'No'} />
+          {/* <ItemValue label="Required XP" value={requiredXp.toLocaleString()} />
           <ItemValue
             label="Can I Claim?"
             value={isConnected ? '?' : 'Wallet not connected'}
@@ -155,7 +155,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
           */}
         </SimpleGrid>
       </VStack>
-      {isConnectedAndMounted && !!character && (
+      {isConnectedAndMounted && !!character && !dummy && (
         <ItemActionMenu item={item} variant="solid" />
       )}
     </VStack>
@@ -164,6 +164,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ holderId, ...item }) => {
 
 export const ItemCardSmall: React.FC<ItemCardProps> = ({
   holderId,
+  holderCharacter,
   ...item
 }) => {
   const isConnectedAndMounted = useIsConnectedAndMounted();
@@ -175,13 +176,13 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
     image,
     itemId,
     name,
-    requirements,
     soulbound,
     supply,
     totalSupply,
+    craftable,
   } = item;
 
-  const { character, game } = useGame();
+  const { character } = useGame();
 
   const [showDetails, setShowDetails] = useState(false);
 
@@ -189,16 +190,9 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
     equippers.length > 0 &&
     equippers.some(equippedBy => equippedBy.characterId === holderId);
 
-  const requiredXp = useMemo(() => {
-    return BigInt(
-      requirements.filter(
-        r =>
-          r.assetCategory === 'ERC20' &&
-          r.assetAddress.toLowerCase() ===
-            game?.experienceAddress.toLowerCase(),
-      )[0]?.amount ?? '0',
-    );
-  }, [requirements, game]);
+  const heldAmount = holderCharacter?.heldItems.find(
+    heldItem => heldItem.itemId === itemId,
+  )?.amount;
 
   return (
     <VStack h="100%" spacing={3} w="100%">
@@ -213,7 +207,7 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
       >
         <VStack spacing={3} w="100%">
           <Text fontSize="sm" fontWeight="500" textAlign="center" w="100%">
-            {name}
+            {heldAmount ? `${name} (${heldAmount})` : name}
           </Text>
           <AspectRatio
             h="10rem"
@@ -312,11 +306,12 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
                 equippers.length !== 1 ? 's' : ''
               }`}
             />
+            <ItemValue label="Craftable?" value={craftable ? 'Yes' : 'No'} />
+            {/*
             <ItemValue
               label="Required XP"
               value={requiredXp.toLocaleString()}
             />
-            {/*
           <ItemValue
             label="Can I Claim?"
             value={isConnected ? '?' : 'Wallet not connected'}
@@ -376,7 +371,13 @@ export const ItemsTable: React.FC<{
               )}
               <Td minH="60px">{item.itemId}</Td>
               <Td alignItems="center" display="flex" gap={4} w="240px">
-                <Image alt={item.name} h="40px" src={item.image} />
+                <Image
+                  alt={item.name}
+                  h="40px"
+                  w="40px"
+                  src={item.image}
+                  objectFit="contain"
+                />
                 <Text>{shortenText(item.name, 20)}</Text>
               </Td>
               <Td>

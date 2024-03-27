@@ -278,10 +278,10 @@ export const JoinGame: React.FC<JoinGameProps> = ({
           account: walletClient.account?.address as Address,
           address: game.id as Address,
           abi: parseAbi([
-            'function rollCharacterSheet(string calldata _tokenUri) external',
+            'function rollCharacterSheet(address player, string calldata _tokenUri) external',
           ]),
           functionName: 'rollCharacterSheet',
-          args: [characterTokenUri],
+          args: [walletClient.account?.address as Address, characterTokenUri],
         });
         setTxHash(transactionhash);
 

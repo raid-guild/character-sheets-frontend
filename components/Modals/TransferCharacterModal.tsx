@@ -36,7 +36,7 @@ export const TransferCharacterModal: React.FC = () => {
   }, [game]);
 
   const newPlayerIsAlreadyPlayer = useMemo(() => {
-    return allPlayers.includes(newPlayer.toLowerCase());
+    return allPlayers.includes(newPlayer.toLowerCase() as `0x${string}`);
   }, [allPlayers, newPlayer]);
 
   const hasError = useMemo(() => {

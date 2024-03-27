@@ -30,14 +30,14 @@ import { AddGameMasterModal } from '@/components/Modals/AddGameMasterModal';
 import { ApproveTransferModal } from '@/components/Modals/ApproveTransferModal';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { ClaimClassModal } from '@/components/Modals/ClaimClassModal';
-import { ClaimItemModal } from '@/components/Modals/ClaimItemModal';
 import { CreateClassModal } from '@/components/Modals/CreateClassModal';
 import { CreateItemModal } from '@/components/Modals/CreateItemModal';
 import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
-import { EditItemClaimableModal } from '@/components/Modals/EditItemClaimableModal';
+import { EditItemWhitelistModal } from '@/components/Modals/EditItemWhitelistModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
 import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
+import { ObtainItemModal } from '@/components/Modals/ObtainItemModal';
 import { RemoveCharacterModal } from '@/components/Modals/RemoveCharacterModal';
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
 import { RenounceClassModal } from '@/components/Modals/RenounceClassModal';
@@ -151,7 +151,7 @@ function GamePage({
     transferCharacterModal,
   } = useCharacterActions();
 
-  const { equipItemModal, claimItemModal, editItemClaimableModal } =
+  const { equipItemModal, obtainItemModal, editItemWhitelistModal } =
     useItemActions();
 
   const [showJoinGame, setShowJoinGame] = useState(false);
@@ -499,8 +499,8 @@ function GamePage({
       {transferCharacterModal && <TransferCharacterModal />}
 
       {/*  ITEM ACTIONS */}
-      {claimItemModal && <ClaimItemModal />}
-      {editItemClaimableModal && <EditItemClaimableModal />}
+      {obtainItemModal && <ObtainItemModal />}
+      {editItemWhitelistModal && <EditItemWhitelistModal />}
     </>
   );
 }

@@ -7,6 +7,7 @@ import {
   MenuItem,
   MenuList,
   Text,
+  Tooltip,
 } from '@chakra-ui/react';
 
 import { shortenAddress } from '@/utils/helpers';
@@ -25,18 +26,21 @@ export const SelectCharacterInput: React.FC<SelectCharacterInputProps> = ({
 }) => {
   return (
     <Menu>
-      <MenuButton
-        as={Button}
-        rightIcon={<ChevronDownIcon />}
-        w="100%"
-        h="2.675rem"
-      >
-        {selectedCharacter ? (
-          <CharacterItem character={selectedCharacter} />
-        ) : (
-          <Text>Select Character</Text>
-        )}
-      </MenuButton>
+      <Tooltip label={characters.length === 0 ? 'No characters available' : ''}>
+        <MenuButton
+          as={Button}
+          rightIcon={<ChevronDownIcon />}
+          w="100%"
+          h="2.675rem"
+          isDisabled={characters.length === 0}
+        >
+          {selectedCharacter ? (
+            <CharacterItem character={selectedCharacter} />
+          ) : (
+            <Text>Select Character</Text>
+          )}
+        </MenuButton>
+      </Tooltip>
       <MenuList minW="20rem">
         {characters.map((character: Character) => (
           <MenuItem
