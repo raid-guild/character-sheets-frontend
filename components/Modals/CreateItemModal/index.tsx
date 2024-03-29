@@ -147,7 +147,7 @@ export const CreateItemModal: React.FC = () => {
       if (whitelistAddressList.length === 0) {
         whitelist = pad('0x00');
       } else {
-        const itemId = BigInt(game.items.length);
+        const itemId = BigInt(game.items.length + 1);
         const leaves: WhitelistItemLeaf[] = whitelistAddressList.map(
           ({ address, amount }) => {
             return [
