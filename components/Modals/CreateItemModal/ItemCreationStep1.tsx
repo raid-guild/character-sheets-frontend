@@ -11,53 +11,99 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useMemo, useState } from 'react';
+import { isAddress, maxUint256 } from 'viem';
 
-import { Dropdown } from '@/components/Dropdown';
+import { Switch } from '@/components/Switch';
+import {
+  WhitelistAddress,
+  WhitelistAddressListInput,
+} from '@/components/WhitelistAddressListInput';
 import { useToast } from '@/hooks/useToast';
-import { EquippableTraitType } from '@/lib/traits';
 
 type Step1Props = {
   currentStep: number;
   setCurrentStep: (step: number) => void;
 
-  itemEmblem: File | null;
-  setItemEmblem: (file: File | null) => void;
-  onRemoveEmblem: () => void;
-  isUploadingEmblem: boolean;
-  isUploadedEmblem: boolean;
+  whitelistAddressList: WhitelistAddress[];
+  setWhitelistAddressList: React.Dispatch<
+    React.SetStateAction<WhitelistAddress[]>
+  >;
 
-  itemLayer: File | null;
-  setItemLayer: (file: File | null) => void;
-  onRemoveLayer: () => void;
-  isUploadingLayer: boolean;
-  isUploadedLayer: boolean;
+  soulboundToggle: boolean;
+  setSoulboundToggle: React.Dispatch<React.SetStateAction<boolean>>;
 
-  equippableType: EquippableTraitType;
-  setEquippableType: React.Dispatch<React.SetStateAction<EquippableTraitType>>;
+  whitelistToggle: boolean;
+  setWhitelistToggle: React.Dispatch<React.SetStateAction<boolean>>;
+
+  itemSupply: string;
+  setItemSupply: React.Dispatch<React.SetStateAction<string>>;
+
+  itemDistribution: string;
+  setItemDistribution: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export const ItemCreationStep1: React.FC<Step1Props> = ({
   currentStep,
   setCurrentStep,
 
-  itemEmblem,
-  setItemEmblem,
-  onRemoveEmblem,
-  isUploadingEmblem,
-  isUploadedEmblem,
+  whitelistAddressList,
+  setWhitelistAddressList,
 
-  itemLayer,
-  setItemLayer,
-  onRemoveLayer,
-  isUploadingLayer,
-  isUploadedLayer,
+  soulboundToggle,
+  setSoulboundToggle,
 
-  equippableType,
-  setEquippableType,
+  whitelistToggle,
+  setWhitelistToggle,
+
+  itemSupply,
+  setItemSupply,
+
+  itemDistribution,
+  setItemDistribution,
 }) => {
+  const invalidWhitelistAddressList = useMemo(() => {
+    const totalAmount = whitelistAddressList.reduce(
+      (acc, { amount }) => acc + BigInt(amount),
+      BigInt(0),
+    );
+
+    if (totalAmount > BigInt(itemSupply)) return true;
+
+    return whitelistAddressList.some(
+      ({ address, amount }) =>
+        !isAddress(address) ||
+        BigInt(amount) <= BigInt(0) ||
+        BigInt(amount) > BigInt(itemDistribution) ||
+        BigInt(amount).toString() === 'NaN',
+    );
+  }, [whitelistAddressList, itemSupply, itemDistribution]);
+
+  const invalidItemSupply = useMemo(() => {
+    return (
+      !itemSupply ||
+      BigInt(itemSupply).toString() === 'NaN' ||
+      BigInt(itemSupply) <= BigInt(0) ||
+      BigInt(itemSupply) > maxUint256
+    );
+  }, [itemSupply]);
+
+  const invalidItemDistribution = useMemo(() => {
+    return (
+      !itemDistribution ||
+      BigInt(itemDistribution).toString() === 'NaN' ||
+      BigInt(itemDistribution) <= BigInt(0) ||
+      BigInt(itemDistribution) > maxUint256 ||
+      BigInt(itemDistribution) > BigInt(itemSupply)
+    );
+  }, [itemDistribution, itemSupply]);
+
   const hasError = useMemo(() => {
-    return !itemEmblem;
-  }, [itemEmblem]);
+    return (
+      invalidWhitelistAddressList ||
+      invalidItemSupply ||
+      invalidItemDistribution
+    );
+  }, [invalidWhitelistAddressList, invalidItemSupply, invalidItemDistribution]);
 
   const [showError, setShowError] = useState<boolean>(false);
 
@@ -73,56 +119,30 @@ export const ItemCreationStep1: React.FC<Step1Props> = ({
     setCurrentStep(currentStep + 1);
   }, [currentStep, hasError, renderError, setCurrentStep]);
 
-  const isDisabled = isUploadingEmblem || isUploadingLayer;
-
   return (
     <VStack spacing={8} w="100%">
-      <FormControl isInvalid={showError && !itemEmblem}>
-        <FormLabel>Item Emblem (Thumbnail)</FormLabel>
-        {!itemEmblem && (
-          <Input
-            accept=".png, .jpg, .jpeg, .svg"
-            disabled={isDisabled}
-            onChange={e => setItemEmblem(e.target.files?.[0] ?? null)}
-            type="file"
-            variant="file"
-          />
-        )}
-        {itemEmblem && (
-          <Flex align="center" gap={10} mt={4}>
-            <Image
-              alt="item emblem"
-              objectFit="contain"
-              src={URL.createObjectURL(itemEmblem)}
-              w="300px"
-            />
-            <Button
-              isDisabled={isUploadingEmblem || isUploadedEmblem}
-              isLoading={isUploadingEmblem}
-              loadingText="Uploading..."
-              mt={4}
-              onClick={!isUploadedEmblem ? onRemoveEmblem : undefined}
-              type="button"
-              variant="outline"
-            >
-              {isUploadedEmblem ? 'Uploaded' : 'Remove'}
-            </Button>
-          </Flex>
-        )}
-        {showError && !itemEmblem && (
+      <FormControl isInvalid={showError && !itemSupply}>
+        <FormLabel>Item Supply</FormLabel>
+        <Input
+          onChange={e => setItemSupply(e.target.value)}
+          type="number"
+          value={itemSupply}
+        />
+        {showError && !itemSupply && (
           <FormHelperText color="red">
-            An item emblem is required
+            An item supply is required
+          </FormHelperText>
+        )}
+        {showError && invalidItemSupply && (
+          <FormHelperText color="red">
+            Item supply must be a number greater than 0
           </FormHelperText>
         )}
       </FormControl>
-      <FormControl>
+      <FormControl isInvalid={showError && !itemDistribution}>
         <Flex align="center">
-          <FormLabel>Equippable Item Layer</FormLabel>
-          <Tooltip
-            label="The equippable item layer is combined with a character's
-            current image when they equip the item. If you do not upload an
-            equippable layer, the item emblem will be used instead."
-          >
+          <FormLabel>Item Distribution</FormLabel>
+          <Tooltip label="The max amount of items that a single player can hold.">
             <Image
               alt="down arrow"
               height="14px"
@@ -132,41 +152,27 @@ export const ItemCreationStep1: React.FC<Step1Props> = ({
             />
           </Tooltip>
         </Flex>
-        {!itemLayer && (
-          <Input
-            accept=".png, .jpg, .jpeg, .svg"
-            disabled={isDisabled}
-            onChange={e => setItemLayer(e.target.files?.[0] ?? null)}
-            type="file"
-            variant="file"
-          />
+        <Input
+          onChange={e => setItemDistribution(e.target.value)}
+          type="number"
+          value={itemDistribution}
+        />
+        {showError && !itemDistribution && (
+          <FormHelperText color="red">
+            An item distribution is required
+          </FormHelperText>
         )}
-        {itemLayer && (
-          <Flex align="center" gap={10} mt={4}>
-            <Image
-              alt="item layer"
-              objectFit="contain"
-              src={URL.createObjectURL(itemLayer)}
-              w="300px"
-            />
-            <Button
-              isDisabled={isUploadingLayer || isUploadedLayer}
-              isLoading={isUploadingLayer}
-              loadingText="Uploading..."
-              mt={4}
-              onClick={!isUploadedLayer ? onRemoveLayer : undefined}
-              type="button"
-              variant="outline"
-            >
-              {isUploadedLayer ? 'Uploaded' : 'Remove'}
-            </Button>
-          </Flex>
+        {showError && invalidItemDistribution && (
+          <FormHelperText color="red">
+            Item distribution must be a number greater than 0 and less than or
+            equal to the item supply
+          </FormHelperText>
         )}
       </FormControl>
-      <FormControl>
+      <FormControl isInvalid={showError && !itemSupply}>
         <Flex align="center">
-          <FormLabel>Item Type</FormLabel>
-          <Tooltip label="The type determines where the item will render when equipped by a character.">
+          <FormLabel>Is this item soulbound?</FormLabel>
+          <Tooltip label="By making this item soulbound, you prevent characters who hold the item from ever being able to transfer it.">
             <Image
               alt="down arrow"
               height="14px"
@@ -176,21 +182,47 @@ export const ItemCreationStep1: React.FC<Step1Props> = ({
             />
           </Tooltip>
         </Flex>
-        <Dropdown
-          options={Object.values(EquippableTraitType)}
-          selectedOption={equippableType}
-          setSelectedOption={setEquippableType as (option: string) => void}
+        <Switch
+          isChecked={soulboundToggle}
+          onChange={() => setSoulboundToggle(!soulboundToggle)}
         />
       </FormControl>
+
+      <FormControl isInvalid={showError && !itemSupply}>
+        <Flex align="center">
+          <FormLabel>Allow players to obtain?</FormLabel>
+          <Tooltip label="If you don't allow players to obtain, then items can only be given by the GameMaster.">
+            <Image
+              alt="down arrow"
+              height="14px"
+              mb={2}
+              src="/icons/question-mark.svg"
+              width="14px"
+            />
+          </Tooltip>
+        </Flex>
+        <Switch
+          isChecked={whitelistToggle}
+          onChange={() => setWhitelistToggle(!whitelistToggle)}
+        />
+      </FormControl>
+
+      {whitelistToggle && (
+        <WhitelistAddressListInput
+          whitelistAddressList={whitelistAddressList}
+          itemSupply={itemSupply}
+          itemDistribution={itemDistribution}
+          setWhitelistAddressList={setWhitelistAddressList}
+        />
+      )}
+
       <HStack w="100%" justify="flex-end" spacing={4}>
-        {currentStep != 0 && (
-          <Button
-            variant="outline"
-            onClick={() => setCurrentStep(currentStep - 1)}
-          >
-            Back
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          onClick={() => setCurrentStep(currentStep - 1)}
+        >
+          Back
+        </Button>
         <Button variant="solid" onClick={onNext}>
           Next
         </Button>

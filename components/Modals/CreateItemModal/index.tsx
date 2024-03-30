@@ -9,7 +9,11 @@ import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { WhitelistItemLeaf } from '@/hooks/useWhitelistTree';
-import { EquippableTraitType } from '@/lib/traits';
+import {
+  EquippableTraitType,
+  getImageIpfsUri,
+  getImageUrl,
+} from '@/lib/traits';
 import { CraftRequirement, Item, RequirementNode } from '@/utils/types';
 
 import { ActionModal } from '../ActionModal';
@@ -17,7 +21,6 @@ import { ItemCreationStep0 } from './ItemCreationStep0';
 import { ItemCreationStep1 } from './ItemCreationStep1';
 import { ItemCreationStep2 } from './ItemCreationStep2';
 import { ItemCreationStep3 } from './ItemCreationStep3';
-import { ItemCreationStep4 } from './ItemCreationStep4';
 
 export const CreateItemModal: React.FC = () => {
   const { createItemModal } = useGameActions();
@@ -33,6 +36,8 @@ export const CreateItemModal: React.FC = () => {
     isUploaded: isUploadedEmblem,
   } = useUploadFile({ fileName: 'itemEmblem' });
 
+  const [itemEmblemFileName, setItemEmblemFileName] = useState<string>('');
+
   const {
     file: itemLayer,
     setFile: setItemLayer,
@@ -41,6 +46,8 @@ export const CreateItemModal: React.FC = () => {
     isUploading: isUploadingLayer,
     isUploaded: isUploadedLayer,
   } = useUploadFile({ fileName: 'itemLayer' });
+
+  const [itemLayerFileName, setItemLayerFileName] = useState<string>('');
 
   const [itemName, setItemName] = useState<string>('');
   const [itemDescription, setItemDescription] = useState<string>('');
@@ -86,7 +93,9 @@ export const CreateItemModal: React.FC = () => {
     setWhitelistToggle(false);
     setWhitelistAddressList([]);
     setItemEmblem(null);
+    setItemEmblemFileName('');
     setItemLayer(null);
+    setItemLayerFileName('');
     setEquippableType(EquippableTraitType.EQUIPPED_WEARABLE);
     setCraftableToggle(false);
     setCraftRequirementsList([]);
@@ -104,22 +113,24 @@ export const CreateItemModal: React.FC = () => {
         `Missing item factory address for the ${walletClient.chain.name} network`,
       );
 
-    const emblemCID = await onUploadEmblem();
-    if (!emblemCID)
+    let emblemIpfsUri = getImageIpfsUri(itemEmblemFileName);
+    if (!emblemIpfsUri) emblemIpfsUri = `ipfs://${await onUploadEmblem()}`;
+
+    if (!emblemIpfsUri)
       throw new Error('Something went wrong uploading your item emblem');
 
-    let layerCID = emblemCID;
-    if (itemLayer) {
-      layerCID = await onUploadLayer();
-      if (!layerCID)
-        throw new Error('Something went wrong uploading your item thumbnail');
-    }
+    let layerIpfsUri = getImageIpfsUri(itemLayerFileName);
+    if (!layerIpfsUri) layerIpfsUri = emblemIpfsUri;
+    if (!!itemLayer) layerIpfsUri = `ipfs://${await onUploadLayer()}`;
+
+    if (!layerIpfsUri)
+      throw new Error('Something went wrong uploading your item thumbnail');
 
     const itemMetadata = {
       name: itemName,
       description: itemDescription,
-      image: `ipfs://${emblemCID}`,
-      equippable_layer: `ipfs://${layerCID}`,
+      image: emblemIpfsUri,
+      equippable_layer: layerIpfsUri,
       attributes: [
         {
           trait_type: 'EQUIPPABLE TYPE',
@@ -263,7 +274,9 @@ export const CreateItemModal: React.FC = () => {
     equippableType,
     itemName,
     itemDescription,
+    itemEmblemFileName,
     itemLayer,
+    itemLayerFileName,
     itemSupply,
     itemDistribution,
     game,
@@ -292,8 +305,12 @@ export const CreateItemModal: React.FC = () => {
     merkleRoot: '',
     name: itemName,
     description: itemDescription,
-    image: itemEmblem ? URL.createObjectURL(itemEmblem) : '',
-    equippable_layer: itemLayer ? URL.createObjectURL(itemLayer) : '',
+    image: itemEmblemFileName
+      ? getImageUrl(itemEmblemFileName)
+      : itemEmblem
+        ? URL.createObjectURL(itemEmblem)
+        : '',
+    equippable_layer: '',
     attributes: [
       {
         trait_type: 'EQUIPPABLE TYPE',
@@ -318,7 +335,7 @@ export const CreateItemModal: React.FC = () => {
         onComplete: reloadGame,
       }}
     >
-      <Text>Step {currentStep + 1} of 5</Text>
+      <Text>Step {currentStep + 1} of 4</Text>
       {currentStep === 0 && (
         <ItemCreationStep0
           {...{
@@ -331,11 +348,24 @@ export const CreateItemModal: React.FC = () => {
             itemDescription,
             setItemDescription,
 
-            itemSupply,
-            setItemSupply,
+            itemEmblem,
+            setItemEmblem,
+            onRemoveEmblem,
+            isUploadingEmblem,
+            isUploadedEmblem,
+            itemEmblemFileName,
+            setItemEmblemFileName,
 
-            itemDistribution,
-            setItemDistribution,
+            itemLayer,
+            setItemLayer,
+            onRemoveLayer,
+            isUploadingLayer,
+            isUploadedLayer,
+            itemLayerFileName,
+            setItemLayerFileName,
+
+            equippableType,
+            setEquippableType,
           }}
         />
       )}
@@ -346,29 +376,11 @@ export const CreateItemModal: React.FC = () => {
             currentStep,
             setCurrentStep,
 
-            itemEmblem,
-            setItemEmblem,
-            onRemoveEmblem,
-            isUploadingEmblem,
-            isUploadedEmblem,
+            itemSupply,
+            setItemSupply,
 
-            itemLayer,
-            setItemLayer,
-            onRemoveLayer,
-            isUploadingLayer,
-            isUploadedLayer,
-
-            equippableType,
-            setEquippableType,
-          }}
-        />
-      )}
-
-      {currentStep === 2 && (
-        <ItemCreationStep2
-          {...{
-            currentStep,
-            setCurrentStep,
+            itemDistribution,
+            setItemDistribution,
 
             whitelistAddressList,
             setWhitelistAddressList,
@@ -378,15 +390,12 @@ export const CreateItemModal: React.FC = () => {
 
             whitelistToggle,
             setWhitelistToggle,
-
-            itemSupply,
-            itemDistribution,
           }}
         />
       )}
 
-      {currentStep === 3 && (
-        <ItemCreationStep3
+      {currentStep === 2 && (
+        <ItemCreationStep2
           {...{
             currentStep,
             setCurrentStep,
@@ -409,8 +418,8 @@ export const CreateItemModal: React.FC = () => {
         />
       )}
 
-      {currentStep === 4 && (
-        <ItemCreationStep4
+      {currentStep === 3 && (
+        <ItemCreationStep3
           {...{
             currentStep,
             setCurrentStep,

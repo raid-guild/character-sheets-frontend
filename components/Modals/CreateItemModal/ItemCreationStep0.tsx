@@ -9,13 +9,17 @@ import {
   Input,
   Textarea,
   Tooltip,
+  useDisclosure,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useMemo, useState } from 'react';
-import { maxUint256 } from 'viem';
 
+import { Dropdown } from '@/components/Dropdown';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useToast } from '@/hooks/useToast';
+import { EquippableTraitType, getImageUrl } from '@/lib/traits';
+
+import { DefaultItems } from './DefaultItems';
 
 type Step0Props = {
   currentStep: number;
@@ -27,11 +31,24 @@ type Step0Props = {
   itemDescription: string;
   setItemDescription: React.Dispatch<React.SetStateAction<string>>;
 
-  itemSupply: string;
-  setItemSupply: React.Dispatch<React.SetStateAction<string>>;
+  itemEmblem: File | null;
+  setItemEmblem: (file: File | null) => void;
+  onRemoveEmblem: () => void;
+  isUploadingEmblem: boolean;
+  isUploadedEmblem: boolean;
+  itemEmblemFileName: string;
+  setItemEmblemFileName: (fileName: string) => void;
 
-  itemDistribution: string;
-  setItemDistribution: React.Dispatch<React.SetStateAction<string>>;
+  itemLayer: File | null;
+  setItemLayer: (file: File | null) => void;
+  onRemoveLayer: () => void;
+  isUploadingLayer: boolean;
+  isUploadedLayer: boolean;
+  itemLayerFileName: string;
+  setItemLayerFileName: (fileName: string) => void;
+
+  equippableType: EquippableTraitType;
+  setEquippableType: React.Dispatch<React.SetStateAction<EquippableTraitType>>;
 };
 
 export const ItemCreationStep0: React.FC<Step0Props> = ({
@@ -44,11 +61,24 @@ export const ItemCreationStep0: React.FC<Step0Props> = ({
   itemDescription,
   setItemDescription,
 
-  itemSupply,
-  setItemSupply,
+  itemEmblem,
+  setItemEmblem,
+  onRemoveEmblem,
+  isUploadingEmblem,
+  isUploadedEmblem,
+  itemEmblemFileName,
+  setItemEmblemFileName,
 
-  itemDistribution,
-  setItemDistribution,
+  itemLayer,
+  setItemLayer,
+  onRemoveLayer,
+  isUploadingLayer,
+  isUploadedLayer,
+  itemLayerFileName,
+  setItemLayerFileName,
+
+  equippableType,
+  setEquippableType,
 }) => {
   const characterLimitMessage = useCharacterLimitMessage({
     characterLimit: 200,
@@ -59,25 +89,6 @@ export const ItemCreationStep0: React.FC<Step0Props> = ({
     return itemDescription.length > 200 && !!itemDescription;
   }, [itemDescription]);
 
-  const invalidItemSupply = useMemo(() => {
-    return (
-      !itemSupply ||
-      BigInt(itemSupply).toString() === 'NaN' ||
-      BigInt(itemSupply) <= BigInt(0) ||
-      BigInt(itemSupply) > maxUint256
-    );
-  }, [itemSupply]);
-
-  const invalidItemDistribution = useMemo(() => {
-    return (
-      !itemDistribution ||
-      BigInt(itemDistribution).toString() === 'NaN' ||
-      BigInt(itemDistribution) <= BigInt(0) ||
-      BigInt(itemDistribution) > maxUint256 ||
-      BigInt(itemDistribution) > BigInt(itemSupply)
-    );
-  }, [itemDistribution, itemSupply]);
-
   const [showError, setShowError] = useState<boolean>(false);
 
   const hasError = useMemo(() => {
@@ -85,15 +96,14 @@ export const ItemCreationStep0: React.FC<Step0Props> = ({
       !itemDescription ||
       !itemName ||
       invalidItemDescription ||
-      invalidItemSupply ||
-      invalidItemDistribution
+      (!itemEmblem && !itemEmblemFileName)
     );
   }, [
     itemDescription,
     itemName,
     invalidItemDescription,
-    invalidItemSupply,
-    invalidItemDistribution,
+    itemEmblem,
+    itemEmblemFileName,
   ]);
 
   const { renderError } = useToast();
@@ -108,97 +118,198 @@ export const ItemCreationStep0: React.FC<Step0Props> = ({
     setCurrentStep(currentStep + 1);
   }, [currentStep, hasError, renderError, setCurrentStep]);
 
+  const isDisabled = isUploadingEmblem || isUploadingLayer;
+
+  const defaultItemsModal = useDisclosure();
+
   return (
-    <VStack spacing={8} w="100%">
-      <FormControl isInvalid={showError && !itemName}>
-        <FormLabel>Item Name</FormLabel>
-        <Input
-          onChange={e => setItemName(e.target.value)}
-          type="text"
-          value={itemName}
-        />
-        {showError && !itemName && (
-          <FormHelperText color="red">An item name is required</FormHelperText>
-        )}
-      </FormControl>
-      <FormControl isInvalid={showError && !itemDescription}>
-        <FormLabel>Item Description ({characterLimitMessage})</FormLabel>
-        <Textarea
-          onChange={e => setItemDescription(e.target.value)}
-          value={itemDescription}
-        />
-        {showError && !itemDescription && (
-          <FormHelperText color="red">
-            An item description is required
-          </FormHelperText>
-        )}
-        {showError && invalidItemDescription && (
-          <FormHelperText color="red">
-            Item description must be less than 200 characters
-          </FormHelperText>
-        )}
-      </FormControl>
-      <FormControl isInvalid={showError && !itemSupply}>
-        <FormLabel>Item Supply</FormLabel>
-        <Input
-          onChange={e => setItemSupply(e.target.value)}
-          type="number"
-          value={itemSupply}
-        />
-        {showError && !itemSupply && (
-          <FormHelperText color="red">
-            An item supply is required
-          </FormHelperText>
-        )}
-        {showError && invalidItemSupply && (
-          <FormHelperText color="red">
-            Item supply must be a number greater than 0
-          </FormHelperText>
-        )}
-      </FormControl>
-      <FormControl isInvalid={showError && !itemDistribution}>
-        <Flex align="center">
-          <FormLabel>Item Distribution</FormLabel>
-          <Tooltip label="The max amount of items that a single player can hold.">
-            <Image
-              alt="down arrow"
-              height="14px"
-              mb={2}
-              src="/icons/question-mark.svg"
-              width="14px"
+    <>
+      <DefaultItems
+        {...defaultItemsModal}
+        {...{
+          setItemName,
+          setItemDescription,
+          setItemEmblemFileName,
+          setItemLayerFileName,
+          setEquippableType,
+        }}
+      />
+      {!defaultItemsModal.isOpen && (
+        <VStack spacing={8} w="100%">
+          <FormControl isInvalid={showError && !itemName}>
+            <FormLabel>Item Name</FormLabel>
+            <Input
+              onChange={e => setItemName(e.target.value)}
+              type="text"
+              value={itemName}
             />
-          </Tooltip>
-        </Flex>
-        <Input
-          onChange={e => setItemDistribution(e.target.value)}
-          type="number"
-          value={itemDistribution}
-        />
-        {showError && !itemDistribution && (
-          <FormHelperText color="red">
-            An item distribution is required
-          </FormHelperText>
-        )}
-        {showError && invalidItemDistribution && (
-          <FormHelperText color="red">
-            Item distribution must be a number greater than 0 and less than or
-            equal to the item supply
-          </FormHelperText>
-        )}
-      </FormControl>
-      <HStack w="100%" justify="flex-end" spacing={4}>
-        {currentStep != 0 && (
-          <Button
-            variant="outline"
-            onClick={() => setCurrentStep(currentStep - 1)}
-          >
-            Back
-          </Button>
-        )}
-        <Button variant="solid" onClick={onNext}>
-          Next
-        </Button>
-      </HStack>
-    </VStack>
+            {showError && !itemName && (
+              <FormHelperText color="red">
+                An item name is required
+              </FormHelperText>
+            )}
+          </FormControl>
+          <FormControl isInvalid={showError && !itemDescription}>
+            <FormLabel>Item Description ({characterLimitMessage})</FormLabel>
+            <Textarea
+              onChange={e => setItemDescription(e.target.value)}
+              value={itemDescription}
+            />
+            {showError && !itemDescription && (
+              <FormHelperText color="red">
+                An item description is required
+              </FormHelperText>
+            )}
+            {showError && invalidItemDescription && (
+              <FormHelperText color="red">
+                Item description must be less than 200 characters
+              </FormHelperText>
+            )}
+          </FormControl>
+          <FormControl isInvalid={showError && !itemEmblem}>
+            <FormLabel>Item Emblem (Thumbnail)</FormLabel>
+            {!itemEmblem && !itemEmblemFileName && (
+              <Input
+                accept=".png, .jpg, .jpeg, .svg"
+                disabled={isDisabled}
+                onChange={e => {
+                  setItemEmblemFileName('');
+                  setItemEmblem(e.target.files?.[0] ?? null);
+                }}
+                type="file"
+                variant="file"
+              />
+            )}
+            {(!!itemEmblem || !!itemEmblemFileName) && (
+              <Flex align="center" gap={10} mt={4}>
+                <Image
+                  alt="item emblem"
+                  objectFit="contain"
+                  src={
+                    itemEmblemFileName
+                      ? getImageUrl(itemEmblemFileName)
+                      : itemEmblem
+                        ? URL.createObjectURL(itemEmblem)
+                        : ''
+                  }
+                  w="300px"
+                />
+                <Button
+                  isDisabled={isUploadingEmblem || isUploadedEmblem}
+                  isLoading={isUploadingEmblem}
+                  loadingText="Uploading..."
+                  mt={4}
+                  onClick={
+                    !isUploadedEmblem
+                      ? () => {
+                          setItemEmblemFileName('');
+                          onRemoveEmblem();
+                        }
+                      : undefined
+                  }
+                  type="button"
+                  variant="outline"
+                >
+                  {isUploadedEmblem ? 'Uploaded' : 'Remove'}
+                </Button>
+              </Flex>
+            )}
+            {showError && !itemEmblem && !itemEmblemFileName && (
+              <FormHelperText color="red">
+                An item emblem is required
+              </FormHelperText>
+            )}
+          </FormControl>
+          <FormControl>
+            <Flex align="center">
+              <FormLabel>Equippable Item Layer</FormLabel>
+              <Tooltip
+                label="The equippable item layer is combined with a character's
+            current image when they equip the item. If you do not upload an
+            equippable layer, the item emblem will be used instead."
+              >
+                <Image
+                  alt="down arrow"
+                  height="14px"
+                  mb={2}
+                  src="/icons/question-mark.svg"
+                  width="14px"
+                />
+              </Tooltip>
+            </Flex>
+            {!itemLayer && !itemLayerFileName && (
+              <Input
+                accept=".png, .jpg, .jpeg, .svg"
+                disabled={isDisabled}
+                onChange={e => setItemLayer(e.target.files?.[0] ?? null)}
+                type="file"
+                variant="file"
+              />
+            )}
+            {(!!itemLayer || !!itemLayerFileName) && (
+              <Flex align="center" gap={10} mt={4}>
+                <Image
+                  alt="item layer"
+                  objectFit="contain"
+                  src={
+                    itemLayerFileName
+                      ? getImageUrl(itemLayerFileName)
+                      : itemLayer
+                        ? URL.createObjectURL(itemLayer)
+                        : ''
+                  }
+                  w="300px"
+                />
+                <Button
+                  isDisabled={isUploadingLayer || isUploadedLayer}
+                  isLoading={isUploadingLayer}
+                  loadingText="Uploading..."
+                  mt={4}
+                  onClick={
+                    !isUploadedLayer
+                      ? () => {
+                          setItemLayerFileName('');
+                          onRemoveLayer();
+                        }
+                      : undefined
+                  }
+                  type="button"
+                  variant="outline"
+                >
+                  {isUploadedLayer ? 'Uploaded' : 'Remove'}
+                </Button>
+              </Flex>
+            )}
+          </FormControl>
+          <FormControl>
+            <Flex align="center">
+              <FormLabel>Item Type</FormLabel>
+              <Tooltip label="The type determines where the item will render when equipped by a character.">
+                <Image
+                  alt="down arrow"
+                  height="14px"
+                  mb={2}
+                  src="/icons/question-mark.svg"
+                  width="14px"
+                />
+              </Tooltip>
+            </Flex>
+            <Dropdown
+              options={Object.values(EquippableTraitType)}
+              selectedOption={equippableType}
+              setSelectedOption={setEquippableType as (option: string) => void}
+            />
+          </FormControl>
+          <HStack w="100%" justify="space-between" spacing={4}>
+            <Button variant="outline" onClick={defaultItemsModal.onOpen}>
+              Choose from defaults
+            </Button>
+            <Button variant="solid" onClick={onNext}>
+              Next
+            </Button>
+          </HStack>
+        </VStack>
+      )}
+    </>
   );
 };
