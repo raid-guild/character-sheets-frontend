@@ -9,50 +9,32 @@ import {
 } from '@chakra-ui/react';
 import { useCallback } from 'react';
 
-import {
-  DEFAULT_ITEMS,
-  EquippableTraitType,
-  getImageUrl,
-  ItemLayer,
-} from '@/lib/traits';
+import { ClassEmblem, DEFAULT_CLASSES, getClassEmblemUrl } from '@/lib/traits';
 
-type DefaultItemsProps = {
+type DefaultClassesProps = {
   isOpen: boolean;
   onClose: () => void;
 
-  setItemName: (name: string) => void;
-  setItemDescription: (name: string) => void;
-  setItemEmblemFileName: (image: string) => void;
-  setItemLayerFileName: (layer: string) => void;
-  setEquippableType: (type: EquippableTraitType) => void;
+  setClassName: (name: string) => void;
+  setClassDescription: (name: string) => void;
+  setClassEmblemFileName: (image: string) => void;
 };
 
-export const DefaultItems: React.FC<DefaultItemsProps> = ({
+export const DefaultClasses: React.FC<DefaultClassesProps> = ({
   isOpen,
   onClose,
-  setItemName,
-  setItemDescription,
-  setItemEmblemFileName,
-  setItemLayerFileName,
-  setEquippableType,
+  setClassName,
+  setClassDescription,
+  setClassEmblemFileName,
 }) => {
   const onSelected = useCallback(
-    (item: ItemLayer) => {
+    (klass: ClassEmblem) => {
       onClose();
-      setItemName(item.name);
-      setItemDescription(item.description);
-      setItemEmblemFileName(item.thumbnail);
-      setItemLayerFileName(item.layer);
-      setEquippableType(item.type);
+      setClassName(klass.name);
+      setClassDescription(klass.description);
+      setClassEmblemFileName(klass.emblem);
     },
-    [
-      onClose,
-      setItemName,
-      setItemDescription,
-      setItemEmblemFileName,
-      setItemLayerFileName,
-      setEquippableType,
-    ],
+    [onClose, setClassName, setClassDescription, setClassEmblemFileName],
   );
 
   if (!isOpen) {
@@ -60,15 +42,15 @@ export const DefaultItems: React.FC<DefaultItemsProps> = ({
   }
 
   return (
-    <VStack w="100%" spacing={6} align="center">
+    <VStack align="center" spacing={6} w="100%">
       <SimpleGrid
         alignItems="stretch"
         columns={{ base: 1, sm: 2, md: 3 }}
         spacing={{ base: 4, sm: 6, md: 8 }}
         w="100%"
       >
-        {DEFAULT_ITEMS.map(item => (
-          <GridItem key={item.name} w="100%">
+        {DEFAULT_CLASSES.map(klass => (
+          <GridItem key={klass.name} w="100%">
             <VStack
               borderRadius="md"
               bg="whiteAlpha.100"
@@ -81,10 +63,10 @@ export const DefaultItems: React.FC<DefaultItemsProps> = ({
                 bg: 'whiteAlpha.200',
               }}
               cursor="pointer"
-              onClick={() => onSelected(item)}
+              onClick={() => onSelected(klass)}
             >
               <Text fontSize="sm" fontWeight="500" textAlign="center" w="100%">
-                {item.name}
+                {klass.name}
               </Text>
               <AspectRatio
                 h="10rem"
@@ -97,8 +79,8 @@ export const DefaultItems: React.FC<DefaultItemsProps> = ({
                 }}
               >
                 <Image
-                  alt={item.name}
-                  src={getImageUrl(item.thumbnail)}
+                  alt={klass.name}
+                  src={getClassEmblemUrl(klass.emblem)}
                   style={{
                     objectFit: 'contain',
                   }}

@@ -285,6 +285,85 @@ export const DEFAULT_ITEMS: Array<ItemLayer> = [
   },
 ];
 
+export type ClassEmblem = {
+  name: string;
+  description: string;
+  emblem: string;
+};
+
+export const DEFAULT_CLASSES: Array<ClassEmblem> = [
+  {
+    name: 'Alchemist',
+    description: 'Alchemist',
+    emblem: 'alchemist',
+  },
+  {
+    name: 'Archer',
+    description: 'Archer',
+    emblem: 'archer',
+  },
+  {
+    name: 'Cleric',
+    description: 'Cleric',
+    emblem: 'cleric',
+  },
+  {
+    name: 'Druid',
+    description: 'Druid',
+    emblem: 'druid',
+  },
+  {
+    name: 'Healer',
+    description: 'Healer',
+    emblem: 'healer',
+  },
+  {
+    name: 'Hunter',
+    description: 'Hunter',
+    emblem: 'hunter',
+  },
+  {
+    name: 'Monk',
+    description: 'Monk',
+    emblem: 'monk',
+  },
+  {
+    name: 'Necromancer',
+    description: 'Necromancer',
+    emblem: 'necromancer',
+  },
+  {
+    name: 'Paladin',
+    description: 'Paladin',
+    emblem: 'paladin',
+  },
+  {
+    name: 'Rogue',
+    description: 'Rogue',
+    emblem: 'rogue',
+  },
+  {
+    name: 'Scribe',
+    description: 'Scribe',
+    emblem: 'scribe',
+  },
+  {
+    name: 'Tavern Keeper',
+    description: 'Tavern Keeper',
+    emblem: 'tavern_keeper',
+  },
+  {
+    name: 'Warrior',
+    description: 'Warrior',
+    emblem: 'warrior',
+  },
+  {
+    name: 'Wizard',
+    description: 'Wizard',
+    emblem: 'wizard',
+  },
+];
+
 export const DEFAULT_TRAITS: TraitsArray = [
   '0_Clouds_a_64485b',
   '1_Type1_a_ccb5aa',
@@ -298,6 +377,9 @@ export const DEFAULT_TRAITS: TraitsArray = [
 
 export const LAYERS_URI =
   'ipfs://bafybeidfpt3earjjmrcbk4gcviupjp3a4b5vkx5ldhf5brioobtvbgzlni';
+
+export const CLASS_URI =
+  'ipfs://bafybeigwyvkzdgd5dpd4odbar7gnjwifxo37n3fe5dvhawj5obrpi5zn3y';
 
 export const TRAITS: { [key: number]: { [key: string]: string[] } } = {
   0: {
@@ -440,6 +522,14 @@ export const getImageIpfsUri = (fileName: string): string => {
 
 export const getThumbnailUrl = (fileName: string): string => {
   return uriToHttp(LAYERS_URI)[0] + '/' + fileName + '.png';
+};
+
+export const getClassEmblemUrl = (fileName: string): string => {
+  return uriToHttp(CLASS_URI)[0] + '/' + fileName + '.svg';
+};
+
+export const getClassIpfsUri = (fileName: string): string => {
+  return CLASS_URI + '/' + fileName + '.svg';
 };
 
 export const getImageUrl = (fileName: string): string => {

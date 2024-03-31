@@ -33,6 +33,7 @@ export const ItemCreationStep3: React.FC<Step3Props> = ({
           Back
         </Button>
         <Button
+          isDisabled={isCreating}
           isLoading={isCreating}
           loadingText="Creating..."
           type="submit"

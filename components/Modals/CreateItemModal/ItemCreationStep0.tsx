@@ -120,12 +120,12 @@ export const ItemCreationStep0: React.FC<Step0Props> = ({
 
   const isDisabled = isUploadingEmblem || isUploadingLayer;
 
-  const defaultItemsModal = useDisclosure();
+  const defaultItemsControl = useDisclosure();
 
   return (
     <>
       <DefaultItems
-        {...defaultItemsModal}
+        {...defaultItemsControl}
         {...{
           setItemName,
           setItemDescription,
@@ -134,7 +134,7 @@ export const ItemCreationStep0: React.FC<Step0Props> = ({
           setEquippableType,
         }}
       />
-      {!defaultItemsModal.isOpen && (
+      {!defaultItemsControl.isOpen && (
         <VStack spacing={8} w="100%">
           <FormControl isInvalid={showError && !itemName}>
             <FormLabel>Item Name</FormLabel>
@@ -301,7 +301,7 @@ export const ItemCreationStep0: React.FC<Step0Props> = ({
             />
           </FormControl>
           <HStack w="100%" justify="space-between" spacing={4}>
-            <Button variant="outline" onClick={defaultItemsModal.onOpen}>
+            <Button variant="outline" onClick={defaultItemsControl.onOpen}>
               Choose from defaults
             </Button>
             <Button variant="solid" onClick={onNext}>
