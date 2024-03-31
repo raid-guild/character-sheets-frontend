@@ -176,7 +176,7 @@ export const CharacterCard: React.FC<{
           (isMaster || address?.toLowerCase() === character.player) && (
             <CharacterActionMenu character={character} variant="solid" />
           )}
-        {items.length > 0 && (
+        {!!items.length && (
           <>
             <HStack justify="space-between" w="full">
               <HStack spacing={4} align="center">
@@ -194,15 +194,7 @@ export const CharacterCard: React.FC<{
                   Inventory ({itemTotal})
                 </Text>
               </HStack>
-              {items.length > 2 && !displayOnly ? (
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  onClick={itemsCatalogModal.onOpen}
-                >
-                  show all
-                </Button>
-              ) : (
+              {displayOnly ? (
                 <NextLink
                   as={`/games/${getChainLabelFromId(
                     character.chainId,
@@ -214,6 +206,14 @@ export const CharacterCard: React.FC<{
                     show all
                   </Button>
                 </NextLink>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  onClick={itemsCatalogModal.onOpen}
+                >
+                  show all
+                </Button>
               )}
             </HStack>
             <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4} w="full">
