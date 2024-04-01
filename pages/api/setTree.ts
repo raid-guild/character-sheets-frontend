@@ -7,8 +7,8 @@ import {
 } from '@/graphql/autogen/types';
 import { getGraphClient } from '@/graphql/client';
 import { AccountInfo, withAuth } from '@/lib/auth';
-import { updateClaimableTreeInDB } from '@/lib/claimableTree';
 import { isSupportedChain } from '@/lib/web3';
+import { updateWhitelistTreeInDB } from '@/lib/whitelistTree';
 
 const verifyGameMaster = async (
   gameAddress: `0x${string}`,
@@ -80,7 +80,7 @@ const setTree = async (
   }
 
   try {
-    const result = await updateClaimableTreeInDB(
+    const result = await updateWhitelistTreeInDB(
       gameAddress,
       itemId,
       tree,

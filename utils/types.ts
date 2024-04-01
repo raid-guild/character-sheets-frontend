@@ -35,7 +35,7 @@ export type CharacterMetaDB = Metadata & {
   updatedAt: Date;
 };
 
-export type ClaimableTreeDB = {
+export type WhitelistTreeDB = {
   _id: ObjectId;
   gameAddress: string;
   itemId: string;
