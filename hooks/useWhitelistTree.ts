@@ -1,7 +1,8 @@
-import { useGame } from '@/contexts/GameContext';
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import { useMemo } from 'react';
 import useSWR from 'swr';
+
+import { useGame } from '@/contexts/GameContext';
 
 export type WhitelistItemLeaf = [bigint, `0x${string}`, bigint, bigint]; // itemId, address, nonce, amount
 
