@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from 'react';
 import useSWR from 'swr';
+import { parseAbi, zeroAddress } from 'viem';
 import { usePublicClient } from 'wagmi';
 
 import { Game } from '@/utils/types';
-import { parseAbi, zeroAddress } from 'viem';
 
 export const useIsEligible = (
   game: Game | null | undefined,

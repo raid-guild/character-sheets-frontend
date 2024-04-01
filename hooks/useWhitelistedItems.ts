@@ -1,8 +1,9 @@
-import { useGame } from '@/contexts/GameContext';
 import { useCallback, useMemo } from 'react';
 import useSWR from 'swr';
-import { zeroHash } from 'viem';
 import { usePublicClient } from 'wagmi';
+
+import { useGame } from '@/contexts/GameContext';
+
 import { getClaimNonce } from './useClaimNonce';
 
 export type WhitelistItemLeaf = [bigint, `0x${string}`, bigint, bigint]; // itemId, address, nonce, amount
@@ -54,10 +55,13 @@ const getWhitelistedItems = async (
     const leaves = await getLeaves(input);
     const itemIds = leaves.map(leaf => leaf[0].toString());
 
-    const nonceMap = leaves.reduce((acc, leaf) => {
-      acc[leaf[0].toString()] = leaf[2];
-      return acc;
-    }, {} as Record<string, bigint>);
+    const nonceMap = leaves.reduce(
+      (acc, leaf) => {
+        acc[leaf[0].toString()] = leaf[2];
+        return acc;
+      },
+      {} as Record<string, bigint>,
+    );
 
     const noncesFromContract = await Promise.all(
       itemIds.map(async itemId =>
@@ -110,7 +114,7 @@ export const useWhitelistedItems = (): {
   const fetcher = useCallback(
     async (_input: FetcherInput) => {
       try {
-        return await getWhitelistedItems(publicClient, input);
+        return await getWhitelistedItems(publicClient, _input);
       } catch (e) {
         return [];
       }
@@ -122,9 +126,15 @@ export const useWhitelistedItems = (): {
     Array<WhitelistedItem>,
     Error,
     FetcherInput
-  >(input, fetcher, {
-    isPaused: () => !gameAddress || !character || !chainId,
-  });
+  >(
+    input,
+    fetcher,
+    game
+      ? {
+          isPaused: () => !gameAddress || !character || !chainId,
+        }
+      : undefined,
+  );
 
   return {
     whitelistedItems: data || [],

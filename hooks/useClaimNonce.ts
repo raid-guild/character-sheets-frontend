@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import { Address, parseAbi } from 'viem';
 import { usePublicClient } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
-import useSWR from 'swr';
 
 export type WhitelistItemLeaf = [bigint, `0x${string}`, bigint, bigint]; // itemId, address, nonce, amount
 
@@ -18,24 +18,28 @@ export const getClaimNonce = async (
   itemsAddress: Address,
   itemId: bigint,
   account: Address,
-) => {
-  if (!publicClient) {
-    throw new Error('Could not find a public client');
-  }
-  if (!itemsAddress || !account || !itemId) {
-    throw new Error('Missing required input');
-  }
+): Promise<bigint | null> => {
+  try {
+    if (!publicClient) {
+      throw new Error('Could not find a public client');
+    }
+    if (!itemsAddress || !account || !itemId) {
+      throw new Error('Missing required input');
+    }
 
-  const nonce = (await publicClient.readContract({
-    address: itemsAddress,
-    abi: parseAbi([
-      'function getClaimNonce(uint256 itemId, address character) public view returns (uint256)',
-    ]),
-    functionName: 'getClaimNonce',
-    args: [itemId, account],
-  })) as bigint;
+    const nonce = (await publicClient.readContract({
+      address: itemsAddress,
+      abi: parseAbi([
+        'function getClaimNonce(uint256 itemId, address character) public view returns (uint256)',
+      ]),
+      functionName: 'getClaimNonce',
+      args: [itemId, account],
+    })) as bigint;
 
-  return nonce;
+    return nonce;
+  } catch (e) {
+    return null;
+  }
 };
 
 export const useClaimNonce = (
