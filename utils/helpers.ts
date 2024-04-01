@@ -16,6 +16,7 @@ import {
   Item,
   Metadata,
 } from './types';
+import { decodeCraftRequirements, decodeRequirementNode } from './requirements';
 
 const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
 
@@ -265,19 +266,16 @@ export const formatClass = async (
   };
 };
 
-// export const formatItemRequirement = (
-//   r: ItemRequirementInfoFragment,
-// ): ItemRequirement => {
-//   return {
-//     amount: BigInt(r.amount).toString(),
-//     assetAddress: r.assetAddress,
-//     assetCategory: r.assetCategory,
-//     assetId: BigInt(r.assetId).toString(),
-//   };
-// };
-
 export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
   const metadata = await fetchMetadata(item.uri);
+
+  const decodedCraftRequirements = decodeCraftRequirements(
+    item.craftRequirementsBytes,
+  );
+
+  const decodedRequirementNode = decodeRequirementNode(
+    item.claimRequirementsBytes,
+  );
 
   return {
     id: item.id,
@@ -294,12 +292,13 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     supply: BigInt(item.supply).toString(),
     totalSupply: BigInt(item.totalSupply).toString(),
     amount: BigInt(0).toString(),
-    // requirements: item.requirements.map(formatItemRequirement),
-    requirements: [],
     holders: item.holders.map(h => h.character),
     equippers: item.equippers.map(e => e.character),
     merkleRoot: item.merkleRoot,
     distribution: item.distribution,
+    craftable: item.craftable,
+    craftRequirements: decodedCraftRequirements,
+    claimRequirements: decodedRequirementNode,
   };
 };
 

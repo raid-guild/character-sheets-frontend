@@ -104,10 +104,12 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
   }, [game]);
 
   useEffect(() => {
-    const filteredItems = items.filter(item => {
+    const filteredItems = items.filter(() => {
       if (amountFilter === '') return true;
       if (Number(amountFilter) < 0) return false;
 
+      {
+        /* TODO: Fix Filters!!
       if (categoryFilter === 'experience') {
         const requiredXp =
           item.requirements.find(
@@ -160,6 +162,9 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
         }
       }
       return false;
+        */
+      }
+      return true;
     });
 
     const sortedItems = filteredItems.slice().sort((a, b) => {
@@ -473,11 +478,16 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
                     {displayType === 'SMALL_CARDS' && (
                       <ItemCardSmall
                         holderId={character?.characterId}
+                        holderCharacter={character}
                         {...item}
                       />
                     )}
                     {displayType === 'FULL_CARDS' && (
-                      <ItemCard holderId={character?.characterId} {...item} />
+                      <ItemCard
+                        holderId={character?.characterId}
+                        holderCharacter={character}
+                        {...item}
+                      />
                     )}
                   </GridItem>
                 ))}

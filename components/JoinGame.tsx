@@ -214,14 +214,8 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 
         let characterTokenUri = '';
         if (baseTokenURI === baseCharacterUri) {
-          const totalSheets = await publicClient.readContract({
-            address: game.id as Address,
-            abi: parseAbi([
-              'function totalSheets() external view returns(uint256)',
-            ]),
-            functionName: 'totalSheets',
-          });
-          const characterId = `${game.id}-character-${toHex(totalSheets)}`;
+          const totalSheets = game.characters.length;
+          const characterId = `${game.id}-character-${toHex(totalSheets + 1)}`;
           const apiRoute = `/api/characters/${chainLabel}/${characterId}/update`;
           const signature = await walletClient.signMessage({
             message: apiRoute,
@@ -278,10 +272,10 @@ export const JoinGame: React.FC<JoinGameProps> = ({
           account: walletClient.account?.address as Address,
           address: game.id as Address,
           abi: parseAbi([
-            'function rollCharacterSheet(string calldata _tokenUri) external',
+            'function rollCharacterSheet(address player, string calldata _tokenUri) external',
           ]),
           functionName: 'rollCharacterSheet',
-          args: [characterTokenUri],
+          args: [walletClient.account?.address as Address, characterTokenUri],
         });
         setTxHash(transactionhash);
 

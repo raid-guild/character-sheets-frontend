@@ -50,6 +50,10 @@ export default function App({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    window.localStorage.setItem('chakra-ui-color-mode', 'light');
+  }, []);
+
   return (
     <>
       <Head>
