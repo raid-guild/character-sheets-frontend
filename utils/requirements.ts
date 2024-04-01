@@ -296,15 +296,25 @@ export const checkCraftRequirements = (
   craftRequirements: CraftRequirement[],
   character: Character,
   craftableAmount: bigint,
-): boolean => {
-  return craftRequirements.every(({ itemId, amount }) => {
+): { success: boolean; error: string } => {
+  let error = '';
+  const success = craftRequirements.every(({ itemId, amount }) => {
     const characterItem = character.heldItems.find(
       item =>
         item.itemId === itemId &&
         BigInt(item.amount) >= BigInt(amount) * craftableAmount,
     );
+    const isEquipped = character.equippedItems.find(
+      item => item.itemId === itemId,
+    );
+    if (isEquipped) {
+      error = `Item: ${isEquipped.name} is equipped, please unequip it first.`;
+      return false;
+    }
     return !!characterItem;
   });
+
+  return { success, error };
 };
 
 export const checkClaimRequirements = (
