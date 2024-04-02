@@ -54,7 +54,7 @@ export const CharacterCard: React.FC<{
   displayOnly?: boolean;
 }> = ({ chainId, character, displayOnly }) => {
   const { address } = useAccount();
-  const { isMaster } = useGame();
+  const { game, isMaster } = useGame();
   const itemsCatalogModal = useDisclosure();
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
@@ -230,11 +230,13 @@ export const CharacterCard: React.FC<{
           </>
         )}
       </VStack>
-      <ItemsCatalogModal
-        character={character}
-        isOpen={!!items.length && itemsCatalogModal.isOpen && !displayOnly}
-        onClose={itemsCatalogModal.onClose}
-      />
+      {!displayOnly && !!game && (
+        <ItemsCatalogModal
+          character={character}
+          isOpen={!!items.length && itemsCatalogModal.isOpen && !displayOnly}
+          onClose={itemsCatalogModal.onClose}
+        />
+      )}
     </SimpleGrid>
   );
 };
