@@ -126,15 +126,9 @@ export const useWhitelistedItems = (): {
     Array<WhitelistedItem>,
     Error,
     FetcherInput
-  >(
-    input,
-    fetcher,
-    game
-      ? {
-          isPaused: () => !gameAddress || !character || !chainId,
-        }
-      : undefined,
-  );
+  >(input, fetcher, {
+    isPaused: () => !gameAddress || !character || !chainId,
+  });
 
   return {
     whitelistedItems: data || [],

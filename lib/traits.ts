@@ -536,8 +536,10 @@ export const getImageUrl = (fileName: string): string => {
   if (fileName.startsWith('THUMB')) {
     return getThumbnailUrl(fileName);
   }
-  const [index, , potentialUrl] = fileName.split('_');
+  const [index] = fileName.split('_');
   if (index.includes('equip')) {
+    // We want to take everything after the second underscore, even if it contains more underscores
+    const potentialUrl = fileName.split('_').slice(2).join('_');
     return potentialUrl; // In this case, what would normally be "color" is actually the URL of the newly equipped item
   }
 
