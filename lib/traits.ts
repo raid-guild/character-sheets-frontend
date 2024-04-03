@@ -379,7 +379,7 @@ export const LAYERS_URI =
   'ipfs://bafybeidfpt3earjjmrcbk4gcviupjp3a4b5vkx5ldhf5brioobtvbgzlni';
 
 export const CLASS_URI =
-  'ipfs://bafybeigwyvkzdgd5dpd4odbar7gnjwifxo37n3fe5dvhawj5obrpi5zn3y';
+  'ipfs://QmXnRUVsBgKZUcDzzqXN3BWhepjCggArkrxZiSqnp1JgYe';
 
 export const TRAITS: { [key: number]: { [key: string]: string[] } } = {
   0: {
