@@ -348,6 +348,11 @@ export const DEFAULT_CLASSES: Array<ClassEmblem> = [
     emblem: 'scribe',
   },
   {
+    name: 'Sorcerer',
+    description: 'Sorcerer',
+    emblem: 'sorcerer',
+  },
+  {
     name: 'Tavern Keeper',
     description: 'Tavern Keeper',
     emblem: 'tavern_keeper',
@@ -379,7 +384,7 @@ export const LAYERS_URI =
   'ipfs://bafybeidfpt3earjjmrcbk4gcviupjp3a4b5vkx5ldhf5brioobtvbgzlni';
 
 export const CLASS_URI =
-  'ipfs://QmXnRUVsBgKZUcDzzqXN3BWhepjCggArkrxZiSqnp1JgYe';
+  'ipfs://QmTgLoiqngDkMvcK2sE8DGBxKWwZ38epkYeKJYs6g4XTFB';
 
 export const TRAITS: { [key: number]: { [key: string]: string[] } } = {
   0: {
