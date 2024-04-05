@@ -194,14 +194,15 @@ export const ObtainItemModal: React.FC = () => {
   }, [selectedItem, character, game]);
 
   const satisfiesCraftRequirements = useMemo(() => {
-    if (!selectedItem) return false;
-    if (!character) return false;
-    if (!amount) return false;
-    return checkCraftRequirements(
+    if (!selectedItem) return { success: false, error: '' };
+    if (!character) return { success: false, error: '' };
+    if (!amount) return { success: false, error: '' };
+    const { success, error } = checkCraftRequirements(
       selectedItem.craftRequirements,
       character,
       BigInt(amount),
     );
+    return { success, error };
   }, [selectedItem, character, amount]);
 
   const onObtainItem = useCallback(async () => {
@@ -266,7 +267,10 @@ export const ObtainItemModal: React.FC = () => {
         );
       }
 
-      if (isCraftable && !satisfiesCraftRequirements) {
+      if (isCraftable && !satisfiesCraftRequirements.success) {
+        if (satisfiesCraftRequirements.error) {
+          throw new Error(satisfiesCraftRequirements.error);
+        }
         throw new Error(
           'You do not have the required items to craft this item.',
         );
@@ -450,9 +454,10 @@ export const ObtainItemModal: React.FC = () => {
                       );
                     })}
                   </VStack>
-                  {!satisfiesCraftRequirements && (
+                  {!satisfiesCraftRequirements.success && (
                     <Text color="red.500" size="sm">
-                      You do not have the required items to craft this item.
+                      {satisfiesCraftRequirements.error ||
+                        'You do not have the required items to craft this item.'}
                     </Text>
                   )}
                 </>
