@@ -88,8 +88,12 @@ const getWhitelistedItems = async (
   }
 };
 
+type WhitelistedItems = {
+  items: Array<WhitelistedItem>;
+};
+
 export const useWhitelistedItems = (): {
-  whitelistedItems: Array<WhitelistedItem>;
+  whitelistedItems: WhitelistedItems | null;
   reload: () => void;
   loading: boolean;
   error: Error | null;
@@ -110,12 +114,16 @@ export const useWhitelistedItems = (): {
   const publicClient = usePublicClient();
 
   const fetcher = useCallback(
-    async (_input: FetcherInput) => getWhitelistedItems(publicClient, _input),
+    async (_input: FetcherInput) => {
+      const items = await getWhitelistedItems(publicClient, _input);
+      if (!items) return null;
+      return { items };
+    },
     [publicClient],
   );
 
   const { data, error, mutate, isLoading, isValidating } = useSWR<
-    Array<WhitelistedItem> | null,
+    WhitelistedItems | null,
     Error,
     FetcherInput
   >(input, fetcher, {
@@ -123,7 +131,7 @@ export const useWhitelistedItems = (): {
   });
 
   return {
-    whitelistedItems: data || [],
+    whitelistedItems: data || null,
     loading: isLoading || isValidating,
     error: error || null,
     reload: mutate,
