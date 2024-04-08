@@ -49,19 +49,16 @@ export type WhitelistedItem = {
 const getWhitelistedItems = async (
   publicClient: ReturnType<typeof usePublicClient>,
   input: FetcherInput,
-): Promise<Array<WhitelistedItem>> => {
-  if (!publicClient) return [];
+): Promise<Array<WhitelistedItem> | null> => {
+  if (!publicClient) return null;
   try {
     const leaves = await getLeaves(input);
     const itemIds = leaves.map(leaf => leaf[0].toString());
 
-    const nonceMap = leaves.reduce(
-      (acc, leaf) => {
-        acc[leaf[0].toString()] = leaf[2];
-        return acc;
-      },
-      {} as Record<string, bigint>,
-    );
+    const nonceMap = leaves.reduce((acc, leaf) => {
+      acc[leaf[0].toString()] = leaf[2];
+      return acc;
+    }, {} as Record<string, bigint>);
 
     const noncesFromContract = await Promise.all(
       itemIds.map(async itemId =>
@@ -86,7 +83,8 @@ const getWhitelistedItems = async (
       };
     });
   } catch (e) {
-    return [];
+    console.error('Error fetching whitelisted items', e);
+    return null;
   }
 };
 
@@ -112,18 +110,12 @@ export const useWhitelistedItems = (): {
   const publicClient = usePublicClient();
 
   const fetcher = useCallback(
-    async (_input: FetcherInput) => {
-      try {
-        return await getWhitelistedItems(publicClient, _input);
-      } catch (e) {
-        return [];
-      }
-    },
+    async (_input: FetcherInput) => getWhitelistedItems(publicClient, _input),
     [publicClient],
   );
 
   const { data, error, mutate, isLoading, isValidating } = useSWR<
-    Array<WhitelistedItem>,
+    Array<WhitelistedItem> | null,
     Error,
     FetcherInput
   >(input, fetcher, {

@@ -1,7 +1,6 @@
 import {
   Button,
-  Flex,
-  Image,
+  SimpleGrid,
   Text,
   useRadioGroup,
   VStack,
@@ -10,7 +9,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Address, parseAbi } from 'viem';
 import { useWalletClient } from 'wagmi';
 
-import { RadioCard } from '@/components/RadioCard';
+import { ClassRadioCard } from '@/components/RadioCard';
 import { SelectCharacterInput } from '@/components/SelectCharacterInput';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useClassActions } from '@/contexts/ClassActionsContext';
@@ -113,29 +112,21 @@ export const AssignClassModal: React.FC = () => {
         onComplete: reloadGame,
       }}
     >
-      <VStack spacing={8}>
-        <Flex {...group} wrap="wrap" gap={4}>
+      <VStack spacing={8} w="100%">
+        <SimpleGrid
+          columns={{ base: 2, md: 3 }}
+          w="100%"
+          {...group}
+          spacing={4}
+        >
           {options.map(value => {
             const radio = getRadioProps({ value });
             const _class = game?.classes.find(c => c.classId === value);
             if (!_class) return null;
 
-            return (
-              <RadioCard key={value} {...radio}>
-                <VStack justify="space-between" h="100%">
-                  <Image
-                    alt={`${_class.name} image`}
-                    h="70%"
-                    objectFit="contain"
-                    src={_class.image}
-                    w="100%"
-                  />
-                  <Text textAlign="center">{_class.name}</Text>
-                </VStack>
-              </RadioCard>
-            );
+            return <ClassRadioCard key={value} {...radio} klass={_class} />;
           })}
-        </Flex>
+        </SimpleGrid>
         {invalidClass && (
           <Text color="red.500">This class is already assigned.</Text>
         )}

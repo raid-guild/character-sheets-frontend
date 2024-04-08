@@ -21,7 +21,14 @@ import { Class } from '@/utils/types';
 
 import { ClassActionMenu } from './ActionMenus/ClassActionMenu';
 
-export const ClassCard: React.FC<Class> = ({ ...classEntity }) => {
+type ClassCardProps = Class & {
+  dummy?: boolean;
+};
+
+export const ClassCard: React.FC<ClassCardProps> = ({
+  dummy = false,
+  ...classEntity
+}) => {
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const { claimable, classId, name, description, image, holders } = classEntity;
@@ -78,14 +85,17 @@ export const ClassCard: React.FC<Class> = ({ ...classEntity }) => {
           <ClassValue label="Claimable By" value={claimableDisplay} />
         </SimpleGrid>
       </VStack>
-      {isConnectedAndMounted && (
+      {isConnectedAndMounted && !dummy && (
         <ClassActionMenu classEntity={classEntity as Class} variant="solid" />
       )}
     </VStack>
   );
 };
 
-export const ClassCardSmall: React.FC<Class> = ({ ...classEntity }) => {
+export const ClassCardSmall: React.FC<ClassCardProps> = ({
+  dummy = false,
+  ...classEntity
+}) => {
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
   const [showDetails, setShowDetails] = useState(false);
@@ -159,7 +169,7 @@ export const ClassCardSmall: React.FC<Class> = ({ ...classEntity }) => {
           </SimpleGrid>
         )}
       </VStack>
-      {isConnectedAndMounted && (
+      {isConnectedAndMounted && !dummy && (
         <ClassActionMenu classEntity={classEntity as Class} variant="solid" />
       )}
     </VStack>
