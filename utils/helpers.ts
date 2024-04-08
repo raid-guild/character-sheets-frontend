@@ -18,15 +18,14 @@ import {
   Metadata,
 } from './types';
 
-const IPFS_GATEWAYS = [
-  'https://peach-immediate-rhinoceros-66.mypinata.cloud',
-  // 'https://cloudflare-ipfs.com',
-  // 'https://ipfs.io',
-];
+const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
 
 // Using env here to avoid initialization issues with the ENVIRONMENT constant
-if (process.env.NEXT_PUBLIC_ENVIRONMENT === 'main') {
-  IPFS_GATEWAYS.unshift('https://peach-immediate-rhinoceros-66.mypinata.cloud');
+if (
+  process.env.NEXT_PUBLIC_ENVIRONMENT === 'main' ||
+  window.location.hostname.includes('charactersheets.io')
+) {
+  IPFS_GATEWAYS.unshift('https://charactersheets.mypinata.cloud');
 }
 
 /**
