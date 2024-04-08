@@ -106,7 +106,8 @@ export const ItemsCatalogModal: React.FC<ItemsCatalogModalProps> = ({
       if (!game) return true;
 
       const whitelistedAmount =
-        whitelistedItems.find(i => i.itemId === item.itemId)?.amount || null;
+        whitelistedItems?.items.find(i => i.itemId === item.itemId)?.amount ||
+        null;
 
       const balance =
         loggedInCharacter.heldItems.find(i => i.itemId === item.itemId)

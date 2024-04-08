@@ -165,6 +165,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
 export const ItemCardSmall: React.FC<ItemCardProps> = ({
   holderId,
   holderCharacter,
+  dummy = false,
   ...item
 }) => {
   const isConnectedAndMounted = useIsConnectedAndMounted();
@@ -228,7 +229,7 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
               w="100%"
             />
           </AspectRatio>
-          {!isEquipped && (
+          {(!isEquipped || dummy) && (
             <Button
               fontSize="xs"
               onClick={() => setShowDetails(!showDetails)}
@@ -247,7 +248,7 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
               {shortenText(description, 130)}
             </Text>
           )}
-          {isConnectedAndMounted && isEquipped && (
+          {isConnectedAndMounted && isEquipped && !dummy && (
             <>
               <HStack w="100%" spacing={4}>
                 <Flex
@@ -320,7 +321,7 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
           </SimpleGrid>
         )}
       </VStack>
-      {isConnectedAndMounted && !!character && (
+      {isConnectedAndMounted && !!character && !dummy && (
         <ItemActionMenu item={item} variant="solid" />
       )}
     </VStack>
