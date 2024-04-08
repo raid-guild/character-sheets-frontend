@@ -13,6 +13,7 @@ export const ActiveLink: React.FC<LinkProps> = ({ href, ...props }) => {
       fontSize="sm"
       fontWeight="medium"
       href={href ?? ''}
+      prefetch={false}
       textAlign="center"
       _hover={{ color: 'accent' }}
       {...props}
