@@ -21,10 +21,7 @@ import {
 const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
 
 // Using env here to avoid initialization issues with the ENVIRONMENT constant
-if (
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'main' ||
-  window.location.hostname.includes('charactersheets.io')
-) {
+if (process.env.NEXT_PUBLIC_ENABLE_PINATA_GATEWAY === 'true') {
   IPFS_GATEWAYS.unshift('https://charactersheets.mypinata.cloud');
 }
 
