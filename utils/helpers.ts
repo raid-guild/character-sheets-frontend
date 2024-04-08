@@ -6,6 +6,7 @@ import {
   ItemInfoFragment,
 } from '@/graphql/autogen/types';
 
+import { decodeCraftRequirements, decodeRequirementNode } from './requirements';
 import {
   Character,
   Class,
@@ -16,9 +17,12 @@ import {
   Item,
   Metadata,
 } from './types';
-import { decodeCraftRequirements, decodeRequirementNode } from './requirements';
 
-const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
+const IPFS_GATEWAYS = [
+  'https://peach-immediate-rhinoceros-66.mypinata.cloud',
+  // 'https://cloudflare-ipfs.com',
+  // 'https://ipfs.io',
+];
 
 // Using env here to avoid initialization issues with the ENVIRONMENT constant
 if (process.env.NEXT_PUBLIC_ENVIRONMENT === 'main') {
