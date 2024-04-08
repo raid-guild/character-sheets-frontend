@@ -1,11 +1,10 @@
 import {
   Button,
-  Flex,
   FormControl,
   FormHelperText,
   FormLabel,
-  Image,
   Input,
+  SimpleGrid,
   Text,
   useRadioGroup,
   VStack,
@@ -14,7 +13,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Address, parseAbi } from 'viem';
 import { useWalletClient } from 'wagmi';
 
-import { RadioCard } from '@/components/RadioCard';
+import { ItemRadioCard } from '@/components/RadioCard';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
 
@@ -140,33 +139,21 @@ export const GiveItemsModal: React.FC = () => {
         onComplete: reloadGame,
       }}
     >
-      <VStack spacing={8}>
-        <Flex {...group} wrap="wrap" gap={4}>
+      <VStack spacing={8} w="100%">
+        <SimpleGrid
+          columns={{ base: 2, sm: 3 }}
+          w="100%"
+          {...group}
+          spacing={4}
+        >
           {options.map(value => {
             const radio = getRadioProps({ value });
             const item = game?.items.find(c => c.itemId === value);
             if (!item) return null;
 
-            return (
-              <RadioCard key={value} {...radio}>
-                <VStack justify="space-between" h="100%">
-                  <Image
-                    alt={`${item.name} image`}
-                    h="55%"
-                    objectFit="contain"
-                    src={item.image}
-                    w="100%"
-                  />
-                  <Text textAlign="center">{item.name}</Text>
-                  <Text fontSize="xs">
-                    Supply:{' '}
-                    {`${item.supply.toString()} / ${item.totalSupply.toString()}`}
-                  </Text>
-                </VStack>
-              </RadioCard>
-            );
+            return <ItemRadioCard key={value} {...radio} item={item} />;
           })}
-        </Flex>
+        </SimpleGrid>
         {invalidItem ? (
           <Text color="red.500">This item has zero supply.</Text>
         ) : (
