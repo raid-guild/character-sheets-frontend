@@ -102,7 +102,6 @@ export const CharacterCard: React.FC<{
         <AspectRatio ratio={10 / 13} h="100%" w="full">
           <Image
             alt="character avatar"
-            crossOrigin="anonymous"
             filter={jailed ? 'grayscale(100%)' : 'none'}
             w="100%"
             h="100%"
@@ -282,7 +281,6 @@ export const CharacterCardSmall: React.FC<{
             <Image
               alt="character avatar"
               borderRadius="lg"
-              crossOrigin="anonymous"
               filter={jailed ? 'grayscale(100%)' : 'none'}
               h="100%"
               objectFit="cover"
