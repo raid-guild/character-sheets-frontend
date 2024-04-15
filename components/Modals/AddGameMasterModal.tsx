@@ -69,11 +69,11 @@ export const AddGameMasterModal: React.FC = () => {
       const transactionhash = await walletClient.writeContract({
         chain: walletClient.chain,
         account: walletClient.account?.address as Address,
-        address: game.gameMasterHatEligibilityModule as Address,
+        address: game.hatsAdaptor as Address,
         abi: parseAbi([
-          'function addEligibleAddresses(address[] calldata _addresses) external',
+          'function addGameMasters(address[] calldata _addresses) external',
         ]),
-        functionName: 'addEligibleAddresses',
+        functionName: 'addGameMasters',
         args: [[newGameMaster as Address]],
       });
       return transactionhash;

@@ -18,7 +18,7 @@ export const SUBGRAPH_URLS: { [key: number]: string } = {
   [gnosis.id]:
     'https://api.thegraph.com/subgraphs/name/dan13ram/character-sheets-gnosis',
   [sepolia.id]:
-    'https://api.thegraph.com/subgraphs/name/dan13ram/character-sheets-sepolia',
+    'https://api.studio.thegraph.com/query/71457/character-sheets-sepolia/version/latest',
 };
 
 export const RPC_URLS: { [key: number]: string } = {
