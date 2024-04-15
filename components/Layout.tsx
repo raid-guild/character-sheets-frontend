@@ -34,6 +34,7 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         right={0}
         align="stretch"
         zIndex={1000}
+        h="5rem"
       >
         <Flex
           align="center"
@@ -78,7 +79,7 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         as="footer"
         background="black"
         borderTop="5px solid black"
-        h={24}
+        h="6rem"
         justify="center"
         marginTop="auto"
         w="100%"

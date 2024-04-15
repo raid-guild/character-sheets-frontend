@@ -24,6 +24,7 @@ export default function Home({ character }: Props): JSX.Element {
       backgroundSize="100%"
       direction="column"
       py="100px"
+      minH="calc(100svh - 11rem)"
       px={{ base: 4, lg: '10vw' }}
     >
       <VStack spacing={0} align="start" maxW="100rem" w="100%" mx="auto">
