@@ -4,7 +4,6 @@ import {
   FormHelperText,
   FormLabel,
   Input,
-  Link,
   Text,
   VStack,
 } from '@chakra-ui/react';
@@ -92,20 +91,11 @@ export const AddGameMasterModal: React.FC = () => {
       {...{
         isOpen: addGameMasterModal?.isOpen,
         onClose: addGameMasterModal?.onClose,
-        header: 'Make Address Eligible as GameMaster',
+        header: 'GameMaster Added',
         loadingText: `Adding GameMaster...`,
         successText: (
           <Text fontSize="sm" textAlign="center">
-            GameMaster eligibility updated! However, to complete the process of
-            adding a new GameMaster, you must go to{' '}
-            <Link
-              href="https://app.hatsprotocol.xyz/"
-              isExternal
-              textDecor="underline"
-            >
-              Hats Protocol
-            </Link>{' '}
-            and give a GameMaster hat to the newly eligible address.
+            Successfully added a new GameMaster!
           </Text>
         ),
         errorText: 'There was an error adding the GameMaster.',
