@@ -52,11 +52,11 @@ export const uriToHttp = (uri: string): string[] => {
         return [`https://arweave.net/${tx}`];
       }
       default:
-        return [];
+        return [''];
     }
   } catch (e) {
     console.error(e);
-    return ['', ''];
+    return [''];
   }
 };
 
