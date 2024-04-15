@@ -91,7 +91,7 @@ export const AddGameMasterModal: React.FC = () => {
       {...{
         isOpen: addGameMasterModal?.isOpen,
         onClose: addGameMasterModal?.onClose,
-        header: 'GameMaster Added',
+        header: 'Add GameMaster',
         loadingText: `Adding GameMaster...`,
         successText: (
           <Text fontSize="sm" textAlign="center">
