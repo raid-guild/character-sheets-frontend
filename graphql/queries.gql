@@ -1,3 +1,11 @@
+query GetMeta {
+  _meta {
+    block {
+      number
+    }
+  }
+}
+
 query GetGlobal {
   globals {
     ...GlobalInfo

@@ -117,6 +117,8 @@ export const UpdateGameMetadataModal: React.FC = () => {
       return null;
     }
 
+    setIsUpdating(true);
+
     try {
       if (!walletClient) throw new Error('Wallet client is not connected');
       if (!game) throw new Error('Missing game data');

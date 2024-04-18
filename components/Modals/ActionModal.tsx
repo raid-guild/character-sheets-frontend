@@ -14,7 +14,7 @@ import { Hex } from 'viem';
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
 
 import { TransactionPending } from '@/components/TransactionPending';
-import { waitUntilBlock } from '@/graphql/health';
+import { awaitSubgraphSync } from '@/graphql/sync';
 import { useToast } from '@/hooks/useToast';
 
 export type ActionModalProps = {
@@ -95,7 +95,10 @@ export const ActionModal: React.FC<
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(publicClient.chain.id, blockNumber);
+        const synced = await awaitSubgraphSync(
+          publicClient.chain.id,
+          blockNumber,
+        );
         if (!synced) throw new Error('Something went wrong while syncing');
 
         setIsSynced(true);
