@@ -53,6 +53,13 @@ export type ItemLayer = {
 
 export const DEFAULT_ITEMS: Array<ItemLayer> = [
   {
+    name: 'Amulet Of Influence',
+    description: 'Amulet Of Influence',
+    thumbnail: 'THUMB__Amulet_of_Influence',
+    layer: '4_AmuletOfInfluence',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
     name: 'Babymoloch Chain',
     description: 'Babymoloch Chain',
     thumbnail: 'THUMB__BabyMoloch_chain',
@@ -81,6 +88,13 @@ export const DEFAULT_ITEMS: Array<ItemLayer> = [
     type: EquippableTraitType.EQUIPPED_ITEM_1,
   },
   {
+    name: 'Guilden Quill',
+    description: 'Guilden Quill',
+    thumbnail: 'THUMB__Guilden_Quill',
+    layer: '4_GildenQuill',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
     name: 'Lute Of Lore',
     description: 'Lute Of Lore',
     thumbnail: 'THUMB__Lute_of_Lore',
@@ -95,10 +109,24 @@ export const DEFAULT_ITEMS: Array<ItemLayer> = [
     type: EquippableTraitType.EQUIPPED_ITEM_1,
   },
   {
+    name: 'Sacred Flame Spell',
+    description: 'Sacred Flame Spell',
+    thumbnail: 'THUMB__Sacred_Flame_Spell',
+    layer: '4_SacredFlame',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
     name: 'Small Dagger',
     description: 'Small Dagger',
     thumbnail: 'THUMB__Small_Dagger',
     layer: '4_SmallDagger',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
+    name: 'Staff Of Buhndoar',
+    description: 'Staff Of Buhndoar',
+    thumbnail: 'THUMB__Staff_of_Buhndoar',
+    layer: '4_StaffOfBuhndoar',
     type: EquippableTraitType.EQUIPPED_ITEM_1,
   },
   {
@@ -134,6 +162,20 @@ export const DEFAULT_ITEMS: Array<ItemLayer> = [
     description: 'Cleric Clothing',
     thumbnail: 'THUMB__Cleric_clothing',
     layer: '5_Cleric',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Druid Clothing',
+    description: 'Druid Clothing',
+    thumbnail: 'THUMB__Druid_clothing',
+    layer: '5_Druid',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Golden Raider Clothing',
+    description: 'Golden Raider Clothing',
+    thumbnail: 'THUMB__GoldenRaider_clothing',
+    layer: '5_GoldenRaider',
     type: EquippableTraitType.EQUIPPED_WEARABLE,
   },
   {
@@ -214,6 +256,13 @@ export const DEFAULT_ITEMS: Array<ItemLayer> = [
     type: EquippableTraitType.EQUIPPED_WEARABLE,
   },
   {
+    name: 'Sorcerer Clothing',
+    description: 'Sorcerer Clothing',
+    thumbnail: 'THUMB__Sorcerer_clothing',
+    layer: '5_Sorcerer',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
     name: 'Tavern Keeper Clothing',
     description: 'Tavern Keeper Clothing',
     thumbnail: 'THUMB__Tavernkeeper_clothing',
@@ -242,6 +291,13 @@ export const DEFAULT_ITEMS: Array<ItemLayer> = [
     type: EquippableTraitType.EQUIPPED_ITEM_2,
   },
   {
+    name: 'Brass Knuckles',
+    description: 'Brass Knuckles',
+    thumbnail: 'THUMB__Brass_knuckles',
+    layer: '7_BrassKnuckles',
+    type: EquippableTraitType.EQUIPPED_ITEM_2,
+  },
+  {
     name: 'Broken Brood',
     description: 'Broken Brood',
     thumbnail: 'THUMB__Broken_Brood',
@@ -253,6 +309,13 @@ export const DEFAULT_ITEMS: Array<ItemLayer> = [
     description: 'Hammer',
     thumbnail: 'THUMB__Hammer',
     layer: '7_Hammer',
+    type: EquippableTraitType.EQUIPPED_ITEM_2,
+  },
+  {
+    name: 'Katana',
+    description: 'Katana',
+    thumbnail: 'THUMB__Katana',
+    layer: '7_Katana',
     type: EquippableTraitType.EQUIPPED_ITEM_2,
   },
   {
@@ -281,6 +344,13 @@ export const DEFAULT_ITEMS: Array<ItemLayer> = [
     description: 'The Ghoul Slayer',
     thumbnail: 'THUMB__The_Ghoul_Slayer',
     layer: '7_TheGhoulSlayer',
+    type: EquippableTraitType.EQUIPPED_ITEM_2,
+  },
+  {
+    name: 'Warhammer',
+    description: 'Warhammer',
+    thumbnail: 'THUMB__Warhammer',
+    layer: '7_Warhammer',
     type: EquippableTraitType.EQUIPPED_ITEM_2,
   },
 ];
@@ -321,6 +391,11 @@ export const DEFAULT_CLASSES: Array<ClassEmblem> = [
     name: 'Hunter',
     description: 'Hunter',
     emblem: 'hunter',
+  },
+  {
+    name: 'Jester',
+    description: 'Jester',
+    emblem: 'jester',
   },
   {
     name: 'Monk',
@@ -381,10 +456,10 @@ export const DEFAULT_TRAITS: TraitsArray = [
 ];
 
 export const LAYERS_URI =
-  'ipfs://bafybeidfpt3earjjmrcbk4gcviupjp3a4b5vkx5ldhf5brioobtvbgzlni';
+  'ipfs://QmZz2uLSv1cFPPmvHMjef8PJPGd47QBtkqCEyZfvtyeAyv';
 
 export const CLASS_URI =
-  'ipfs://QmTgLoiqngDkMvcK2sE8DGBxKWwZ38epkYeKJYs6g4XTFB';
+  'ipfs://QmVxRbtYB6YYwg2QcUZfPcxPyBhCfYUdWtjVNNtwXpidkB';
 
 export const TRAITS: { [key: number]: { [key: string]: string[] } } = {
   0: {
