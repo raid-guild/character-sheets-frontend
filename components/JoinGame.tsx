@@ -25,7 +25,7 @@ import { TraitVariantControls } from '@/components/TraitVariantControls';
 import { TransactionPending } from '@/components/TransactionPending';
 import { XPDisplay, XPDisplaySmall } from '@/components/XPDisplay';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/graphql/health';
+import { awaitSubgraphSync } from '@/graphql/sync';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
@@ -291,7 +291,10 @@ export const JoinGame: React.FC<JoinGameProps> = ({
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(publicClient.chain.id, blockNumber);
+        const synced = await awaitSubgraphSync(
+          publicClient.chain.id,
+          blockNumber,
+        );
 
         if (!synced) throw new Error('Something went wrong while syncing');
 

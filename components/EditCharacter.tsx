@@ -26,7 +26,7 @@ import { TransactionPending } from '@/components/TransactionPending';
 import { XPDisplay, XPDisplaySmall } from '@/components/XPDisplay';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/graphql/health';
+import { awaitSubgraphSync } from '@/graphql/sync';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
@@ -387,7 +387,7 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
           }
 
           setIsSyncing(true);
-          const synced = await waitUntilBlock(
+          const synced = await awaitSubgraphSync(
             publicClient.chain.id,
             blockNumber,
           );
