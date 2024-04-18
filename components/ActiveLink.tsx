@@ -13,26 +13,18 @@ export const ActiveLink: React.FC<LinkProps> = ({ href, ...props }) => {
       fontSize="sm"
       fontWeight="medium"
       href={href ?? ''}
+      prefetch={false}
       textAlign="center"
       _hover={{ color: 'accent' }}
       {...props}
     >
-      {isActive ? (
-        <Box as="span">• </Box>
-      ) : (
-        <Box as="span" color="transparent">
-          •{' '}
-        </Box>
-      )}
+      <Box as="span" color={isActive ? 'unset' : 'transparent'}>
+        {'• '}
+      </Box>
       {props.children}
-      {isActive ? (
-        <Box as="span"> •</Box>
-      ) : (
-        <Box as="span" color="transparent">
-          {' '}
-          •
-        </Box>
-      )}
+      <Box as="span" color={isActive ? 'unset' : 'transparent'}>
+        {' •'}
+      </Box>
     </Link>
   );
 };

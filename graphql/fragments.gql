@@ -25,6 +25,10 @@ fragment CharacterMetaInfo on Character {
 fragment CharacterInfo on Character {
   id
   characterId
+  game {
+    id
+    chainId
+  }
   account
   player
   jailed
@@ -33,6 +37,8 @@ fragment CharacterInfo on Character {
   experience
   uri
   heldClasses {
+    experience
+    level
     classEntity {
       ...ClassInfo
     }
@@ -67,13 +73,6 @@ fragment ClassInfo on Class {
   }
 }
 
-fragment ItemRequirementInfo on ItemRequirement {
-  assetCategory
-  assetAddress
-  assetId
-  amount
-}
-
 fragment ItemInfo on Item {
   id
   itemId
@@ -83,9 +82,9 @@ fragment ItemInfo on Item {
   supply
   totalSupply
   merkleRoot
-  requirements {
-    ...ItemRequirementInfo
-  }
+  craftable
+  claimRequirementsBytes
+  craftRequirementsBytes
   holders {
     character {
       id

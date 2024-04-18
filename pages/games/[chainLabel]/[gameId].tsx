@@ -9,6 +9,7 @@ import {
   IconButton,
   Image,
   Link,
+  SimpleGrid,
   Spinner,
   Text,
   VStack,
@@ -30,14 +31,14 @@ import { AddGameMasterModal } from '@/components/Modals/AddGameMasterModal';
 import { ApproveTransferModal } from '@/components/Modals/ApproveTransferModal';
 import { AssignClassModal } from '@/components/Modals/AssignClassModal';
 import { ClaimClassModal } from '@/components/Modals/ClaimClassModal';
-import { ClaimItemModal } from '@/components/Modals/ClaimItemModal';
 import { CreateClassModal } from '@/components/Modals/CreateClassModal';
 import { CreateItemModal } from '@/components/Modals/CreateItemModal';
 import { DropExperienceModal } from '@/components/Modals/DropExperienceModal';
-import { EditItemClaimableModal } from '@/components/Modals/EditItemClaimableModal';
+import { EditItemWhitelistModal } from '@/components/Modals/EditItemWhitelistModal';
 import { EquipItemModal } from '@/components/Modals/EquipItemModal';
 import { GiveItemsModal } from '@/components/Modals/GiveItemsModal';
 import { JailPlayerModal } from '@/components/Modals/JailPlayerModal';
+import { ObtainItemModal } from '@/components/Modals/ObtainItemModal';
 import { RemoveCharacterModal } from '@/components/Modals/RemoveCharacterModal';
 import { RenounceCharacterModal } from '@/components/Modals/RenounceCharacterModal';
 import { RenounceClassModal } from '@/components/Modals/RenounceClassModal';
@@ -53,6 +54,7 @@ import {
   CharacterActionsProvider,
   useCharacterActions,
 } from '@/contexts/CharacterActionsContext';
+import { ClassActionsProvider } from '@/contexts/ClassActionsContext';
 import {
   GameActionsProvider,
   GameMasterActions,
@@ -104,12 +106,14 @@ export default function GamePageOuter({ game }: Props): JSX.Element {
     <GameProvider chainId={chainId} gameId={gameId.toString()} game={game}>
       <GameActionsProvider>
         <CharacterActionsProvider>
-          <ItemActionsProvider>
-            <ImplementationsAlert />
-            {isConnectedAndMounted && <OldCharacterURIAlert />}
-            {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
-            <GamePage isConnectedAndMounted={isConnectedAndMounted} />
-          </ItemActionsProvider>
+          <ClassActionsProvider>
+            <ItemActionsProvider>
+              <ImplementationsAlert />
+              {isConnectedAndMounted && <OldCharacterURIAlert />}
+              {isConnectedAndMounted && <NetworkAlert chainId={chainId} />}
+              <GamePage isConnectedAndMounted={isConnectedAndMounted} />
+            </ItemActionsProvider>
+          </ClassActionsProvider>
         </CharacterActionsProvider>
       </GameActionsProvider>
     </GameProvider>
@@ -148,7 +152,7 @@ function GamePage({
     transferCharacterModal,
   } = useCharacterActions();
 
-  const { equipItemModal, claimItemModal, editItemClaimableModal } =
+  const { equipItemModal, obtainItemModal, editItemWhitelistModal } =
     useItemActions();
 
   const [showJoinGame, setShowJoinGame] = useState(false);
@@ -197,7 +201,7 @@ function GamePage({
 
     return (
       <Grid
-        templateColumns={{ base: '1fr', lg: '3fr 1fr' }}
+        templateColumns={{ base: '100%', lg: '3fr 1fr' }}
         gridGap="5px"
         w="100%"
       >
@@ -300,76 +304,82 @@ function GamePage({
             />
           </VStack>
         </HStack>
-        <VStack
-          align="start"
-          spacing={0}
-          h="100%"
-          bg="cardBG"
-          flexShrink={0}
-          px={{ base: 4, sm: 8 }}
-          py={8}
-          display={{ base: 'flex', lg: 'none' }}
-        >
-          <GameTotals
-            experience={experience}
-            characters={characters}
-            items={items}
-          />
-        </VStack>
-
-        <VStack
-          align="start"
-          spacing={4}
-          px={{ base: 4, sm: 8 }}
-          py={8}
-          bg="cardBG"
-        >
-          <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
-            Owner
-          </Text>
-          <UserLink user={owner} />
-
-          <Text
-            letterSpacing="3px"
-            fontSize="2xs"
-            textTransform="uppercase"
-            mt={2}
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 1 }} w="100%" gridGap="5px">
+          <VStack
+            align="start"
+            spacing={0}
+            h="100%"
+            bg="cardBG"
+            flexShrink={0}
+            px={{ base: 4, sm: 8 }}
+            py={8}
+            display={{ base: 'flex', lg: 'none' }}
           >
-            Admins
-          </Text>
-          {admins.map(admin => (
-            <UserLink key={`admin-${admin}`} user={admin} />
-          ))}
+            <GameTotals
+              experience={experience}
+              characters={characters}
+              items={items}
+            />
+          </VStack>
 
-          <Flex align="center" mt={2}>
+          <VStack
+            align="start"
+            spacing={4}
+            px={{ base: 4, sm: 8 }}
+            py={8}
+            bg="cardBG"
+          >
             <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
-              Game Masters
+              Owner
             </Text>
-            {isConnectedAndMounted && isAdmin && (
-              <IconButton
-                onClick={() =>
-                  openActionModal(GameMasterActions.ADD_GAME_MASTER)
-                }
-                aria-label="add game master"
-                variant="ghost"
-                minW={4}
-                icon={<Text>+</Text>}
-                mb={1}
-                ml={2}
-              />
-            )}
-          </Flex>
-          <Wrap spacingX={1}>
-            {masters.map((master, i) => {
-              return (
-                <Flex key={`gm-${master}`}>
-                  <UserLink user={master} />
-                  {i !== masters.length - 1 && <Text as="span">, </Text>}
-                </Flex>
-              );
-            })}
-          </Wrap>
-        </VStack>
+            <UserLink user={owner} />
+
+            <Text
+              letterSpacing="3px"
+              fontSize="2xs"
+              textTransform="uppercase"
+              mt={2}
+            >
+              Admins
+            </Text>
+            {admins.map(admin => (
+              <UserLink key={`admin-${admin}`} user={admin} />
+            ))}
+
+            <Flex align="center" mt={2}>
+              <Text
+                letterSpacing="3px"
+                fontSize="2xs"
+                textTransform="uppercase"
+              >
+                Game Masters
+              </Text>
+              {isConnectedAndMounted && isAdmin && (
+                <IconButton
+                  onClick={() =>
+                    openActionModal(GameMasterActions.ADD_GAME_MASTER)
+                  }
+                  aria-label="add game master"
+                  variant="ghost"
+                  minW={4}
+                  icon={<Text>+</Text>}
+                  mb={1}
+                  ml={2}
+                />
+              )}
+            </Flex>
+            <Wrap spacingX={1}>
+              {masters.map((master, i) => {
+                return (
+                  <Flex key={`gm-${master}`}>
+                    <UserLink user={master} />
+                    {i !== masters.length - 1 && <Text as="span">, </Text>}
+                  </Flex>
+                );
+              })}
+            </Wrap>
+          </VStack>
+        </SimpleGrid>
         {isConnectedAndMounted && (
           <GameActions display={{ base: 'flex', lg: 'none' }} />
         )}
@@ -466,9 +476,7 @@ function GamePage({
             <CharactersPanel />
           </VStack>
         </VStack>
-        {isConnectedAndMounted && (
-          <GameActions display={{ base: 'none', lg: 'flex' }} />
-        )}
+        <GameActions display={{ base: 'none', lg: 'flex' }} />
       </Grid>
     );
   };
@@ -498,8 +506,8 @@ function GamePage({
       {transferCharacterModal && <TransferCharacterModal />}
 
       {/*  ITEM ACTIONS */}
-      {claimItemModal && <ClaimItemModal />}
-      {editItemClaimableModal && <EditItemClaimableModal />}
+      {obtainItemModal && <ObtainItemModal />}
+      {editItemWhitelistModal && <EditItemWhitelistModal />}
     </>
   );
 }

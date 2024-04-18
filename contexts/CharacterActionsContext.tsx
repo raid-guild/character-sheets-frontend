@@ -25,23 +25,23 @@ export enum PlayerActions {
 
 export enum GameMasterActions {
   ASSIGN_CLASS = 'Assign class',
-  JAIL_PLAYER = 'Jail player',
   FREE_PLAYER = 'Free player',
   GIVE_ITEMS = 'Give items',
   GIVE_XP = 'Give XP',
+  JAIL_PLAYER = 'Jail player',
   REVOKE_CLASS = 'Revoke class',
   REMOVE_CHARACTER = 'Remove character',
   TRANSFER_CHARACTER = 'Transfer character',
 }
 
-type ModalProps = Omit<ReturnType<typeof useDisclosure>, 'onOpen'> | undefined;
+type ModalProps = ReturnType<typeof useDisclosure> | undefined;
 
 type CharacterActionsContextType = {
   playerActions: PlayerActions[];
   gmActions: GameMasterActions[];
 
   selectedCharacter: Character | null;
-  selectCharacter: (character: Character) => void;
+  selectCharacter: (character: Character | null) => void;
 
   selectedItem: Item | null;
   selectItem: (item: Item) => void;
@@ -150,7 +150,7 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
     let actions = Object.keys(PlayerActions).map(
       key => PlayerActions[key as keyof typeof PlayerActions],
     );
-    if (selectedCharacter?.classes.length === 0) {
+    if (selectedCharacter?.heldClasses.length === 0) {
       actions = actions.filter(a => a !== PlayerActions.RENOUNCE_CLASS);
     }
 
@@ -175,7 +175,7 @@ export const CharacterActionsProvider: React.FC<React.PropsWithChildren> = ({
         actions = actions.filter(a => a !== GameMasterActions.ASSIGN_CLASS);
       }
 
-      if (selectedCharacter?.classes.length === 0) {
+      if (selectedCharacter?.heldClasses.length === 0) {
         actions = actions.filter(a => a !== GameMasterActions.REVOKE_CLASS);
       }
 

@@ -16,8 +16,8 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { parseAbi, toHex } from 'viem';
-import { Address, useNetwork, usePublicClient, useWalletClient } from 'wagmi';
+import { Address, parseAbi, toHex } from 'viem';
+import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
 
 import { CompositeCharacterImage } from '@/components/CompositeCharacterImage';
 import { Switch } from '@/components/Switch';
@@ -25,7 +25,7 @@ import { TraitVariantControls } from '@/components/TraitVariantControls';
 import { TransactionPending } from '@/components/TransactionPending';
 import { XPDisplay, XPDisplaySmall } from '@/components/XPDisplay';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/graphql/health';
+import { awaitSubgraphSync } from '@/graphql/sync';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useToast } from '@/hooks/useToast';
 import { useUploadFile } from '@/hooks/useUploadFile';
@@ -54,7 +54,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 }) => {
   const { game, character, reload: reloadGame } = useGame();
   const { data: walletClient } = useWalletClient();
-  const { chain } = useNetwork();
+  const { chain } = useAccount();
   const publicClient = usePublicClient();
   const { renderError } = useToast();
   const useSmallXp = useBreakpointValue({ base: true, md: false });
@@ -139,6 +139,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 
       try {
         if (!walletClient) throw new Error('Could not find a wallet client');
+        if (!publicClient) throw new Error('Could not find a public client');
         if (!chain) throw new Error('Could not find a connected chain');
         if (!game) throw new Error('Missing game data');
         if (character) throw new Error('Character already exists');
@@ -213,14 +214,8 @@ export const JoinGame: React.FC<JoinGameProps> = ({
 
         let characterTokenUri = '';
         if (baseTokenURI === baseCharacterUri) {
-          const totalSheets = await publicClient.readContract({
-            address: game.id as Address,
-            abi: parseAbi([
-              'function totalSheets() external view returns(uint256)',
-            ]),
-            functionName: 'totalSheets',
-          });
-          const characterId = `${game.id}-character-${toHex(totalSheets)}`;
+          const totalSheets = game.characters.length;
+          const characterId = `${game.id}-character-${toHex(totalSheets + 1)}`;
           const apiRoute = `/api/characters/${chainLabel}/${characterId}/update`;
           const signature = await walletClient.signMessage({
             message: apiRoute,
@@ -277,17 +272,17 @@ export const JoinGame: React.FC<JoinGameProps> = ({
           account: walletClient.account?.address as Address,
           address: game.id as Address,
           abi: parseAbi([
-            'function rollCharacterSheet(string calldata _tokenUri) external',
+            'function rollCharacterSheet(address player, string calldata _tokenUri) external',
           ]),
           functionName: 'rollCharacterSheet',
-          args: [characterTokenUri],
+          args: [walletClient.account?.address as Address, characterTokenUri],
         });
         setTxHash(transactionhash);
 
-        const client = publicClient ?? walletClient;
-        const { blockNumber, status } = await client.waitForTransactionReceipt({
-          hash: transactionhash,
-        });
+        const { blockNumber, status } =
+          await publicClient.waitForTransactionReceipt({
+            hash: transactionhash,
+          });
 
         if (status === 'reverted') {
           setTxFailed(true);
@@ -296,7 +291,10 @@ export const JoinGame: React.FC<JoinGameProps> = ({
         }
 
         setIsSyncing(true);
-        const synced = await waitUntilBlock(client.chain.id, blockNumber);
+        const synced = await awaitSubgraphSync(
+          publicClient.chain.id,
+          blockNumber,
+        );
 
         if (!synced) throw new Error('Something went wrong while syncing');
 

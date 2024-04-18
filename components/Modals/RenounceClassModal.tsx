@@ -2,48 +2,40 @@ import {
   Button,
   Flex,
   Image,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
   Text,
   useRadioGroup,
   VStack,
 } from '@chakra-ui/react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { parseAbi } from 'viem';
-import { Address, usePublicClient, useWalletClient } from 'wagmi';
+import { useCallback, useMemo, useState } from 'react';
+import { Address, parseAbi } from 'viem';
+import { useWalletClient } from 'wagmi';
 
 import { RadioCard } from '@/components/RadioCard';
-import { TransactionPending } from '@/components/TransactionPending';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
+import { useClassActions } from '@/contexts/ClassActionsContext';
 import { useGame } from '@/contexts/GameContext';
-import { waitUntilBlock } from '@/graphql/health';
-import { useToast } from '@/hooks/useToast';
 import { executeAsCharacter } from '@/utils/account';
+
+import { ActionModal } from './ActionModal';
 
 export const RenounceClassModal: React.FC = () => {
   const { character, game, reload: reloadGame } = useGame();
-  const { renounceClassModal, selectedCharacter } = useCharacterActions();
+  const { renounceClassModal } = useCharacterActions();
+  const { selectedClass } = useClassActions();
 
   const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
-  const { renderError } = useToast();
 
   const [classId, setClassId] = useState<string>('1');
 
   const [isRenouncing, setIsRenouncing] = useState<boolean>(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
-  const [txFailed, setTxFailed] = useState<boolean>(false);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [isSynced, setIsSynced] = useState<boolean>(false);
 
-  const options = useMemo(
-    () => selectedCharacter?.classes.map(c => c.classId) ?? [],
-    [selectedCharacter?.classes],
-  );
+  const options = useMemo(() => {
+    if (selectedClass) {
+      return [selectedClass.classId];
+    }
+    return character?.heldClasses.map(c => c.classId) ?? [];
+  }, [character, selectedClass]);
+
   const { getRootProps, getRadioProps, setValue } = useRadioGroup({
     name: 'class',
     defaultValue: options[0],
@@ -52,124 +44,64 @@ export const RenounceClassModal: React.FC = () => {
   const group = getRootProps();
 
   const resetData = useCallback(() => {
-    setValue(options[0]);
-    setClassId(options[0]);
-    setIsRenouncing(false);
-    setTxHash(null);
-    setTxFailed(false);
-    setIsSyncing(false);
-    setIsSynced(false);
-  }, [options, setValue]);
-
-  useEffect(() => {
-    if (!renounceClassModal?.isOpen) {
-      resetData();
+    if (selectedClass) {
+      setValue(selectedClass.classId);
+      setClassId(selectedClass.classId);
+    } else {
+      setValue(options[0]);
+      setClassId(options[0]);
     }
-  }, [resetData, renounceClassModal?.isOpen]);
+    setIsRenouncing(false);
+  }, [options, selectedClass, setValue]);
 
-  const onRenounceClass = useCallback(
-    async (e: React.FormEvent<HTMLDivElement>) => {
-      e.preventDefault();
+  const onRenounceClass = useCallback(async () => {
+    try {
+      if (!walletClient) throw new Error('Could not find a wallet client');
+      if (!character) throw new Error('Character address not found');
+      if (!game?.classesAddress) throw new Error('Missing game data');
+      if (character?.heldClasses.length === 0)
+        throw new Error('No classes found');
 
-      try {
-        if (!walletClient) throw new Error('Could not find a wallet client');
-        if (!selectedCharacter || selectedCharacter.id !== character?.id)
-          throw new Error('Character address not found');
-        if (!game?.classesAddress) throw new Error('Missing game data');
-        if (selectedCharacter?.classes.length === 0)
-          throw new Error('No classes found');
+      setIsRenouncing(true);
 
-        setIsRenouncing(true);
-
-        const transactionhash = await executeAsCharacter(
-          character,
-          walletClient,
-          {
-            chain: walletClient.chain,
-            account: walletClient.account?.address as Address,
-            address: game.classesAddress as Address,
-            abi: parseAbi(['function renounceClass(uint256 classId) public']),
-            functionName: 'renounceClass',
-            args: [BigInt(classId)],
-          },
-        );
-        setTxHash(transactionhash);
-
-        const client = publicClient ?? walletClient;
-        const { blockNumber, status } = await client.waitForTransactionReceipt({
-          hash: transactionhash,
-        });
-
-        if (status === 'reverted') {
-          setTxFailed(true);
-          setIsRenouncing(false);
-          throw new Error('Transaction failed');
-        }
-
-        setIsSyncing(true);
-        const synced = await waitUntilBlock(client.chain.id, blockNumber);
-        if (!synced) throw new Error('Something went wrong while syncing');
-
-        setIsSynced(true);
-        reloadGame();
-      } catch (e) {
-        renderError(e, 'Something went wrong renouncing class');
-      } finally {
-        setIsSyncing(false);
-        setIsRenouncing(false);
-      }
-    },
-    [
-      character,
-      classId,
-      publicClient,
-      game,
-      reloadGame,
-      renderError,
-      selectedCharacter,
-      walletClient,
-    ],
-  );
+      const transactionhash = await executeAsCharacter(
+        character,
+        walletClient,
+        {
+          chain: walletClient.chain,
+          account: walletClient.account?.address as Address,
+          address: game.classesAddress as Address,
+          abi: parseAbi(['function renounceClass(uint256 classId) public']),
+          functionName: 'renounceClass',
+          args: [BigInt(classId)],
+        },
+      );
+      return transactionhash;
+    } catch (e) {
+      throw e;
+    } finally {
+      setIsRenouncing(false);
+    }
+  }, [character, classId, game, walletClient]);
 
   const isLoading = isRenouncing;
   const isDisabled = isLoading;
 
-  const content = () => {
-    if (txFailed) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Transaction failed.</Text>
-          <Button onClick={renounceClassModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (isSynced) {
-      return (
-        <VStack py={10} spacing={4}>
-          <Text>Class successfully renounced!</Text>
-          <Button onClick={renounceClassModal?.onClose} variant="outline">
-            Close
-          </Button>
-        </VStack>
-      );
-    }
-
-    if (txHash && selectedCharacter) {
-      return (
-        <TransactionPending
-          isSyncing={isSyncing}
-          text={`Renouncing class...`}
-          txHash={txHash}
-          chainId={game?.chainId}
-        />
-      );
-    }
-
-    return (
-      <VStack as="form" onSubmit={onRenounceClass} spacing={8}>
+  return (
+    <ActionModal
+      {...{
+        isOpen: renounceClassModal?.isOpen,
+        onClose: renounceClassModal?.onClose,
+        header: `Renounce a Class`,
+        loadingText: `Renouncing class...`,
+        successText: 'Class successfully renounced!',
+        errorText: 'There was an error renouncing your class.',
+        resetData,
+        onAction: onRenounceClass,
+        onComplete: reloadGame,
+      }}
+    >
+      <VStack spacing={8}>
         <Flex {...group} wrap="wrap" gap={4}>
           {options.map(value => {
             const radio = getRadioProps({ value });
@@ -203,24 +135,6 @@ export const RenounceClassModal: React.FC = () => {
           Renounce
         </Button>
       </VStack>
-    );
-  };
-
-  return (
-    <Modal
-      closeOnEsc={!isLoading}
-      closeOnOverlayClick={!isLoading}
-      isOpen={renounceClassModal?.isOpen ?? false}
-      onClose={renounceClassModal?.onClose ?? (() => {})}
-    >
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>
-          <Text>Renounce a Class</Text>
-          <ModalCloseButton size="lg" />
-        </ModalHeader>
-        <ModalBody>{content()}</ModalBody>
-      </ModalContent>
-    </Modal>
+    </ActionModal>
   );
 };

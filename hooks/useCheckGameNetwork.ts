@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useNetwork } from 'wagmi';
+import { useAccount } from 'wagmi';
 
 import { useGame } from '@/contexts/GameContext';
 import { useToast } from '@/hooks/useToast';
@@ -21,7 +21,7 @@ export const useCheckGameNetwork = (): {
     );
   }, [renderError, game?.chainId]);
 
-  const { chain } = useNetwork();
+  const { chain } = useAccount();
 
   const isWrongNetwork = useMemo(
     () => chain?.id !== game?.chainId,

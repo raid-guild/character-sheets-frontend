@@ -1,11 +1,14 @@
+import { uriToHttp } from './helpers';
+
 const HOSTNAME =
   typeof window !== 'undefined' ? window.location.hostname : 'localhost';
 
 const RAIDGUILD_HOSTNAME = process.env.NEXT_PUBLIC_RAIDGUILD_HOSTNAME;
 
-const RAIDGUILD_GAME_ADDRESS = process.env.NEXT_PUBLIC_RAIDGUILD_GAME_ADDRESS;
+export const RAIDGUILD_GAME_ADDRESS =
+  process.env.NEXT_PUBLIC_RAIDGUILD_GAME_ADDRESS;
 
-const RAIDGUILD_GAME_CHAIN_LABEL =
+export const RAIDGUILD_GAME_CHAIN_LABEL =
   process.env.NEXT_PUBLIC_RAIDGUILD_GAME_CHAIN_LABEL;
 
 export const RAIDGUILD_GAME_URL =
@@ -31,3 +34,35 @@ export const BASE_CHARACTER_URI =
 if (!ENVIRONMENT || !['main', 'dev'].includes(ENVIRONMENT)) {
   throw new Error('NEXT_PUBLIC_ENVIRONMENT is not set');
 }
+
+export const JAILED_CHARACTER_CID =
+  'QmSa8YUZnAJM6YjrwoC9JTDtCVYDi6saS9fuzPCSiqaWQn';
+
+export const JAILED_CHARACTER_IMAGE = uriToHttp(
+  `ipfs://${JAILED_CHARACTER_CID}`,
+)[0];
+
+export const MAX_CLASS_LEVEL = 20;
+
+export const EXPERIENCE_TO_LEVEL_MAP: { [key: number]: number } = {
+  1: 0,
+  2: 300,
+  3: 900,
+  4: 2700,
+  5: 6500,
+  6: 14000,
+  7: 23000,
+  8: 34000,
+  9: 48000,
+  10: 64000,
+  11: 85000,
+  12: 100000,
+  13: 120000,
+  14: 140000,
+  15: 165000,
+  16: 195000,
+  17: 225000,
+  18: 265000,
+  19: 305000,
+  20: 355000,
+};

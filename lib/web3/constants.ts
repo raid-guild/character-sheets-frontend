@@ -1,4 +1,12 @@
-import { Chain, gnosis, goerli, mainnet } from 'wagmi/chains';
+import { Chain } from '@rainbow-me/rainbowkit';
+import {
+  base,
+  gnosis,
+  mainnet,
+  optimism,
+  polygon,
+  sepolia,
+} from 'wagmi/chains';
 
 import { ENVIRONMENT } from '@/utils/constants';
 
@@ -9,62 +17,102 @@ export const WALLET_CONNECT_PROJECT_ID: string =
   process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID!;
 
 export const EXPLORER_URLS: { [key: number]: string } = {
-  [100]: 'https://gnosisscan.io',
-  [5]: 'https://goerli.etherscan.io',
+  [gnosis.id]: 'https://gnosisscan.io',
+  [sepolia.id]: 'https://sepolia.etherscan.io',
+  [base.id]: 'https://basescan.org',
+  [polygon.id]: 'https://polygonscan.com',
+  [optimism.id]: 'https://optimistic.etherscan.io',
 };
 
 export const SUBGRAPH_URLS: { [key: number]: string } = {
-  [100]:
-    'https://api.thegraph.com/subgraphs/name/dan13ram/character-sheets-gnosis',
-  [5]: 'https://api.thegraph.com/subgraphs/name/dan13ram/character-sheets-goerli',
+  [gnosis.id]:
+    'https://api.studio.thegraph.com/query/71457/character-sheets-gnosis/version/latest',
+  [sepolia.id]:
+    'https://api.studio.thegraph.com/query/71457/character-sheets-sepolia/version/latest',
+  [base.id]:
+    'https://api.studio.thegraph.com/query/71457/character-sheets-base/version/latest',
+  [polygon.id]:
+    'https://api.studio.thegraph.com/query/71457/character-sheets-polygon/version/latest',
+  [optimism.id]:
+    'https://api.studio.thegraph.com/query/71457/character-sheets-optimism/version/latest',
 };
 
 export const RPC_URLS: { [key: number]: string } = {
-  [100]: 'https://rpc.gnosis.gateway.fm',
-  [5]: `https://goerli.infura.io/v3/${INFURA_KEY}`,
-  [1]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+  [gnosis.id]: 'https://rpc.gnosis.gateway.fm',
+  [sepolia.id]: `https://sepolia.infura.io/v3/${INFURA_KEY}`,
+  [mainnet.id]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+  [polygon.id]: `https://polygon-mainnet.infura.io/v3/${INFURA_KEY}`,
+  [optimism.id]: `https://optimism-mainnet.infura.io/v3/${INFURA_KEY}`,
+  [base.id]: 'https://mainnet.base.org',
 };
 
 export const SERVER_RPC_URLS: { [key: number]: string } = {
-  [100]: 'https://rpc.gnosis.gateway.fm',
-  [5]: `https://goerli.infura.io/v3/${SERVER_INFURA_KEY}`,
-  [1]: `https://mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
+  [gnosis.id]: 'https://rpc.gnosis.gateway.fm',
+  [sepolia.id]: `https://sepolia.infura.io/v3/${SERVER_INFURA_KEY}`,
+  [mainnet.id]: `https://mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
+  [polygon.id]: `https://polygon-mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
+  [optimism.id]: `https://optimism-mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
+  [base.id]: 'https://mainnet.base.org',
 };
 
 export const CHAINS: { [key: number]: Chain } = {
-  [100]: gnosis,
-  [5]: goerli,
-  [1]: mainnet,
+  [gnosis.id]: gnosis,
+  [sepolia.id]: sepolia,
+  [mainnet.id]: mainnet,
+  [polygon.id]: polygon,
+  [optimism.id]: optimism,
+  [base.id]: base,
 };
 
 export const CHAIN_LABEL_TO_ID: { [key: string]: number } = {
-  gnosis: 100,
-  goerli: 5,
+  gnosis: gnosis.id,
+  sepolia: sepolia.id,
+  mainnet: mainnet.id,
+  polygon: polygon.id,
+  optimism: optimism.id,
+  base: base.id,
 };
 
 export const CHAIN_ID_TO_IMAGE: { [key: number]: string } = {
-  100: '/images/gnosis.svg',
-  5: '/images/ethereum.svg',
-  1: '/images/ethereum.svg',
-  420: '/images/optimism.svg',
-  137: '/images/polygon.svg',
+  [gnosis.id]: '/images/gnosis.svg',
+  [sepolia.id]: '/images/ethereum.svg',
+  [mainnet.id]: '/images/ethereum.svg',
+  [optimism.id]: '/images/optimism.svg',
+  [polygon.id]: '/images/polygon.svg',
+  [base.id]: '/images/base.svg',
   42161: '/images/arbitrum.svg',
 };
 
 export const CHAIN_ID_TO_LABEL: { [key: number]: string } = {
-  100: 'gnosis',
-  5: 'goerli',
+  [gnosis.id]: 'gnosis',
+  [sepolia.id]: 'sepolia',
+  [mainnet.id]: 'mainnet',
+  [polygon.id]: 'polygon',
+  [optimism.id]: 'optimism',
+  [base.id]: 'base',
 };
 
-const ALL_SUPPORTED_CHAINS: Chain[] = [gnosis, goerli];
+type _chains = readonly [Chain, ...Chain[]];
 
-export const SUPPORTED_CHAINS: Chain[] = (() => {
+const ALL_SUPPORTED_CHAINS: _chains = [
+  gnosis,
+  sepolia,
+  polygon,
+  optimism,
+  base,
+];
+
+export const SUPPORTED_CHAINS: _chains = (() => {
   switch (ENVIRONMENT) {
     case 'main':
-      return ALL_SUPPORTED_CHAINS.filter(chain => !!chain.testnet === false);
+      return ALL_SUPPORTED_CHAINS.filter(
+        chain => !!chain.testnet === false,
+      ) as unknown as _chains;
     case 'dev':
     default:
-      return ALL_SUPPORTED_CHAINS.filter(chain => chain.testnet === true);
+      return ALL_SUPPORTED_CHAINS.filter(
+        chain => chain.testnet === true,
+      ) as unknown as _chains;
   }
 })();
 

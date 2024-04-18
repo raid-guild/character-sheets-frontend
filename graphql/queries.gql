@@ -1,3 +1,11 @@
+query GetMeta {
+  _meta {
+    block {
+      number
+    }
+  }
+}
+
 query GetGlobal {
   globals {
     ...GlobalInfo
@@ -39,5 +47,22 @@ query GetCharacterMetaById($characterId: ID!) {
 query GetCharacterMetaByURI($characterURI: String!) {
   characters(where: { uri: $characterURI }) {
     ...CharacterMetaInfo
+  }
+}
+
+query GetTopCharactersFromGame($gameId: String!, $limit: Int!) {
+  characters(
+    first: $limit
+    orderBy: experience
+    orderDirection: desc
+    where: { game: $gameId }
+  ) {
+    ...CharacterInfo
+  }
+}
+
+query GetTopCharacters($limit: Int) {
+  characters(first: $limit, orderBy: experience, orderDirection: desc) {
+    ...CharacterInfo
   }
 }

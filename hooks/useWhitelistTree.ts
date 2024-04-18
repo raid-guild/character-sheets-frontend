@@ -1,9 +1,10 @@
-import { useGame } from '@/contexts/GameContext';
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import { useMemo } from 'react';
 import useSWR from 'swr';
 
-export type ClaimableItemLeaf = [bigint, `0x${string}`, bigint, bigint]; // itemId, address, nonce, amount
+import { useGame } from '@/contexts/GameContext';
+
+export type WhitelistItemLeaf = [bigint, `0x${string}`, bigint, bigint]; // itemId, address, nonce, amount
 
 type FetcherInput = {
   gameAddress: string;
@@ -15,7 +16,7 @@ const fetcher = async ({
   gameAddress,
   chainId,
   itemId,
-}: FetcherInput): Promise<StandardMerkleTree<ClaimableItemLeaf> | null> => {
+}: FetcherInput): Promise<StandardMerkleTree<WhitelistItemLeaf> | null> => {
   try {
     const uri = `/api/getTree?gameAddress=${gameAddress}&chainId=${chainId}&itemId=${itemId}`;
 
@@ -28,16 +29,16 @@ const fetcher = async ({
 
     const merkleTree = StandardMerkleTree.load(JSON.parse(tree));
 
-    return merkleTree as StandardMerkleTree<ClaimableItemLeaf>;
+    return merkleTree as StandardMerkleTree<WhitelistItemLeaf>;
   } catch (e) {
     return null;
   }
 };
 
-export const useClaimableTree = (
+export const useWhitelistTree = (
   itemId: string | undefined | null,
 ): {
-  tree: StandardMerkleTree<ClaimableItemLeaf> | null;
+  tree: StandardMerkleTree<WhitelistItemLeaf> | null;
   reload: () => void;
   loading: boolean;
   error: Error | null;
@@ -51,11 +52,11 @@ export const useClaimableTree = (
       chainId: chainId ? chainId.toString() : '',
       itemId: itemId ? itemId.toString() : '',
     }),
-    [gameAddress, itemId],
+    [gameAddress, chainId, itemId],
   );
 
   const { data, error, mutate, isLoading, isValidating } = useSWR<
-    StandardMerkleTree<ClaimableItemLeaf> | null,
+    StandardMerkleTree<WhitelistItemLeaf> | null,
     Error,
     FetcherInput
   >(input, fetcher, {

@@ -1,5 +1,13 @@
-import { HStack, Image, Text, VStack } from '@chakra-ui/react';
+import {
+  Button,
+  HStack,
+  Image,
+  Text,
+  useDisclosure,
+  VStack,
+} from '@chakra-ui/react';
 
+import { LevelProgressionModal } from '@/components/Modals/LevelProgressionModal';
 import { GameMeta } from '@/utils/types';
 
 import { XPDisplay } from './XPDisplay';
@@ -11,6 +19,8 @@ export const GameTotals: React.FC<GameTotalsProps> = ({
   characters,
   items,
 }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   return (
     <VStack align="flex-start" spacing={4}>
       <Text letterSpacing="3px" fontSize="2xs" textTransform="uppercase">
@@ -29,6 +39,10 @@ export const GameTotals: React.FC<GameTotalsProps> = ({
           {items.length} item{items.length !== 1 && 's'}
         </Text>
       </HStack>
+      <Button onClick={onOpen} size="xs">
+        Level progression
+      </Button>
+      <LevelProgressionModal isOpen={isOpen} onClose={onClose} />
     </VStack>
   );
 };

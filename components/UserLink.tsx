@@ -1,5 +1,6 @@
 import { HStack, Link, Text } from '@chakra-ui/react';
-import { Address, useAccount, useChainId } from 'wagmi';
+import { Address } from 'viem';
+import { useAccount, useChainId } from 'wagmi';
 
 import { useEnsName } from '@/hooks/useEnsName';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';

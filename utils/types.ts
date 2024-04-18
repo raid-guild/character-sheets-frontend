@@ -5,12 +5,78 @@ export type Attribute = {
   value: string;
 };
 
-export type Metadata = {
+export type Character = Metadata & {
+  id: string;
+  chainId: number;
+  gameId: string;
   name: string;
-  description: string;
-  image: string;
-  equippable_layer: string | null;
-  attributes: Attribute[];
+  characterId: string;
+  account: `0x${string}`;
+  player: `0x${string}`;
+  jailed: boolean;
+  approved: string;
+  removed: boolean;
+  experience: string;
+  uri: string;
+  heldClasses: HeldClass[];
+  heldItems: Item[];
+  equippedItems: EquippedItem[];
+};
+
+export type CharacterMetaDB = Metadata & {
+  _id: ObjectId;
+  chainId: string;
+  gameAddress: string;
+  characterId: string;
+  account: string;
+  player: string;
+  uri: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type WhitelistTreeDB = {
+  _id: ObjectId;
+  gameAddress: string;
+  itemId: string;
+  tree: string;
+  updatedAt: Date;
+  updatedBy: string;
+  createdAt: Date;
+};
+
+export type Class = Metadata & {
+  id: string;
+  classId: string;
+  uri: string;
+  claimable: boolean;
+  holders: { id: string; characterId: string }[];
+};
+
+export type EquippedItem = Item & {
+  equippedAt: number;
+};
+
+export type Game = Metadata & {
+  id: string;
+  startedAt: number;
+  chainId: number;
+  experienceAddress: `0x${string}`;
+  itemsAddress: `0x${string}`;
+  classesAddress: `0x${string}`;
+  characterEligibilityAdaptor: `0x${string}`;
+  hatsAdaptor: `0x${string}`;
+  itemsManager: `0x${string}`;
+  uri: string;
+  baseTokenURI: string;
+  owner: string;
+  admins: string[];
+  masters: string[];
+  gameMasterHatEligibilityModule: string;
+  characters: Character[];
+  classes: Class[];
+  items: Item[];
+  experience: string;
 };
 
 export type GameMeta = Metadata & {
@@ -28,57 +94,9 @@ export type GameMeta = Metadata & {
   experience: string;
 };
 
-export type Game = Metadata & {
-  id: string;
-  startedAt: number;
-  chainId: number;
-  experienceAddress: string;
-  itemsAddress: string;
-  classesAddress: string;
-  characterEligibilityAdaptor: string;
-  hatsAdaptor: string;
-  itemsManager: string;
-  uri: string;
-  baseTokenURI: string;
-  owner: string;
-  admins: string[];
-  masters: string[];
-  gameMasterHatEligibilityModule: string;
-  characters: Character[];
-  classes: Class[];
-  items: Item[];
+export type HeldClass = Class & {
   experience: string;
-};
-
-export type Character = Metadata & {
-  id: string;
-  name: string;
-  characterId: string;
-  account: string;
-  player: string;
-  jailed: boolean;
-  approved: string;
-  removed: boolean;
-  experience: string;
-  uri: string;
-  classes: Class[];
-  heldItems: Item[];
-  equippedItems: EquippedItem[];
-};
-
-export type Class = Metadata & {
-  id: string;
-  classId: string;
-  uri: string;
-  claimable: boolean;
-  holders: { id: string; characterId: string }[];
-};
-
-export type ItemRequirement = {
-  amount: string;
-  assetId: string;
-  assetAddress: string;
-  assetCategory: string;
+  level: string;
 };
 
 export type Item = Metadata & {
@@ -90,34 +108,36 @@ export type Item = Metadata & {
   supply: string;
   totalSupply: string;
   amount: string;
-  requirements: ItemRequirement[];
   holders: { id: string; characterId: string }[];
   equippers: { id: string; characterId: string }[];
   merkleRoot: string;
+  craftable: boolean;
+  craftRequirements: CraftRequirement[];
+  claimRequirements: RequirementNode | null;
 };
 
-export type EquippedItem = Item & {
-  equippedAt: number;
-};
-
-export type ClaimableTreeDB = {
-  _id: ObjectId;
-  gameAddress: string;
+export type CraftRequirement = {
   itemId: string;
-  tree: string;
-  updatedAt: Date;
-  updatedBy: string;
-  createdAt: Date;
+  amount: string;
 };
 
-export type CharacterMetaDB = Metadata & {
-  _id: ObjectId;
-  chainId: string;
-  gameAddress: string;
-  characterId: string;
-  account: string;
-  player: string;
-  uri: string;
-  createdAt: Date;
-  updatedAt: Date;
+export type Asset = {
+  amount: string;
+  assetId: string;
+  assetAddress: string;
+  assetCategory: 'ERC20' | 'ERC721' | 'ERC1155';
+};
+
+export type RequirementNode = {
+  operator: 'NIL' | 'AND' | 'OR' | 'NOT';
+  children: RequirementNode[];
+  asset: Asset | null;
+};
+
+export type Metadata = {
+  name: string;
+  description: string;
+  image: string;
+  equippable_layer: string | null;
+  attributes: Attribute[];
 };

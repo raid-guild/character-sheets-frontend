@@ -43,6 +43,407 @@ export type TraitsArray = [
   string,
 ];
 
+export type ItemLayer = {
+  name: string;
+  description: string;
+  thumbnail: string;
+  layer: string;
+  type: EquippableTraitType;
+};
+
+export const DEFAULT_ITEMS: Array<ItemLayer> = [
+  {
+    name: 'Amulet Of Influence',
+    description: 'Amulet Of Influence',
+    thumbnail: 'THUMB__Amulet_of_Influence',
+    layer: '4_AmuletOfInfluence',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
+    name: 'Babymoloch Chain',
+    description: 'Babymoloch Chain',
+    thumbnail: 'THUMB__BabyMoloch_chain',
+    layer: '4_BabymolochChain',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
+    name: 'Demon Skull',
+    description: 'Demon Skull',
+    thumbnail: 'THUMB__Demon_Skull',
+    layer: '4_DemonSkull',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
+    name: 'Druid Knife',
+    description: 'Druid Knife',
+    thumbnail: 'THUMB__Druid_Knife',
+    layer: '4_DruidKnife',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
+    name: 'Elderbow',
+    description: 'Elderbow',
+    thumbnail: 'THUMB__Elderbow',
+    layer: '4_Elderbow',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
+    name: 'Guilden Quill',
+    description: 'Guilden Quill',
+    thumbnail: 'THUMB__Guilden_Quill',
+    layer: '4_GildenQuill',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
+    name: 'Lute Of Lore',
+    description: 'Lute Of Lore',
+    thumbnail: 'THUMB__Lute_of_Lore',
+    layer: '4_LuteOfLore',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
+    name: 'Rake',
+    description: 'Rake',
+    thumbnail: 'THUMB__Rake',
+    layer: '4_Rake',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
+    name: 'Sacred Flame Spell',
+    description: 'Sacred Flame Spell',
+    thumbnail: 'THUMB__Sacred_Flame_Spell',
+    layer: '4_SacredFlame',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
+    name: 'Small Dagger',
+    description: 'Small Dagger',
+    thumbnail: 'THUMB__Small_Dagger',
+    layer: '4_SmallDagger',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
+    name: 'Staff Of Buhndoar',
+    description: 'Staff Of Buhndoar',
+    thumbnail: 'THUMB__Staff_of_Buhndoar',
+    layer: '4_StaffOfBuhndoar',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
+    name: 'Wooden Bow',
+    description: 'Wooden Bow',
+    thumbnail: 'THUMB__Wooden_Bow',
+    layer: '4_WoodenBow',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
+    name: 'Wooden Staff',
+    description: 'Wooden Staff',
+    thumbnail: 'THUMB__Wooden_Staff',
+    layer: '4_WoodenStaff',
+    type: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
+    name: 'Archer Clothing',
+    description: 'Archer Clothing',
+    thumbnail: 'THUMB__Archer_clothing',
+    layer: '5_Archer',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Bard Clothing',
+    description: 'Bard Clothing',
+    thumbnail: 'THUMB__Bard_clothing',
+    layer: '5_Bard',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Cleric Clothing',
+    description: 'Cleric Clothing',
+    thumbnail: 'THUMB__Cleric_clothing',
+    layer: '5_Cleric',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Druid Clothing',
+    description: 'Druid Clothing',
+    thumbnail: 'THUMB__Druid_clothing',
+    layer: '5_Druid',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Golden Raider Clothing',
+    description: 'Golden Raider Clothing',
+    thumbnail: 'THUMB__GoldenRaider_clothing',
+    layer: '5_GoldenRaider',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Healer Clothing',
+    description: 'Healer Clothing',
+    thumbnail: 'THUMB__Healer_clothing',
+    layer: '5_Healer',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Hunter Clothing',
+    description: 'Hunter Clothing',
+    thumbnail: 'THUMB__Hunter_clothing',
+    layer: '5_Hunter',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Medic Clothing',
+    description: 'Medic Clothing',
+    thumbnail: 'THUMB__Medic_clothing',
+    layer: '5_Medic',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Monk Clothing',
+    description: 'Monk Clothing',
+    thumbnail: 'THUMB__Monk_clothing',
+    layer: '5_Monk',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Mystic Alchemist Clothing',
+    description: 'Mystic Alchemist Clothing',
+    thumbnail: 'THUMB__MysticAlchemist_clothing',
+    layer: '5_MysticAlchemist',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Necromancer Clothing',
+    description: 'Necromancer Clothing',
+    thumbnail: 'THUMB__Necromancer_clothing',
+    layer: '5_Necromancer',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Paladin Clothing',
+    description: 'Paladin Clothing',
+    thumbnail: 'THUMB__Paladin_clothing',
+    layer: '5_Paladin',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Pirate Clothing',
+    description: 'Pirate Clothing',
+    thumbnail: 'THUMB__Pirate_clothing',
+    layer: '5_Pirate',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Ranger Clothing',
+    description: 'Ranger Clothing',
+    thumbnail: 'THUMB__Ranger_clothing',
+    layer: '5_Ranger',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Rogue Clothing',
+    description: 'Rogue Clothing',
+    thumbnail: 'THUMB__Rogue_clothing',
+    layer: '5_Rogue',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Scribe Clothing',
+    description: 'Scribe Clothing',
+    thumbnail: 'THUMB__Scribe_clothing',
+    layer: '5_Scribe',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Sorcerer Clothing',
+    description: 'Sorcerer Clothing',
+    thumbnail: 'THUMB__Sorcerer_clothing',
+    layer: '5_Sorcerer',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Tavern Keeper Clothing',
+    description: 'Tavern Keeper Clothing',
+    thumbnail: 'THUMB__Tavernkeeper_clothing',
+    layer: '5_TavernKeeper',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Warrior Clothing',
+    description: 'Warrior Clothing',
+    thumbnail: 'THUMB__Warrior_clothing',
+    layer: '5_Warrior',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Wizard Clothing',
+    description: 'Wizard Clothing',
+    thumbnail: 'THUMB__Wizard_clothing',
+    layer: '5_Wizard',
+    type: EquippableTraitType.EQUIPPED_WEARABLE,
+  },
+  {
+    name: 'Basic Sword',
+    description: 'Basic Sword',
+    thumbnail: 'THUMB__Basic_sword',
+    layer: '7_BasicSword',
+    type: EquippableTraitType.EQUIPPED_ITEM_2,
+  },
+  {
+    name: 'Brass Knuckles',
+    description: 'Brass Knuckles',
+    thumbnail: 'THUMB__Brass_knuckles',
+    layer: '7_BrassKnuckles',
+    type: EquippableTraitType.EQUIPPED_ITEM_2,
+  },
+  {
+    name: 'Broken Brood',
+    description: 'Broken Brood',
+    thumbnail: 'THUMB__Broken_Brood',
+    layer: '7_BrokenBrood',
+    type: EquippableTraitType.EQUIPPED_ITEM_2,
+  },
+  {
+    name: 'Hammer',
+    description: 'Hammer',
+    thumbnail: 'THUMB__Hammer',
+    layer: '7_Hammer',
+    type: EquippableTraitType.EQUIPPED_ITEM_2,
+  },
+  {
+    name: 'Katana',
+    description: 'Katana',
+    thumbnail: 'THUMB__Katana',
+    layer: '7_Katana',
+    type: EquippableTraitType.EQUIPPED_ITEM_2,
+  },
+  {
+    name: 'Spikey',
+    description: 'Spikey',
+    thumbnail: 'THUMB__Spikey',
+    layer: '7_Spikey',
+    type: EquippableTraitType.EQUIPPED_ITEM_2,
+  },
+  {
+    name: 'Stekahr Staff',
+    description: 'Stekahr Staff',
+    thumbnail: 'THUMB__Stekahr_Sceptre',
+    layer: '7_StekahrStaff',
+    type: EquippableTraitType.EQUIPPED_ITEM_2,
+  },
+  {
+    name: 'Sword Of Undhur',
+    description: 'Sword Of Undhur',
+    thumbnail: 'THUMB__Sword_Of_Undhur',
+    layer: '7_SwordOfUndhur',
+    type: EquippableTraitType.EQUIPPED_ITEM_2,
+  },
+  {
+    name: 'The Ghoul Slayer',
+    description: 'The Ghoul Slayer',
+    thumbnail: 'THUMB__The_Ghoul_Slayer',
+    layer: '7_TheGhoulSlayer',
+    type: EquippableTraitType.EQUIPPED_ITEM_2,
+  },
+  {
+    name: 'Warhammer',
+    description: 'Warhammer',
+    thumbnail: 'THUMB__Warhammer',
+    layer: '7_Warhammer',
+    type: EquippableTraitType.EQUIPPED_ITEM_2,
+  },
+];
+
+export type ClassEmblem = {
+  name: string;
+  description: string;
+  emblem: string;
+};
+
+export const DEFAULT_CLASSES: Array<ClassEmblem> = [
+  {
+    name: 'Alchemist',
+    description: 'Alchemist',
+    emblem: 'alchemist',
+  },
+  {
+    name: 'Archer',
+    description: 'Archer',
+    emblem: 'archer',
+  },
+  {
+    name: 'Cleric',
+    description: 'Cleric',
+    emblem: 'cleric',
+  },
+  {
+    name: 'Druid',
+    description: 'Druid',
+    emblem: 'druid',
+  },
+  {
+    name: 'Healer',
+    description: 'Healer',
+    emblem: 'healer',
+  },
+  {
+    name: 'Hunter',
+    description: 'Hunter',
+    emblem: 'hunter',
+  },
+  {
+    name: 'Jester',
+    description: 'Jester',
+    emblem: 'jester',
+  },
+  {
+    name: 'Monk',
+    description: 'Monk',
+    emblem: 'monk',
+  },
+  {
+    name: 'Necromancer',
+    description: 'Necromancer',
+    emblem: 'necromancer',
+  },
+  {
+    name: 'Paladin',
+    description: 'Paladin',
+    emblem: 'paladin',
+  },
+  {
+    name: 'Rogue',
+    description: 'Rogue',
+    emblem: 'rogue',
+  },
+  {
+    name: 'Scribe',
+    description: 'Scribe',
+    emblem: 'scribe',
+  },
+  {
+    name: 'Sorcerer',
+    description: 'Sorcerer',
+    emblem: 'sorcerer',
+  },
+  {
+    name: 'Tavern Keeper',
+    description: 'Tavern Keeper',
+    emblem: 'tavern_keeper',
+  },
+  {
+    name: 'Warrior',
+    description: 'Warrior',
+    emblem: 'warrior',
+  },
+  {
+    name: 'Wizard',
+    description: 'Wizard',
+    emblem: 'wizard',
+  },
+];
+
 export const DEFAULT_TRAITS: TraitsArray = [
   '0_Clouds_a_64485b',
   '1_Type1_a_ccb5aa',
@@ -54,8 +455,11 @@ export const DEFAULT_TRAITS: TraitsArray = [
   '',
 ];
 
-export const LAYERS_CID =
-  'ipfs://bafybeifbgpsf4hr53ifk646xrxsvg33toq7fqktzqupcdz6cin3ifkvzxq';
+export const LAYERS_URI =
+  'ipfs://QmZz2uLSv1cFPPmvHMjef8PJPGd47QBtkqCEyZfvtyeAyv';
+
+export const CLASS_URI =
+  'ipfs://QmVxRbtYB6YYwg2QcUZfPcxPyBhCfYUdWtjVNNtwXpidkB';
 
 export const TRAITS: { [key: number]: { [key: string]: string[] } } = {
   0: {
@@ -187,18 +591,39 @@ export const TRAITS: { [key: number]: { [key: string]: string[] } } = {
 
 export const removeTraitHex = (trait: string): string => {
   const traitSplit = trait.split('_');
+  if (traitSplit.length <= 3) return trait;
   return traitSplit[0] + '_' + traitSplit[1] + '_' + traitSplit[2];
 };
 
+export const getImageIpfsUri = (fileName: string): string => {
+  if (!fileName) return '';
+  return LAYERS_URI + '/' + fileName + '.png';
+};
+
+export const getThumbnailUrl = (fileName: string): string => {
+  return uriToHttp(LAYERS_URI)[0] + '/' + fileName + '.png';
+};
+
+export const getClassEmblemUrl = (fileName: string): string => {
+  return uriToHttp(CLASS_URI)[0] + '/' + fileName + '.svg';
+};
+
+export const getClassIpfsUri = (fileName: string): string => {
+  return CLASS_URI + '/' + fileName + '.svg';
+};
+
 export const getImageUrl = (fileName: string): string => {
-  const [index, , potentialUrl] = fileName.split('_');
+  if (fileName.startsWith('THUMB')) {
+    return getThumbnailUrl(fileName);
+  }
+  const [index] = fileName.split('_');
   if (index.includes('equip')) {
+    // We want to take everything after the second underscore, even if it contains more underscores
+    const potentialUrl = fileName.split('_').slice(2).join('_');
     return potentialUrl; // In this case, what would normally be "color" is actually the URL of the newly equipped item
   }
 
-  return (
-    uriToHttp(LAYERS_CID)[0] + '/layers/' + removeTraitHex(fileName) + '.png'
-  );
+  return uriToHttp(LAYERS_URI)[0] + '/' + removeTraitHex(fileName) + '.png';
 };
 
 export const formatLayerNameFromTrait = (
@@ -352,14 +777,12 @@ export const getEquippableTraitName = (
           ? `equip_${items[1].name}_${items[1].equippable_layer}`
           : '';
       } else {
-        traits[
-          equippableTraitType
-        ] = `equip_${items[0].name}_${items[0].equippable_layer}`;
+        traits[equippableTraitType] =
+          `equip_${items[0].name}_${items[0].equippable_layer}`;
       }
     } else {
-      traits[
-        equippableTraitType
-      ] = `equip_${items[0].name}_${items[0].equippable_layer}`;
+      traits[equippableTraitType] =
+        `equip_${items[0].name}_${items[0].equippable_layer}`;
     }
   }
 

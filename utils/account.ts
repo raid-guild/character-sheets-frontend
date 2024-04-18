@@ -8,28 +8,58 @@ import {
   WriteContractParameters,
 } from 'viem';
 
+import { ABIS } from './abis';
 import { Character } from './types';
+
+type WriteParams = WriteContractParameters<
+  Abi,
+  string,
+  readonly unknown[],
+  Chain | undefined
+>;
 
 export const executeAsCharacter = (
   character: Character,
   walletClient: WalletClient,
-  args: WriteContractParameters<Abi, string, Chain, Account, Chain>,
+  args: Array<WriteParams> | WriteParams,
 ): Promise<`0x${string}`> => {
-  const data = encodeFunctionData({
-    abi: args.abi,
-    functionName: args.functionName,
-    args: args.args,
+  if (!Array.isArray(args)) {
+    args = [args] as Array<WriteParams>;
+  }
+
+  const calls = args.map(arg => {
+    const data = encodeFunctionData({
+      abi: arg.abi,
+      functionName: arg.functionName,
+      args: arg.args,
+    });
+
+    return {
+      target: arg.address,
+      callData: data,
+    };
   });
 
-  const to = args.address;
+  const data = encodeFunctionData({
+    abi: ABIS.multicall3,
+    functionName: 'aggregate',
+    args: [calls],
+  });
+
+  const to = walletClient.chain?.contracts?.multicall3
+    ?.address as `0x${string}`;
+
+  if (!to) {
+    throw new Error('Multicall contract address is not found');
+  }
 
   const value = BigInt(0);
 
-  const operation = BigInt(0);
+  const operation = BigInt(1);
 
   return walletClient.writeContract({
-    chain: args.chain,
-    account: args.account as Account,
+    chain: walletClient.chain as Chain,
+    account: walletClient.account as Account,
     address: character.account as `0x${string}`,
     abi: parseAbi([
       'function execute(address to, uint256 value, bytes calldata data, uint256 operation) external',

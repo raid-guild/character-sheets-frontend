@@ -190,6 +190,9 @@ const UpgradeButton: React.FC<{
     try {
       if (!walletClient?.account)
         throw new Error('Could not find a wallet client');
+
+      if (!publicClient) throw new Error('Could not find a public client');
+
       setIsUpgrading(true);
 
       const transactionhash = await walletClient.writeContract({

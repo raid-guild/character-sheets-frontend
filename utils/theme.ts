@@ -132,6 +132,7 @@ const Button = {
     },
   },
 };
+
 const FormLabel = {
   baseStyle: {
     fontWeight: 500,
@@ -351,6 +352,54 @@ const Tooltip = {
   },
 };
 
+const Table = {
+  variants: {
+    simple: {
+      table: {},
+      thead: {},
+      tr: {
+        borderBottom: '1px solid',
+        borderColor: 'gray.700',
+      },
+      th: {
+        border: 'none',
+        py: 2,
+      },
+      td: {
+        border: 'none',
+      },
+    },
+  },
+};
+
+const Select = {
+  baseStyle: {
+    field: {
+      background: 'cardBG',
+      border: '1px solid',
+      borderRadius: '6px',
+      borderColor: 'white',
+      height: '32px',
+
+      _hover: {
+        borderColor: 'accent',
+      },
+
+      _active: {
+        borderColor: 'accent',
+      },
+      '>option': {
+        background: 'cardBG',
+        color: 'white',
+        _hover: {
+          background: 'accent',
+          color: 'dark',
+        },
+      },
+    },
+  },
+};
+
 export const theme = extendTheme({
   config: { initialColorMode: 'light', useSystemColorMode: false },
   fonts: {
@@ -380,5 +429,7 @@ export const theme = extendTheme({
     Text,
     Textarea,
     Tooltip,
+    Table,
+    Select,
   },
 });
