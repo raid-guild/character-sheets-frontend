@@ -39,6 +39,7 @@ import { useClassActions } from '@/contexts/ClassActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
+import { ItemType } from '@/lib/traits';
 import { getAddressUrl, getChainLabelFromId } from '@/lib/web3';
 import { JAILED_CHARACTER_IMAGE } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
@@ -89,6 +90,16 @@ export const CharacterCard: React.FC<{
       .toString();
   }, [items]);
 
+  const badges = useMemo(() => {
+    return equippedItems.filter(item => {
+      return item.attributes.find(
+        attribute =>
+          attribute.trait_type === 'ITEM TYPE' &&
+          attribute.value === ItemType.BADGE,
+      );
+    });
+  }, [equippedItems]);
+
   return (
     <SimpleGrid
       columns={{ base: 1, md: 2 }}
@@ -128,6 +139,19 @@ export const CharacterCard: React.FC<{
         <HStack pos="absolute" top={4} left={4}>
           <XPDisplay experience={experience} />
         </HStack>
+        <VStack left={4} pos="absolute" spacing={0} top={20}>
+          {badges.slice(0, 3).map(badge => (
+            <HStack key={`${badge.itemId}_${badge.name}`}>
+              <Image
+                alt={badge.name}
+                height="40px"
+                src={badge.image}
+                width="40px"
+              />
+              <Text fontSize="xs">x {badge.amount}</Text>
+            </HStack>
+          ))}
+        </VStack>
       </Box>
       <VStack align="flex-start" spacing={6}>
         {displayOnly ? (
@@ -253,13 +277,31 @@ export const CharacterCardSmall: React.FC<{
 
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
-  const { experience, heldClasses, heldItems, image, jailed, name } = character;
+  const {
+    equippedItems,
+    experience,
+    heldClasses,
+    heldItems,
+    image,
+    jailed,
+    name,
+  } = character;
 
   const itemTotal = useMemo(() => {
     return heldItems
       .reduce((total, item) => total + BigInt(item.amount), BigInt(0))
       .toString();
   }, [heldItems]);
+
+  const badges = useMemo(() => {
+    return equippedItems.filter(item => {
+      return item.attributes.find(
+        attribute =>
+          attribute.trait_type === 'ITEM TYPE' &&
+          attribute.value === ItemType.BADGE,
+      );
+    });
+  }, [equippedItems]);
 
   return (
     <VStack spacing={3} w="100%">
@@ -310,6 +352,19 @@ export const CharacterCardSmall: React.FC<{
           >
             <XPDisplaySmall experience={experience} />
           </HStack>
+          <VStack left={2} pos="absolute" spacing={0} top={2}>
+            {badges.slice(0, 3).map(badge => (
+              <HStack key={`${badge.itemId}_${badge.name}_small`}>
+                <Image
+                  alt="users"
+                  height="20px"
+                  src={badge.image}
+                  width="20px"
+                />
+                <Text fontSize="xs">x {badge.amount}</Text>
+              </HStack>
+            ))}
+          </VStack>
         </Box>
         <VStack py={4} spacing={5}>
           <Text fontSize="lg" fontWeight={500}>
