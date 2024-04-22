@@ -9,6 +9,7 @@ import {
   EquippableTraitType,
   formatTraitsForUpload,
   getTraitsObjectFromAttributes,
+  ItemType,
 } from '@/lib/traits';
 import { getChainLabelFromId } from '@/lib/web3';
 import { executeAsCharacter } from '@/utils/account';
@@ -60,26 +61,34 @@ export const EquipItemModal: React.FC = () => {
         equippable_layer,
         name: itemName,
       } = selectedItem;
+
+      const isVisuallyEquippable = itemAttributes.find(
+        attributes =>
+          attributes.trait_type === 'ITEM TYPE' &&
+          attributes.value === ItemType.EQUIPPABLE,
+      );
+
       if (
         characterAttributes &&
         characterAttributes.length >= 6 &&
         itemAttributes &&
         itemAttributes.length >= 0 &&
-        equippable_layer
+        equippable_layer &&
+        itemAttributes &&
+        isVisuallyEquippable
       ) {
         const traits = getTraitsObjectFromAttributes(characterAttributes);
-        if (
-          !(
-            itemAttributes[0]?.value &&
-            itemAttributes[0]?.trait_type === 'EQUIPPABLE TYPE'
-          )
-        )
+        const equippableType = itemAttributes.find(
+          attributes => attributes.trait_type === 'EQUIPPABLE TYPE',
+        );
+
+        if (!equippableType?.value)
           throw new Error('Missing equippable item type value');
 
         const newTrait = isEquipped
           ? `remove_${itemName}_${equippable_layer}`
           : `equip_${itemName}_${equippable_layer}`;
-        traits[itemAttributes[0].value as EquippableTraitType] = newTrait;
+        traits[equippableType.value as EquippableTraitType] = newTrait;
 
         const traitsArray = await formatTraitsForUpload(
           traits,

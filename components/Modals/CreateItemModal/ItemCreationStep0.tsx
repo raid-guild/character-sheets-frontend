@@ -17,7 +17,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Dropdown } from '@/components/Dropdown';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useToast } from '@/hooks/useToast';
-import { EquippableTraitType, getImageUrl } from '@/lib/traits';
+import { EquippableTraitType, getImageUrl, ItemType } from '@/lib/traits';
 
 import { DefaultItems } from './DefaultItems';
 
@@ -47,6 +47,8 @@ type Step0Props = {
   itemLayerFileName: string;
   setItemLayerFileName: (fileName: string) => void;
 
+  itemType: ItemType;
+  setItemType: React.Dispatch<React.SetStateAction<ItemType>>;
   equippableType: EquippableTraitType;
   setEquippableType: React.Dispatch<React.SetStateAction<EquippableTraitType>>;
 };
@@ -77,6 +79,8 @@ export const ItemCreationStep0: React.FC<Step0Props> = ({
   itemLayerFileName,
   setItemLayerFileName,
 
+  itemType,
+  setItemType,
   equippableType,
   setEquippableType,
 }) => {
@@ -131,6 +135,7 @@ export const ItemCreationStep0: React.FC<Step0Props> = ({
           setItemDescription,
           setItemEmblemFileName,
           setItemLayerFileName,
+          setItemType,
           setEquippableType,
         }}
       />
@@ -222,69 +227,8 @@ export const ItemCreationStep0: React.FC<Step0Props> = ({
           </FormControl>
           <FormControl>
             <Flex align="center">
-              <FormLabel>Equippable Item Layer</FormLabel>
-              <Tooltip
-                label="The equippable item layer is combined with a character's
-            current image when they equip the item. If you do not upload an
-            equippable layer, the item emblem will be used instead."
-              >
-                <Image
-                  alt="down arrow"
-                  height="14px"
-                  mb={2}
-                  src="/icons/question-mark.svg"
-                  width="14px"
-                />
-              </Tooltip>
-            </Flex>
-            {!itemLayer && !itemLayerFileName && (
-              <Input
-                accept=".png, .jpg, .jpeg, .svg"
-                disabled={isDisabled}
-                onChange={e => setItemLayer(e.target.files?.[0] ?? null)}
-                type="file"
-                variant="file"
-              />
-            )}
-            {(!!itemLayer || !!itemLayerFileName) && (
-              <Flex align="center" gap={10} mt={4}>
-                <Image
-                  alt="item layer"
-                  objectFit="contain"
-                  src={
-                    itemLayerFileName
-                      ? getImageUrl(itemLayerFileName)
-                      : itemLayer
-                        ? URL.createObjectURL(itemLayer)
-                        : ''
-                  }
-                  w="300px"
-                />
-                <Button
-                  isDisabled={isUploadingLayer || isUploadedLayer}
-                  isLoading={isUploadingLayer}
-                  loadingText="Uploading..."
-                  mt={4}
-                  onClick={
-                    !isUploadedLayer
-                      ? () => {
-                          setItemLayerFileName('');
-                          onRemoveLayer();
-                        }
-                      : undefined
-                  }
-                  type="button"
-                  variant="outline"
-                >
-                  {isUploadedLayer ? 'Uploaded' : 'Remove'}
-                </Button>
-              </Flex>
-            )}
-          </FormControl>
-          <FormControl>
-            <Flex align="center">
               <FormLabel>Item Type</FormLabel>
-              <Tooltip label="The type determines where the item will render when equipped by a character.">
+              <Tooltip label="The item type determines where the item will render on the character card, if at all. BASIC is never rendered to the card, BADGE is rendered as a badge on the card, and EQUIPPABLE is baked into the actual character image.">
                 <Image
                   alt="down arrow"
                   height="14px"
@@ -295,11 +239,97 @@ export const ItemCreationStep0: React.FC<Step0Props> = ({
               </Tooltip>
             </Flex>
             <Dropdown
-              options={Object.values(EquippableTraitType)}
-              selectedOption={equippableType}
-              setSelectedOption={setEquippableType as (option: string) => void}
+              options={Object.values(ItemType)}
+              selectedOption={itemType}
+              setSelectedOption={setItemType as (option: string) => void}
             />
           </FormControl>
+          {itemType === ItemType.EQUIPPABLE && (
+            <FormControl>
+              <Flex align="center">
+                <FormLabel>Equippable Item Layer</FormLabel>
+                <Tooltip
+                  label="The equippable item layer is combined with a character's
+          current image when they equip the item. If you do not upload an
+          equippable layer, the item emblem will be used instead."
+                >
+                  <Image
+                    alt="down arrow"
+                    height="14px"
+                    mb={2}
+                    src="/icons/question-mark.svg"
+                    width="14px"
+                  />
+                </Tooltip>
+              </Flex>
+              {!itemLayer && !itemLayerFileName && (
+                <Input
+                  accept=".png, .jpg, .jpeg, .svg"
+                  disabled={isDisabled}
+                  onChange={e => setItemLayer(e.target.files?.[0] ?? null)}
+                  type="file"
+                  variant="file"
+                />
+              )}
+              {(!!itemLayer || !!itemLayerFileName) && (
+                <Flex align="center" gap={10} mt={4}>
+                  <Image
+                    alt="item layer"
+                    objectFit="contain"
+                    src={
+                      itemLayerFileName
+                        ? getImageUrl(itemLayerFileName)
+                        : itemLayer
+                          ? URL.createObjectURL(itemLayer)
+                          : ''
+                    }
+                    w="300px"
+                  />
+                  <Button
+                    isDisabled={isUploadingLayer || isUploadedLayer}
+                    isLoading={isUploadingLayer}
+                    loadingText="Uploading..."
+                    mt={4}
+                    onClick={
+                      !isUploadedLayer
+                        ? () => {
+                            setItemLayerFileName('');
+                            onRemoveLayer();
+                          }
+                        : undefined
+                    }
+                    type="button"
+                    variant="outline"
+                  >
+                    {isUploadedLayer ? 'Uploaded' : 'Remove'}
+                  </Button>
+                </Flex>
+              )}
+            </FormControl>
+          )}
+          {itemType === ItemType.EQUIPPABLE && (
+            <FormControl>
+              <Flex align="center">
+                <FormLabel>Visually Equippable Type</FormLabel>
+                <Tooltip label="The visually equippable type determines where the item will render when equipped by a character. EQUIPPABLE ITEM 1 renders in the right hand, EQUIPPED WEARABLE renders on the body, and EQUIPPABLE ITEM 2 renders in the left hand.">
+                  <Image
+                    alt="down arrow"
+                    height="14px"
+                    mb={2}
+                    src="/icons/question-mark.svg"
+                    width="14px"
+                  />
+                </Tooltip>
+              </Flex>
+              <Dropdown
+                options={Object.values(EquippableTraitType)}
+                selectedOption={equippableType}
+                setSelectedOption={
+                  setEquippableType as (option: string) => void
+                }
+              />
+            </FormControl>
+          )}
           <HStack w="100%" justify="space-between" spacing={4}>
             <Button variant="outline" onClick={defaultItemsControl.onOpen}>
               Choose from defaults

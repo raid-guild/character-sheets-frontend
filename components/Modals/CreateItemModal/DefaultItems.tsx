@@ -14,6 +14,7 @@ import {
   EquippableTraitType,
   getImageUrl,
   ItemLayer,
+  ItemType,
 } from '@/lib/traits';
 
 type DefaultItemsProps = {
@@ -24,6 +25,7 @@ type DefaultItemsProps = {
   setItemDescription: (name: string) => void;
   setItemEmblemFileName: (image: string) => void;
   setItemLayerFileName: (layer: string) => void;
+  setItemType: (type: ItemType) => void;
   setEquippableType: (type: EquippableTraitType) => void;
 };
 
@@ -34,6 +36,7 @@ export const DefaultItems: React.FC<DefaultItemsProps> = ({
   setItemDescription,
   setItemEmblemFileName,
   setItemLayerFileName,
+  setItemType,
   setEquippableType,
 }) => {
   const onSelected = useCallback(
@@ -43,7 +46,10 @@ export const DefaultItems: React.FC<DefaultItemsProps> = ({
       setItemDescription(item.description);
       setItemEmblemFileName(item.thumbnail);
       setItemLayerFileName(item.layer);
-      setEquippableType(item.type);
+      setItemType(item.itemType);
+      if (item.equippableType) {
+        setEquippableType(item.equippableType);
+      }
     },
     [
       onClose,
@@ -51,6 +57,7 @@ export const DefaultItems: React.FC<DefaultItemsProps> = ({
       setItemDescription,
       setItemEmblemFileName,
       setItemLayerFileName,
+      setItemType,
       setEquippableType,
     ],
   );
