@@ -2,6 +2,7 @@ import { HStack, Link, Text } from '@chakra-ui/react';
 import { Address } from 'viem';
 import { useAccount } from 'wagmi';
 
+import { useGame } from '@/contexts/GameContext';
 import { useEnsName } from '@/hooks/useEnsName';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { getAddressUrl } from '@/lib/web3';
@@ -9,15 +10,18 @@ import { shortenAddress } from '@/utils/helpers';
 
 export const UserLink: React.FC<{ user: string }> = ({ user }) => {
   const { ensName } = useEnsName(user as Address);
-  const { address, chainId } = useAccount();
+  const { game } = useGame();
+  const { address } = useAccount();
   const isCurrentUser = address?.toLowerCase() === user.toLowerCase();
 
   const isConnectedAndMounted = useIsConnectedAndMounted();
 
+  if (!game) return null;
+
   return (
     <Link
       fontSize="sm"
-      href={chainId ? getAddressUrl(chainId, user) : ''}
+      href={getAddressUrl(game.chainId, user)}
       isExternal
       bg={isCurrentUser ? 'whiteAlpha.300' : ''}
       textDecor={!isCurrentUser ? 'underline' : ''}
