@@ -1,6 +1,6 @@
 import { Text } from '@chakra-ui/react';
 import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Address, encodeAbiParameters, getAddress, pad, parseAbi } from 'viem';
 import { useWalletClient } from 'wagmi';
 
@@ -13,8 +13,14 @@ import {
   EquippableTraitType,
   getImageIpfsUri,
   getImageUrl,
+  ItemType,
 } from '@/lib/traits';
-import { CraftRequirement, Item, RequirementNode } from '@/utils/types';
+import {
+  CraftRequirement,
+  Item,
+  Metadata,
+  RequirementNode,
+} from '@/utils/types';
 
 import { ActionModal } from '../ActionModal';
 import { ItemCreationStep0 } from './ItemCreationStep0';
@@ -65,6 +71,7 @@ export const CreateItemModal: React.FC = () => {
     WhitelistAddress[]
   >([]);
 
+  const [itemType, setItemType] = useState<ItemType>(ItemType.BASIC);
   const [equippableType, setEquippableType] = useState<EquippableTraitType>(
     EquippableTraitType.EQUIPPED_WEARABLE,
   );
@@ -96,6 +103,7 @@ export const CreateItemModal: React.FC = () => {
     setItemEmblemFileName('');
     setItemLayer(null);
     setItemLayerFileName('');
+    setItemType(ItemType.BASIC);
     setEquippableType(EquippableTraitType.EQUIPPED_WEARABLE);
     setCraftableToggle(false);
     setCraftRequirementsList([]);
@@ -117,26 +125,41 @@ export const CreateItemModal: React.FC = () => {
     if (!emblemIpfsUri) emblemIpfsUri = `ipfs://${await onUploadEmblem()}`;
 
     if (!emblemIpfsUri)
-      throw new Error('Something went wrong uploading your item emblem');
-
-    let layerIpfsUri = getImageIpfsUri(itemLayerFileName);
-    if (!layerIpfsUri) layerIpfsUri = emblemIpfsUri;
-    if (!!itemLayer) layerIpfsUri = `ipfs://${await onUploadLayer()}`;
-
-    if (!layerIpfsUri)
       throw new Error('Something went wrong uploading your item thumbnail');
 
-    const itemMetadata = {
+    let layerIpfsUri = '';
+    if (itemType === ItemType.EQUIPPABLE) {
+      layerIpfsUri = getImageIpfsUri(itemLayerFileName);
+      if (!layerIpfsUri) layerIpfsUri = emblemIpfsUri;
+      if (!!itemLayer) layerIpfsUri = `ipfs://${await onUploadLayer()}`;
+
+      if (!layerIpfsUri)
+        throw new Error('Something went wrong uploading your item layer');
+    }
+
+    const attributes: {
+      trait_type: string;
+      value: ItemType | EquippableTraitType;
+    }[] = [
+      {
+        trait_type: 'ITEM TYPE',
+        value: itemType,
+      },
+    ];
+
+    if (itemType === ItemType.EQUIPPABLE) {
+      attributes.push({
+        trait_type: 'EQUIPPABLE TYPE',
+        value: equippableType,
+      });
+    }
+
+    const itemMetadata: Metadata = {
       name: itemName,
       description: itemDescription,
       image: emblemIpfsUri,
-      equippable_layer: layerIpfsUri,
-      attributes: [
-        {
-          trait_type: 'EQUIPPABLE TYPE',
-          value: equippableType,
-        },
-      ],
+      equippable_layer: itemType === ItemType.EQUIPPABLE ? layerIpfsUri : null,
+      attributes,
     };
 
     setIsCreating(true);
@@ -271,6 +294,7 @@ export const CreateItemModal: React.FC = () => {
   }, [
     whitelistAddressList,
     whitelistToggle,
+    itemType,
     equippableType,
     itemName,
     itemDescription,
@@ -288,36 +312,59 @@ export const CreateItemModal: React.FC = () => {
     craftableToggle,
   ]);
 
-  const itemToCreate: Item = {
-    id: 'new_item',
-    itemId: game?.items.length.toString() || '0',
-    uri: '',
-    craftable: craftableToggle,
-    soulbound: soulboundToggle,
-    distribution: itemDistribution,
-    supply: itemSupply,
-    totalSupply: itemSupply,
-    amount: '0',
-    craftRequirements: [],
-    claimRequirements: null,
-    holders: [],
-    equippers: [],
-    merkleRoot: '',
-    name: itemName,
-    description: itemDescription,
-    image: itemEmblemFileName
-      ? getImageUrl(itemEmblemFileName)
-      : itemEmblem
-        ? URL.createObjectURL(itemEmblem)
-        : '',
-    equippable_layer: '',
-    attributes: [
-      {
+  const itemToCreate: Item = useMemo(() => {
+    const _itemToCreate = {
+      id: 'new_item',
+      itemId: (Number(game?.items.length) + 1).toString() || '0',
+      uri: '',
+      craftable: craftableToggle,
+      soulbound: soulboundToggle,
+      distribution: itemDistribution,
+      supply: itemSupply,
+      totalSupply: itemSupply,
+      amount: '0',
+      craftRequirements: [],
+      claimRequirements: null,
+      holders: [],
+      equippers: [],
+      merkleRoot: '',
+      name: itemName,
+      description: itemDescription,
+      image: itemEmblemFileName
+        ? getImageUrl(itemEmblemFileName)
+        : itemEmblem
+          ? URL.createObjectURL(itemEmblem)
+          : '',
+      equippable_layer: '',
+      attributes: [
+        {
+          trait_type: 'ITEM TYPE',
+          value: itemType,
+        },
+      ] as { trait_type: string; value: ItemType | EquippableTraitType }[],
+    };
+
+    if (itemType === ItemType.EQUIPPABLE) {
+      _itemToCreate.attributes.push({
         trait_type: 'EQUIPPABLE TYPE',
         value: equippableType,
-      },
-    ],
-  };
+      });
+    }
+
+    return _itemToCreate;
+  }, [
+    game,
+    itemName,
+    itemDescription,
+    itemEmblem,
+    itemEmblemFileName,
+    itemType,
+    equippableType,
+    itemSupply,
+    itemDistribution,
+    craftableToggle,
+    soulboundToggle,
+  ]);
 
   const isLoading = isUploadingEmblem || isUploadingLayer || isCreating;
 
@@ -364,6 +411,8 @@ export const CreateItemModal: React.FC = () => {
             itemLayerFileName,
             setItemLayerFileName,
 
+            itemType,
+            setItemType,
             equippableType,
             setEquippableType,
           }}
