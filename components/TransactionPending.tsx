@@ -1,5 +1,5 @@
 import { Link, Spinner, Text, VStack } from '@chakra-ui/react';
-import { useChainId } from 'wagmi';
+import { useAccount } from 'wagmi';
 
 import { getTxUrl } from '@/lib/web3';
 
@@ -14,9 +14,11 @@ export const TransactionPending: React.FC<TransactionPendingProps> = ({
   isSyncing,
   text,
   txHash,
-  chainId,
+  chainId: givenChainId,
 }) => {
-  const currentChainId = useChainId();
+  const { chainId: currentChainId } = useAccount();
+
+  const chainId = givenChainId ?? currentChainId;
   return (
     <VStack spacing={10}>
       <Text>{text}</Text>
@@ -24,7 +26,7 @@ export const TransactionPending: React.FC<TransactionPendingProps> = ({
         Click{' '}
         <Link
           borderBottom="2px solid black"
-          href={getTxUrl(chainId ?? currentChainId, txHash)}
+          href={chainId ? getTxUrl(chainId, txHash) : ''}
           isExternal
         >
           here

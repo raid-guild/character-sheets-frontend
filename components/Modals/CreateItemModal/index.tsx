@@ -15,7 +15,12 @@ import {
   getImageUrl,
   ItemType,
 } from '@/lib/traits';
-import { CraftRequirement, Item, RequirementNode } from '@/utils/types';
+import {
+  CraftRequirement,
+  Item,
+  Metadata,
+  RequirementNode,
+} from '@/utils/types';
 
 import { ActionModal } from '../ActionModal';
 import { ItemCreationStep0 } from './ItemCreationStep0';
@@ -120,14 +125,17 @@ export const CreateItemModal: React.FC = () => {
     if (!emblemIpfsUri) emblemIpfsUri = `ipfs://${await onUploadEmblem()}`;
 
     if (!emblemIpfsUri)
-      throw new Error('Something went wrong uploading your item emblem');
-
-    let layerIpfsUri = getImageIpfsUri(itemLayerFileName);
-    if (!layerIpfsUri) layerIpfsUri = emblemIpfsUri;
-    if (!!itemLayer) layerIpfsUri = `ipfs://${await onUploadLayer()}`;
-
-    if (!layerIpfsUri)
       throw new Error('Something went wrong uploading your item thumbnail');
+
+    let layerIpfsUri = '';
+    if (itemType === ItemType.EQUIPPABLE) {
+      layerIpfsUri = getImageIpfsUri(itemLayerFileName);
+      if (!layerIpfsUri) layerIpfsUri = emblemIpfsUri;
+      if (!!itemLayer) layerIpfsUri = `ipfs://${await onUploadLayer()}`;
+
+      if (!layerIpfsUri)
+        throw new Error('Something went wrong uploading your item layer');
+    }
 
     const attributes: {
       trait_type: string;
@@ -146,11 +154,11 @@ export const CreateItemModal: React.FC = () => {
       });
     }
 
-    const itemMetadata = {
+    const itemMetadata: Metadata = {
       name: itemName,
       description: itemDescription,
       image: emblemIpfsUri,
-      equippable_layer: layerIpfsUri,
+      equippable_layer: itemType === ItemType.EQUIPPABLE ? layerIpfsUri : null,
       attributes,
     };
 
