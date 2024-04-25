@@ -39,6 +39,9 @@ export const NavMenu: React.FC = () => {
       >
         <ActiveLink href="/my-games">My games</ActiveLink>
         <ActiveLink href="/all-games">All games</ActiveLink>
+        <ActiveLink href="https://docs.charactersheets.io" isExternal>
+          Docs
+        </ActiveLink>
         <ConnectWalletButton />
       </Flex>
       <IconButton
@@ -81,6 +84,13 @@ export const NavMenu: React.FC = () => {
               </ActiveLink>
               <ActiveLink href="/all-games" onClick={onClose}>
                 All games
+              </ActiveLink>
+              <ActiveLink
+                href="https://docs.charactersheets.io"
+                isExternal
+                onClick={onClose}
+              >
+                Docs
               </ActiveLink>
               <ConnectWalletButton />
             </VStack>

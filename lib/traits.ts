@@ -76,6 +76,14 @@ export const DEFAULT_ITEMS: Array<ItemLayer> = [
     equippableType: EquippableTraitType.EQUIPPED_ITEM_1,
   },
   {
+    name: 'Cobra',
+    description: 'Cobra',
+    thumbnail: 'THUMB__Cobra',
+    layer: '4_Cobra',
+    itemType: ItemType.EQUIPPABLE,
+    equippableType: EquippableTraitType.EQUIPPED_ITEM_1,
+  },
+  {
     name: 'Demon Skull',
     description: 'Demon Skull',
     thumbnail: 'THUMB__Demon_Skull',
@@ -506,7 +514,7 @@ export const DEFAULT_TRAITS: TraitsArray = [
 ];
 
 export const LAYERS_URI =
-  'ipfs://QmZz2uLSv1cFPPmvHMjef8PJPGd47QBtkqCEyZfvtyeAyv';
+  'ipfs://QmYTgssDgkHwssNykoX6P6LHNXcXknuo6vV7GTGGJByYum';
 
 export const CLASS_URI =
   'ipfs://QmVxRbtYB6YYwg2QcUZfPcxPyBhCfYUdWtjVNNtwXpidkB';
