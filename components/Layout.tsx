@@ -1,6 +1,8 @@
 import {
   Flex,
   Heading,
+  HStack,
+  Icon,
   Image,
   Link,
   Spacer,
@@ -10,6 +12,7 @@ import {
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
+import { FaDiscord, FaGithub, FaTwitter } from 'react-icons/fa';
 
 import { NavMenu } from './NavMenu';
 
@@ -79,23 +82,41 @@ export const Layout: React.FC<{ children: JSX.Element }> = ({ children }) => {
         as="footer"
         background="black"
         borderTop="5px solid black"
-        h="6rem"
+        h="8rem"
         justify="center"
         marginTop="auto"
         w="100%"
       >
-        <Link as={NextLink} href="https://raidguild.org" isExternal>
-          <Text
-            alignItems="center"
-            display="flex"
-            fontFamily="Texturina"
-            gap={2}
-          >
-            Built by{' '}
-            <Image alt="RaidGuild logo" h="28px" src="/favicon.ico" w="28px" />{' '}
-            RaidGuild
-          </Text>
-        </Link>
+        <VStack spacing={4}>
+          <Link as={NextLink} href="https://raidguild.org" isExternal>
+            <Text
+              alignItems="center"
+              display="flex"
+              fontFamily="Texturina"
+              gap={2}
+            >
+              Built by{' '}
+              <Image
+                alt="RaidGuild logo"
+                h="28px"
+                src="/favicon.ico"
+                w="28px"
+              />{' '}
+              RaidGuild
+            </Text>
+          </Link>
+          <HStack spacing={4}>
+            <Link href="https://github.com/orgs/raid-guild" isExternal>
+              <Icon as={FaGithub} boxSize={5} />
+            </Link>
+            <Link href="https://discord.gg/rGFpfQf" isExternal>
+              <Icon as={FaDiscord} boxSize={5} />
+            </Link>
+            <Link href="https://twitter.com/RaidGuild" isExternal>
+              <Icon as={FaTwitter} boxSize={5} />
+            </Link>
+          </HStack>
+        </VStack>
       </Flex>
     </Flex>
   );
