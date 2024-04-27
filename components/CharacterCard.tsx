@@ -55,8 +55,14 @@ const findCharacterByQuery = (
   query: string | string[],
 ) => {
   if (!query) return null;
+
+  const lowerCaseQuery = query.toString().toLowerCase();
   return characters.find(
-    c => c.id.toLowerCase() === (query as string).toLowerCase(),
+    c =>
+      c.id === lowerCaseQuery ||
+      c.characterId === lowerCaseQuery ||
+      c.player === lowerCaseQuery ||
+      c.account === lowerCaseQuery,
   );
 };
 
