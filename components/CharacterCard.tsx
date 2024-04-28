@@ -30,7 +30,8 @@ import {
   WrapItem,
 } from '@chakra-ui/react';
 import NextLink from 'next/link';
-import { useMemo, useState } from 'react';
+import { useRouter } from 'next/router';
+import { useEffect, useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
@@ -48,6 +49,22 @@ import { Character, Item } from '@/utils/types';
 import { ClassTag } from './ClassTag';
 import { ItemTag } from './ItemTag';
 import { XPDisplay, XPDisplaySmall } from './XPDisplay';
+
+const findCharacterByQuery = (
+  characters: Character[],
+  query: string | string[],
+) => {
+  if (!query) return null;
+
+  const lowerCaseQuery = query.toString().toLowerCase();
+  return characters.find(
+    c =>
+      c.id === lowerCaseQuery ||
+      c.characterId === lowerCaseQuery ||
+      c.player === lowerCaseQuery ||
+      c.account === lowerCaseQuery,
+  );
+};
 
 export const CharacterCard: React.FC<{
   chainId: number;
@@ -269,8 +286,13 @@ export const CharacterCardSmall: React.FC<{
   chainId: number;
   character: Character;
 }> = ({ chainId, character }) => {
+  const {
+    push,
+    query: { character: characterQuery },
+  } = useRouter();
+
   const { address } = useAccount();
-  const { isMaster } = useGame();
+  const { isMaster, game } = useGame();
   const { isOpen, onClose, onOpen } = useDisclosure();
   const { areAnyClassModalsOpen } = useClassActions();
   const { areAnyItemModalsOpen } = useItemActions();
@@ -303,11 +325,37 @@ export const CharacterCardSmall: React.FC<{
     });
   }, [equippedItems]);
 
+  useEffect(() => {
+    if (!(characterQuery && game)) return;
+    const linkedCharacter = findCharacterByQuery(
+      game.characters,
+      characterQuery as string,
+    );
+
+    if (linkedCharacter?.id === character.id) {
+      onOpen();
+    }
+
+    if (!linkedCharacter) {
+      push(
+        `/games/${getChainLabelFromId(character.chainId)}/${character.gameId}`,
+        undefined,
+        { shallow: true },
+      );
+    }
+  }, [character, characterQuery, game, onOpen, push]);
+
   return (
     <VStack spacing={3} w="100%">
       <Box
         border="1px solid white"
-        onClick={onOpen}
+        onClick={() =>
+          push(
+            `/games/${getChainLabelFromId(character.chainId)}/${character.gameId}?character=${character.id}`,
+            undefined,
+            { shallow: true },
+          )
+        }
         overflow="hidden"
         p={3}
         transition="transform 0.3s"
@@ -406,7 +454,14 @@ export const CharacterCardSmall: React.FC<{
       <Modal
         autoFocus={false}
         isOpen={isOpen && !areAnyClassModalsOpen && !areAnyItemModalsOpen}
-        onClose={onClose}
+        onClose={() => {
+          push(
+            `/games/${getChainLabelFromId(character.chainId)}/${character.gameId}`,
+            undefined,
+            { shallow: true },
+          );
+          onClose();
+        }}
         returnFocusOnClose={false}
       >
         <ModalOverlay />
@@ -428,6 +483,11 @@ export const CharactersTable: React.FC<{
   chainId: number;
   characters: Character[];
 }> = ({ chainId, characters }) => {
+  const {
+    push,
+    query: { character: characterQuery },
+  } = useRouter();
+
   const { isOpen, onClose, onOpen } = useDisclosure();
   const { areAnyClassModalsOpen } = useClassActions();
   const { areAnyItemModalsOpen } = useItemActions();
@@ -435,6 +495,25 @@ export const CharactersTable: React.FC<{
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null,
   );
+
+  useEffect(() => {
+    if (!characterQuery) return;
+    const linkedCharacter = findCharacterByQuery(
+      characters,
+      characterQuery as string,
+    );
+
+    if (linkedCharacter) {
+      setSelectedCharacter(linkedCharacter);
+      onOpen();
+    } else {
+      push(
+        `/games/${getChainLabelFromId(chainId)}/${characters[0].gameId}`,
+        undefined,
+        { shallow: true },
+      );
+    }
+  }, [chainId, characterQuery, characters, onOpen, push]);
 
   return (
     <TableContainer w="100%">
@@ -452,10 +531,13 @@ export const CharactersTable: React.FC<{
           {characters.map(c => (
             <Tr
               key={c.id}
-              onClick={() => {
-                setSelectedCharacter(c);
-                onOpen();
-              }}
+              onClick={() =>
+                push(
+                  `/games/${getChainLabelFromId(c.chainId)}/${c.gameId}?character=${c.id}`,
+                  undefined,
+                  { shallow: true },
+                )
+              }
               _hover={{ cursor: 'pointer' }}
             >
               <Td minH="60px">{c.characterId}</Td>
@@ -482,7 +564,14 @@ export const CharactersTable: React.FC<{
         <Modal
           autoFocus={false}
           isOpen={isOpen && !areAnyClassModalsOpen && !areAnyItemModalsOpen}
-          onClose={onClose}
+          onClose={() => {
+            push(
+              `/games/${getChainLabelFromId(selectedCharacter.chainId)}/${selectedCharacter.gameId}`,
+              undefined,
+              { shallow: true },
+            );
+            onClose();
+          }}
           returnFocusOnClose={false}
         >
           <ModalOverlay />
