@@ -287,7 +287,7 @@ export const CharacterCardSmall: React.FC<{
   character: Character;
 }> = ({ chainId, character }) => {
   const {
-    push,
+    replace,
     query: { character: characterQuery },
   } = useRouter();
 
@@ -337,20 +337,20 @@ export const CharacterCardSmall: React.FC<{
     }
 
     if (!linkedCharacter) {
-      push(
+      replace(
         `/games/${getChainLabelFromId(character.chainId)}/${character.gameId}`,
         undefined,
         { shallow: true },
       );
     }
-  }, [character, characterQuery, game, onOpen, push]);
+  }, [character, characterQuery, game, onOpen, replace]);
 
   return (
     <VStack spacing={3} w="100%">
       <Box
         border="1px solid white"
         onClick={() =>
-          push(
+          replace(
             `/games/${getChainLabelFromId(character.chainId)}/${character.gameId}?character=${character.id}`,
             undefined,
             { shallow: true },
@@ -455,7 +455,7 @@ export const CharacterCardSmall: React.FC<{
         autoFocus={false}
         isOpen={isOpen && !areAnyClassModalsOpen && !areAnyItemModalsOpen}
         onClose={() => {
-          push(
+          replace(
             `/games/${getChainLabelFromId(character.chainId)}/${character.gameId}`,
             undefined,
             { shallow: true },
