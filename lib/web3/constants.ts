@@ -10,9 +10,6 @@ import {
 
 import { ENVIRONMENT } from '@/utils/constants';
 
-export const INFURA_KEY: string = process.env.NEXT_PUBLIC_INFURA_KEY!;
-export const SERVER_INFURA_KEY: string = process.env.SERVER_INFURA_KEY!;
-
 export const WALLET_CONNECT_PROJECT_ID: string =
   process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID!;
 
@@ -38,21 +35,21 @@ export const SUBGRAPH_URLS: { [key: number]: string } = {
 };
 
 export const RPC_URLS: { [key: number]: string } = {
-  [gnosis.id]: 'https://rpc.gnosis.gateway.fm',
-  [sepolia.id]: `https://sepolia.infura.io/v3/${INFURA_KEY}`,
-  [mainnet.id]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
-  [polygon.id]: `https://polygon-mainnet.infura.io/v3/${INFURA_KEY}`,
-  [optimism.id]: `https://optimism-mainnet.infura.io/v3/${INFURA_KEY}`,
-  [base.id]: 'https://mainnet.base.org',
+  [gnosis.id]: 'https://gnosischain-mainnet.rpc.porters.xyz/wrb6GCyjbz',
+  [sepolia.id]: 'https://sepolia-testnet.rpc.porters.xyz/wrb6GCyjbz',
+  [mainnet.id]: 'https://eth-mainnet.rpc.porters.xyz/wrb6GCyjbz',
+  [polygon.id]: 'https://poly-mainnet.rpc.porters.xyz/wrb6GCyjbz',
+  [optimism.id]: 'https://optimism-mainnet.rpc.porters.xyz/wrb6GCyjbz',
+  [base.id]: 'https://base-fullnode-mainnet.rpc.porters.xyz/wrb6GCyjbz',
 };
 
 export const SERVER_RPC_URLS: { [key: number]: string } = {
-  [gnosis.id]: 'https://rpc.gnosis.gateway.fm',
-  [sepolia.id]: `https://sepolia.infura.io/v3/${SERVER_INFURA_KEY}`,
-  [mainnet.id]: `https://mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
-  [polygon.id]: `https://polygon-mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
-  [optimism.id]: `https://optimism-mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
-  [base.id]: 'https://mainnet.base.org',
+  [gnosis.id]: 'https://gnosischain-mainnet.rpc.porters.xyz/wrb6GCyjbz',
+  [sepolia.id]: 'https://sepolia-testnet.rpc.porters.xyz/wrb6GCyjbz',
+  [mainnet.id]: 'https://eth-mainnet.rpc.porters.xyz/wrb6GCyjbz',
+  [polygon.id]: 'https://poly-mainnet.rpc.porters.xyz/wrb6GCyjbz',
+  [optimism.id]: 'https://optimism-mainnet.rpc.porters.xyz/wrb6GCyjbz',
+  [base.id]: 'https://base-fullnode-mainnet.rpc.porters.xyz/wrb6GCyjbz',
 };
 
 export const CHAINS: { [key: number]: Chain } = {
@@ -117,10 +114,6 @@ export const SUPPORTED_CHAINS: _chains = (() => {
 })();
 
 const validateConfig = () => {
-  if (!INFURA_KEY) {
-    throw new Error('INFURA_KEY is not set');
-  }
-
   if (!WALLET_CONNECT_PROJECT_ID) {
     throw new Error('WALLET_CONNECT_PROJECT_ID is not set');
   }
