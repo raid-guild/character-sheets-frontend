@@ -3,7 +3,6 @@ import {
   Button,
   Heading,
   HStack,
-  Image,
   Link,
   Stack,
   Text,
@@ -12,6 +11,7 @@ import {
 import NextLink from 'next/link';
 
 import { GameTotals } from '@/components/GameTotals';
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { getAddressUrl, getChainLabelFromId } from '@/lib/web3';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { GameMeta } from '@/utils/types';
@@ -40,7 +40,7 @@ export const GameCard: React.FC<GameMeta> = ({
       align="center"
     >
       <AspectRatio ratio={1} w="100%" maxW="12rem">
-        <Image
+        <MultiSourceImage
           alt="game emblem"
           objectFit="cover"
           src={image}

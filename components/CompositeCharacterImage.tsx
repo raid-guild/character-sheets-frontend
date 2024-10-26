@@ -1,6 +1,7 @@
-import { AspectRatio, Box, Image } from '@chakra-ui/react';
+import { AspectRatio, Box } from '@chakra-ui/react';
 
-import { getImageUrl, TraitsArray } from '@/lib/traits';
+import { MultiSourceImage } from '@/components/MultiSourceImage';
+import { getImageUri, TraitsArray } from '@/lib/traits';
 
 export const CompositeCharacterImage: React.FC<{ traits: TraitsArray }> = ({
   traits,
@@ -11,14 +12,14 @@ export const CompositeCharacterImage: React.FC<{ traits: TraitsArray }> = ({
         {traits.map((trait: string) => {
           if (!trait) return null;
           return (
-            <Image
+            <MultiSourceImage
               alt={`${trait.split('_')[1]} trait layer`}
               h="100%"
               key={`composit-trait-image-${trait}`}
               left={0}
               objectFit="cover"
               pos="absolute"
-              src={getImageUrl(trait)}
+              src={getImageUri(trait)}
               top={0}
               w="100%"
             />

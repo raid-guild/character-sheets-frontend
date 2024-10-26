@@ -1,15 +1,9 @@
-import {
-  Button,
-  Flex,
-  Image,
-  Text,
-  useRadioGroup,
-  VStack,
-} from '@chakra-ui/react';
+import { Button, Flex, Text, useRadioGroup, VStack } from '@chakra-ui/react';
 import { useCallback, useMemo, useState } from 'react';
 import { Address, parseAbi } from 'viem';
 import { useWalletClient } from 'wagmi';
 
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { RadioCard } from '@/components/RadioCard';
 import { SelectCharacterInput } from '@/components/SelectCharacterInput';
 import { useCharacterActions } from '@/contexts/CharacterActionsContext';
@@ -123,7 +117,7 @@ export const RevokeClassModal: React.FC = () => {
             return (
               <RadioCard key={value} {...radio}>
                 <VStack justify="space-between" h="100%">
-                  <Image
+                  <MultiSourceImage
                     alt={`${_class.name} image`}
                     h="70%"
                     objectFit="contain"

@@ -2,13 +2,13 @@ import {
   AspectRatio,
   Button,
   GridItem,
-  Image,
   SimpleGrid,
   Text,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback } from 'react';
 
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { ClassEmblem, DEFAULT_CLASSES, getClassEmblemUrl } from '@/lib/traits';
 
 type DefaultClassesProps = {
@@ -78,7 +78,7 @@ export const DefaultClasses: React.FC<DefaultClassesProps> = ({
                   maxH: '10rem',
                 }}
               >
-                <Image
+                <MultiSourceImage
                   alt={klass.name}
                   src={getClassEmblemUrl(klass.emblem)}
                   style={{

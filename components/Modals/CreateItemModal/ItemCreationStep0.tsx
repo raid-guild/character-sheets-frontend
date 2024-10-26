@@ -15,9 +15,10 @@ import {
 import { useCallback, useMemo, useState } from 'react';
 
 import { Dropdown } from '@/components/Dropdown';
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useToast } from '@/hooks/useToast';
-import { EquippableTraitType, getImageUrl, ItemType } from '@/lib/traits';
+import { EquippableTraitType, getImageUri, ItemType } from '@/lib/traits';
 
 import { DefaultItems } from './DefaultItems';
 
@@ -187,12 +188,12 @@ export const ItemCreationStep0: React.FC<Step0Props> = ({
             )}
             {(!!itemEmblem || !!itemEmblemFileName) && (
               <Flex align="center" gap={10} mt={4}>
-                <Image
+                <MultiSourceImage
                   alt="item emblem"
                   objectFit="contain"
                   src={
                     itemEmblemFileName
-                      ? getImageUrl(itemEmblemFileName)
+                      ? getImageUri(itemEmblemFileName)
                       : itemEmblem
                         ? URL.createObjectURL(itemEmblem)
                         : ''
@@ -273,12 +274,12 @@ export const ItemCreationStep0: React.FC<Step0Props> = ({
               )}
               {(!!itemLayer || !!itemLayerFileName) && (
                 <Flex align="center" gap={10} mt={4}>
-                  <Image
+                  <MultiSourceImage
                     alt="item layer"
                     objectFit="contain"
                     src={
                       itemLayerFileName
-                        ? getImageUrl(itemLayerFileName)
+                        ? getImageUri(itemLayerFileName)
                         : itemLayer
                           ? URL.createObjectURL(itemLayer)
                           : ''

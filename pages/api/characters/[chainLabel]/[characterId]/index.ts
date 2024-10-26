@@ -14,7 +14,7 @@ import {
 } from '@/lib/character';
 import { getChainIdFromLabel } from '@/lib/web3';
 import { BASE_CHARACTER_URI } from '@/utils/constants';
-import { uriToHttp } from '@/utils/helpers';
+import { fetchMetadata } from '@/utils/helpers';
 import { CharacterMetaDB } from '@/utils/types';
 
 const cors = Cors({
@@ -143,8 +143,7 @@ const updateDBMetadata = async (
 
     if (isCID && extendedCharacterId) {
       const cid = extendedCharacterId;
-      const response = await fetch(uriToHttp(`ipfs://${cid}`)[0]);
-      const data = await response.json();
+      const data = await fetchMetadata(`ipfs://${cid}`);
 
       const update: Partial<CharacterMetaDB> = {
         chainId: BigInt(chainId).toString(),

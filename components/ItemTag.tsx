@@ -1,14 +1,8 @@
 import { CheckIcon } from '@chakra-ui/icons';
-import {
-  AspectRatio,
-  Button,
-  Flex,
-  Image,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+import { AspectRatio, Button, Flex, Text, VStack } from '@chakra-ui/react';
 import { useMemo } from 'react';
 
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { useGame } from '@/contexts/GameContext';
 import { PlayerActions, useItemActions } from '@/contexts/ItemActionsContext';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
@@ -79,7 +73,7 @@ export const ItemTag: React.FC<ItemTagProps> = ({
           </Flex>
         )}
         <AspectRatio ratio={1} w="100%">
-          <Image
+          <MultiSourceImage
             alt={name}
             w="100%"
             style={{

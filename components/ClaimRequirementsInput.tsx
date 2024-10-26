@@ -11,6 +11,7 @@ import {
 import { useEffect, useMemo, useState } from 'react';
 import { zeroAddress } from 'viem';
 
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { useGame } from '@/contexts/GameContext';
 import { shortenAddress } from '@/utils/helpers';
 import { validateNode } from '@/utils/requirements';
@@ -433,7 +434,7 @@ const RequirementNodeEditor: React.FC<{
 };
 
 const ImageDisplay: React.FC<Item | Class> = ({ name, image }) => (
-  <Image
+  <MultiSourceImage
     display="inline-block"
     alt={`${name} image`}
     h="24px"

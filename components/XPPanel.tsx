@@ -1,7 +1,6 @@
 import {
   Button,
   Flex,
-  Image,
   Table,
   TableContainer,
   Tbody,
@@ -15,6 +14,7 @@ import {
 } from '@chakra-ui/react';
 import { useMemo } from 'react';
 
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { useGame } from '@/contexts/GameContext';
 
 export const XPPanel: React.FC = () => {
@@ -68,7 +68,7 @@ export const XPPanel: React.FC = () => {
                     View
                   </Button>
                   <Flex alignItems="center" gap={2}>
-                    <Image
+                    <MultiSourceImage
                       alt="character avatar"
                       borderRadius="full"
                       height="32px"
