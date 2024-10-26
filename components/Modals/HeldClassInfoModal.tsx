@@ -1,7 +1,6 @@
 import {
   Box,
   HStack,
-  Image,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -12,6 +11,7 @@ import {
 } from '@chakra-ui/react';
 import { useMemo } from 'react';
 
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { EXPERIENCE_TO_LEVEL_MAP } from '@/utils/constants';
 import { HeldClass } from '@/utils/types';
 
@@ -51,7 +51,7 @@ export const HeldClassesInfoModal: React.FC<HeldClassesInfoModalProps> = ({
         </ModalHeader>
         <ModalBody>
           <HStack gap={8} mb={8}>
-            <Image
+            <MultiSourceImage
               alt="class emblem"
               h="100px"
               objectFit="contain"

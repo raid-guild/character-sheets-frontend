@@ -12,7 +12,7 @@ import { WhitelistItemLeaf } from '@/hooks/useWhitelistTree';
 import {
   EquippableTraitType,
   getImageIpfsUri,
-  getImageUrl,
+  getImageUri,
   ItemType,
 } from '@/lib/traits';
 import {
@@ -331,7 +331,7 @@ export const CreateItemModal: React.FC = () => {
       name: itemName,
       description: itemDescription,
       image: itemEmblemFileName
-        ? getImageUrl(itemEmblemFileName)
+        ? getImageUri(itemEmblemFileName)[0]
         : itemEmblem
           ? URL.createObjectURL(itemEmblem)
           : '',

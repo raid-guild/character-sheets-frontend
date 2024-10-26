@@ -1,4 +1,4 @@
-import { Button, Image, Text, VStack } from '@chakra-ui/react';
+import { Button, Text, VStack } from '@chakra-ui/react';
 import { useCallback, useState } from 'react';
 import { Address, parseAbi } from 'viem';
 import { useWalletClient } from 'wagmi';
@@ -14,6 +14,7 @@ import {
 import { getChainLabelFromId } from '@/lib/web3';
 import { executeAsCharacter } from '@/utils/account';
 
+import { MultiSourceImage } from '../MultiSourceImage';
 import { ActionModal } from './ActionModal';
 
 export const EquipItemModal: React.FC = () => {
@@ -230,7 +231,7 @@ export const EquipItemModal: React.FC = () => {
             </Text>
           )}
           <VStack justify="space-between" h="100%">
-            <Image
+            <MultiSourceImage
               alt={`${heldItem?.name} image`}
               h="20rem"
               objectFit="contain"

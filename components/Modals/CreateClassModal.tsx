@@ -5,7 +5,6 @@ import {
   FormHelperText,
   FormLabel,
   HStack,
-  Image,
   Input,
   Textarea,
   useDisclosure,
@@ -15,12 +14,13 @@ import { useCallback, useMemo, useState } from 'react';
 import { Address, encodeAbiParameters, parseAbi } from 'viem';
 import { useWalletClient } from 'wagmi';
 
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { Switch } from '@/components/Switch';
 import { useGameActions } from '@/contexts/GameActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { useCharacterLimitMessage } from '@/hooks/useCharacterLimitMessage';
 import { useUploadFile } from '@/hooks/useUploadFile';
-import { getClassEmblemUrl, getClassIpfsUri } from '@/lib/traits';
+import { getClassEmblemUri, getClassIpfsUri } from '@/lib/traits';
 
 import { ActionModal } from './ActionModal';
 import { DefaultClasses } from './DefaultClasses';
@@ -242,12 +242,12 @@ export const CreateClassModal: React.FC = () => {
             )}
             {(!!classEmblem || !!classEmblemFileName) && (
               <Flex align="center" gap={10} mt={4}>
-                <Image
+                <MultiSourceImage
                   alt="class emblem"
                   objectFit="contain"
                   src={
                     classEmblemFileName
-                      ? getClassEmblemUrl(classEmblemFileName)
+                      ? getClassEmblemUri(classEmblemFileName)
                       : classEmblem
                         ? URL.createObjectURL(classEmblem)
                         : ''

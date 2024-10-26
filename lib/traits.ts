@@ -658,30 +658,51 @@ export const getImageIpfsUri = (fileName: string): string => {
   return LAYERS_URI + '/' + fileName + '.png';
 };
 
-export const getThumbnailUrl = (fileName: string): string => {
-  return uriToHttp(LAYERS_URI)[0] + '/' + fileName + '.png';
+export const getThumbnailUri = (fileName: string): string => {
+  return LAYERS_URI + '/' + fileName + '.png';
 };
 
-export const getClassEmblemUrl = (fileName: string): string => {
-  return uriToHttp(CLASS_URI)[0] + '/' + fileName + '.svg';
+export const getThumbnailUrls = (fileName: string): string[] => {
+  return uriToHttp(LAYERS_URI + '/' + fileName + '.png');
+};
+
+export const getClassEmblemUri = (fileName: string): string => {
+  return CLASS_URI + '/' + fileName + '.svg';
+};
+
+export const getClassEmblemUrl = (fileName: string): string[] => {
+  return uriToHttp(CLASS_URI + '/' + fileName + '.svg');
 };
 
 export const getClassIpfsUri = (fileName: string): string => {
   return CLASS_URI + '/' + fileName + '.svg';
 };
 
-export const getImageUrl = (fileName: string): string => {
+export const getImageUri = (fileName: string): string => {
   if (fileName.startsWith('THUMB')) {
-    return getThumbnailUrl(fileName);
+    return LAYERS_URI + '/' + fileName + '.png';
   }
   const [index] = fileName.split('_');
   if (index.includes('equip')) {
     // We want to take everything after the second underscore, even if it contains more underscores
     const potentialUrl = fileName.split('_').slice(2).join('_');
-    return potentialUrl; // In this case, what would normally be "color" is actually the URL of the newly equipped item
+    return LAYERS_URI + '/' + potentialUrl + '.png';
+  }
+  return LAYERS_URI + '/' + removeTraitHex(fileName) + '.png';
+};
+
+export const getImageUrls = (fileName: string): string[] => {
+  if (fileName.startsWith('THUMB')) {
+    return getThumbnailUrls(fileName);
+  }
+  const [index] = fileName.split('_');
+  if (index.includes('equip')) {
+    // We want to take everything after the second underscore, even if it contains more underscores
+    const potentialUrl = fileName.split('_').slice(2).join('_');
+    return uriToHttp(potentialUrl);
   }
 
-  return uriToHttp(LAYERS_URI)[0] + '/' + removeTraitHex(fileName) + '.png';
+  return uriToHttp(LAYERS_URI + '/' + removeTraitHex(fileName) + '.png');
 };
 
 export const formatLayerNameFromTrait = (

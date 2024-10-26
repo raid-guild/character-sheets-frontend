@@ -7,7 +7,6 @@ import {
   Heading,
   HStack,
   IconButton,
-  Image,
   Link,
   SimpleGrid,
   Spinner,
@@ -46,6 +45,7 @@ import { RestoreCharacterModal } from '@/components/Modals/RestoreCharacterModal
 import { RevokeClassModal } from '@/components/Modals/RevokeClassModal';
 import { TransferCharacterModal } from '@/components/Modals/TransferCharacterModal';
 import { UpdateGameMetadataModal } from '@/components/Modals/UpdateGameMetadataModal';
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { NetworkAlert } from '@/components/NetworkAlert';
 import { NetworkDisplay } from '@/components/NetworkDisplay';
 import { OldCharacterURIAlert } from '@/components/OldCharacterURIAlert';
@@ -221,7 +221,7 @@ function GamePage({
               maxW="12rem"
               display={{ base: 'none', lg: 'block' }}
             >
-              <Image
+              <MultiSourceImage
                 alt="game emblem"
                 objectFit="cover"
                 src={image}
@@ -236,7 +236,7 @@ function GamePage({
                 maxW={{ base: '8rem', md: '12rem' }}
                 display={{ base: 'block', lg: 'none' }}
               >
-                <Image
+                <MultiSourceImage
                   alt="game emblem"
                   objectFit="cover"
                   src={image}

@@ -1,14 +1,8 @@
-import {
-  Box,
-  HStack,
-  Image,
-  Text,
-  Tooltip,
-  useDisclosure,
-} from '@chakra-ui/react';
+import { Box, HStack, Text, Tooltip, useDisclosure } from '@chakra-ui/react';
 import { useMemo } from 'react';
 import { hexToNumber, keccak256, toBytes } from 'viem';
 
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { HeldClass } from '@/utils/types';
 
 import { HeldClassesInfoModal } from './Modals/HeldClassInfoModal';
@@ -103,7 +97,7 @@ const ClassTagInner: React.FC<{
       <Box bg={bgColor} my={py} w="6px" />
       <HStack spacing={spacing} bg={bgColor} py={py} px={px}>
         {image && (
-          <Image
+          <MultiSourceImage
             alt="class emblem"
             h={imageHeight}
             w={imageWidth}
@@ -144,7 +138,7 @@ const ClassTagInnerExtraSmall: React.FC<{
     >
       <HStack bg={bgColor} borderRadius="full" px={2.5} py={1}>
         {image && (
-          <Image
+          <MultiSourceImage
             alt="class emblem"
             h="16px"
             objectFit="contain"

@@ -5,7 +5,6 @@ import {
   CHAIN_ID_TO_LABEL,
   CHAIN_LABEL_TO_ID,
   EXPLORER_URLS,
-  RPC_URLS,
   SUBGRAPH_URLS,
   SUPPORTED_CHAINS,
 } from './constants';
@@ -36,13 +35,6 @@ export const getChainImageFromId = (chainId: number): string | undefined => {
   }
 
   return CHAIN_ID_TO_IMAGE[chainId];
-};
-
-export const getRPCUrl = (chainId: number): string => {
-  if (!isSupportedChain(chainId)) {
-    throw new Error(`ChainId ${chainId} is not supported`);
-  }
-  return RPC_URLS[chainId]!;
 };
 
 export const getSubgraphUrl = (chainId: number): string => {

@@ -1,7 +1,6 @@
 import {
   AspectRatio,
   Button,
-  Image,
   SimpleGrid,
   Table,
   TableContainer,
@@ -15,6 +14,7 @@ import {
 } from '@chakra-ui/react';
 import { useState } from 'react';
 
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { shortenText } from '@/utils/helpers';
 import { Class } from '@/utils/types';
@@ -58,7 +58,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
               maxH: '15rem',
             }}
           >
-            <Image
+            <MultiSourceImage
               alt={name}
               w="100%"
               style={{
@@ -129,7 +129,7 @@ export const ClassCardSmall: React.FC<ClassCardProps> = ({
               maxH: '10rem',
             }}
           >
-            <Image
+            <MultiSourceImage
               alt={name}
               src={image}
               style={{
@@ -220,7 +220,7 @@ export const ClassesTable: React.FC<{
               )}
               <Td minH="60px">{c.classId}</Td>
               <Td alignItems="center" display="flex" gap={4}>
-                <Image alt={c.name} h="40px" src={c.image} />
+                <MultiSourceImage alt={c.name} h="40px" src={c.image} />
                 <Text>{shortenText(c.name, 20)}</Text>
               </Td>
               <Td>

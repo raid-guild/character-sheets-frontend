@@ -2,7 +2,6 @@ import { ChevronDownIcon } from '@chakra-ui/icons';
 import {
   Button,
   HStack,
-  Image,
   Menu,
   MenuButton,
   MenuItem,
@@ -11,6 +10,7 @@ import {
   Tooltip,
 } from '@chakra-ui/react';
 
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { Class } from '@/utils/types';
 
 type SelectClassInputProps = {
@@ -63,7 +63,7 @@ const ClassEntry: React.FC<{ heldClass: Class }> = ({ heldClass }) => {
         {name}
       </Text>
 
-      <Image
+      <MultiSourceImage
         alt={`${name} image`}
         h="32px"
         w="32px"

@@ -5,7 +5,6 @@ import {
   FormHelperText,
   Grid,
   HStack,
-  Image,
   Input,
   Text,
   Tooltip,
@@ -17,6 +16,7 @@ import { useAccount } from 'wagmi';
 import { useGame } from '@/contexts/GameContext';
 import { CraftRequirement, Item } from '@/utils/types';
 
+import { MultiSourceImage } from './MultiSourceImage';
 import { SelectItemInput } from './SelectItemInput';
 
 type Props = {
@@ -122,7 +122,7 @@ const CraftItemRequirementDisplay: React.FC<DisplayProps> = ({
         position="relative"
       >
         <HStack spacing={2}>
-          <Image
+          <MultiSourceImage
             alt={`${item?.name} image`}
             h="40px"
             objectFit="contain"
