@@ -41,6 +41,8 @@ export const uriToHttp = (uri: string): string[] => {
   try {
     const protocol = uri.split(':')[0].toLowerCase();
     switch (protocol) {
+      case 'blob':
+        return [uri];
       case 'data':
         return [uri];
       case 'https':

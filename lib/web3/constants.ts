@@ -16,7 +16,7 @@ export const WALLET_CONNECT_PROJECT_ID: string =
 
 const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY;
 const ALCHEMY_KEY = process.env.NEXT_PUBLIC_ALCHEMY_KEY;
-const PORTERS_KEY = process.env.NEXT_PUBLIC_PORTERS_KEY ?? 'wrb6GCyjbz';
+const PORTERS_KEY = process.env.NEXT_PUBLIC_PORTERS_KEY;
 
 export const EXPLORER_URLS: { [key: number]: string } = {
   [gnosis.id]: 'https://gnosisscan.io',
@@ -150,9 +150,10 @@ export const TRANSPORTS: _transports = [...chains, mainnet].reduce(
     if (alchemyUrl) list.push(http(alchemyUrl));
 
     const portersNetwork = portersNetworkName[chain.id];
-    const portersUrl = portersNetwork
-      ? `https://${portersNetwork}.rpc.porters.xyz/${PORTERS_KEY}`
-      : undefined;
+    const portersUrl =
+      portersNetwork && PORTERS_KEY
+        ? `https://${portersNetwork}.rpc.porters.xyz/${PORTERS_KEY}`
+        : undefined;
     if (portersUrl) list.push(http(portersUrl));
 
     return {

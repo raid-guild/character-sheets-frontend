@@ -11,8 +11,8 @@ import { useUploadFile } from '@/hooks/useUploadFile';
 import { WhitelistItemLeaf } from '@/hooks/useWhitelistTree';
 import {
   EquippableTraitType,
-  getImageIpfsUri,
   getImageUri,
+  getThumbnailUri,
   ItemType,
 } from '@/lib/traits';
 import {
@@ -121,7 +121,7 @@ export const CreateItemModal: React.FC = () => {
         `Missing item factory address for the ${walletClient.chain.name} network`,
       );
 
-    let emblemIpfsUri = getImageIpfsUri(itemEmblemFileName);
+    let emblemIpfsUri = getThumbnailUri(itemEmblemFileName);
     if (!emblemIpfsUri) emblemIpfsUri = `ipfs://${await onUploadEmblem()}`;
 
     if (!emblemIpfsUri)
@@ -129,7 +129,7 @@ export const CreateItemModal: React.FC = () => {
 
     let layerIpfsUri = '';
     if (itemType === ItemType.EQUIPPABLE) {
-      layerIpfsUri = getImageIpfsUri(itemLayerFileName);
+      layerIpfsUri = getThumbnailUri(itemLayerFileName);
       if (!layerIpfsUri) layerIpfsUri = emblemIpfsUri;
       if (!!itemLayer) layerIpfsUri = `ipfs://${await onUploadLayer()}`;
 

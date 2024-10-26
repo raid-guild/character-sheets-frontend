@@ -278,6 +278,7 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
             [EquippableTraitType.EQUIPPED_WEARABLE]: '',
             [BaseTraitType.MOUTH]: traits[6],
             [EquippableTraitType.EQUIPPED_ITEM_2]: '',
+            [EquippableTraitType.EQUIPPED_ITEM_3]: '',
           };
 
           const traitsArray = await formatTraitsForUpload(
@@ -446,6 +447,7 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
       [EquippableTraitType.EQUIPPED_WEARABLE]: '',
       [BaseTraitType.MOUTH]: traits[6],
       [EquippableTraitType.EQUIPPED_ITEM_2]: '',
+      [EquippableTraitType.EQUIPPED_ITEM_3]: '',
     };
 
     const equippedItem1s = character.equippedItems

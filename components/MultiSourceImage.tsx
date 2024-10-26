@@ -1,9 +1,9 @@
+import { WarningIcon } from '@chakra-ui/icons';
 import {
   Box,
   Image as ChakraImage,
   ImageProps as ChakraImageProps,
   Spinner,
-  Text,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 
@@ -58,13 +58,13 @@ export const MultiSourceImage: React.FC<ImageProps> = ({
 
   if (isLoading) {
     return (
-      <Box pos="relative" {...props}>
-        <Spinner
-          pos="absolute"
-          top="50%"
-          left="50%"
-          transform="translate(-50%, -50%)"
-        />
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        {...props}
+      >
+        <Spinner />
       </Box>
     );
   }
@@ -74,8 +74,13 @@ export const MultiSourceImage: React.FC<ImageProps> = ({
       return fallbackElement;
     }
     return (
-      <Box>
-        <Text>Failed to load image</Text>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        {...props}
+      >
+        <WarningIcon color="red.400" />
       </Box>
     );
   }
