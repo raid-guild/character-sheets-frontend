@@ -5,7 +5,6 @@ import {
   Divider,
   Flex,
   HStack,
-  Image,
   SimpleGrid,
   Table,
   TableContainer,
@@ -20,6 +19,7 @@ import {
 import { useState } from 'react';
 
 import { ItemActionMenu } from '@/components/ActionMenus/ItemActionMenu';
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { useGame } from '@/contexts/GameContext';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { shortenText } from '@/utils/helpers';
@@ -85,7 +85,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({
               maxH: '15rem',
             }}
           >
-            <Image
+            <MultiSourceImage
               alt={name}
               w="100%"
               style={{
@@ -220,7 +220,7 @@ export const ItemCardSmall: React.FC<ItemCardProps> = ({
               maxH: '10rem',
             }}
           >
-            <Image
+            <MultiSourceImage
               alt={name}
               src={image}
               style={{
@@ -372,7 +372,7 @@ export const ItemsTable: React.FC<{
               )}
               <Td minH="60px">{item.itemId}</Td>
               <Td alignItems="center" display="flex" gap={4} w="240px">
-                <Image
+                <MultiSourceImage
                   alt={item.name}
                   h="40px"
                   w="40px"

@@ -36,13 +36,14 @@ import { useAccount } from 'wagmi';
 
 import { CharacterActionMenu } from '@/components/ActionMenus/CharacterActionMenu';
 import { ItemsCatalogModal } from '@/components/Modals/ItemsCatalogModal';
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { useClassActions } from '@/contexts/ClassActionsContext';
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
 import { useIsConnectedAndMounted } from '@/hooks/useIsConnectedAndMounted';
 import { ItemType } from '@/lib/traits';
 import { getAddressUrl, getChainLabelFromId } from '@/lib/web3';
-import { JAILED_CHARACTER_IMAGE } from '@/utils/constants';
+import { JAILED_CHARACTER_IMAGE_URLS } from '@/utils/constants';
 import { shortenAddress, shortenText } from '@/utils/helpers';
 import { Character, Item } from '@/utils/types';
 
@@ -128,7 +129,7 @@ export const CharacterCard: React.FC<{
     >
       <Box pos="relative">
         <AspectRatio ratio={10 / 13} h="100%" w="full">
-          <Image
+          <MultiSourceImage
             alt="character avatar"
             filter={jailed ? 'grayscale(100%)' : 'none'}
             w="100%"
@@ -136,7 +137,7 @@ export const CharacterCard: React.FC<{
             borderRadius="lg"
             objectFit="cover"
             objectPosition="center"
-            src={jailed ? JAILED_CHARACTER_IMAGE : image}
+            src={jailed ? JAILED_CHARACTER_IMAGE_URLS : image}
           />
         </AspectRatio>
         {jailed && (
@@ -159,7 +160,7 @@ export const CharacterCard: React.FC<{
         <VStack left={4} pos="absolute" spacing={0} top={20}>
           {badges.slice(0, 3).map(badge => (
             <HStack key={`${badge.itemId}_${badge.name}`}>
-              <Image
+              <MultiSourceImage
                 alt={badge.name}
                 height="40px"
                 src={badge.image}
@@ -368,13 +369,13 @@ export const CharacterCardSmall: React.FC<{
       >
         <Box pos="relative">
           <AspectRatio ratio={10 / 13} w="full">
-            <Image
+            <MultiSourceImage
               alt="character avatar"
               borderRadius="lg"
               filter={jailed ? 'grayscale(100%)' : 'none'}
               h="100%"
               objectFit="cover"
-              src={jailed ? JAILED_CHARACTER_IMAGE : image}
+              src={jailed ? JAILED_CHARACTER_IMAGE_URLS : image}
               w="100%"
             />
           </AspectRatio>
@@ -403,7 +404,7 @@ export const CharacterCardSmall: React.FC<{
           <VStack left={2} pos="absolute" spacing={0} top={2}>
             {badges.slice(0, 3).map(badge => (
               <HStack key={`${badge.itemId}_${badge.name}_small`}>
-                <Image
+                <MultiSourceImage
                   alt="users"
                   height="20px"
                   src={badge.image}
@@ -542,7 +543,7 @@ export const CharactersTable: React.FC<{
             >
               <Td minH="60px">{c.characterId}</Td>
               <Td alignItems="center" display="flex" gap={4}>
-                <Image alt={c.name} h="40px" src={c.image} />
+                <MultiSourceImage alt={c.name} h="40px" src={c.image} />
                 <Text>{shortenText(c.name, 20)}</Text>
               </Td>
               <Td>

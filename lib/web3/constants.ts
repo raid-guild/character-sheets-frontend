@@ -1,5 +1,6 @@
-import { Chain } from '@rainbow-me/rainbowkit';
+import { Chain, fallback, http, Transport } from 'viem';
 import {
+  arbitrum,
   base,
   gnosis,
   mainnet,
@@ -10,11 +11,12 @@ import {
 
 import { ENVIRONMENT } from '@/utils/constants';
 
-export const INFURA_KEY: string = process.env.NEXT_PUBLIC_INFURA_KEY!;
-export const SERVER_INFURA_KEY: string = process.env.SERVER_INFURA_KEY!;
-
 export const WALLET_CONNECT_PROJECT_ID: string =
   process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID!;
+
+const INFURA_KEY = process.env.NEXT_PUBLIC_INFURA_KEY;
+const ALCHEMY_KEY = process.env.NEXT_PUBLIC_ALCHEMY_KEY;
+const PORTERS_KEY = process.env.NEXT_PUBLIC_PORTERS_KEY;
 
 export const EXPLORER_URLS: { [key: number]: string } = {
   [gnosis.id]: 'https://gnosisscan.io',
@@ -37,21 +39,35 @@ export const SUBGRAPH_URLS: { [key: number]: string } = {
     'https://api.studio.thegraph.com/query/71457/character-sheets-optimism/version/latest',
 };
 
-export const RPC_URLS: { [key: number]: string } = {
-  [gnosis.id]: 'https://rpc.gnosis.gateway.fm',
-  [sepolia.id]: `https://sepolia.infura.io/v3/${INFURA_KEY}`,
-  [mainnet.id]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
-  [polygon.id]: `https://polygon-mainnet.infura.io/v3/${INFURA_KEY}`,
-  [optimism.id]: `https://optimism-mainnet.infura.io/v3/${INFURA_KEY}`,
-  [base.id]: 'https://mainnet.base.org',
+const infuraNetworkName: { [key: number]: string } = {
+  [mainnet.id]: 'mainnet',
+  [polygon.id]: 'polygon-mainnet',
+  [optimism.id]: 'optimism-mainnet',
+  [sepolia.id]: 'sepolia',
+  [base.id]: 'base-mainnet',
+  // gnosis is not supported by infura
 };
 
-export const SERVER_RPC_URLS: { [key: number]: string } = {
+const alchemyNetworkName: { [key: number]: string } = {
+  [mainnet.id]: 'eth-mainnet',
+  [polygon.id]: 'polygon-mainnet',
+  [optimism.id]: 'opt-mainnet',
+  [sepolia.id]: 'eth-sepolia',
+  [base.id]: 'base-mainnet',
+  // gnosis is not supported by alchemy
+};
+
+const portersNetworkName: { [key: number]: string } = {
+  [mainnet.id]: 'eth-mainnet',
+  [polygon.id]: 'poly-mainnet',
+  [optimism.id]: 'optimism-mainnet',
+  [sepolia.id]: 'sepolia-testnet',
+  [base.id]: 'base-fullnode-mainnet',
+  [gnosis.id]: 'gnosischain-mainnet',
+};
+
+const DEFAULT_PC_URLS: { [key: number]: string } = {
   [gnosis.id]: 'https://rpc.gnosis.gateway.fm',
-  [sepolia.id]: `https://sepolia.infura.io/v3/${SERVER_INFURA_KEY}`,
-  [mainnet.id]: `https://mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
-  [polygon.id]: `https://polygon-mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
-  [optimism.id]: `https://optimism-mainnet.infura.io/v3/${SERVER_INFURA_KEY}`,
   [base.id]: 'https://mainnet.base.org',
 };
 
@@ -80,7 +96,7 @@ export const CHAIN_ID_TO_IMAGE: { [key: number]: string } = {
   [optimism.id]: '/images/optimism.svg',
   [polygon.id]: '/images/polygon.svg',
   [base.id]: '/images/base.svg',
-  42161: '/images/arbitrum.svg',
+  [arbitrum.id]: '/images/arbitrum.svg',
 };
 
 export const CHAIN_ID_TO_LABEL: { [key: number]: string } = {
@@ -94,42 +110,66 @@ export const CHAIN_ID_TO_LABEL: { [key: number]: string } = {
 
 type _chains = readonly [Chain, ...Chain[]];
 
-const ALL_SUPPORTED_CHAINS: _chains = [
-  gnosis,
-  sepolia,
-  polygon,
-  optimism,
-  base,
-];
+const chains: _chains = [gnosis, sepolia, polygon, optimism, base];
 
 export const SUPPORTED_CHAINS: _chains = (() => {
   switch (ENVIRONMENT) {
     case 'main':
-      return ALL_SUPPORTED_CHAINS.filter(
+      return chains.filter(
         chain => !!chain.testnet === false,
       ) as unknown as _chains;
     case 'dev':
     default:
-      return ALL_SUPPORTED_CHAINS.filter(
+      return chains.filter(
         chain => chain.testnet === true,
       ) as unknown as _chains;
   }
 })();
 
-const validateConfig = () => {
-  if (!INFURA_KEY) {
-    throw new Error('INFURA_KEY is not set');
-  }
+type _transports = Record<number, Transport>;
 
+export const TRANSPORTS: _transports = [...chains, mainnet].reduce(
+  (acc: _transports, chain: Chain) => {
+    const list = [http()];
+
+    const defaultRPCUrl = DEFAULT_PC_URLS[chain.id];
+    if (defaultRPCUrl) list.push(http(defaultRPCUrl));
+
+    const infuraNetwork = infuraNetworkName[chain.id];
+    const infuraUrl =
+      infuraNetwork && INFURA_KEY
+        ? `https://${infuraNetwork}.infura.io/v3/${INFURA_KEY}`
+        : undefined;
+    if (infuraUrl) list.push(http(infuraUrl));
+
+    const alchemyNetwork = alchemyNetworkName[chain.id];
+    const alchemyUrl =
+      alchemyNetwork && ALCHEMY_KEY
+        ? `https://${alchemyNetwork}.g.alchemy.com/v2/${ALCHEMY_KEY}`
+        : undefined;
+    if (alchemyUrl) list.push(http(alchemyUrl));
+
+    const portersNetwork = portersNetworkName[chain.id];
+    const portersUrl =
+      portersNetwork && PORTERS_KEY
+        ? `https://${portersNetwork}.rpc.porters.xyz/${PORTERS_KEY}`
+        : undefined;
+    if (portersUrl) list.push(http(portersUrl));
+
+    return {
+      ...acc,
+      [chain.id]: fallback(list.reverse()),
+    };
+  },
+  {} as _transports,
+);
+
+const validateConfig = () => {
   if (!WALLET_CONNECT_PROJECT_ID) {
     throw new Error('WALLET_CONNECT_PROJECT_ID is not set');
   }
 
   SUPPORTED_CHAINS.forEach(chain => {
-    if (!RPC_URLS[chain.id]) {
-      throw new Error(`RPC_URLS[${chain.id}] is not set`);
-    }
-
     if (!EXPLORER_URLS[chain.id]) {
       throw new Error(`EXPLORER_URLS[${chain.id}] is not set`);
     }

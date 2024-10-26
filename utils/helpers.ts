@@ -18,7 +18,15 @@ import {
   Metadata,
 } from './types';
 
-const IPFS_GATEWAYS = ['https://cloudflare-ipfs.com', 'https://ipfs.io'];
+import { Cache } from 'memory-cache';
+
+const IPFS_GATEWAYS = [
+  `https://ipfs.io`,
+  `https://w3s.link`,
+  `https://cloudflare-ipfs.com`,
+  `https://dweb.link`,
+  `https://flk-ipfs.xyz`,
+];
 
 // Using env here to avoid initialization issues with the ENVIRONMENT constant
 if (process.env.NEXT_PUBLIC_ENABLE_PINATA_GATEWAY === 'true') {
@@ -33,6 +41,8 @@ export const uriToHttp = (uri: string): string[] => {
   try {
     const protocol = uri.split(':')[0].toLowerCase();
     switch (protocol) {
+      case 'blob':
+        return [uri];
       case 'data':
         return [uri];
       case 'https':
@@ -60,6 +70,62 @@ export const uriToHttp = (uri: string): string[] => {
   }
 };
 
+const cache = new Cache<string, Metadata>();
+
+export const fetchMetadata = async (
+  uri: string | undefined,
+): Promise<Metadata> => {
+  if (!uri) {
+    throw new Error('URI is required');
+  }
+
+  const cachedResponse = cache.get(uri);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+
+  const https = uriToHttp(uri);
+
+  const controllers = https.map(() => new AbortController());
+
+  try {
+    const response = await Promise.any(
+      https.map(async (endpoint, index) => {
+        const controller = controllers[index];
+        const { signal } = controller;
+
+        const res = await fetch(endpoint, { signal });
+        if (res.ok) {
+          // Abort other requests once a successful one is found
+          controllers.forEach((ctrl, i) => {
+            if (i !== index) ctrl.abort();
+          });
+          const metadata = await res.json();
+          metadata.name = metadata.name || '';
+          metadata.description = metadata.description || '';
+          metadata.image = metadata.image || '';
+          metadata.equippable_layer = metadata.equippable_layer || null;
+          metadata.attributes = metadata.attributes || [];
+          cache.put(uri, metadata);
+          return metadata;
+        }
+        throw new Error(`Failed to fetch from ${endpoint}`);
+      }),
+    );
+
+    return response;
+  } catch (error) {
+    console.error(`Failed to fetch for URI: ${uri}: `, error);
+  }
+  return {
+    name: '',
+    description: '',
+    image: '',
+    equippable_layer: null,
+    attributes: [],
+  };
+};
+
 export const shortenAddress = (address: string, chars = 4): string => {
   return `${address.slice(0, chars + 2)}...${address.slice(
     address.length - chars,
@@ -83,42 +149,6 @@ export const shortenText = (
 
 export const timeout = (ms: number): Promise<void> => {
   return new Promise(resolve => setTimeout(resolve, ms));
-};
-
-const fetchMetadataFromUri = async (uri: string): Promise<Metadata> => {
-  const res = await fetch(uri);
-  if (!res.ok) throw new Error('Failed to fetch');
-  const metadata = await res.json();
-  metadata.name = metadata.name || '';
-  metadata.description = metadata.description || '';
-  metadata.image = metadata.image || '';
-  metadata.equippable_layer = metadata.equippable_layer || null;
-  metadata.attributes = metadata.attributes || [];
-  return metadata;
-};
-
-const fetchMetadata = async (ipfsUri: string): Promise<Metadata> => {
-  try {
-    const uris = uriToHttp(ipfsUri);
-    for (const u of uris) {
-      try {
-        const metadata = await fetchMetadataFromUri(u);
-        return metadata;
-      } catch (e) {
-        console.error('Failed to fetch metadata from', u);
-        continue;
-      }
-    }
-  } catch (e) {
-    console.error('Failed to fetch metadata from', ipfsUri);
-  }
-  return {
-    name: '',
-    description: '',
-    image: '',
-    equippable_layer: null,
-    attributes: [],
-  };
 };
 
 export const formatFullCharacter = async (
@@ -166,7 +196,7 @@ export const formatFullCharacter = async (
     uri: character.uri,
     name: metadata.name,
     description: metadata.description,
-    image: uriToHttp(metadata.image)[0],
+    image: metadata.image,
     attributes: metadata.attributes,
     experience: character.experience,
     characterId: character.characterId,
@@ -231,7 +261,7 @@ export const formatCharacter = async (
     uri: character.uri,
     name: metadata.name,
     description: metadata.description,
-    image: uriToHttp(metadata.image)[0],
+    image: metadata.image,
     attributes: metadata.attributes,
     experience: character.experience,
     characterId: character.characterId,
@@ -257,7 +287,7 @@ export const formatClass = async (
     uri: classEntity.uri,
     name: metadata.name,
     description: metadata.description,
-    image: uriToHttp(metadata.image)[0],
+    image: metadata.image,
     claimable: classEntity.claimable,
     classId: classEntity.classId,
     holders: classEntity.holders.map(h => h.character),
@@ -282,10 +312,8 @@ export const formatItem = async (item: ItemInfoFragment): Promise<Item> => {
     uri: item.uri,
     name: metadata.name,
     description: metadata.description,
-    image: uriToHttp(metadata.image)[0],
-    equippable_layer: metadata.equippable_layer
-      ? uriToHttp(metadata.equippable_layer)[0]
-      : null,
+    image: metadata.image,
+    equippable_layer: metadata.equippable_layer,
     attributes: metadata.attributes,
     itemId: item.itemId,
     soulbound: item.soulbound,
@@ -318,7 +346,7 @@ export const formatGameMeta = async (
     players: game.characters.map(c => c.player),
     name: metadata.name,
     description: metadata.description,
-    image: uriToHttp(metadata.image)[0],
+    image: metadata.image,
     characters: game.characters,
     classes: game.classes,
     items: game.items,
@@ -352,7 +380,7 @@ export const formatGame = async (game: FullGameInfoFragment): Promise<Game> => {
       game.hatsData.gameMasterHatEligibilityModule,
     name: metadata.name,
     description: metadata.description,
-    image: uriToHttp(metadata.image)[0],
+    image: metadata.image,
     characters: await Promise.all(
       game.characters.map(c => formatCharacter(c, classes, items)),
     ),

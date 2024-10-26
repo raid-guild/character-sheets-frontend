@@ -26,6 +26,7 @@ import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
 import { useWhitelistTree, WhitelistItemLeaf } from '@/hooks/useWhitelistTree';
 
+import { MultiSourceImage } from '../MultiSourceImage';
 import {
   WhitelistAddress,
   WhitelistAddressListInput,
@@ -310,7 +311,7 @@ export const EditItemWhitelistModal: React.FC = () => {
     >
       <VStack as="form" onSubmit={onUpdateWhitelist} spacing={8}>
         <VStack justify="space-between" h="100%" spacing={6}>
-          <Image
+          <MultiSourceImage
             alt={`${selectedItem?.name} image`}
             h="140px"
             objectFit="contain"

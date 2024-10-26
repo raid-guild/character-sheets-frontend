@@ -2,17 +2,17 @@ import {
   AspectRatio,
   Button,
   GridItem,
-  Image,
   SimpleGrid,
   Text,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback } from 'react';
 
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import {
   DEFAULT_ITEMS,
   EquippableTraitType,
-  getImageUrl,
+  getImageUri,
   ItemLayer,
   ItemType,
 } from '@/lib/traits';
@@ -103,9 +103,9 @@ export const DefaultItems: React.FC<DefaultItemsProps> = ({
                   maxH: '10rem',
                 }}
               >
-                <Image
+                <MultiSourceImage
                   alt={item.name}
-                  src={getImageUrl(item.thumbnail)}
+                  src={getImageUri(item.thumbnail)}
                   style={{
                     objectFit: 'contain',
                   }}

@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Address, createPublicClient, getAddress, http } from 'viem';
+import { Address, getAddress } from 'viem';
 
-import { CHAINS, SERVER_RPC_URLS } from '../web3/constants';
+import { READ_CLIENTS } from '../web3';
 
 export type AccountInfo = {
   address: Address;
@@ -32,15 +32,7 @@ export const withAuth =
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    if (!process.env.SERVER_INFURA_KEY) {
-      console.error('[AUTH] Missing infura key');
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-
-    const readClient = createPublicClient({
-      chain: CHAINS[Number(accountChainId)],
-      transport: http(SERVER_RPC_URLS[Number(accountChainId)]),
-    });
+    const readClient = READ_CLIENTS[Number(accountChainId)];
 
     if (!readClient) {
       console.error('[AUTH] Invalid chain id');

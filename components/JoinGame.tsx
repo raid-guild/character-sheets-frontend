@@ -160,6 +160,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({
             [EquippableTraitType.EQUIPPED_WEARABLE]: '',
             [BaseTraitType.MOUTH]: traits[6],
             [EquippableTraitType.EQUIPPED_ITEM_2]: '',
+            [EquippableTraitType.EQUIPPED_ITEM_3]: '',
           };
 
           const traitsArray = await formatTraitsForUpload(traitsObject);

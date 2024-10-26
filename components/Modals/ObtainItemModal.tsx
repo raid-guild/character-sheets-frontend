@@ -10,7 +10,6 @@ import {
   FormLabel,
   GridItem,
   HStack,
-  Image,
   Input,
   SimpleGrid,
   Text,
@@ -20,6 +19,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Address, getAddress, pad, parseAbi } from 'viem';
 import { useWalletClient } from 'wagmi';
 
+import { MultiSourceImage } from '@/components/MultiSourceImage';
 import { useGame } from '@/contexts/GameContext';
 import { useItemActions } from '@/contexts/ItemActionsContext';
 import { useClaimNonce } from '@/hooks/useClaimNonce';
@@ -362,7 +362,7 @@ export const ObtainItemModal: React.FC = () => {
       }}
     >
       <VStack justify="space-between" h="100%" spacing={6}>
-        <Image
+        <MultiSourceImage
           alt={`${selectedItem?.name} image`}
           h="140px"
           objectFit="contain"
@@ -440,7 +440,7 @@ export const ObtainItemModal: React.FC = () => {
                       );
                       return (
                         <HStack key={i}>
-                          <Image
+                          <MultiSourceImage
                             alt={`${item?.name} image`}
                             h="40px"
                             objectFit="contain"

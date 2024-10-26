@@ -21,6 +21,7 @@ export enum EquippableTraitType {
   EQUIPPED_ITEM_1 = 'EQUIPPED ITEM 1',
   EQUIPPED_WEARABLE = 'EQUIPPED WEARABLE',
   EQUIPPED_ITEM_2 = 'EQUIPPED ITEM 2',
+  EQUIPPED_ITEM_3 = 'EQUIPPED ITEM 3',
 }
 
 export enum ItemType {
@@ -513,11 +514,9 @@ export const DEFAULT_TRAITS: TraitsArray = [
   '',
 ];
 
-export const LAYERS_URI =
-  'ipfs://QmYTgssDgkHwssNykoX6P6LHNXcXknuo6vV7GTGGJByYum';
+const LAYERS_URI = 'ipfs://QmYTgssDgkHwssNykoX6P6LHNXcXknuo6vV7GTGGJByYum';
 
-export const CLASS_URI =
-  'ipfs://QmVxRbtYB6YYwg2QcUZfPcxPyBhCfYUdWtjVNNtwXpidkB';
+const CLASS_URI = 'ipfs://QmVxRbtYB6YYwg2QcUZfPcxPyBhCfYUdWtjVNNtwXpidkB';
 
 export const TRAITS: { [key: number]: { [key: string]: string[] } } = {
   0: {
@@ -653,35 +652,58 @@ export const removeTraitHex = (trait: string): string => {
   return traitSplit[0] + '_' + traitSplit[1] + '_' + traitSplit[2];
 };
 
-export const getImageIpfsUri = (fileName: string): string => {
+export const getThumbnailUri = (fileName: string): string => {
   if (!fileName) return '';
   return LAYERS_URI + '/' + fileName + '.png';
 };
 
-export const getThumbnailUrl = (fileName: string): string => {
-  return uriToHttp(LAYERS_URI)[0] + '/' + fileName + '.png';
+export const getThumbnailUrls = (fileName: string): string[] => {
+  if (!fileName) return [];
+  return uriToHttp(getThumbnailUri(fileName));
 };
 
-export const getClassEmblemUrl = (fileName: string): string => {
-  return uriToHttp(CLASS_URI)[0] + '/' + fileName + '.svg';
-};
-
-export const getClassIpfsUri = (fileName: string): string => {
+export const getClassEmblemUri = (fileName: string): string => {
+  if (!fileName) return '';
   return CLASS_URI + '/' + fileName + '.svg';
 };
 
-export const getImageUrl = (fileName: string): string => {
+export const getClassEmblemUrl = (fileName: string): string[] => {
+  if (!fileName) return [];
+  return uriToHttp(getClassEmblemUri(fileName));
+};
+
+export const getClassIpfsUri = (fileName: string): string => {
+  if (!fileName) return '';
+  return CLASS_URI + '/' + fileName + '.svg';
+};
+
+const isURI = (uri: string): boolean => {
+  try {
+    new URL(uri);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+export const getImageUri = (fileName: string): string => {
+  if (!fileName) return '';
   if (fileName.startsWith('THUMB')) {
-    return getThumbnailUrl(fileName);
+    return getThumbnailUri(fileName);
   }
   const [index] = fileName.split('_');
   if (index.includes('equip')) {
     // We want to take everything after the second underscore, even if it contains more underscores
-    const potentialUrl = fileName.split('_').slice(2).join('_');
-    return potentialUrl; // In this case, what would normally be "color" is actually the URL of the newly equipped item
+    const potentialUri = fileName.split('_').slice(2).join('_');
+    if (isURI(potentialUri)) return potentialUri;
+    return getThumbnailUri(potentialUri);
   }
+  return getThumbnailUri(removeTraitHex(fileName));
+};
 
-  return uriToHttp(LAYERS_URI)[0] + '/' + removeTraitHex(fileName) + '.png';
+export const getImageUrls = (fileName: string): string[] => {
+  if (!fileName) return [];
+  return uriToHttp(getImageUri(fileName));
 };
 
 export const formatLayerNameFromTrait = (
@@ -707,6 +729,7 @@ export const getTraitsObjectFromAttributes = (
     [EquippableTraitType.EQUIPPED_ITEM_1]: '',
     [EquippableTraitType.EQUIPPED_WEARABLE]: '',
     [EquippableTraitType.EQUIPPED_ITEM_2]: '',
+    [EquippableTraitType.EQUIPPED_ITEM_3]: '',
   };
 
   attributes.forEach(attribute => {
@@ -758,6 +781,9 @@ export const getTraitsObjectFromAttributes = (
       case EquippableTraitType.EQUIPPED_ITEM_2:
         characterTraits[EquippableTraitType.EQUIPPED_ITEM_2] = attribute.value;
         break;
+      case EquippableTraitType.EQUIPPED_ITEM_3:
+        characterTraits[EquippableTraitType.EQUIPPED_ITEM_3] = attribute.value;
+        break;
       default:
         break;
     }
@@ -788,6 +814,8 @@ export const traitPositionToIndex = (
       return 6;
     case EquippableTraitType.EQUIPPED_ITEM_2:
       return 7;
+    case EquippableTraitType.EQUIPPED_ITEM_3:
+      return 8;
     default:
       return 5;
   }
@@ -912,6 +940,17 @@ export const formatTraitsForUpload = async (
           return b.equippedAt - a.equippedAt;
         });
 
+      const equippedItem3s = character.equippedItems
+        .filter(
+          i =>
+            i.attributes &&
+            i.attributes[0]?.value === EquippableTraitType.EQUIPPED_ITEM_3,
+        )
+        .sort((a, b) => {
+          if (!a.equippedAt || !b.equippedAt) return 0;
+          return b.equippedAt - a.equippedAt;
+        });
+
       traits = getEquippableTraitName(
         EquippableTraitType.EQUIPPED_ITEM_1,
         equippedItem1s,
@@ -927,6 +966,12 @@ export const formatTraitsForUpload = async (
       traits = getEquippableTraitName(
         EquippableTraitType.EQUIPPED_ITEM_2,
         equippedItem2s,
+        traits,
+      );
+
+      traits = getEquippableTraitName(
+        EquippableTraitType.EQUIPPED_ITEM_3,
+        equippedItem3s,
         traits,
       );
     }

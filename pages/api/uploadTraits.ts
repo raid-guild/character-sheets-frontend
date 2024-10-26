@@ -1,11 +1,12 @@
 import Jimp from 'jimp';
+import { Cache } from 'memory-cache';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { uploadToPinata } from '@/lib/fileStorage';
 import {
   CharacterTraits,
   getAttributesFromTraitsObject,
-  getImageUrl,
+  getImageUrls,
 } from '@/lib/traits';
 import { Attribute } from '@/utils/types';
 
@@ -13,6 +14,29 @@ type ResponseData = {
   attributes?: Attribute[];
   cid?: string;
   error?: string;
+};
+
+const imageCache = new Cache<string, Jimp>();
+
+const getImageJimp = async (uri: string): Promise<Jimp> => {
+  const cachedImage = imageCache.get(uri);
+  if (cachedImage) {
+    return cachedImage;
+  }
+  const urls = getImageUrls(uri);
+
+  for (const url of urls) {
+    try {
+      const image = await Jimp.read(url);
+      imageCache.put(uri, image, 60 * 60 * 24);
+      return image;
+    } catch (e) {
+      console.error(`Failed to get image from ${url}`, e);
+      continue;
+    }
+  }
+
+  throw new Error(`Failed to get image from ${urls}`);
 };
 
 export default async function uploadTraits(
@@ -34,8 +58,7 @@ export default async function uploadTraits(
 
     const traitImages = await Promise.all(
       traitsArray.map(async trait => {
-        const url = getImageUrl(trait);
-        const image = await Jimp.read(url);
+        const image = await getImageJimp(trait);
         return image.resize(700, Jimp.AUTO);
       }),
     );
