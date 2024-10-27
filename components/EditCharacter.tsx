@@ -166,7 +166,8 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
 
         if (
           traitType === EquippableTraitType.EQUIPPED_ITEM_1 ||
-          traitType === EquippableTraitType.EQUIPPED_ITEM_2
+          traitType === EquippableTraitType.EQUIPPED_ITEM_2 ||
+          traitType === EquippableTraitType.EQUIPPED_ITEM_3
         ) {
           traitsArray[index] = '';
           return;
