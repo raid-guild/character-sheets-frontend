@@ -57,10 +57,12 @@ export default async function uploadTraits(
         .json({ error: 'No traitsArray or traitsObject provided' });
 
     const traitImages = await Promise.all(
-      traitsArray.map(async trait => {
-        const image = await getImageJimp(trait);
-        return image.resize(700, Jimp.AUTO);
-      }),
+      traitsArray
+        .filter(trait => trait !== '' && !trait.includes('remove'))
+        .map(async trait => {
+          const image = await getImageJimp(trait);
+          return image.resize(700, Jimp.AUTO);
+        }),
     );
 
     const imageComposite = traitImages.reduce((acc, image) => {
@@ -72,6 +74,7 @@ export default async function uploadTraits(
       .getBufferAsync(Jimp.MIME_JPEG);
 
     const attributes = getAttributesFromTraitsObject(traitsObject);
+
     const cid = await uploadToPinata(fileContents, 'characterAvater.jpg');
     if (!cid) {
       return res.status(500).json({ error: 'Something went wrong' });
