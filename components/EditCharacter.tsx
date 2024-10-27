@@ -166,7 +166,8 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
 
         if (
           traitType === EquippableTraitType.EQUIPPED_ITEM_1 ||
-          traitType === EquippableTraitType.EQUIPPED_ITEM_2
+          traitType === EquippableTraitType.EQUIPPED_ITEM_2 ||
+          traitType === EquippableTraitType.EQUIPPED_ITEM_3
         ) {
           traitsArray[index] = '';
           return;
@@ -501,7 +502,7 @@ export const EditCharacter: React.FC<EditCharacterProps> = ({
       traitsObject,
     );
 
-    const traitsArray: TraitsArray = ['', '', '', '', '', '', '', ''];
+    const traitsArray: TraitsArray = ['', '', '', '', '', '', '', '', ''];
     Object.keys(traitsObject).forEach(traitType => {
       const trait = traitsObject[traitType as keyof CharacterTraits];
       const index = traitPositionToIndex(traitType as keyof CharacterTraits);

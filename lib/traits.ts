@@ -48,6 +48,7 @@ export type TraitsArray = [
   string,
   string,
   string,
+  string,
 ];
 
 export type ItemLayer = {
@@ -512,6 +513,7 @@ export const DEFAULT_TRAITS: TraitsArray = [
   '5_Villager1_a_796e68',
   '6_Basic_a',
   '',
+  '',
 ];
 
 const LAYERS_URI = 'ipfs://QmYTgssDgkHwssNykoX6P6LHNXcXknuo6vV7GTGGJByYum';
@@ -702,7 +704,7 @@ export const getImageUri = (fileName: string): string => {
 };
 
 export const getImageUrls = (fileName: string): string[] => {
-  if (!fileName) return [];
+  if (!fileName || fileName.includes('remove')) return [];
   return uriToHttp(getImageUri(fileName));
 };
 
@@ -833,7 +835,7 @@ export const getAttributesFromTraitsObject = (
         trait_type: traitType,
         value: variant.toUpperCase(), // In this case, the "variant" is the name of the equippable item
       };
-    } else if (!(index && variant && color)) {
+    } else if (!(index && variant && color) || index.includes('remove')) {
       return {
         trait_type: traitType,
         value: '',
@@ -856,7 +858,9 @@ export const getEquippableTraitName = (
     !traits[equippableTraitType].includes('equip')
   ) {
     if (traits[equippableTraitType].includes('remove')) {
-      const [, name, image] = traits[equippableTraitType].split('_');
+      const split = traits[equippableTraitType].split('_');
+      const name = split[1];
+      const image = split.slice(2).join('_');
 
       if (items[0].name === name && items[0].equippable_layer === image) {
         traits[equippableTraitType] = items[1]
@@ -908,10 +912,10 @@ export const formatTraitsForUpload = async (
       const character = await formatCharacter(unformattedCharacter, [], items);
 
       const equippedItem1s = character.equippedItems
-        .filter(
-          i =>
-            i.attributes &&
-            i.attributes[0]?.value === EquippableTraitType.EQUIPPED_ITEM_1,
+        .filter(i =>
+          i.attributes?.some(
+            a => a.value === EquippableTraitType.EQUIPPED_ITEM_1,
+          ),
         )
         .sort((a, b) => {
           if (!a.equippedAt || !b.equippedAt) return 0;
@@ -919,10 +923,10 @@ export const formatTraitsForUpload = async (
         });
 
       const equippedWearables = character.equippedItems
-        .filter(
-          i =>
-            i.attributes &&
-            i.attributes[0]?.value === EquippableTraitType.EQUIPPED_WEARABLE,
+        .filter(i =>
+          i.attributes?.some(
+            a => a.value === EquippableTraitType.EQUIPPED_WEARABLE,
+          ),
         )
         .sort((a, b) => {
           if (!a.equippedAt || !b.equippedAt) return 0;
@@ -930,10 +934,10 @@ export const formatTraitsForUpload = async (
         });
 
       const equippedItem2s = character.equippedItems
-        .filter(
-          i =>
-            i.attributes &&
-            i.attributes[0]?.value === EquippableTraitType.EQUIPPED_ITEM_2,
+        .filter(i =>
+          i.attributes?.some(
+            a => a.value === EquippableTraitType.EQUIPPED_ITEM_2,
+          ),
         )
         .sort((a, b) => {
           if (!a.equippedAt || !b.equippedAt) return 0;
@@ -941,10 +945,10 @@ export const formatTraitsForUpload = async (
         });
 
       const equippedItem3s = character.equippedItems
-        .filter(
-          i =>
-            i.attributes &&
-            i.attributes[0]?.value === EquippableTraitType.EQUIPPED_ITEM_3,
+        .filter(i =>
+          i.attributes?.some(
+            a => a.value === EquippableTraitType.EQUIPPED_ITEM_3,
+          ),
         )
         .sort((a, b) => {
           if (!a.equippedAt || !b.equippedAt) return 0;
@@ -976,7 +980,7 @@ export const formatTraitsForUpload = async (
       );
     }
 
-    const traitsArray: TraitsArray = ['', '', '', '', '', '', '', ''];
+    const traitsArray: TraitsArray = ['', '', '', '', '', '', '', '', ''];
     Object.keys(traits).forEach(traitType => {
       const trait = traits[traitType as keyof CharacterTraits];
       const index = traitPositionToIndex(traitType as keyof CharacterTraits);

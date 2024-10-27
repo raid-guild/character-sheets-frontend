@@ -89,6 +89,7 @@ export const EquipItemModal: React.FC = () => {
         const newTrait = isEquipped
           ? `remove_${itemName}_${equippable_layer}`
           : `equip_${itemName}_${equippable_layer}`;
+
         traits[equippableType.value as EquippableTraitType] = newTrait;
 
         const traitsArray = await formatTraitsForUpload(
